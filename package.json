@@ -1,0 +1,33 @@
+{
+  "name": "oj",
+  "version": "0.0.0",
+  "main": "src/oj.js",
+  "description": "The 'big gulp' of templating frameworks",
+  "homepage": "http://github.com/evanmoran/oj/",
+  "keywords": [
+    "templating",
+    "framework",
+    "express",
+    "html",
+    "css"
+  ],
+  "author": "Evan Moran <evan@evanmoran.com>",
+  "dependencies": {
+  },
+  "scripts": {
+    "test": "cake test"
+  },
+  "devDependencies": {
+    "coffee-script": "~1.3.3",
+    "mocha": "~1.1.0",
+    "chai": "~1.0.3",
+    "chai-jquery": "~1.0.0",
+    "jquery": "~1.7.3",
+    "underscore": "~1.3.3",
+    "async": "~0.1.22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/evanmoran/oj.git"
+  }
+}
