@@ -1,0 +1,5 @@
+--reporter spec
+--require coffee-script
+--compilers coffee:coffee-script
+--require test/global
+--colors
