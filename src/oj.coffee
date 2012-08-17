@@ -9,7 +9,14 @@ oj.version = '0.0.0'
 # Utility: Helpers
 # ----------------
 
-# Methods borrowed from [underscore.js](http://underscorejs.org/)
+ArrayP = Array.prototype
+FuncP = Function.prototype
+ObjP = Object.prototype
+
+slice = ArrayP.slice
+unshift = ArrayP.unshift
+
+# Methods from [underscore.js](http://underscorejs.org/), because some methods just need to exist.
 oj._ = _ = {}
 _.isUndefined = (obj) -> obj == undefined
 _.isBoolean = (obj) -> obj == true or obj == false or toString.call(obj) == '[object Boolean]'
@@ -33,6 +40,48 @@ _.values = (obj) ->
   out = []
   _.each obj, (v) -> out.push v
   out
+
+_.flatten = (array, shallow) ->
+  _.reduce array, ((memo, value) ->
+    if _.isArray value
+      return memo.concat(if shallow then value else _.flatten(value))
+    memo[memo.length] = value
+    memo
+  ), []
+
+_.reduce = (obj = [], iterator, memo, context) ->
+  initial = arguments.length > 2
+  if ArrayP.reduce and obj.reduce == ArrayP.reduce
+    if context
+      iterator = _.bind iterator, context
+    return if initial then obj.reduce iterator, memo else obj.reduce iterator
+
+  _.each obj, (value, index, list) ->
+    if (!initial)
+      memo = value
+      initial = true
+    else
+      memo = iterator.call context, memo, value, index, list
+
+  if !initial
+    throw new TypeError 'Reduce of empty array with no initial value'
+  memo
+
+  ctor = ->
+  _.bind = (func, context) ->
+    if func.bind == FuncP.bind and FuncP.bind
+      return FuncP.bind.apply func, slice.call(arguments, 1)
+    throw new TypeError unless _.isFunction(func)
+    args = slice.call arguments, 2
+    return bound = ->
+      unless this instanceof bound
+        return func.apply context, args.concat(slice.call arguments)
+      ctor.prototype = func.prototype
+      self = new ctor
+      result = func.apply self, args.concat(slice.call(arguments))
+      if Object(result) == result
+        return result
+      self
 
 # Utility: Type Detection
 # -----------------------
@@ -82,6 +131,9 @@ _.clone = (obj) ->
 #   properties:
 #   events:
 
+oj.create = (name) ->
+  throw 'NYI'
+
 # Utility: Iteration
 # ------------------------------------------------------------------------
 
@@ -98,7 +150,7 @@ _.breaker = {}
 _.each = (col, iterator, context) ->
 
   return if col == null
-  if Array.prototype.forEach and col.forEach == Array.prototype.forEach
+  if ArrayP.forEach and col.forEach == ArrayP.forEach
     col.forEach iterator, context
   else if _.isArray col
     for v, i in col
@@ -130,13 +182,10 @@ _.map = (obj, iterator, options = {}) ->
   # Recurse if necessary
   iterator_ = iterator
   if recurse
-    console.log 'map2 option.recurse is true'
     do (options) ->
-      options_ = _.clone options
       iterator_ = (v,k,o) ->
-        console.log 'iterator_ called with v: ', v, ' k: ', k
-        options__ = _.extend (_.clone options_), (key: k, object: v)
-        _.map v, iterator, options__
+        options_ = _.extend (_.clone options), (key: k, object: v)
+        _.map v, iterator, options_
 
   # Evaluate functions if necessary
   if _.isFunction obj
@@ -144,7 +193,6 @@ _.map = (obj, iterator, options = {}) ->
     # Functions pass through if evaluate isn't set
     return obj unless evaluate
 
-    console.log 'map2 found a function'
     while evaluate and _.isFunction obj
       obj = obj()
 
@@ -154,8 +202,7 @@ _.map = (obj, iterator, options = {}) ->
   if _.isArray obj
     out = []
     return out unless obj
-    return (obj.map iterator_, context) if Array.prototype.map and obj.map == Array.prototype.map
-    console.log 'map found array'
+    return (obj.map iterator_, context) if ArrayP.map and obj.map == ArrayP.map
     _.each(obj, ((v, ix, list) ->
       out[out.length] = iterator_.call context, v, ix, list
     ))
@@ -173,13 +220,12 @@ _.map = (obj, iterator, options = {}) ->
         out[k] = r
   # Basis of recursive case
   else
-    console.log 'map2 found value: ', obj
     return iterator.call context, obj, options.key, options.object,
   out
 
 # _.extend
 _.extend = (obj) ->
-  _.each(Array.prototype.slice.call(arguments, 1), ((source) ->
+  _.each(slice.call(arguments, 1), ((source) ->
     for key, value of source
       obj[key] = value
   ))
@@ -187,7 +233,7 @@ _.extend = (obj) ->
 
 # _.defaults
 _.defaults = (obj) ->
-  _.each(Array.prototype.slice.call(arguments, 1), ((source) ->
+  _.each(slice.call(arguments, 1), ((source) ->
     for prop of source
       if not obj[prop]?
         obj[prop] = source[prop]
@@ -203,18 +249,65 @@ _.defaults = (obj) ->
 #                       'fontSize' will map to 'font-size'
 #                       'borderRadius' will map to 'moz-border-radius', etc.
 
-oj.tag = (name, attributes, contents) ->
+oj._result = []
+
+oj.tag = (name, args...) ->
+  # console.log "calling oj.tag name: #{name}, ", args, ", result: ", oj._result
   throw 'oj.tag error: argument 1 is not a string (expected tag name)' unless _.isString name
 
-  # If options isn't an object push it into contents
-  if not _.isObject attributes
-    contents.unshift attributes
+  # Get attributes
+  attributes = {}
+  if args.length > 0 and _.isObject args[0]
+    attributes = args.shift()
 
-  ojml = {oj: name}
+  args = _.flatten args
 
-  # Magic here!
+  ojml = {oj: name, _:[]}
+
+  # Add attributes to ojml
+  _.extend ojml, attributes
+
+  # Push result
+  lastResult = oj._result
+
+  # Loop over attributes
+  for arg in args
+    if _.isFunction arg
+      oj._result = ojml._
+      len = ojml._.length
+
+      # Call the argument it will auto append to _result which is _
+      r = arg()
+
+      if len == ojml._.length
+        ojml._.push r
+
+    else
+      ojml._.push arg
+
+  # Pop result
+  oj._result = lastResult
+
+  # For shorter JSON special case empty to have no _ attribute and length 1 to have just the value
+  if ojml._.length == 0
+    delete ojml._
+  else if ojml._.length == 1
+    ojml._ = ojml._[0]
+
+  oj._result.push ojml
 
   ojml
+
+oj.tag.elements =
+  closed: 'aa abbr acronym address applet article aside audio b bdo big blockquote body button canvas caption center cite code colgroup command datalist dd del details dfn dir div dl dt em embed fieldset figcaption figure font footer form frameset h1 h2 h3 h4 h5 h6 head header hgroup html i iframe ins keygen kbd label legend li map mark menu meter nav noframes noscript object ol optgroup option output p pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr tt u ul var video wbr xmp'.split ' '
+  open: 'area base br col command embed hr img input keygen link meta param source track wbr'.split ' '
+
+oj.tag.elements.all = (oj.tag.elements.closed.concat oj.tag.elements.open).sort()
+
+# Create tag methods
+for t in oj.tag.elements.all
+  do (t) ->
+    oj[t] = -> oj.tag t, arguments...
 
 # oj.extend (context)
 # ----------------------------------------------------------------------------------------

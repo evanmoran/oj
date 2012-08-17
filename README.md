@@ -156,15 +156,15 @@ can use the same precomputed structure.
 
 All OJML is represented as an object with potentially large amounts of nesting. Each objects has an `oj` attribute describing the type of structure it is:
 
-    {oj: 'table', ...}              # Lowercase means tag:             <table>...</table>
-    {oj: 'Table', ...}              # Uppercase means an oj object:     new oj.Table(...)
+    ['table', ...]              # Lowercase means tag:             <table>...</table>
+    ['Table', ...]              # Uppercase means an oj object:     new oj.Table(...)
 
 Since OJ objects can all serialize into OJML and HTML these may be nested at will:
 
-    {oj: 'List', ordered: false, items: [                # List
-      {oj: 'a', href: 'user/profile', _: 'Evan'},        #   <link to Evan's profile>
-      {oj: 'Image', url: 'evan.png'}                     #   <Evan's picture>
-    ]}
+    ['List', ordered: false,                         # List
+      ['a', href: 'user/profile', _: 'Evan']         #   <link to Evan's profile>
+      ['Image', url: 'evan.png']                     #   <Evan's picture>
+    ]
 
 This is equivalent to:
 
@@ -176,29 +176,78 @@ The purpose is not to make the most readable syntax (though it's not bad!). The 
 
 Example: div tag
 
-    div 1                       <div>1</div>                  {oj:'div', _:1}
+    div 1                       <div>1</div>                  ['div', 1]
 
 Example: div with id
 
-    div id:'one', 1             <div id='one'>1</div>         {oj: 'div', id:'one', _:1}
+    div id:'one', 1             <div id='one'>1</div>         ['div', id:'one', 1]
 
 Example: Nested divs with class
 
-    div c='nested', [           <div class='nested'>          {oj: 'div', c:'nested', _:[
-      div 1                       <div>1</div>                  {oj: 'div', _:1},
-      div 2                       <div>2</div>                  {oj: 'div', _:2},
-      div 3                       <div>3</div>                  {oj: 'div', _:3},
-    ]                           </div>                        ]}
+    div c='nested', [           <div class='nested'>          ['div', c:'nested',
+      div 1                       <div>1</div>                  ['div', 1]
+      div 2                       <div>2</div>                  ['div', 2]
+      div 3                       <div>3</div>                  ['div', 3]
+    ]                           </div>                        ]
 
 Example: Complex Nested divs
 
-    div [                       <div>                         {oj: 'div', _:[
-      div 1                       <div>1</div>                  {oj: 'div', _:1},
-      div [                       <div>                         {oj: 'div', _:[
-        div 2                       <div>2</div>                  {oj: 'div', _:2},
-        div 3                       <div>3</div>                  {oj: 'div', _:3}
-      ]                           </div>                        ]}
-    ]                           </div>                        ]}
+    div [                       <div>                         ['div',
+      div 1                       <div>1</div>                  ['div', 1]
+      div [                       <div>                         ['div',
+        div 2                       <div>2</div>                  ['div', 2]
+        div 3                       <div>3</div>                  ['div', 3]
+      ]                           </div>                        ]
+    ]                           </div>                        ]
+
+    div ->                      <div>                         ['div',
+      div 1                       <div>1</div>                  ['div', 1]
+      div ->                      <div>                         ['div',
+        div 2                       <div>2</div>                  ['div', 2]
+        div 3                       <div>3</div>                  ['div', 3]
+                                 </div>                         ]
+                                </div>                        ]
+
+    div (div 1),                <div>                         ['div',
+      div (div 2),                <div>1</div>                  ['div', 1]
+        (div 3)                   <div>                         ['div',
+                                    <div>2</div>                  ['div', 2]
+                                    <div>3</div>                  ['div', 3]
+                                  </div>                        ]
+                                </div>                        ]
+
+Javascript 1
+
+    div(function(){
+      div(1)
+      div(function(){
+        div(2)
+        div(3)
+      })
+    })
+
+Javascript 2
+
+    div([
+      div(1),
+      div([
+        div(2),
+        div(3)
+      ])
+    ])
+
+Javascript 3
+
+    div( {id:1}
+      div(1),
+      div(
+        div(2),
+        div(3)
+      )
+    )
+
+
+
 
 Example: ul tag
 

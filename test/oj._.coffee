@@ -18,6 +18,7 @@ describe 'oj._', ->
   fn2 = -> 2
   fn3 = -> 3
   fnI = (v) -> v
+  fnPlus1 = (v) -> v + 1
   objValues3 = array3
 
   it 'each Array', (done) ->
@@ -43,36 +44,46 @@ describe 'oj._', ->
 
   it 'map', ->
     # Values
-    (oj._.map 1, (v) -> v+1).should.deep.equal 2
-    (oj._.map fn2, (v) -> v+1).should.deep.equal fn2
+    (oj._.map 1, fnPlus1).should.deep.equal 2
+    (oj._.map fn2, fnPlus1).should.deep.equal fn2
 
     # Array
-    (oj._.map array3, (v) -> v+1).should.deep.equal [2,3,4]
+    (oj._.map array3, fnPlus1).should.deep.equal [2,3,4]
 
     # Object
-    (oj._.map obj3, (v) -> v+1).should.deep.equal {one: 2, two: 3, three:4}
+    (oj._.map obj3, fnPlus1).should.deep.equal {one: 2, two: 3, three:4}
 
     # Null in the middle
     (oj._.map [null,2,3], (v) -> if v then v+1 else null ).should.deep.equal [null,3,4]
 
   it 'map recursive', ->
     # Object
-    (oj._.map {a:1,b:{c:2}}, ((v) -> v+1), recurse: true).should.deep.equal {a:2,b:{c:3}}
+    (oj._.map {a:1,b:{c:2}}, fnPlus1, recurse: true).should.deep.equal {a:2,b:{c:3}}
 
     # Array
-    (oj._.map [1,2,[3, [4]]], ((v) -> v+1), recurse: true).should.deep.equal [2,3,[4,[5]]]
-
+    (oj._.map [1,2,[3, [4]]], fnPlus1, recurse: true).should.deep.equal [2,3,[4,[5]]]
 
     # Array
-    (oj._.map [1,fn2,{a:3, b:[4]}], ((v) -> v+1), recurse: true).should.deep.equal [2,fn2,{a:4, b:[5]}]
+    (oj._.map [1,fn2,{a:3, b:[4]}], fnPlus1, recurse: true).should.deep.equal [2,fn2,{a:4, b:[5]}]
 
   it 'map evaluate', ->
+    # Function
+    (oj._.map (->1), fnPlus1, recurse: true, evaluate: true).should.deep.equal 2
 
+    # Function
+    (oj._.map (->[]), fnPlus1, recurse: true, evaluate: true).should.deep.equal []
 
-  it 'map recursive evaluate', ->
+    # Empty object
+    (oj._.map (->{}), fnPlus1, recurse: true, evaluate: true).should.deep.equal {}
+
+    # Empty object
+    (oj._.map (->{a:1}), fnPlus1, recurse: true, evaluate: true).should.deep.equal {a:2}
+
     # Array, Object
-    (oj._.map [1,(->2),{a:3, b:[4]}], ((v) -> v+1), recurse: true, evaluate: true).should.deep.equal [2,3,{a:4, b:[5]}]
+    (oj._.map [1,(->2),{a:3, b:[4]}], fnPlus1, recurse: true, evaluate: true).should.deep.equal [2,3,{a:4, b:[5]}]
 
+    # Super complex nested
+    (oj._.map (->[1,(->2),{a:3, b:(->[(->4)])}]), fnPlus1, recurse: true, evaluate: true).should.deep.equal [2,3,{a:4, b:[5]}]
 
   it 'keys', ->
     (oj._.keys {}).should.deep.equal []
@@ -81,6 +92,10 @@ describe 'oj._', ->
   it 'values', ->
     (oj._.values {}).should.deep.equal []
     (oj._.values obj3).should.deep.equal objValues3
+
+  it 'flatten'
+  it 'bind'
+  it 'reduce'
 
     # expect(oj._.values 1).should.throw 'Invalid object'
 
@@ -189,10 +204,10 @@ describe 'oj._', ->
     (oj._.has obj3, 'three').should.equal true
 
   it 'isOJ'
-  it 'isElement', ->
+  it 'isOJML'
+  it 'isElement'
   it 'isjQuery'
   it 'isBackbone'
-
 
 
 
