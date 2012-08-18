@@ -99,6 +99,14 @@ _.isOJ = (obj) -> !!(obj and _.isString obj.ojtype)
 # Determine if obj is OJML instance
 _.isOJML = (obj) -> !!(obj and _.isString obj.oj)
 
+# Determine if object or array is empty
+_.isEmpty = (obj) ->
+  return obj.length == 0 if _.isArray obj
+  for k of obj
+    if _.has obj, k
+      return false
+  true
+
 # typeOf: Mimic behavior of built-in typeof operator and integrate jQuery, Backbone, and OJ types
 _.typeOf = (any) ->
 
@@ -249,10 +257,10 @@ _.defaults = (obj) ->
 #                       'fontSize' will map to 'font-size'
 #                       'borderRadius' will map to 'moz-border-radius', etc.
 
-oj._result = []
+oj._result = null
 
 oj.tag = (name, args...) ->
-  # console.log "calling oj.tag name: #{name}, ", args, ", result: ", oj._result
+  # console.log "calling oj.tag name: #{name}, args: ", args, ", result: ", oj._result
   throw 'oj.tag error: argument 1 is not a string (expected tag name)' unless _.isString name
 
   # Get attributes
@@ -260,12 +268,11 @@ oj.tag = (name, args...) ->
   if args.length > 0 and _.isObject args[0]
     attributes = args.shift()
 
-  args = _.flatten args
+  # Build ojml starting with tag
+  ojml = [name]
 
-  ojml = {oj: name, _:[]}
-
-  # Add attributes to ojml
-  _.extend ojml, attributes
+  # Add attributes to ojml if they exist
+  ojml.push attributes unless _.isEmpty attributes
 
   # Push result
   lastResult = oj._result
@@ -273,29 +280,25 @@ oj.tag = (name, args...) ->
   # Loop over attributes
   for arg in args
     if _.isFunction arg
-      oj._result = ojml._
-      len = ojml._.length
+      oj._result = ojml
+      len = ojml.length
 
-      # Call the argument it will auto append to _result which is _
+      # Call the argument it will auto append to _result which is ojml
       r = arg()
 
-      if len == ojml._.length
-        ojml._.push r
+      # If nothing was changed push the result instead div(-> 1)
+      if len == ojml.length
+        ojml.push r
 
     else
-      ojml._.push arg
+      ojml.push arg
 
-  # Pop result
+  # Pop result and result self
   oj._result = lastResult
-
-  # For shorter JSON special case empty to have no _ attribute and length 1 to have just the value
-  if ojml._.length == 0
-    delete ojml._
-  else if ojml._.length == 1
-    ojml._ = ojml._[0]
-
-  oj._result.push ojml
-
+  if oj._result
+    oj._result.push ojml
+  # console.log 'returning: ', ojml
+  # console.log 'returning _result: ', oj._result
   ojml
 
 oj.tag.elements =

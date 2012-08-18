@@ -20,46 +20,39 @@ describe 'oj.tag', ->
   str3 = 'three'
   str4 = 'four'
 
-  # it 'exists', ->
-  #   assert oj.tag != null, 'oj.tag is null'
-  #   oj.tag.should.be.a 'function'
+  it 'exists', ->
+    assert oj.tag != null, 'oj.tag is null'
+    oj.tag.should.be.a 'function'
 
-  # it 'name only', ->
-  #   (oj.tag 'div').should.deep.equal oj: 'div'
-  #   (div()).should.deep.equal oj: 'div'
-  #   (span()).should.deep.equal oj: 'span'
+  it 'name only', ->
+    (oj.tag 'div').should.deep.equal ['div']
+    (div()).should.deep.equal ['div']
+    (span()).should.deep.equal ['span']
 
-  # it 'fancy pants style', ->
-  #   (div ->
-  #     span str1
-  #     div str2
-  #   ).should.deep.equal oj: 'div', _:[{oj: 'span', _:str1}, {oj: 'div', _:str2}]
-
-
-  # it 'name, [String, ...]', ->
-  #   (div str).should.deep.equal oj: 'div', _:str
-  #   (div [str]).should.deep.equal oj: 'div', _:str
-  #   (div [str1, str2]).should.deep.equal oj: 'div', _:[str1, str2]
-  #   (div [str1, str2, str3]).should.deep.equal oj: 'div', _:[str1, str2, str3]
+  it 'name, [String, ...]', ->
+    (div str).should.deep.equal ['div', str]
+    (div str1, str2).should.deep.equal ['div', str1, str2]
+    (div str1, str2, str3).should.deep.equal ['div', str1, str2, str3]
 
   it 'name, [Function, ...]', ->
-    (div -> str).should.deep.equal oj: 'div', _:str
-    (div div str).should.deep.equal oj: 'div', _:{oj: 'div', _:str}
+    (div -> str).should.deep.equal ['div', str]
+    (div (-> str1), (->str2), str3).should.deep.equal ['div', str1, str2, str3]
 
-    # (div div str).should.deep.equal ['div', ['div', 'str']]
+  it 'nested functions', ->
+    (div (span str)).should.deep.equal ['div', ['span', 'str']]
 
-    (div (-> [str1, str2, str3])).should.deep.equal oj: 'div', _:[str1, str2, str3]
-    (div [(-> str1), (-> str2), (->str3)]).should.deep.equal oj: 'div', _:[str1, str2, str3]
+    (div ->
+      span ->
+        div 1
+        div 2
+    ).should.deep.equal ['div', ['span', ['div', 1], ['div', 2]]]
 
-  it 'nested', ->
-    (div (div str)).should.deep.equal oj: 'div', _:{oj: 'div', _:str}
-    (div div str).should.deep.equal oj: 'div', _:{oj: 'div', _:str}
+  it 'mixed OJML and calls', ->
+    (div ['div', str1]).should.deep.equal ['div',['div', str1]]
+    (div ['div', str1], (div ['div', str2])).should.deep.equal ['div',['div', str1], ['div',['div', str2]]]
 
-  it 'nested list', ->
-    (div [
-      div str1
-      div str2
-    ]).should.deep.equal oj: 'div', _:[{oj: 'div', _:str1}, {oj: 'div', _:str2}]
+  it 'nested arguments', ->
+    (div (div str1), (div str2)).should.deep.equal ['div', ['div', str1], ['div', str2]]
 
     (div ->
       div str1
@@ -67,18 +60,17 @@ describe 'oj.tag', ->
         div str2
         div str3
       div str4
-    ).should.deep.equal oj: 'div', _:[
-        {oj: 'div', _:str1}
-        {oj: 'span', _:[
-          {oj: 'div', _:str2}
-          {oj: 'div', _:str3}
-        ]}
-        {oj: 'div', _:str4}
+    ).should.deep.equal ['div',
+        ['div', str1]
+        ['span',
+          ['div', str2]
+          ['div', str3]
+        ]
+        ['div', str4]
       ]
 
-
   it 'multiple tag types (div, span)', ->
-    (div [
+    (div ->
       span str1
       div str2
-    ]).should.deep.equal oj: 'div', _:[{oj: 'span', _:str1}, {oj: 'div', _:str2}]
+    ).should.deep.equal ['div', ['span', str1], ['div', str2]]

@@ -166,6 +166,19 @@
     return !!(obj && _.isString(obj.oj));
   };
 
+  _.isEmpty = function(obj) {
+    var k;
+    if (_.isArray(obj)) {
+      return obj.length === 0;
+    }
+    for (k in obj) {
+      if (_.has(obj, k)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   _.typeOf = function(any) {
     var t;
     if (any === null) {
@@ -331,7 +344,7 @@
     return obj;
   };
 
-  oj._result = [];
+  oj._result = null;
 
   oj.tag = function() {
     var arg, args, attributes, lastResult, len, name, ojml, r, _i, _len;
@@ -343,33 +356,28 @@
     if (args.length > 0 && _.isObject(args[0])) {
       attributes = args.shift();
     }
-    args = _.flatten(args);
-    ojml = {
-      oj: name,
-      _: []
-    };
-    _.extend(ojml, attributes);
+    ojml = [name];
+    if (!_.isEmpty(attributes)) {
+      ojml.push(attributes);
+    }
     lastResult = oj._result;
     for (_i = 0, _len = args.length; _i < _len; _i++) {
       arg = args[_i];
       if (_.isFunction(arg)) {
-        oj._result = ojml._;
-        len = ojml._.length;
+        oj._result = ojml;
+        len = ojml.length;
         r = arg();
-        if (len === ojml._.length) {
-          ojml._.push(r);
+        if (len === ojml.length) {
+          ojml.push(r);
         }
       } else {
-        ojml._.push(arg);
+        ojml.push(arg);
       }
     }
     oj._result = lastResult;
-    if (ojml._.length === 0) {
-      delete ojml._;
-    } else if (ojml._.length === 1) {
-      ojml._ = ojml._[0];
+    if (oj._result) {
+      oj._result.push(ojml);
     }
-    oj._result.push(ojml);
     return ojml;
   };
 
