@@ -274,7 +274,8 @@ oj.tag = (name, args...) ->
   # Add attributes to ojml if they exist
   ojml.push attributes unless _.isEmpty attributes
 
-  # Push result
+  # Push result. This is necessary to give the div -> syntax. It makes me
+  # sad but it is very elegant.
   lastResult = oj._result
 
   # Loop over attributes
@@ -297,8 +298,6 @@ oj.tag = (name, args...) ->
   oj._result = lastResult
   if oj._result
     oj._result.push ojml
-  # console.log 'returning: ', ojml
-  # console.log 'returning _result: ', oj._result
   ojml
 
 oj.tag.elements =

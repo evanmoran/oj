@@ -38,6 +38,15 @@ describe 'oj.tag', ->
     (div -> str).should.deep.equal ['div', str]
     (div (-> str1), (->str2), str3).should.deep.equal ['div', str1, str2, str3]
 
+  it 'name, attributes', ->
+    (div (span str)).should.deep.equal ['div', ['span', 'str']]
+
+    (div class:'cls', id:1, ->
+      span ->
+        div 1
+        div 2
+    ).should.deep.equal ['div', class:'cls', id:1, ['span', ['div', 1], ['div', 2]]]
+
   it 'nested functions', ->
     (div (span str)).should.deep.equal ['div', ['span', 'str']]
 
