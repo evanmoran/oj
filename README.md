@@ -56,12 +56,12 @@ Example:
       id: 'id123'
       header: ['h1', 'h2', 'h3']
       footer: ['f1', 'f2', 'f3']
-      [
-        [1,2,3]
-        [4,5,6]
-      ]
+      [1,2,3]
+      [4,5,6]
 
     table.html()
+
+      # =>
       # <table class='c123', id='id123'>
       #   <thead>
       #     <th> <td>h1</td> <td>h2</td> <td>h3</td> </th>
@@ -83,6 +83,7 @@ Example:
     table.footer = null                 # clear the footer
 
     table.html()
+
       # =>
       # <table class='c123'>
       #   <tbody>
@@ -192,14 +193,6 @@ Example: Nested divs with class
 
 Example: Complex Nested divs
 
-    div [                       <div>                         ['div',
-      div 1                       <div>1</div>                  ['div', 1]
-      div [                       <div>                         ['div',
-        div 2                       <div>2</div>                  ['div', 2]
-        div 3                       <div>3</div>                  ['div', 3]
-      ]                           </div>                        ]
-    ]                           </div>                        ]
-
     div ->                      <div>                         ['div',
       div 1                       <div>1</div>                  ['div', 1]
       div ->                      <div>                         ['div',
@@ -246,41 +239,109 @@ Javascript 3
       )
     )
 
-
-
-
 Example: ul tag
 
-    ul [                        <ul>                          {oj: 'ul', _:[
-      li 1                        <li>1</li                     {oj: 'li', _:1},
-      li 2                        <li>2</li>                    {oj: 'li', _:2},
-      li 3                        <li>3</li>                    {oj: 'li', _:3}
-    ]                           </ul>                         ]}
+    ul ->                       <ul>                          ['ul',
+      li 1                        <li>1</li                     ['li', 1],
+      li 2                        <li>2</li>                    ['li', 2],
+      li 3                        <li>3</li>                    ['li', 3]
+                                </ul>                         ]
 
 Example: List
 
-    List [1,2,3]                <ul>                          {oj: 'ul', _:[
-                                  <li>1</li>                    {oj: 'li', _:1},
-                                  <li>2</li>                    {oj: 'li', _:2},
-                                  <li>3</li>                    {oj: 'li', _:3}
-                                </ul>                         ]}
+    List                        <ul>                          ['ul',
+      1                           <li>1</li>                    ['li', 1],
+      2                           <li>2</li>                    ['li', 2],
+      3                           <li>3</li>                    ['li', 3]
+                                </ul>                         ]
 
 Example: table tag
 
-    table [                     <table>
-      tbody [                     <tbody>
-        tr [(td 1), (td 2)]         <tr> <td>1</td> <td>2</td> </tr>
-        tr [(td 3), (td 4)]         <tr> <td>3</td> <td>4</td> </tr>
-      ]                           </tbody>
-    ]                           </table>
-
+    table ->                    <table>                                 ['table',
+      tbody ->                    <tbody>                                 ['tbody',
+        tr (td 1), (td 2)           <tr> <td>1</td> <td>2</td> </tr>        ['tr', ['td' 1], ['td', 2]]
+        tr (td 3), (td 4)           <tr> <td>3</td> <td>4</td> </tr>        ['tr', ['td' 3], ['td', 4]]
+                                  </tbody>                                ]
+                                </table>                                ]
 
 Example: Table
 
-    Table [[1,2],[3,4]]         <table>
-                                  <tbody>
-                                    <tr> <td>1</td> <td>2</td> </tr>
+    Table                       <table>
+      [1,2]                         <tbody>
+      [3,4]                         <tr> <td>1</td> <td>2</td> </tr>
                                     <tr> <td>3</td> <td>4</td> </tr>
                                   </tbody>
                                 </table>
 
+Thinking
+
+    Foo = oj.type 'Foo',
+      constructor: ->
+
+      destructor: ->
+
+      methods:
+
+      properties:
+
+      fields:
+        a: 1
+        b: 2
+
+      _fields : Array
+      _properties : Array
+      _methods : Array
+
+    Foo.addProperty
+    Foo.addMethod
+    Foo.addField
+
+    # Object.preventExtensions( obj )
+    # Should not be set because of obj.addProperty method
+
+    # {
+    #   value: "test",
+    #   writable: true,
+    #   enumerable: true,
+    #   configurable: true
+    # }
+
+    # Object.defineProperties(obj, {
+    #   "value": {
+    #     value: true,
+    #     writable: false
+    #   },
+    #   "name": {
+    #     value: "John",
+    #     writable: false
+    #   }
+    # });
+    table '.foo'
+      theme: [highlightEven(color: red)]
+      behavior: ['highlightEvenRows', 'highlightHoverRow']
+      hover: [fn,fn2]
+      style: ''
+      header: ['header1', 'header2', 'header3']
+      [[checkbox {enabled:true, name: 'checkbox'}, image {url: '../images/foo.png'}, div 'foo']]
+
+    <form action="demo_form.asp">
+      First name: <input type="text" name="fname" /><br />
+      Last name: <input type="text" name="lname" /><br />
+      <input type="submit" value="Submit" />
+    </form>
+
+    checkbox
+    input
+      color
+      date
+      datetime
+      datetime-local
+      email
+      month
+      number
+      range
+      search
+      tel
+      time
+      url
+      week
