@@ -1,0 +1,61 @@
+<!DOCTYPE html><html lang="en"><head><title>command</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="command"><meta name="groc-project-path" content="src/command.coffee"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/command.coffee</div></div><div id="document"><div class="segment"><div class="code"><div class="wrapper"><span class="nv">_ = </span><span class="nx">require</span> <span class="s">&#39;underscore&#39;</span>
+<span class="nv">commander = </span><span class="nx">require</span> <span class="s">&#39;commander&#39;</span>
+<span class="nv">path = </span><span class="nx">require</span> <span class="s">&#39;path&#39;</span>
+<span class="nv">fs = </span><span class="nx">require</span> <span class="s">&#39;fs&#39;</span>
+<span class="nv">oj = </span><span class="nx">require</span> <span class="s">&#39;./oj.js&#39;</span>
+
+<span class="nv">module.exports = </span><span class="o">-&gt;</span>
+
+  <span class="nx">commander</span><span class="p">.</span><span class="nx">version</span><span class="p">(</span><span class="s">&#39;0.0.3&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">usage</span><span class="p">(</span><span class="s">&#39;[options] &lt;file ...&gt;&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-v, --verbose&#39;</span><span class="p">,</span> <span class="s">&#39;Turn on verbose output (default: off)&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-o, --output &lt;dir&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;Directory to output all files to (default: current)&#39;</span><span class="p">,</span> <span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">())</span>
+    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;    --output-css &lt;dir&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;Directory to output css files to (default: current)&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;    --output-js &lt;dir&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;Directory to output js files to (default: current)&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;    --output-html &lt;dir&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;Directory to output css files to (default: current)&#39;</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-w, --watch &lt;dir,dir,...&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;(NYI) Directories to watch (default: off)&#39;</span><span class="p">,</span> <span class="nx">trimArgList</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Verify output is a directory</p></div></div><div class="code"><div class="wrapper">    <span class="nx">error</span> <span class="s">&quot;directory expected for --output option (</span><span class="si">#{</span><span class="nx">commander</span><span class="p">.</span><span class="nx">output</span><span class="si">}</span><span class="s">)&quot;</span> <span class="nx">unless</span> <span class="nx">isDirectory</span> <span class="nx">commander</span><span class="p">.</span><span class="nx">output</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Verify output specific directories are directories and correctly defaulted</p></div></div><div class="code"><div class="wrapper">    <span class="nv">dirTypeOption = </span><span class="p">[</span><span class="s">&#39;--output-css&#39;</span><span class="p">,</span> <span class="s">&#39;--output-js&#39;</span><span class="p">,</span> <span class="s">&#39;--output-html&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="nx">dirType</span><span class="p">,</span><span class="nx">ix</span> <span class="k">in</span> <span class="p">[</span><span class="s">&#39;outputCss&#39;</span><span class="p">,</span> <span class="s">&#39;outputJs&#39;</span><span class="p">,</span> <span class="s">&#39;outputHtml&#39;</span><span class="p">]</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Default specific output directories to the general one if not specified</p></div></div><div class="code"><div class="wrapper">      <span class="k">if</span> <span class="o">not</span> <span class="nx">commander</span><span class="p">[</span><span class="nx">dirType</span><span class="p">]</span>
+        <span class="nx">commander</span><span class="p">[</span><span class="nx">dirType</span><span class="p">]</span> <span class="o">=</span> <span class="nx">commander</span><span class="p">.</span><span class="nx">output</span>
+      <span class="nx">error</span> <span class="s">&quot;directory expected at </span><span class="si">#{</span><span class="nx">dirTypeOption</span><span class="p">[</span><span class="nx">ix</span><span class="p">]</span><span class="si">}</span><span class="s"> option (</span><span class="si">#{</span><span class="nx">commander</span><span class="p">[</span><span class="nx">dirType</span><span class="p">]</span><span class="si">}</span><span class="s">)&quot;</span> <span class="nx">unless</span> <span class="nx">isDirectory</span> <span class="nx">commander</span><span class="p">[</span><span class="nx">dirType</span><span class="p">]</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Verify files exist and get full path</p></div></div><div class="code"><div class="wrapper">    <span class="nv">commander.files = </span><span class="nx">commander</span><span class="p">.</span><span class="nx">args</span>
+    <span class="nx">error</span> <span class="s">&#39;expecting one or more files&#39;</span> <span class="k">if</span> <span class="o">not</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">commander</span><span class="p">.</span><span class="nx">files</span><span class="p">)</span> <span class="o">or</span> <span class="nx">commander</span><span class="p">.</span><span class="nx">files</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span>
+
+    <span class="nv">appDir = </span><span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">()</span>
+    <span class="k">for</span> <span class="nx">fileName</span> <span class="k">in</span> <span class="nx">commander</span><span class="p">.</span><span class="nx">files</span>
+      <span class="nv">filePath = </span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">appDir</span><span class="p">,</span> <span class="nx">fileName</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;filePath: &quot;</span><span class="p">,</span> <span class="nx">filePath</span>
+      <span class="nx">error</span> <span class="s">&quot;file not found (</span><span class="si">#{</span><span class="nx">filePath</span><span class="si">}</span><span class="s">)&quot;</span> <span class="nx">unless</span> <span class="nx">isFile</span> <span class="nx">filePath</span>
+
+<span class="nv">compile = </span><span class="nf">(files, options = {}) -&gt;</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;compile called: &quot;</span><span class="p">,</span> <span class="nx">options</span>
+  <span class="nx">oj</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">files</span><span class="p">,</span> <span class="nx">options</span>
+
+<span class="nv">watch = </span><span class="nf">(directories, options = {}) -&gt;</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;watch called: (NYI)&quot;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>oj.compile files, options</p></div></div><div class="code"><div class="wrapper"><span class="nv">error = </span><span class="nf">(message, exitCode = 1) -&gt;</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&#39;oj: &#39;</span><span class="p">,</span> <span class="nx">message</span>
+  <span class="nx">process</span><span class="p">.</span><span class="nx">exit</span> <span class="nx">exitCode</span>
+
+<span class="nv">success = </span><span class="nf">(message) -&gt;</span>
+  <span class="nx">error</span> <span class="nx">message</span><span class="p">,</span> <span class="mi">0</span>
+
+<span class="nv">isFile = </span><span class="nf">(path) -&gt;</span>
+  <span class="k">try</span>
+    <span class="p">(</span><span class="nx">fs</span><span class="p">.</span><span class="nx">statSync</span> <span class="nx">path</span><span class="p">).</span><span class="nx">isFile</span><span class="p">()</span>
+  <span class="k">catch</span> <span class="nx">e</span>
+    <span class="kc">false</span>
+
+<span class="nv">isDirectory = </span><span class="nf">(path) -&gt;</span>
+  <span class="k">try</span>
+    <span class="p">(</span><span class="nx">fs</span><span class="p">.</span><span class="nx">statSync</span> <span class="nx">path</span><span class="p">).</span><span class="nx">isDirectory</span><span class="p">()</span>
+  <span class="k">catch</span> <span class="nx">e</span>
+    <span class="kc">false</span>
+
+<span class="nv">trimArgList = </span><span class="nf">(v) -&gt;</span>
+  <span class="nx">_</span><span class="p">.</span><span class="nx">trim</span> <span class="nx">v</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>trim</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.trim = </span><span class="nf">(any) -&gt;</span>
+  <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">any</span>
+    <span class="nx">any</span><span class="p">.</span><span class="nx">trim</span><span class="p">()</span>
+  <span class="k">else</span> <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span> <span class="nx">any</span>
+    <span class="nv">out = </span><span class="nx">_</span><span class="p">.</span><span class="nx">map</span> <span class="nx">any</span><span class="p">,</span> <span class="nf">(v) -&gt;</span> <span class="nx">v</span><span class="p">.</span><span class="nx">trim</span><span class="p">()</span>
+    <span class="nx">_</span><span class="p">.</span><span class="nx">reject</span> <span class="nx">out</span><span class="p">,</span> <span class="p">(</span><span class="nf">(v) -&gt;</span> <span class="nx">v</span> <span class="o">==</span> <span class="s">&#39;&#39;</span> <span class="o">or</span> <span class="nx">v</span> <span class="o">==</span> <span class="kc">null</span><span class="p">)</span>
+  <span class="k">else</span>
+    <span class="nx">any</span></div></div></div></div></body></html>

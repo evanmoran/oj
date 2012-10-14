@@ -16,19 +16,17 @@ Templates: html, css, and javascript simultaneously
 
 Goals of OJ
 
+* Template HTML, CSS, JS events in Javascript
+* Create a method representation of HTML and CSS.
 * Create an object representation of HTML and CSS.
 * Create a JSON representation of HTML and CSS.
-* Create a method representation of HTML and CSS.
-* 100% shared client and server code
-* The dream of Node.js is fulfilled.
-* Express 3 support
-* Integrates with jQuery for event triggering
-* Integrates into Backbone for object construction
+* jQuery client-side event triggering
+* Backbone model integration
+* Express 3 template integration
+* The Node.js dream of 100% shared client-server code is fulfilled
 
 Functions
 ---------
-
-
 
 
 
@@ -39,9 +37,9 @@ OJ Objects
 
 ### oj.Table
 
-    oj.Table options, row1, row2, ...
+    oj.Table properties, row1, row2, ...
 
-    options           Object to configure Table
+    properties        Object to configure Table
       header          Array option to set header at once
       footer          Array option to set footer at once
       rows            Array of arrays option to set all rows at once
@@ -95,11 +93,11 @@ Example:
 
 ### oj.List
 
-    oj.List options, item1, item2, ...
+    oj.List properties, item1, item2, ...
 
-    options           Object that configures List and common options
+    properties        Object that configures List and common options
 
-      ordered:        Boolean option that indicates if list is ordered.
+      ordered:        Boolean property that indicates if the list is ordered.
                       Defaults to false (bullet list), true means number list
 
     style options
@@ -127,6 +125,20 @@ Example:
 
 
 ### oj.Link
+
+    oj.Link properties, item1, item2, ...
+
+    properties        Object that configures Link and common options
+                      Defaults to false (bullet list), true means number list
+      url:            String defining the url path.
+      href:           Alias to url
+
+    style options
+      style:          Inline style
+      css:            css generated from selector
+
+    behavior options
+
 ### oj.Image
 ### oj.CheckBox
 ### oj.ListBox
@@ -329,19 +341,3 @@ Thinking
       Last name: <input type="text" name="lname" /><br />
       <input type="submit" value="Submit" />
     </form>
-
-    checkbox
-    input
-      color
-      date
-      datetime
-      datetime-local
-      email
-      month
-      number
-      range
-      search
-      tel
-      time
-      url
-      week

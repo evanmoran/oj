@@ -14,6 +14,22 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "singleLineComment": ["#"],
           "name": "CoffeeScript"
         },
+        "sourcePath": "/Users/evan/oj/src/command.coffee",
+        "projectPath": "src/command.coffee",
+        "targetPath": "command",
+        "title": "command"
+      },
+      "depth": 1,
+      "outline": []
+    }, {
+      "type": "file",
+      "data": {
+        "language": {
+          "nameMatchers": [".coffee"],
+          "pygmentsLexer": "coffee-script",
+          "singleLineComment": ["#"],
+          "name": "CoffeeScript"
+        },
         "sourcePath": "/Users/evan/oj/src/oj.coffee",
         "projectPath": "src/oj.coffee",
         "targetPath": "oj",
@@ -68,6 +84,86 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "level": 2,
                 "title": "oj.extend (context)",
                 "slug": "ojextend-context"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.template",
+                "slug": "ojtemplate"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.Control",
+                "slug": "ojcontrol"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.Link",
+                "slug": "ojlink"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.domReplace",
+                "slug": "ojdomreplace"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "domInsertElementAfter",
+                "slug": "dominsertelementafter"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "domReplaceHtml",
+                "slug": "domreplacehtml"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "domAppendHtml",
+                "slug": "domappendhtml"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "domPrependHtml",
+                "slug": "domprependhtml"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "domInsertHtmlBefore",
+                "slug": "dominserthtmlbefore"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "domInsertHtmlAfter",
+                "slug": "dominserthtmlafter"
               },
               "depth": 2
             }

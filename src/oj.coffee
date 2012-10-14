@@ -4,7 +4,17 @@
 # Templating framework for the people. Thirsty people.
 
 oj = module.exports
-oj.version = '0.0.0'
+
+root = @
+
+# oj = {}
+oj.version = '0.0.4'
+
+# Export for NodeJS if necessary
+if typeof module != 'undefined'
+  exports = module.exports = oj
+else
+  root['oj'] = oj
 
 # Utility: Helpers
 # ----------------
@@ -27,6 +37,9 @@ _.isRegExp = (obj) -> toString.call(obj) == '[object RegExp]'
 _.isFunction = (obj) -> typeof obj == 'function'
 _.isArray = Array.isArray or (obj) -> toString.call(obj) == '[object Array]'
 _.isElement = (obj) -> !!(obj and obj.nodeType == 1)
+_.property = (obj, options = {}) ->
+  # _.defaults options, configurable: false
+  Object.defineProperty obj, options
 _.has = (obj, key) -> Object.prototype.hasOwnProperty.call(obj, key)
 _.keys = Object.keys || (obj) ->
   throw 'Invalid object' if obj != Object(obj)
@@ -133,14 +146,46 @@ _.clone = (obj) ->
   return obj unless _.isObject obj
   if _.isArray obj then obj.slice() else _.extend {}, obj
 
-
 # oj.create 'name',
 #   methods:
 #   properties:
 #   events:
 
-oj.create = (name) ->
+oj.type = (name, args) ->
   throw 'NYI'
+
+  constructor = ->
+    @_private = {}
+    @_properties = args.properties
+    @_methods = args.methods
+    @_fields = args.fields
+
+oj.enum = (name, args) ->
+  throw 'NYI'
+
+
+###
+Type = oj.type 'Foo',
+  methods:
+    a: ->
+    b: ->
+      oj.super()
+  properties:
+    a:
+      get:
+    b:
+      get:
+      set:
+
+type1 = new Type (arguments...)
+type2 = new Type (backboneModel)  # will call toJSON() to construct
+
+Type.addMethod(name, function)
+Type.addProperty(name, definition)
+Type.addStaticMethod(name, function)
+Type.addStaticProperty(name, definition)
+oj.type 'Type', extends: TypeBase,
+###
 
 # Utility: Iteration
 # ------------------------------------------------------------------------
@@ -325,3 +370,131 @@ oj.extend = (context) ->
       o[k] = v
   delete o.extend
   _.extend context, o
+
+
+# oj.template
+# ----------------------------------------------------------------------------------------
+
+oj.template = (ojml) ->
+  throw new Error 'NYI'
+
+
+# oj.Control
+# ----------------------------------------------------------------------------------------
+# Properties
+#   $             gets root element
+#   set           Initialize from element, $(selector), or ojml
+
+# Methods
+#   constructor   Called when object is first constructed
+#   initialize    Called when object is serialized into dom
+#   parse         Called when object is being constructed     (need this?)
+#   ojml          Property to set or get ojml of this object. Will reinitialize if set
+#   toJSON        Alias for ojml get method
+
+oj.Control = class Control
+
+# oj.Link
+# ----------------------------------------------------------------------------------------
+# oj.Link = class Link extends Control
+
+# oj.domReplace
+# ----------------------------------------------------------------------------------------
+# Replace element's html with jsml.  Starts OJ objects.
+oj.replace = (el, ojml) ->
+  # Element can be dom or jquery
+  el = el.get(0) if _.isjQuery el
+  # Template
+  template = oj.template ojml
+  # Replace
+  _.domReplaceHtml el, template.html
+  # initialize
+  template.js()
+
+# domInsertElementAfter
+# ----------------------------------------------------------------------------------------
+# DOM utility function to help insert elements after a given element (similar to domInsertBefore)
+
+_.domInsertElementAfter = (elLocation, elToInsert) ->
+  throw new Error("domInsertElementAfter error: elementLocation is null") unless elLocation
+  throw new Error("domInsertElementAfter error: elementToInsert is null") unless elToInsert
+  elNext = elLocation.nextSibling
+  elParent = elLocation.parentNode
+  if elNext
+    elParent.insertBefore elToInsert, elNext
+  else
+    elParent.appendChild elToInsert
+
+# domReplaceHtml
+# ----------------------------------------------------------------------------------------
+#
+# Source: http://www.bigdumbdev.com/2007/09/replacehtml-remove-insert-put-back-is.html
+#
+# Basic idea is that setting html on something not on the dom is faster
+# TODO: Allow insertion of TR into TBODY.  Must recognize parent tag of destination and make the temporary tag match this.  With TBODY you then need to add TABLE as well.
+_.domReplaceHtml = (el, html) ->
+  throw new Error("domReplaceHtml error: element is null") unless el
+  nextSibling = el.nextSibling
+  parent = el.parentNode
+  parent.removeChild el
+  el.innerHTML = html
+  if nextSibling
+    parent.insertBefore el, nextSibling
+  else
+    parent.appendChild el
+
+# domAppendHtml
+# ----------------------------------------------------------------------------------------
+# Append html after all children of element
+
+# TODO: Allow insertion of TR into TBODY.
+_.domAppendHtml = (el, html) ->
+  throw new Error("oj.domAppendHtml: element is null") unless el
+  elTemp = document.createElement 'div'
+  elTemp.innerHTML = html
+  while elTemp.childNodes.length
+    el.appendChild elTemp.childNodes[0]
+  elTemp = undefined
+
+# domPrependHtml
+# ----------------------------------------------------------------------------------------
+# Prepend html before all children of element
+# TODO: Allow insertion of TR into TBODY.
+_.domPrependHtml = (el, html) ->
+  throw new Error("oj.domPrependHtml: element is null") unless el
+  elTemp = document.createElement 'div'
+  elTemp.innerHTML = html
+  while elTemp.childNodes.length
+    el.insertBefore elTemp.childNodes[elTemp.childNodes.length-1], el.childNodes[0]
+  elTemp = undefined
+
+# domInsertHtmlBefore
+# ----------------------------------------------------------------------------------------
+# Insert html before the given element
+# TODO: Allow insertion of TR into TBODY.
+_.domInsertHtmlBefore = (el, html) ->
+  throw new Error("oj.domInsertHtmlBefore: element is null") unless el
+  # special case
+  elTemp = document.createElement 'div'
+  elTemp.innerHTML = html
+  parent = el.parentNode
+  while elTemp.childNodes.length
+    parent.insertBefore elTemp.childNodes[elTemp.childNodes.length-1], el
+  elTemp = undefined
+
+# domInsertHtmlAfter
+# ----------------------------------------------------------------------------------------
+# Insert html after the given element
+# TODO: Allow insertion of TR into TBODY.
+_.domInsertHtmlAfter = (el, html) ->
+  throw new Error("oj.domInsertHtmlAfter: element is null") unless el
+  elTemp = document.createElement 'div'
+  elTemp.innerHTML = html
+  elBefore = el
+  while elTemp.childNodes.length
+    elBeforeNext = elTemp.childNodes[0]
+    _.domInsertElementAfter elBefore, elTemp.childNodes[0]
+    elBefore = elBeforeNext
+
+  elTemp = undefined
+

@@ -4,9 +4,10 @@
 
 # Include common testing modules
 _ = global._ = require 'underscore'
-$ = global.$ = require 'jquery'
-
-# supertest = global.supertest = require 'supertest'
+jsdom = global.jsdom = (require 'jsdom').jsdom
+document = global.document = jsdom "<html><head></head><body></body></html>"
+window = global.window = document.createWindow()
+$ = global.$ = global.jQuery = (require 'jquery').create(window)
 
 # Include chai
 global.chai = chai = require "chai"

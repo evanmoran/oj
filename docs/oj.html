@@ -1,7 +1,16 @@
 <!DOCTYPE html><html lang="en"><head><title>oj</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="oj"><meta name="groc-project-path" content="src/oj.coffee"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/oj.coffee</div></div><div id="document"><div class="segment"></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="oj">oj</h1>
 
 <p>Templating framework for the people. Thirsty people.</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj = </span><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span>
-<span class="nv">oj.version = </span><span class="s">&#39;0.0.0&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-helpers">Utility: Helpers</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Methods borrowed from <a href="http://underscorejs.org/">underscore.js</a></p></div></div><div class="code"><div class="wrapper"><span class="nv">oj._ = _ = </span><span class="p">{}</span>
+
+<span class="nv">root = </span><span class="nx">@</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>oj = {}</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.version = </span><span class="s">&#39;0.0.4&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Export for NodeJS if necessary</p></div></div><div class="code"><div class="wrapper"><span class="k">if</span> <span class="k">typeof</span> <span class="nx">module</span> <span class="o">!=</span> <span class="s">&#39;undefined&#39;</span>
+  <span class="nv">exports = module.exports = </span><span class="nx">oj</span>
+<span class="k">else</span>
+  <span class="nx">root</span><span class="p">[</span><span class="s">&#39;oj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nx">oj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-helpers">Utility: Helpers</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">ArrayP = </span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span>
+<span class="nv">FuncP = </span><span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span>
+<span class="nv">ObjP = </span><span class="nb">Object</span><span class="p">.</span><span class="nx">prototype</span>
+
+<span class="nv">slice = </span><span class="nx">ArrayP</span><span class="p">.</span><span class="nx">slice</span>
+<span class="nv">unshift = </span><span class="nx">ArrayP</span><span class="p">.</span><span class="nx">unshift</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Methods from <a href="http://underscorejs.org/">underscore.js</a>, because some methods just need to exist.</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj._ = _ = </span><span class="p">{}</span>
 <span class="nv">_.isUndefined = </span><span class="nf">(obj) -&gt;</span> <span class="nx">obj</span> <span class="o">==</span> <span class="kc">undefined</span>
 <span class="nv">_.isBoolean = </span><span class="nf">(obj) -&gt;</span> <span class="nx">obj</span> <span class="o">==</span> <span class="kc">true</span> <span class="o">or</span> <span class="nx">obj</span> <span class="o">==</span> <span class="kc">false</span> <span class="o">or</span> <span class="nx">toString</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;[object Boolean]&#39;</span>
 <span class="nv">_.isNumber = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">or</span> <span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">toExponential</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">toFixed</span><span class="p">))</span>
@@ -11,6 +20,7 @@
 <span class="nv">_.isFunction = </span><span class="nf">(obj) -&gt;</span> <span class="k">typeof</span> <span class="nx">obj</span> <span class="o">==</span> <span class="s">&#39;function&#39;</span>
 <span class="nv">_.isArray = </span><span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span> <span class="o">or</span> <span class="nf">(obj) -&gt;</span> <span class="nx">toString</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;[object Array]&#39;</span>
 <span class="nv">_.isElement = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">nodeType</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+<span class="nv">_.property = </span><span class="nf">(obj, options = {}) -&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.defaults options, configurable: false</p></div></div><div class="code"><div class="wrapper">  <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span> <span class="nx">obj</span><span class="p">,</span> <span class="nx">options</span>
 <span class="nv">_.has = </span><span class="nf">(obj, key) -&gt;</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">obj</span><span class="p">,</span> <span class="nx">key</span><span class="p">)</span>
 <span class="nv">_.keys = </span><span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span> <span class="o">||</span> <span class="nf">(obj) -&gt;</span>
   <span class="k">throw</span> <span class="s">&#39;Invalid object&#39;</span> <span class="k">if</span> <span class="nx">obj</span> <span class="o">!=</span> <span class="nb">Object</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span>
@@ -23,8 +33,55 @@
   <span class="k">throw</span> <span class="s">&#39;Invalid object&#39;</span> <span class="k">if</span> <span class="nx">obj</span> <span class="o">!=</span> <span class="nb">Object</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span>
   <span class="nv">out = </span><span class="p">[]</span>
   <span class="nx">_</span><span class="p">.</span><span class="nx">each</span> <span class="nx">obj</span><span class="p">,</span> <span class="nf">(v) -&gt;</span> <span class="nx">out</span><span class="p">.</span><span class="nx">push</span> <span class="nx">v</span>
-  <span class="nx">out</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-type-detection">Utility: Type Detection</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isjQuery</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isjQuery = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">jquery</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isBackbone</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isBackbone = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="kc">on</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">trigger</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isOJ</span> <span class="nx">obj</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isOJ
-Determine if obj is an OJ instance</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isOJ = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">ojtype</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Determine if obj is OJML instance</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isOJML = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">oj</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>typeOf: Mimic behavior of built-in typeof operator and integrate jQuery, Backbone, and OJ types</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.typeOf = </span><span class="nf">(any) -&gt;</span>
+  <span class="nx">out</span>
+
+<span class="nv">_.flatten = </span><span class="nf">(array, shallow) -&gt;</span>
+  <span class="nx">_</span><span class="p">.</span><span class="nx">reduce</span> <span class="nx">array</span><span class="p">,</span> <span class="p">(</span><span class="nf">(memo, value) -&gt;</span>
+    <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span> <span class="nx">value</span>
+      <span class="k">return</span> <span class="nx">memo</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="k">if</span> <span class="nx">shallow</span> <span class="k">then</span> <span class="nx">value</span> <span class="k">else</span> <span class="nx">_</span><span class="p">.</span><span class="nx">flatten</span><span class="p">(</span><span class="nx">value</span><span class="p">))</span>
+    <span class="nx">memo</span><span class="p">[</span><span class="nx">memo</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span>
+    <span class="nx">memo</span>
+  <span class="p">),</span> <span class="p">[]</span>
+
+<span class="nv">_.reduce = </span><span class="nf">(obj = [], iterator, memo, context) -&gt;</span>
+  <span class="nv">initial = </span><span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">2</span>
+  <span class="k">if</span> <span class="nx">ArrayP</span><span class="p">.</span><span class="nx">reduce</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">reduce</span> <span class="o">==</span> <span class="nx">ArrayP</span><span class="p">.</span><span class="nx">reduce</span>
+    <span class="k">if</span> <span class="nx">context</span>
+      <span class="nv">iterator = </span><span class="nx">_</span><span class="p">.</span><span class="nx">bind</span> <span class="nx">iterator</span><span class="p">,</span> <span class="nx">context</span>
+    <span class="k">return</span> <span class="k">if</span> <span class="nx">initial</span> <span class="k">then</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">reduce</span> <span class="nx">iterator</span><span class="p">,</span> <span class="nx">memo</span> <span class="k">else</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">reduce</span> <span class="nx">iterator</span>
+
+  <span class="nx">_</span><span class="p">.</span><span class="nx">each</span> <span class="nx">obj</span><span class="p">,</span> <span class="nf">(value, index, list) -&gt;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">initial</span><span class="p">)</span>
+      <span class="nv">memo = </span><span class="nx">value</span>
+      <span class="nv">initial = </span><span class="kc">true</span>
+    <span class="k">else</span>
+      <span class="nv">memo = </span><span class="nx">iterator</span><span class="p">.</span><span class="nx">call</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">memo</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">index</span><span class="p">,</span> <span class="nx">list</span>
+
+  <span class="k">if</span> <span class="o">!</span><span class="nx">initial</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nx">TypeError</span> <span class="s">&#39;Reduce of empty array with no initial value&#39;</span>
+  <span class="nx">memo</span>
+
+  <span class="nv">ctor = </span><span class="o">-&gt;</span>
+  <span class="nv">_.bind = </span><span class="nf">(func, context) -&gt;</span>
+    <span class="k">if</span> <span class="nx">func</span><span class="p">.</span><span class="nx">bind</span> <span class="o">==</span> <span class="nx">FuncP</span><span class="p">.</span><span class="nx">bind</span> <span class="o">and</span> <span class="nx">FuncP</span><span class="p">.</span><span class="nx">bind</span>
+      <span class="k">return</span> <span class="nx">FuncP</span><span class="p">.</span><span class="nx">bind</span><span class="p">.</span><span class="nx">apply</span> <span class="nx">func</span><span class="p">,</span> <span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nx">TypeError</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span><span class="p">(</span><span class="nx">func</span><span class="p">)</span>
+    <span class="nv">args = </span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span> <span class="nx">arguments</span><span class="p">,</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="nv">bound = </span><span class="o">-&gt;</span>
+      <span class="nx">unless</span> <span class="k">this</span> <span class="k">instanceof</span> <span class="nx">bound</span>
+        <span class="k">return</span> <span class="nx">func</span><span class="p">.</span><span class="nx">apply</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">args</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span> <span class="nx">arguments</span><span class="p">)</span>
+      <span class="nv">ctor.prototype = </span><span class="nx">func</span><span class="p">.</span><span class="nx">prototype</span>
+      <span class="nv">self = </span><span class="k">new</span> <span class="nx">ctor</span>
+      <span class="nv">result = </span><span class="nx">func</span><span class="p">.</span><span class="nx">apply</span> <span class="nx">self</span><span class="p">,</span> <span class="nx">args</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">))</span>
+      <span class="k">if</span> <span class="nb">Object</span><span class="p">(</span><span class="nx">result</span><span class="p">)</span> <span class="o">==</span> <span class="nx">result</span>
+        <span class="k">return</span> <span class="nx">result</span>
+      <span class="nx">self</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-type-detection">Utility: Type Detection</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isjQuery</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isjQuery = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">jquery</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isBackbone</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isBackbone = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="kc">on</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">trigger</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isOJ</span> <span class="nx">obj</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isOJ
+Determine if obj is an OJ instance</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isOJ = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">ojtype</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Determine if obj is OJML instance</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isOJML = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">oj</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Determine if object or array is empty</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isEmpty = </span><span class="nf">(obj) -&gt;</span>
+  <span class="k">return</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span> <span class="nx">obj</span>
+  <span class="k">for</span> <span class="nx">k</span> <span class="k">of</span> <span class="nx">obj</span>
+    <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">has</span> <span class="nx">obj</span><span class="p">,</span> <span class="nx">k</span>
+      <span class="k">return</span> <span class="kc">false</span>
+  <span class="kc">true</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>typeOf: Mimic behavior of built-in typeof operator and integrate jQuery, Backbone, and OJ types</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.typeOf = </span><span class="nf">(any) -&gt;</span>
 
   <span class="k">return</span> <span class="s">&#39;null&#39;</span> <span class="k">if</span> <span class="nx">any</span> <span class="o">==</span> <span class="kc">null</span>
   <span class="nv">t = </span><span class="k">typeof</span> <span class="nx">any</span>
@@ -44,7 +101,36 @@ TODO: support options, deep: true</p></div></div><div class="code"><div class="w
   <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span> <span class="nx">obj</span> <span class="k">then</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">slice</span><span class="p">()</span> <span class="k">else</span> <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span> <span class="p">{},</span> <span class="nx">obj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>oj.create 'name',
   methods:
   properties:
-  events:</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-iteration">Utility: Iteration</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_each(collection, iterator, context)</p>
+  events:</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.type = </span><span class="nf">(name, args) -&gt;</span>
+  <span class="k">throw</span> <span class="s">&#39;NYI&#39;</span>
+
+  <span class="nv">constructor = </span><span class="o">-&gt;</span>
+    <span class="vi">@_private = </span><span class="p">{}</span>
+    <span class="vi">@_properties = </span><span class="nx">args</span><span class="p">.</span><span class="nx">properties</span>
+    <span class="vi">@_methods = </span><span class="nx">args</span><span class="p">.</span><span class="nx">methods</span>
+    <span class="vi">@_fields = </span><span class="nx">args</span><span class="p">.</span><span class="nx">fields</span>
+
+<span class="nv">oj.enum = </span><span class="nf">(name, args) -&gt;</span>
+  <span class="k">throw</span> <span class="s">&#39;NYI&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="">#</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">Type = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;Foo&#39;</span><span class="p">,</span>
+  <span class="nv">methods:</span>
+    <span class="nv">a: </span><span class="o">-&gt;</span>
+    <span class="nv">b: </span><span class="o">-&gt;</span>
+      <span class="nx">oj</span><span class="p">.</span><span class="k">super</span><span class="p">()</span>
+  <span class="nv">properties:</span>
+    <span class="nv">a:</span>
+      <span class="nv">get:</span>
+    <span class="nv">b:</span>
+      <span class="nv">get:</span>
+      <span class="nv">set:</span>
+
+<span class="nv">type1 = </span><span class="k">new</span> <span class="nx">Type</span> <span class="p">(</span><span class="nx">arguments</span><span class="p">...)</span>
+<span class="nv">type2 = </span><span class="k">new</span> <span class="nx">Type</span> <span class="p">(</span><span class="nx">backboneModel</span><span class="p">)</span>  <span class="c1"># will call toJSON() to construct</span>
+
+<span class="nx">Type</span><span class="p">.</span><span class="nx">addMethod</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">function</span><span class="p">)</span>
+<span class="nx">Type</span><span class="p">.</span><span class="nx">addProperty</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">definition</span><span class="p">)</span>
+<span class="nx">Type</span><span class="p">.</span><span class="nx">addStaticMethod</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">function</span><span class="p">)</span>
+<span class="nx">Type</span><span class="p">.</span><span class="nx">addStaticProperty</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">definition</span><span class="p">)</span>
+<span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;Type&#39;</span><span class="p">,</span> <span class="k">extends</span><span class="o">:</span> <span class="nx">TypeBase</span><span class="p">,</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="">#</h1></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-iteration">Utility: Iteration</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_each(collection, iterator, context)</p>
 
 <pre><code>Iterate over collection or function. If a function
 is encountered it is evaluated before iteration
@@ -56,7 +142,7 @@ context       (Optional) Object to pass as 'this' to iteration method
 <span class="nv">_.each = </span><span class="nf">(col, iterator, context) -&gt;</span>
 
   <span class="k">return</span> <span class="k">if</span> <span class="nx">col</span> <span class="o">==</span> <span class="kc">null</span>
-  <span class="k">if</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">forEach</span> <span class="o">and</span> <span class="nx">col</span><span class="p">.</span><span class="nx">forEach</span> <span class="o">==</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">forEach</span>
+  <span class="k">if</span> <span class="nx">ArrayP</span><span class="p">.</span><span class="nx">forEach</span> <span class="o">and</span> <span class="nx">col</span><span class="p">.</span><span class="nx">forEach</span> <span class="o">==</span> <span class="nx">ArrayP</span><span class="p">.</span><span class="nx">forEach</span>
     <span class="nx">col</span><span class="p">.</span><span class="nx">forEach</span> <span class="nx">iterator</span><span class="p">,</span> <span class="nx">context</span>
   <span class="k">else</span> <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span> <span class="nx">col</span>
     <span class="k">for</span> <span class="nx">v</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">col</span>
@@ -82,23 +168,18 @@ options
   <span class="nv">recurse = </span><span class="nx">options</span><span class="p">.</span><span class="nx">recurse</span>
   <span class="nv">evaluate = </span><span class="nx">options</span><span class="p">.</span><span class="nx">evaluate</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Recurse if necessary</p></div></div><div class="code"><div class="wrapper">  <span class="nv">iterator_ = </span><span class="nx">iterator</span>
   <span class="k">if</span> <span class="nx">recurse</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&#39;map2 option.recurse is true&#39;</span>
     <span class="nx">do</span> <span class="nf">(options) -&gt;</span>
-      <span class="nv">options_ = </span><span class="nx">_</span><span class="p">.</span><span class="nx">clone</span> <span class="nx">options</span>
       <span class="nv">iterator_ = </span><span class="nf">(v,k,o) -&gt;</span>
-        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&#39;iterator_ called with v: &#39;</span><span class="p">,</span> <span class="nx">v</span><span class="p">,</span> <span class="s">&#39; k: &#39;</span><span class="p">,</span> <span class="nx">k</span>
-        <span class="nv">options__ = </span><span class="nx">_</span><span class="p">.</span><span class="nx">extend</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">clone</span> <span class="nx">options_</span><span class="p">),</span> <span class="p">(</span><span class="nv">key: </span><span class="nx">k</span><span class="p">,</span> <span class="nv">object: </span><span class="nx">v</span><span class="p">)</span>
-        <span class="nx">_</span><span class="p">.</span><span class="nx">map</span> <span class="nx">v</span><span class="p">,</span> <span class="nx">iterator</span><span class="p">,</span> <span class="nx">options__</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Evaluate functions if necessary</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span> <span class="nx">obj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Functions pass through if evaluate isn't set</p></div></div><div class="code"><div class="wrapper">    <span class="k">return</span> <span class="nx">obj</span> <span class="nx">unless</span> <span class="nx">evaluate</span>
+        <span class="nv">options_ = </span><span class="nx">_</span><span class="p">.</span><span class="nx">extend</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">clone</span> <span class="nx">options</span><span class="p">),</span> <span class="p">(</span><span class="nv">key: </span><span class="nx">k</span><span class="p">,</span> <span class="nv">object: </span><span class="nx">v</span><span class="p">)</span>
+        <span class="nx">_</span><span class="p">.</span><span class="nx">map</span> <span class="nx">v</span><span class="p">,</span> <span class="nx">iterator</span><span class="p">,</span> <span class="nx">options_</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Evaluate functions if necessary</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span> <span class="nx">obj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Functions pass through if evaluate isn't set</p></div></div><div class="code"><div class="wrapper">    <span class="k">return</span> <span class="nx">obj</span> <span class="nx">unless</span> <span class="nx">evaluate</span>
 
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&#39;map2 found a function&#39;</span>
     <span class="k">while</span> <span class="nx">evaluate</span> <span class="o">and</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span> <span class="nx">obj</span>
       <span class="nv">obj = </span><span class="nx">obj</span><span class="p">()</span>
 
   <span class="nv">out = </span><span class="nx">obj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Array case</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span> <span class="nx">obj</span>
     <span class="nv">out = </span><span class="p">[]</span>
     <span class="k">return</span> <span class="nx">out</span> <span class="nx">unless</span> <span class="nx">obj</span>
-    <span class="k">return</span> <span class="p">(</span><span class="nx">obj</span><span class="p">.</span><span class="nx">map</span> <span class="nx">iterator_</span><span class="p">,</span> <span class="nx">context</span><span class="p">)</span> <span class="k">if</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">map</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">map</span> <span class="o">==</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">map</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&#39;map found array&#39;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nx">obj</span><span class="p">.</span><span class="nx">map</span> <span class="nx">iterator_</span><span class="p">,</span> <span class="nx">context</span><span class="p">)</span> <span class="k">if</span> <span class="nx">ArrayP</span><span class="p">.</span><span class="nx">map</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">map</span> <span class="o">==</span> <span class="nx">ArrayP</span><span class="p">.</span><span class="nx">map</span>
     <span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">obj</span><span class="p">,</span> <span class="p">(</span><span class="nf">(v, ix, list) -&gt;</span>
       <span class="nx">out</span><span class="p">[</span><span class="nx">out</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span> <span class="o">=</span> <span class="nx">iterator_</span><span class="p">.</span><span class="nx">call</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">v</span><span class="p">,</span> <span class="nx">ix</span><span class="p">,</span> <span class="nx">list</span>
     <span class="p">))</span>
@@ -109,36 +190,19 @@ options
     <span class="k">return</span> <span class="nx">out</span> <span class="nx">unless</span> <span class="nx">obj</span>
     <span class="k">for</span> <span class="nx">k</span><span class="p">,</span><span class="nx">v</span> <span class="k">of</span> <span class="nx">obj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Returning undefined will omit the thing</p></div></div><div class="code"><div class="wrapper">      <span class="k">if</span> <span class="p">(</span><span class="nv">r = </span><span class="nx">iterator_</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">v</span><span class="p">,</span> <span class="nx">k</span><span class="p">,</span> <span class="nx">obj</span><span class="p">))</span> <span class="o">!=</span> <span class="kc">undefined</span>
         <span class="nx">out</span><span class="p">[</span><span class="nx">k</span><span class="p">]</span> <span class="o">=</span> <span class="nx">r</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Basis of recursive case</p></div></div><div class="code"><div class="wrapper">  <span class="k">else</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&#39;map2 found value: &#39;</span><span class="p">,</span> <span class="nx">obj</span>
     <span class="k">return</span> <span class="nx">iterator</span><span class="p">.</span><span class="nx">call</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">obj</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">key</span><span class="p">,</span> <span class="nx">options</span><span class="p">.</span><span class="nx">object</span><span class="p">,</span>
   <span class="nx">out</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.extend</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.extend = </span><span class="nf">(obj) -&gt;</span>
-  <span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nf">(source) -&gt;</span>
+  <span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nf">(source) -&gt;</span>
     <span class="k">for</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">value</span> <span class="k">of</span> <span class="nx">source</span>
       <span class="nx">obj</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span>
   <span class="p">))</span>
   <span class="nx">obj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.defaults</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.defaults = </span><span class="nf">(obj) -&gt;</span>
-  <span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nf">(source) -&gt;</span>
+  <span class="nx">_</span><span class="p">.</span><span class="nx">each</span><span class="p">(</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="nf">(source) -&gt;</span>
     <span class="k">for</span> <span class="nx">prop</span> <span class="k">of</span> <span class="nx">source</span>
       <span class="k">if</span> <span class="o">not</span> <span class="nx">obj</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span><span class="o">?</span>
         <span class="nx">obj</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span> <span class="o">=</span> <span class="nx">source</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span>
   <span class="p">))</span>
-  <span class="nx">obj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.eachEvaluate(collection, iterator, context)</p>
-
-<pre><code>Iterate over collection. If a function is encountered evaulate it before iterating.
-
-collection    Array, Object, or Function to iterate over
-iterator      Function to call on each step
-context       (Optional) Object to pass as 'this' to iteration method
-</code></pre></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.eachEvaluate = (col, iterator, context) ->
-  if _.isFunction col
-    col = col()
-  _.each.call this, col, iterator, context</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.eachRecursive (list, iterator, context)
-    Iterate over a list recursively. If you find a function call it and iterate over that.</p>
-
-<pre><code>list        Array to loop over (recursively)
-iterator    Function to call on each step
-context     (Optional) Object to pass as 'this' to iteration method
-</code></pre></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.eachEvaluateRecursive = (col, iterator, context) -></p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>// _.defaults: Fill in a given object with default properties.</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojtag-name-attributes-content-content-">oj.tag (name, attributes, content, content, ...)</h2>
+  <span class="nx">obj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojtag-name-attributes-content-content-">oj.tag (name, attributes, content, content, ...)</h2>
 
 <pre><code>name          String of the tag to serialize
 attributes    (Optional) Object defining attributes of tag being serialized
@@ -146,45 +210,30 @@ attributes    (Optional) Object defining attributes of tag being serialized
                   'c'  will map to 'class'
                   'fontSize' will map to 'font-size'
                   'borderRadius' will map to 'moz-border-radius', etc.
-</code></pre></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>oj._.evaluate (obj)</p>
+</code></pre></div></div><div class="code"><div class="wrapper"><span class="nv">oj._result = </span><span class="kc">null</span>
 
-<pre><code>Map through structure and execute all methods
+<span class="nv">oj.tag = </span><span class="nf">(name, args...) -&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>console.log "calling oj.tag name: #{name}, args: ", args, ", result: ", oj._result</p></div></div><div class="code"><div class="wrapper">  <span class="k">throw</span> <span class="s">&#39;oj.tag error: argument 1 is not a string (expected tag name)&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">name</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Get attributes</p></div></div><div class="code"><div class="wrapper">  <span class="nv">attributes = </span><span class="p">{}</span>
+  <span class="k">if</span> <span class="nx">args</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">and</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="nv">attributes = </span><span class="nx">args</span><span class="p">.</span><span class="nx">shift</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Build ojml starting with tag</p></div></div><div class="code"><div class="wrapper">  <span class="nv">ojml = </span><span class="p">[</span><span class="nx">name</span><span class="p">]</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Add attributes to ojml if they exist</p></div></div><div class="code"><div class="wrapper">  <span class="nx">ojml</span><span class="p">.</span><span class="nx">push</span> <span class="nx">attributes</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isEmpty</span> <span class="nx">attributes</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Push result. This is necessary to give the div -> syntax. It makes me
+sad but it is very elegant.</p></div></div><div class="code"><div class="wrapper">  <span class="nv">lastResult = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">_result</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Loop over attributes</p></div></div><div class="code"><div class="wrapper">  <span class="k">for</span> <span class="nx">arg</span> <span class="k">in</span> <span class="nx">args</span>
+    <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span> <span class="nx">arg</span>
+      <span class="nv">oj._result = </span><span class="nx">ojml</span>
+      <span class="nv">len = </span><span class="nx">ojml</span><span class="p">.</span><span class="nx">length</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Call the argument it will auto append to _result which is ojml</p></div></div><div class="code"><div class="wrapper">      <span class="nv">r = </span><span class="nx">arg</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>If nothing was changed push the result instead div(-> 1)</p></div></div><div class="code"><div class="wrapper">      <span class="k">if</span> <span class="nx">len</span> <span class="o">==</span> <span class="nx">ojml</span><span class="p">.</span><span class="nx">length</span>
+        <span class="nx">ojml</span><span class="p">.</span><span class="nx">push</span> <span class="nx">r</span>
 
-name          String of the tag to serialize
-attributes    (Optional) Object defining attributes of tag being serialized
-              Keys have smart mappings:
-                  'c'  will map to 'class'
-                  'fontSize' will map to 'font-size'
-                  'borderRadius' will map to 'moz-border-radius', etc.
-</code></pre></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.evaluate = (any) ->
-  if _.isObject any
-    for k, v of any
-      if _.isFunction v
-        any[k] = v()
-  else if _.isArray any
-    for v, k in any
-      if _.isFunction v</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.tag = </span><span class="nf">(name, attributes, contents) -&gt;</span>
-  <span class="k">throw</span> <span class="s">&#39;oj.tag error: argument 1 is not a string (expected tag name)&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">name</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>If options isn't an object push it into contents</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="o">not</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">attributes</span>
-    <span class="nx">contents</span><span class="p">.</span><span class="nx">unshift</span> <span class="nx">attributes</span>
+    <span class="k">else</span>
+      <span class="nx">ojml</span><span class="p">.</span><span class="nx">push</span> <span class="nx">arg</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Pop result and result self</p></div></div><div class="code"><div class="wrapper">  <span class="nv">oj._result = </span><span class="nx">lastResult</span>
+  <span class="k">if</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">_result</span>
+    <span class="nx">oj</span><span class="p">.</span><span class="nx">_result</span><span class="p">.</span><span class="nx">push</span> <span class="nx">ojml</span>
+  <span class="nx">ojml</span>
 
-  <span class="nv">ojml = </span><span class="p">{</span><span class="nv">oj: </span><span class="nx">name</span><span class="p">}</span>
+<span class="nv">oj.tag.elements =</span>
+  <span class="nv">closed: </span><span class="s">&#39;aa abbr acronym address applet article aside audio b bdo big blockquote body button canvas caption center cite code colgroup command datalist dd del details dfn dir div dl dt em embed fieldset figcaption figure font footer form frameset h1 h2 h3 h4 h5 h6 head header hgroup html i iframe ins keygen kbd label legend li map mark menu meter nav noframes noscript object ol optgroup option output p pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr tt u ul var video wbr xmp&#39;</span><span class="p">.</span><span class="nx">split</span> <span class="s">&#39; &#39;</span>
+  <span class="nv">open: </span><span class="s">&#39;area base br col command embed hr img input keygen link meta param source track wbr&#39;</span><span class="p">.</span><span class="nx">split</span> <span class="s">&#39; &#39;</span>
 
-
-
-
-
-
-
-
-
-
-  <span class="nx">ojml</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>children = []
-for content in contents
-  if <em>isFunction content
-    children.push content()
-  else if _.isString content or _isNumber content or _isBoolean content or
-  children.push content
-  {oj: '</em>' + name, contents: contents}</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojextend-context">oj.extend (context)</h2>
+<span class="nv">oj.tag.elements.all = </span><span class="p">(</span><span class="nx">oj</span><span class="p">.</span><span class="nx">tag</span><span class="p">.</span><span class="nx">elements</span><span class="p">.</span><span class="nx">closed</span><span class="p">.</span><span class="nx">concat</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">tag</span><span class="p">.</span><span class="nx">elements</span><span class="p">.</span><span class="nx">open</span><span class="p">).</span><span class="nx">sort</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Create tag methods</p></div></div><div class="code"><div class="wrapper"><span class="k">for</span> <span class="nx">t</span> <span class="k">in</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">tag</span><span class="p">.</span><span class="nx">elements</span><span class="p">.</span><span class="nx">all</span>
+  <span class="nx">do</span> <span class="nf">(t) -&gt;</span>
+    <span class="nx">oj</span><span class="p">[</span><span class="nx">t</span><span class="p">]</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">tag</span> <span class="nx">t</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">...</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojextend-context">oj.extend (context)</h2>
 
 <pre><code>Extend oj methods into a context. Common contexts are `global` `window`
 and `this` (used in coffee script). Helper methods are not extended (oj._)
@@ -196,4 +245,81 @@ context          Object to extend oj methods and objects into
     <span class="k">if</span> <span class="nx">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;_&#39;</span>
       <span class="nx">o</span><span class="p">[</span><span class="nx">k</span><span class="p">]</span> <span class="o">=</span> <span class="nx">v</span>
   <span class="k">delete</span> <span class="nx">o</span><span class="p">.</span><span class="nx">extend</span>
-  <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">o</span></div></div></div></div></body></html>
+  <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">o</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojtemplate">oj.template</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.template = </span><span class="nf">(ojml) -&gt;</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span> <span class="s">&#39;NYI&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojcontrol">oj.Control</h2>
+
+<p>Properties
+  $             gets root element
+  set           Initialize from element, $(selector), or ojml</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Methods
+  constructor   Called when object is first constructed
+  initialize    Called when object is serialized into dom
+  parse         Called when object is being constructed     (need this?)
+  ojml          Property to set or get ojml of this object. Will reinitialize if set
+  toJSON        Alias for ojml get method</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.Control = </span><span class="k">class</span> <span class="nx">Control</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojlink">oj.Link</h2>
+
+<p>oj.Link = class Link extends Control</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojdomreplace">oj.domReplace</h2>
+
+<p>Replace element's html with jsml.  Starts OJ objects.</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.replace = </span><span class="nf">(el, ojml) -&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Element can be dom or jquery</p></div></div><div class="code"><div class="wrapper">  <span class="nv">el = </span><span class="nx">el</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isjQuery</span> <span class="nx">el</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Template</p></div></div><div class="code"><div class="wrapper">  <span class="nv">template = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">template</span> <span class="nx">ojml</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Replace</p></div></div><div class="code"><div class="wrapper">  <span class="nx">_</span><span class="p">.</span><span class="nx">domReplaceHtml</span> <span class="nx">el</span><span class="p">,</span> <span class="nx">template</span><span class="p">.</span><span class="nx">html</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>initialize</p></div></div><div class="code"><div class="wrapper">  <span class="nx">template</span><span class="p">.</span><span class="nx">js</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="dominsertelementafter">domInsertElementAfter</h2>
+
+<p>DOM utility function to help insert elements after a given element (similar to domInsertBefore)</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.domInsertElementAfter = </span><span class="nf">(elLocation, elToInsert) -&gt;</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&quot;domInsertElementAfter error: elementLocation is null&quot;</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">elLocation</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&quot;domInsertElementAfter error: elementToInsert is null&quot;</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">elToInsert</span>
+  <span class="nv">elNext = </span><span class="nx">elLocation</span><span class="p">.</span><span class="nx">nextSibling</span>
+  <span class="nv">elParent = </span><span class="nx">elLocation</span><span class="p">.</span><span class="nx">parentNode</span>
+  <span class="k">if</span> <span class="nx">elNext</span>
+    <span class="nx">elParent</span><span class="p">.</span><span class="nx">insertBefore</span> <span class="nx">elToInsert</span><span class="p">,</span> <span class="nx">elNext</span>
+  <span class="k">else</span>
+    <span class="nx">elParent</span><span class="p">.</span><span class="nx">appendChild</span> <span class="nx">elToInsert</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="domreplacehtml">domReplaceHtml</h2>
+
+<p>Source: http://www.bigdumbdev.com/2007/09/replacehtml-remove-insert-put-back-is.html</p>
+
+<p>Basic idea is that setting html on something not on the dom is faster
+TODO: Allow insertion of TR into TBODY.  Must recognize parent tag of destination and make the temporary tag match this.  With TBODY you then need to add TABLE as well.</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.domReplaceHtml = </span><span class="nf">(el, html) -&gt;</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&quot;domReplaceHtml error: element is null&quot;</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">el</span>
+  <span class="nv">nextSibling = </span><span class="nx">el</span><span class="p">.</span><span class="nx">nextSibling</span>
+  <span class="nv">parent = </span><span class="nx">el</span><span class="p">.</span><span class="nx">parentNode</span>
+  <span class="nx">parent</span><span class="p">.</span><span class="nx">removeChild</span> <span class="nx">el</span>
+  <span class="nv">el.innerHTML = </span><span class="nx">html</span>
+  <span class="k">if</span> <span class="nx">nextSibling</span>
+    <span class="nx">parent</span><span class="p">.</span><span class="nx">insertBefore</span> <span class="nx">el</span><span class="p">,</span> <span class="nx">nextSibling</span>
+  <span class="k">else</span>
+    <span class="nx">parent</span><span class="p">.</span><span class="nx">appendChild</span> <span class="nx">el</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="domappendhtml">domAppendHtml</h2>
+
+<p>Append html after all children of element</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>TODO: Allow insertion of TR into TBODY.</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.domAppendHtml = </span><span class="nf">(el, html) -&gt;</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&quot;oj.domAppendHtml: element is null&quot;</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">el</span>
+  <span class="nv">elTemp = </span><span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span> <span class="s">&#39;div&#39;</span>
+  <span class="nv">elTemp.innerHTML = </span><span class="nx">html</span>
+  <span class="k">while</span> <span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">.</span><span class="nx">length</span>
+    <span class="nx">el</span><span class="p">.</span><span class="nx">appendChild</span> <span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="nv">elTemp = </span><span class="kc">undefined</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="domprependhtml">domPrependHtml</h2>
+
+<p>Prepend html before all children of element
+TODO: Allow insertion of TR into TBODY.</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.domPrependHtml = </span><span class="nf">(el, html) -&gt;</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&quot;oj.domPrependHtml: element is null&quot;</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">el</span>
+  <span class="nv">elTemp = </span><span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span> <span class="s">&#39;div&#39;</span>
+  <span class="nv">elTemp.innerHTML = </span><span class="nx">html</span>
+  <span class="k">while</span> <span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">.</span><span class="nx">length</span>
+    <span class="nx">el</span><span class="p">.</span><span class="nx">insertBefore</span> <span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">[</span><span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">.</span><span class="nx">length</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nx">el</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+  <span class="nv">elTemp = </span><span class="kc">undefined</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="dominserthtmlbefore">domInsertHtmlBefore</h2>
+
+<p>Insert html before the given element
+TODO: Allow insertion of TR into TBODY.</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.domInsertHtmlBefore = </span><span class="nf">(el, html) -&gt;</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&quot;oj.domInsertHtmlBefore: element is null&quot;</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">el</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>special case</p></div></div><div class="code"><div class="wrapper">  <span class="nv">elTemp = </span><span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span> <span class="s">&#39;div&#39;</span>
+  <span class="nv">elTemp.innerHTML = </span><span class="nx">html</span>
+  <span class="nv">parent = </span><span class="nx">el</span><span class="p">.</span><span class="nx">parentNode</span>
+  <span class="k">while</span> <span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">.</span><span class="nx">length</span>
+    <span class="nx">parent</span><span class="p">.</span><span class="nx">insertBefore</span> <span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">[</span><span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">.</span><span class="nx">length</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nx">el</span>
+  <span class="nv">elTemp = </span><span class="kc">undefined</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="dominserthtmlafter">domInsertHtmlAfter</h2>
+
+<p>Insert html after the given element
+TODO: Allow insertion of TR into TBODY.</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.domInsertHtmlAfter = </span><span class="nf">(el, html) -&gt;</span>
+  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&quot;oj.domInsertHtmlAfter: element is null&quot;</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">el</span>
+  <span class="nv">elTemp = </span><span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span> <span class="s">&#39;div&#39;</span>
+  <span class="nv">elTemp.innerHTML = </span><span class="nx">html</span>
+  <span class="nv">elBefore = </span><span class="nx">el</span>
+  <span class="k">while</span> <span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">.</span><span class="nx">length</span>
+    <span class="nv">elBeforeNext = </span><span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="nx">_</span><span class="p">.</span><span class="nx">domInsertElementAfter</span> <span class="nx">elBefore</span><span class="p">,</span> <span class="nx">elTemp</span><span class="p">.</span><span class="nx">childNodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="nv">elBefore = </span><span class="nx">elBeforeNext</span>
+
+  <span class="nv">elTemp = </span><span class="kc">undefined</span></div></div></div></div></body></html>

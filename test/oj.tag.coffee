@@ -1,3 +1,6 @@
+# oj.tag.coffee
+# Test oj.tag support including specific tags such as oj.div, oj.span, etc.
+
 path = require 'path'
 fs = require 'fs'
 async = require 'async'
