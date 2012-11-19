@@ -20,7 +20,49 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
         "title": "command"
       },
       "depth": 1,
-      "outline": []
+      "outline": [
+        {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "Read file",
+            "slug": "read-file"
+          },
+          "depth": 1
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "Add oj wrapper",
+            "slug": "add-oj-wrapper"
+          },
+          "depth": 1
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "Compile to js if coffee",
+            "slug": "compile-to-js-if-coffee"
+          },
+          "depth": 1
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "oj.compile ojml, options",
+            "slug": "ojcompile-ojml-options"
+          },
+          "depth": 1
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "output.js = \"asdf\"",
+            "slug": "outputjs--asdf"
+          },
+          "depth": 1
+        }
+      ]
     }, {
       "type": "file",
       "data": {

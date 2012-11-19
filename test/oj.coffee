@@ -12,7 +12,7 @@ oj = require '../src/oj.coffee'
 describe 'oj', ->
   dir = process.cwd()
   ojCoffeeFile = path.join dir, 'src/oj.coffee'
-  ojJSFile = path.join dir, 'src/oj.js'
+  ojJSFile = path.join dir, 'lib/oj.js'
 
   it 'should be up-to-date with the .coffee file (run \'cake build\')', (done) ->
     async.parallel
