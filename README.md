@@ -341,3 +341,53 @@ Thinking
       Last name: <input type="text" name="lname" /><br />
       <input type="submit" value="Submit" />
     </form>
+
+
+
+
+Hard Problem with IDs
+----------------------
+
+Server side code will generate ids to bind css to html elements. Those same ids must be used
+to bind javascript events to html elements.
+
+Styles don't need ids:
+
+    <div style='color:red;'>my div</div>
+
+CSS and click events do
+div css: {color: red}, click, -> alert('hi'), 'my div'
+
+    <div id='oj3ZsR2M4'>my div</div>
+
+    #oj3ZsR2M4 {color:red;}
+
+    $('#oj3ZsR2M4').click -> alert('hi')
+
+The problem is this id cannot be added to the javascript code. It must be generated dynamically but the templating code. As far as I can see the only way to do this is for server and client-side code to generate these IDs independently.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

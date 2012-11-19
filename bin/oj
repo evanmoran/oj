@@ -5,4 +5,4 @@ var fs   = require('fs');
 var src  = path.join(path.dirname(fs.realpathSync(__filename)), '../src');
 
 require('coffee-script');
-require(src + '/command')();
+require(src + '/command.coffee')();
