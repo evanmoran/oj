@@ -166,7 +166,6 @@ describe 'oj._', ->
   it 'typeOf', ->
     assert.equal (oj._.typeOf {}), 'object', '{} case}'
     assert.equal (oj._.typeOf {a:1}), 'object', '{a:1} case}'
-    assert.equal (oj._.typeOf {oj: 'div'}), 'ojml', '{oj: "div"} case'
     assert.equal (oj._.typeOf {ojtype: 'Table'}), 'Table', 'ojtype case'
     assert.equal (oj._.typeOf new Array), 'array', 'new Array case'
     assert.equal (oj._.typeOf null), 'null', 'null case'

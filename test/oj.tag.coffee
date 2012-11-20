@@ -50,6 +50,10 @@ describe 'oj.tag', ->
         div 2
     ).should.deep.equal ['div', class:'cls', id:1, ['span', ['div', 1], ['div', 2]]]
 
+  it 'name empty attributes', ->
+    (div {}).should.deep.equal ['div']
+    (div {}, (->)).should.deep.equal ['div']
+
   it 'nested functions', ->
     (div (span str)).should.deep.equal ['div', ['span', 'str']]
 
@@ -86,3 +90,6 @@ describe 'oj.tag', ->
       span str1
       div str2
     ).should.deep.equal ['div', ['span', str1], ['div', str2]]
+
+  it 'empty function', ->
+    (div ->).should.deep.equal ['div']

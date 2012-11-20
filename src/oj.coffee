@@ -37,6 +37,8 @@ _.isRegExp = (obj) -> toString.call(obj) == '[object RegExp]'
 _.isFunction = (obj) -> typeof obj == 'function'
 _.isArray = Array.isArray or (obj) -> toString.call(obj) == '[object Array]'
 _.isElement = (obj) -> !!(obj and obj.nodeType == 1)
+_.isCapitalLetter = (c) -> !!(c.match /[A-Z]/)
+_.identity = (v) -> v
 _.property = (obj, options = {}) ->
   # _.defaults options, configurable: false
   Object.defineProperty obj, options
@@ -96,6 +98,27 @@ _.reduce = (obj = [], iterator, memo, context) ->
         return result
       self
 
+_.sortedIndex = (array, obj, iterator = _.identity) ->
+  low = 0
+  high = array.length;
+  while low < high
+    mid = (low + high) >> 1;
+    if iterator(array[mid]) < iterator(obj) then low = mid + 1 else high = mid;
+  low
+
+_.indexOf = (array, item, isSorted) ->
+  return -1 unless array?
+  if isSorted
+    i = _.sortedIndex array, item
+    return if array[i] == item then i else -1
+  if (ArrayP.indexOf && array.indexOf == ArrayP.indexOf)
+    return array.indexOf item
+  for v, i in array
+    if v == item
+      return i
+  -1
+
+
 # Utility: Type Detection
 # -----------------------
 
@@ -107,10 +130,8 @@ _.isBackbone = (obj) -> !!(obj and obj.on and obj.trigger and not _.isOJ obj)
 
 # _.isOJ
 # Determine if obj is an OJ instance
-_.isOJ = (obj) -> !!(obj and _.isString obj.ojtype)
-
-# Determine if obj is OJML instance
-_.isOJML = (obj) -> !!(obj and _.isString obj.oj)
+# TODO: Consider if this should be more duck typed on expected methods
+_.isOJ = (obj) -> !!(obj and (_.isString obj.ojtype))
 
 # Determine if object or array is empty
 _.isEmpty = (obj) ->
@@ -131,11 +152,9 @@ _.typeOf = (any) ->
     else if _.isDate any       then t = 'date'
     else if _.isBackbone any   then t = 'backbone'
     else if _.isjQuery any     then t = 'jquery'
-    else if _.isOJML any       then t = 'ojml'
     else if _.isOJ any         then t = any.ojtype
     else                       t = 'object'
   t
-
 
 # Determine if obj is a vanilla object
 _.isObject = (obj) -> (_.typeOf obj) == 'object'
@@ -319,8 +338,7 @@ oj.tag = (name, args...) ->
   # Add attributes to ojml if they exist
   ojml.push attributes unless _.isEmpty attributes
 
-  # Push result. This is necessary to give the div -> syntax. It makes me
-  # sad but it is very elegant.
+  # Push result. This is necessary to give the div -> syntax. It makes me sad.
   lastResult = oj._result
 
   # Loop over attributes
@@ -333,7 +351,7 @@ oj.tag = (name, args...) ->
       r = arg()
 
       # If nothing was changed push the result instead div(-> 1)
-      if len == ojml.length
+      if len == ojml.length and r?
         ojml.push r
 
     else
@@ -350,6 +368,9 @@ oj.tag.elements =
   open: 'area base br col command embed hr img input keygen link meta param source track wbr'.split ' '
 
 oj.tag.elements.all = (oj.tag.elements.closed.concat oj.tag.elements.open).sort()
+
+oj.tag.isClosed = (tag) ->
+  (_.indexOf oj.tag.elements.open, tag, true) == -1
 
 # Create tag methods
 for t in oj.tag.elements.all
@@ -371,13 +392,146 @@ oj.extend = (context) ->
   delete o.extend
   _.extend context, o
 
-
-# oj.template
+# oj.compile
 # ----------------------------------------------------------------------------------------
+# Return html and js after templating json
 
-oj.template = (ojml) ->
-  throw new Error 'NYI'
+oj.compile = (ojml, options = {html: true, pretty: true}) ->
 
+  options = _.defaults {}, options,
+    html: true
+    pretty: true
+
+  options.html = if options.html then [] else null  # html accumulator
+  options.types = []                                # types accumulator
+  options.indent = ''                               # indent counter
+
+  _compileAny ojml, options
+
+  # Join html only if generated
+  html = options.html?.join ''
+  out = html: html, types: options.types, js:->
+    for t in types
+      t.awaken()
+
+_styleKeyFromFancy = (key) ->
+  out = ""
+  # Loop over characters in key looking for camal case
+  for c in key
+    if _.isCapitalLetter c
+      out += "-#{c.toLowerCase()}"
+    else
+      out += c
+  out
+
+# Convert object to string form
+_styleFromObject = (obj) ->
+  out = ""
+  first = true
+  for kFancy in _.keys(obj).sort()
+    k = _styleKeyFromFancy kFancy
+    if not first
+      out += ';'
+    out += "#{k}:#{obj[kFancy]}"
+    first = false
+  out
+
+# Recursive helper for compiling that deals
+_compileDeeper = (method, ojml, options) ->
+  i = options.indent
+  options.indent += '\t'
+  method ojml, options
+  options.indent = i
+
+# Compile ojml or any type
+_compileAny = (ojml, options) ->
+
+  switch _.typeOf ojml
+
+    when 'array'
+      _compileTag ojml, options
+
+    when 'oj'
+      # Found an oj object. Compile its result
+      _compileAny ojml.oj(), options
+
+    when 'jquery'
+      options.html?.push ojml[0].outerHTML
+
+    when 'string'
+      options.html?.push ojml
+
+    when 'boolean', 'number'
+      options.html?.push "#{ojml}"
+
+    when 'function'
+      _compileAny ojml(), options
+
+    when 'null', 'undefined'
+      # do nothing
+
+    else
+      throw new Error 'oj.compile: #{typeof ojml} cannot be compiled'
+
+# Compile ojml tag (an array)
+_compileTag = (ojml, options) ->
+
+  # Get tag
+  tag = ojml[0]
+  throw new Error('oj.compile: tag is missing') unless _.isString(tag) and tag.length > 0
+
+  # Create oj object if tag is capitalized
+  if _.isCapitalLetter tag[0]
+    return _compileDeeper _compileAny, (new oj[tag] ojml.slice(1)), options
+
+  # Get attributes (optional)
+  attributes = null
+  if _.isObject ojml[1]
+    attributes = ojml[1]
+
+  children = if attributes then ojml.slice 2 else ojml.slice 1
+
+  if options.html
+    # attribute.style can be set with objects
+    if _.isObject attributes?.style
+      attributes.style = _styleFromObject attributes.style
+
+    # attribute.c stands for class
+    if attributes?.c?
+      attributes.class = attributes.c
+      attributes.c = null
+
+    # attributes.class can be set with arrays
+    if _.isArray attributes?.class
+      attributes.class = attributes.join ' '
+
+    # TODO: consider jsoning any object (good for attribute.data)
+
+    # Convert attributes to string
+    attr = ""
+    if attributes
+      # Sort attribute keys for consistent output
+      for k in _.keys(attributes).sort()
+        if (v = attributes[k])?
+          attr += " #{k}=\"#{v}\""
+
+    # Start tag
+    options.html?.push "<#{tag}#{attr}>"
+
+  if children.length > 1
+    for child in children
+      if options.pretty
+        options.html?.push "\n\t#{options.indent}"
+      _compileDeeper _compileAny, child, options
+    if options.pretty
+      options.html?.push "\n#{options.indent}"
+  else
+    for child in children
+      _compileDeeper _compileAny, child, options
+
+  # End tag if you have children or your tag closes
+  if children.length > 0 or oj.tag.isClosed(tag)
+    options.html?.push "</#{tag}>"
 
 # oj.Control
 # ----------------------------------------------------------------------------------------
