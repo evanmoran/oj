@@ -1,0 +1,17 @@
+
+user = {name: 'Evan'}
+
+html ->
+
+  body ->
+
+    partial 'header', user: user
+
+    partial 'user', user: user
+
+    p 'This page has a partial'
+
+
+
+
+

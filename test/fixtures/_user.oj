@@ -1,0 +1,2 @@
+div "Name: #{user.name}"
+div "Age: #{user.age}" if user.age

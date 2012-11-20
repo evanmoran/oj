@@ -1,0 +1,16 @@
+# coffee script
+
+_ = require 'underscore'
+
+local = require './local'
+
+console.log "local: ", local
+
+console.log "__dirname: ", __dirname if __dirname?
+console.log "__filename: ", __filename if __filename?
+
+console.log "_: ", _
+console.log "_.max([1,2]): ", _.max([1,2])
+console.log "test.oj"
+div 'test', ->
+  # include 'test2'

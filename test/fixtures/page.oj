@@ -1,0 +1,15 @@
+
+html ->
+  script src: 'asdf'
+
+  body ->
+
+    header ->
+      'Header'
+
+    p 'This page is great'
+
+
+
+
+

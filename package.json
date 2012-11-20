@@ -1,39 +1,31 @@
 {
   "name": "oj",
-  "version": "0.0.4",
-  "main": "src/oj.js",
-  "bin": {
-    "oj": "./bin/oj"
-  },
-  "author": "Evan Moran <evan@evanmoran.com>",
-  "description": "The 'big gulp' of templating frameworks",
+  "version": "0.0.2",
+  "main": "lib/oj.js",
+  "description": "A unified templating language for the people. Thirsty people.",
   "homepage": "http://github.com/evanmoran/oj/",
   "keywords": [
     "templating",
-    "framework",
-    "express",
     "html",
-    "css"
+    "css",
+    "js"
   ],
+  "author": "Evan Moran <evan@evanmoran.com>",
   "dependencies": {
-    "coffee-script": "~1.3.3",
     "underscore": "~1.3.3",
-    "async": "0.1.22",
-    "commander": "~1.0.4"
+    "queryfu":"latest"
   },
   "scripts": {
     "test": "cake test"
   },
   "devDependencies": {
+    "coffee-script": "~1.3.3",
     "mocha": "~1.1.0",
     "chai": "~1.0.3",
-    "chai-jquery": "~1.0.0",
-    "jquery": "1.7.3",
-    "jsdom": "0.2.15",
     "async": "~0.1.22"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/evanmoran/oj.git"
+    "url": "git://github.com/evanmoran/queryfu.git"
   }
 }
