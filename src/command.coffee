@@ -62,80 +62,6 @@ compile = (file, options = {}) ->
 
   error "file not found (#{fullPath})" unless isFile fullPath
 
-  cacheModuleDirFromFileDir = {}
-
-  moduleMain = (dir, reference) ->
-
-    # /path/to/app/node_modules
-    modulesDir = modulesDirFromFileDir dir
-    throw new Error("oj.compile: app directory not found above ${dir}") unless modulesDir?
-
-    # /path/to/app/node_modules/underscore
-    moduleDir = path.join modulesDir, reference
-    console.log "moduleDir: ", moduleDir
-    moduleDirPackage = path.join moduleDir, 'package.json'
-    console.log "moduleDirPackage: ", moduleDirPackage
-    try
-      json = fs.readFileSync moduleDirPackage
-      console.log "package: ", json
-      main = (JSON.parse json).main
-      console.log "main: ", main
-      console.log "path.join moduleDir, main: ", path.join moduleDir, main
-      return path.join moduleDir, main
-
-    catch e
-      throw new Error "oj.compile: package.json not found (#{e})"
-
-  isDir = (dir) ->
-    try
-      stat = fs.statSync dir
-      return stat.isDirectory()
-    catch e
-    false
-
-  require_ = (module) ->
-    console.log "requiring: ", module
-    require module
-
-  modulesDirFromFileDir = (dir) ->
-    console.log "modulesDirFromFileDir dir: ", dir
-    if cacheModuleDirFromFileDir[dir]?
-      console.log "dir found in cache"
-      return cacheModuleDirFromFileDir[dir]
-
-
-    # Navigate up directories until you find node_modules
-
-    appDir = dir
-    while true
-
-      console.log "searching #{appDir}"
-
-      # Fail if we are trying to exscape a node_modules directory
-      # You can't require stuff passed this barrior
-      if (path.basename appDir) == 'node_modules'
-        console.log "failure: at node_modules (#{appDir})"
-        return null
-
-      # Look in this directory for /<appDir>/node_modules
-      modulesDir = path.join appDir, 'node_modules'
-
-      # Success found it
-      if isDir modulesDir
-        console.log "success: found appDir #{appDir}"
-        console.log "success: found modulesDir #{modulesDir}"
-        cacheModuleDirFromFileDir[dir] = modulesDir
-        return modulesDir
-
-      parentDir = path.dirname appDir
-
-      # Failure we have reached root
-      if parentDir == appDir
-        console.log "success: at root #{appDir}"
-
-      # Continue searching
-      appDir = parentDir
-
   directory = path.dirname fullPath
   include = includer(directory)
   fs.readFile fullPath, 'utf8', (err, code) ->
@@ -155,22 +81,102 @@ compile = (file, options = {}) ->
 
       else if isNodeModule modulePath
         console.log "node module found: ", modulePath
-        return require_ modulePath
+        return requireAndPrint modulePath
 
       else if isRelativeModule modulePath
         console.log "relative module found: ", modulePath
-        return require_ path.join directory, modulePath
+        return requireAndPrint path.join directory, modulePath
 
       else if isAppModule modulePath
         console.log "app module found: ", modulePath
-        return require_ moduleMain directory, modulePath
+        return requireAndPrint moduleMain directory, modulePath
 
     fn = vm.runInContext (wrap code), (vm.createContext scope), fullPath
 
     newExports = {}
-    newModule = exports: newExports
+    newModule = exports:  newExports
     fn(newExports, scopedRequire, newModule, fullPath, directory)
     console.log "newModule: ", newModule
+
+moduleMain = (dir, reference) ->
+
+  # /path/to/app/node_modules
+  modulesDir = modulesDirFromFileDir dir
+  throw new Error("oj.compile: app directory not found above ${dir}") unless modulesDir?
+
+  # /path/to/app/node_modules/underscore
+  moduleDir = path.join modulesDir, reference
+  console.log "moduleDir: ", moduleDir
+  moduleDirPackage = path.join moduleDir, 'package.json'
+  console.log "moduleDirPackage: ", moduleDirPackage
+  try
+    json = fs.readFileSync moduleDirPackage
+    console.log "package: ", json
+    main = (JSON.parse json).main
+    console.log "main: ", main
+    console.log "path.join moduleDir, main: ", path.join moduleDir, main
+    return path.join moduleDir, main
+
+  catch e
+    throw new Error "oj.compile: package.json not found (#{e})"
+
+isDir = (dir) ->
+  try
+    stat = fs.statSync dir
+    return stat.isDirectory()
+  catch e
+  false
+
+registerOJExtension = ->
+  if require.extensions
+    require.extensions['.oj'] = (module, filename) ->
+      console.log "registering .oj extension"
+      content = compileFile filename
+      module._compile content, filename
+
+requireAndPrint = (module) ->
+  console.log "requiring: ", module
+  require module
+
+cacheModuleDirFromFileDir = {}
+modulesDirFromFileDir = (dir) ->
+  console.log "modulesDirFromFileDir dir: ", dir
+  if cacheModuleDirFromFileDir[dir]?
+    console.log "dir found in cache"
+    return cacheModuleDirFromFileDir[dir]
+
+
+  # Navigate up directories until you find node_modules
+
+  appDir = dir
+  while true
+
+    console.log "searching #{appDir}"
+
+    # Fail if we are trying to exscape a node_modules directory
+    # You can't require stuff passed this barrior
+    if (path.basename appDir) == 'node_modules'
+      console.log "failure: at node_modules (#{appDir})"
+      return null
+
+    # Look in this directory for /<appDir>/node_modules
+    modulesDir = path.join appDir, 'node_modules'
+
+    # Success found it
+    if isDir modulesDir
+      console.log "success: found appDir #{appDir}"
+      console.log "success: found modulesDir #{modulesDir}"
+      cacheModuleDirFromFileDir[dir] = modulesDir
+      return modulesDir
+
+    parentDir = path.dirname appDir
+
+    # Failure we have reached root
+    if parentDir == appDir
+      console.log "success: at root #{appDir}"
+
+    # Continue searching
+    appDir = parentDir
 
   # Get context
   # context = options.context
