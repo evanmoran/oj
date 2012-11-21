@@ -7,8 +7,25 @@ oj = module.exports
 
 root = @
 
-# oj = {}
-oj.version = '0.0.4'
+# Register require.extension for .oj files
+if require.extensions
+
+  coffee = require 'coffee-script'
+  fs = require 'fs'
+
+  require.extensions['.oj'] = (module, filepath) ->
+
+    # Compile as coffee-script or javascript
+    code = fs.readFileSync filepath, 'utf8'
+    try
+      code = coffee.compile code
+    catch e
+      # found js
+    # Scope oj into it
+    code = "with(require('oj')){#{code}}"
+    module._compile code, filepath
+
+oj.version = '0.0.5'
 
 # Export for NodeJS if necessary
 if typeof module != 'undefined'
@@ -311,6 +328,16 @@ _.defaults = (obj) ->
         obj[prop] = source[prop]
   ))
   obj
+
+# oj.partial (module, arg1, arg2, ...)
+# ----------------------------------------------------------------------------------------
+# Arguments are passed to exported module
+
+oj.partial = (module, json) ->
+  m = require module
+  if (_.isFunction m) and arguments.length > 1
+    return m arguments.slice(1)...
+  m
 
 # oj.tag (name, attributes, content, content, ...)
 # ----------------------------------------------------------------------------------------

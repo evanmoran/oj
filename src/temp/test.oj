@@ -1,25 +1,6 @@
 # coffee script
 
-local = require './local'
-console.log "local: ", local
+_ = require 'underscore'
 
-queryfu = require 'queryfu'
-# _ = queryfu._
-
-# _ = require 'underscore'
-# path = require 'path'
-
-console.log "process.cwd(): ", process.cwd()
-
-q = new queryfu.QueryFu()
-console.log "q: ", q
-
-console.log "__dirname: ", __dirname if __dirname?
-console.log "__filename: ", __filename if __filename?
-
-# console.log "_.max([1,2]): ", _.max([1,2])
-console.log "test.oj"
-div 'test', ->
-  # include 'test2'
-
-module.exports = 'exporting test.oj'
+module.exports = div 'test', ->
+  require '../test2'

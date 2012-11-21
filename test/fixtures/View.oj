@@ -1,4 +1,5 @@
+
 module.exports = class View
   oj: ->
     div c: 'View', ->
-      partial 'user', user:{name:'James'}
+
