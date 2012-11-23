@@ -46,7 +46,7 @@ slice = ArrayP.slice
 unshift = ArrayP.unshift
 
 # Methods from [underscore.js](http://underscorejs.org/), because some methods just need to exist.
-oj._ = _ = {}
+oj.__ = _ = {}
 _.isUndefined = (obj) -> obj == undefined
 _.isBoolean = (obj) -> obj == true or obj == false or toString.call(obj) == '[object Boolean]'
 _.isNumber = (obj) -> !!(obj == 0 or (obj and obj.toExponential and obj.toFixed))
