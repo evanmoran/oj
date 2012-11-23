@@ -11,18 +11,20 @@ root = @
 if require.extensions
 
   coffee = require 'coffee-script'
-  fs = require 'fs'
+  fs = require new String('fs') # Hack to avoid pulling fs to client
+
+  stripBOM = (c) ->
+    if c.charCodeAt(0) == 0xFEFF
+      c = c.slice 1
+    c
 
   require.extensions['.oj'] = (module, filepath) ->
-
     # Compile as coffee-script or javascript
-    code = fs.readFileSync filepath, 'utf8'
+    code = stripBOM fs.readFileSync filepath, 'utf8'
     try
-      code = coffee.compile code
-    catch e
-      # found js
-    # Scope oj into it
-    code = "with(require('oj')){#{code}}"
+      code = coffee.compile code, bare: true
+    catch e # js file, do nothing
+    code = "(function(){with(require('oj')){#{code}}}).call(this);"
     module._compile code, filepath
 
 oj.version = '0.0.5'

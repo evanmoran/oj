@@ -1,6 +1,6 @@
 {
   "name": "oj",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "main": "lib/oj.js",
   "description": "A unified templating language for the people. Thirsty people.",
   "homepage": "http://github.com/evanmoran/oj/",
@@ -12,8 +12,11 @@
   ],
   "author": "Evan Moran <evan@evanmoran.com>",
   "dependencies": {
+    "commander": "1.0.x",
     "underscore": "~1.3.3",
-    "queryfu":"latest"
+    "uglify-js": "1.3.3",
+    "csso": "1.3.x",
+    "queryfu": "~0.2.4"
   },
   "scripts": {
     "test": "cake test"
@@ -21,8 +24,7 @@
   "devDependencies": {
     "coffee-script": "~1.3.3",
     "mocha": "~1.1.0",
-    "chai": "~1.0.3",
-    "async": "~0.1.22"
+    "chai": "~1.0.3"
   },
   "repository": {
     "type": "git",
