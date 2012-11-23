@@ -139,6 +139,13 @@ Example:
 
     behavior options
 
+### oj.Markdown
+
+    oj.Markdown properties, markdown1, markdown2, ...
+
+    properties        Object that defines options
+    (none so far)
+
 ### oj.Image
 ### oj.CheckBox
 ### oj.ListBox
