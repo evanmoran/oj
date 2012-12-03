@@ -393,7 +393,7 @@ oj.tag = (name, args...) ->
   ojml
 
 oj.tag.elements =
-  closed: 'aa abbr acronym address applet article aside audio b bdo big blockquote body button canvas caption center cite code colgroup command datalist dd del details dfn dir div dl dt em embed fieldset figcaption figure font footer form frameset h1 h2 h3 h4 h5 h6 head header hgroup html i iframe ins keygen kbd label legend li map mark menu meter nav noframes noscript object ol optgroup option output p pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr tt u ul var video wbr xmp'.split ' '
+  closed: 'a abbr acronym address applet article aside audio b bdo big blockquote body button canvas caption center cite code colgroup command datalist dd del details dfn dir div dl dt em embed fieldset figcaption figure font footer form frameset h1 h2 h3 h4 h5 h6 head header hgroup html i iframe ins keygen kbd label legend li map mark menu meter nav noframes noscript object ol optgroup option output p pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr tt u ul var video wbr xmp'.split ' '
   open: 'area base br col command embed hr img input keygen link meta param source track wbr'.split ' '
 
 oj.tag.elements.all = (oj.tag.elements.closed.concat oj.tag.elements.open).sort()
@@ -425,11 +425,16 @@ oj.extend = (context) ->
 # ----------------------------------------------------------------------------------------
 # Return html and js after templating json
 
-oj.compile = (ojml, options = {html: true, pretty: true}) ->
+oj.compile = (options, ojml) ->
+
+  # Options is optional
+  if _.isArray options
+    ojml = options
+    options = {}
 
   options = _.defaults {}, options,
     html: true
-    pretty: true
+    debug: false
 
   options.html = if options.html then [] else null  # html accumulator
   options.types = []                                # types accumulator
@@ -465,7 +470,7 @@ _styleFromObject = (obj) ->
     first = false
   out
 
-# Recursive helper for compiling that deals
+# Recursive helper for compiling that wraps indention
 _compileDeeper = (method, ojml, options) ->
   i = options.indent
   options.indent += '\t'
@@ -549,10 +554,10 @@ _compileTag = (ojml, options) ->
 
   if children.length > 1
     for child in children
-      if options.pretty
+      if options.debug
         options.html?.push "\n\t#{options.indent}"
       _compileDeeper _compileAny, child, options
-    if options.pretty
+    if options.debug
       options.html?.push "\n#{options.indent}"
   else
     for child in children

@@ -19,7 +19,7 @@ module.exports = ->
     .option('-d, --debug', 'Turn on debug output (default: false)', false)
     .option('-o, --output <dir>', 'Directory to output all files to (default: .)', process.cwd())
     .option('-r, --recurse', 'Recurse into directories (default: off)', false)
-    .option('-v, --verbose <level>', 'Turn on verbose level 0-4 (default: 0)', 0)
+    .option('-v, --verbose <level>', 'Turn on verbose level 0-3 (default: 0)', 0)
     .option('-m, --modules <modules>', 'List of modules to include', [])
     .parse(process.argv)
     # .option('-w, --watch <dir,dir,...>', 'Directories to watch (default: off)', trimArgList)
@@ -42,16 +42,7 @@ module.exports = ->
       error "`#{f}` is not a file" if not isFile(f)
 
     # All verbose
-    commander.verbose = 4 if commander.verbose == 'all'
-
-    # Print options if verbose is on
-    verbose 1, "options: "
-    verbose 1, "\tdebug: #{commander.debug || false}"
-    verbose 1, "\tfiles: #{commander.files}" if commander.files
-    verbose 1, "\toutput: #{commander.output || false}"
-    verbose 1, "\trecurse: #{commander.recurse || false}"
-    verbose 1, "\twatch: #{commander.watch}" if commander.watch
-    verbose 1, "\tverbose: #{commander.verbose || false}"
+    commander.verbose = 3 if commander.verbose == 'all'
 
     # Clear underscore as modules might need it
     _clearRequireCacheRecord 'underscore'
@@ -60,8 +51,10 @@ module.exports = ->
     compileOptions =
       outputDir: commander.output
       modules: commander.modules or []
+      debug: commander.debug or false
 
     # OJ needs path to implement require
+    compileOptions.modules.push 'oj'
     compileOptions.modules.push 'path'
 
     for file in files
@@ -76,7 +69,6 @@ module.exports = ->
 # depending on condition
 
 recurseIf = (condition, paths, cb) ->
-  console.log "here: #{__filename}: 80"
   if condition
     ls paths, (err, results) ->
       cb null, results.files
@@ -90,7 +82,10 @@ compile = (filePath, options = {}) ->
   fileOut = path.join outputDir, (path.basename filePath, '.oj') + '.html'
   verbose 1, "compiling #{filePath}"
 
-  # modules stores required modules
+  # Cache of modules, files, and native modules
+  cache = modules:{}, files:{}, native:{}
+
+  # Module store for require hook
   modules = {}
 
   # Hook require to intercept requires in oj files
@@ -100,26 +95,38 @@ compile = (filePath, options = {}) ->
   _saveRequireCache()
 
   # Add user defined modules
-  require m for m in options.modules
+  for m in options.modules
+    if isNodeModule m
+      verbose 2, "included #{m}"
+      _buildNativeCacheFromModuleList cache.native, [m], options.debug
+    else
+      require m
 
   # Require this file to start the process
-  require filePath
+  ojml = require filePath
+  html = (oj.compile debug: options.debug, ojml).html
 
-  # Save require cache
+  # Restore require cache
   _restoreRequireCache()
 
-  # Building cache for
+  # Error if compiled file is missing required tags
+  error "<html> tag is missing (#{filePath})" if html.indexOf('<html') == -1
+  error "<body> tag is missing (#{filePath})" if html.indexOf('<body') == -1
+
+  # Build cache
   verbose 2, "building #{filePath}"
-  cache = modules:{}, files:{}, native:{}
   cache = _buildRequireCache modules, cache
 
   # Serialize cache
   verbose 2, "serializing #{filePath}"
-  cacheString = _cacheToString cache
+  scriptHtml = _requireCacheToString cache
+
+  # Insert script into html just before </body>
+  html = _.insertAt html, (html.lastIndexOf '</body>'), scriptHtml
 
   # Write file
   verbose 1, "saving #{fileOut}"
-  fs.writeFileSync fileOut, cacheString
+  fs.writeFileSync fileOut, html
 
 # watch
 # --------------------------------------------------------------------
@@ -153,7 +160,7 @@ spaces = (count) ->
 # Print if verbose is set
 verbose = (level, message) ->
   if commander.verbose >= level
-    console.log "oj: #{spaces(4 * (level-1))}#{message}"
+    console.log "#{spaces(4 * (level-1))}#{message}"
 
 # File helpers
 # --------------------------------------------------------------------
@@ -169,6 +176,11 @@ isDirectory = (dirpath) ->
     (fs.statSync dirpath).isDirectory()
   catch e
     false
+
+# relativePathWithEscaping
+# Example: '/User/name/folder1/file.oj' => '/file.oj'
+relativePathWithEscaping = (fullPath, relativeTo) ->
+  _.escapeSingleQuotes '/' + path.relative process.cwd(), fullPath
 
 fullPaths = (relativePaths, dir) ->
   return _.map relativePaths, (p) -> path.join dir, p
@@ -231,11 +243,14 @@ _.startsWith = (strInput, strStart) ->
 _.escapeSingleQuotes = (str) ->
   str.replace /'/g, "\\'"
 
+_.insertAt = (str, ix, substr) ->
+  str.slice(0,ix) + substr + str.slice(ix)
+
 # Code minification
 # --------------------------------------------------------------------
 
 minifyJS = (filename, js, options = {}) ->
-  verbose 4, "minifying #{filename}"
+  verbose 3, "minifying #{filename}"
   try
     js = uglifyjs js, options
   catch e
@@ -244,7 +259,7 @@ minifyJS = (filename, js, options = {}) ->
     throw e
 
 minifyCSS = (filename, css, structureOff = false) ->
-  verbose 4, "minifying #{filename}"
+  verbose 3, "minifying #{filename}"
   try
     css = csso.justDoIt css, structureOff
   catch e
@@ -293,8 +308,8 @@ _createHook = (ext, modules) ->
     # Make sure the module did not hijack the handler
     _hookRequire modules
 
-_nodeModulesSupported = assert:1, console:1, crypto:1, events:1, freelist:1, path:1, punycode:1, querystring:1, string_decoder:1, tty:1, url:1, util:1
-_nodeModuleUnsupported = child_process:1, domain:1, fs:1, net:1, os:1, vm:1
+_nodeModulesSupported = oj:1, assert:1, console:1, crypto:1, events:1, freelist:1, path:1, punycode:1, querystring:1, string_decoder:1, tty:1, url:1, util:1
+_nodeModuleUnsupported = child_process:1, domain:1, fs:1, net:1, os:1, vm:1, buffer:1
 isNodeModule = (module) -> !!_nodeModulesSupported[module]
 isUnsupportedNodeModule = (module) -> !!_nodeModuleUnsupported[module]
 isAppModule = (module) -> (module.indexOf '/') == -1
@@ -355,14 +370,20 @@ _buildRequireCache = (modules, cache) ->
     # Build cache.native given source code in _fileCache
     _buildNativeCache cache.native, data.code, commander.debug
 
-  return cache
+  # Remove local oj if it exists.
+  # This is a special case of the way stuff is included.
+  # To ourselves oj is local so that is what is auto
+  # detected, but to them oj is native. Removing this
+  # cache record ensures only the native copy persists.
+  delete cache.files[require.resolve 'oj']
 
+  return cache
 
 # ###_buildFileCache: build file cache
 _buildFileCache = (_filesCache, filename, code, isDebug) ->
 
   # Minify code if necessary
-  verbose 4, "loading file #{filename}"  if isDebug
+  verbose 3, "loading file #{filename}"  if isDebug
   if not isDebug
     code = minifyJS filename, code
 
@@ -371,19 +392,22 @@ _buildFileCache = (_filesCache, filename, code, isDebug) ->
 
 # build native module cache given moduleNameList
 pass = 1
-_buildNativeCache = (_nativeCache, code, isDebug) ->
+
+_buildNativeCache = (nativeCache, code, isDebug) ->
   # Get moduleName references from code
   moduleNameList = _getRequiresInSource code
+  _buildNativeCacheFromModuleList nativeCache, moduleNameList, isDebug
+
+_buildNativeCacheFromModuleList = (nativeCache, moduleNameList, isDebug) ->
 
   # Loop over modules and add them to native cache
   while moduleName = moduleNameList.shift()
-
     # Continue on already loaded native modules
-    continue if _nativeCache[moduleName]
+    continue if nativeCache[moduleName]
 
     # OJ is built in
     if moduleName == 'oj'
-      _nativeCache.oj = _ojModuleCode isDebug
+      nativeCache.oj = _ojModuleCode isDebug
 
     # Do nothing if unsupported
     # Error checking happens earlier and missing modules at this stage are intentional
@@ -395,7 +419,7 @@ _buildNativeCache = (_nativeCache, code, isDebug) ->
       codeModule = _nativeModuleCode moduleName, isDebug
 
       # Cache it
-      _nativeCache[moduleName] = codeModule
+      nativeCache[moduleName] = codeModule
 
       # Concat all dependencies and continue on
       moduleNameList = moduleNameList.concat _getRequiresInSource codeModule
@@ -406,21 +430,20 @@ _buildNativeCache = (_nativeCache, code, isDebug) ->
 
 # ojModuleCode: Get code for oj
 _ojModuleCode = (isDebug) ->
-  verbose 4, "loading module oj"  if isDebug
   code = readFileSync path.join __dirname, "../lib/oj.js"
   # Minify code if not debugging
   if not isDebug
     code = minifyJS 'oj', code
+  code
 
 # nativeModuleCode: Get code for native module
 _nativeModuleCode = (moduleName, isDebug) ->
-  verbose 4, "loading module #{moduleName}" if isDebug
-
+  verbose 3, "loading module #{moduleName}" if isDebug
   code = readFileSync path.join __dirname, "../modules/#{moduleName}.js"
-
   # Minify code if not debugging
   if not isDebug
     code = minifyJS moduleName, code
+  code
 
 # Templating
 # =====================================================================
@@ -428,44 +451,59 @@ _nativeModuleCode = (moduleName, isDebug) ->
 # Code generation
 # --------------------------------------------------------------------
 
-# ###_cacheToString
+# ###_requireCacheToString
 # Output html from cache and file
-_cacheToString = (cache) ->
-
-  # Maps from moduleDir -> moduleName -> moduleMain (file path to module)
-  _moduleToString = (moduleDir, moduleName, moduleMain) ->
-    moduleDir = _.escapeSingleQuotes moduleDir
-    moduleName = _.escapeSingleQuotes moduleName
-    moduleMain = _.escapeSingleQuotes moduleMain
-    "M['#{moduleDir}'] = {'#{moduleName}': '#{moduleMain}'};\n"
+_requireCacheToString = (cache) ->
+  # Maps from moduleDir -> moduleName -> moduleMain such that
+  # the file path is: moduleDir/moduleName/moduleMain
+  _modulesToString = (moduleDir, nameToMain) ->
+    # Use relative path to hide server directory info
+    moduleDir = relativePathWithEscaping moduleDir, process.cwd()
+    "M['#{moduleDir}'] = #{JSON.stringify nameToMain};\n"
 
   # Maps moduleName -> code for built in "native" modules
   _nativeModuleToString = (moduleName, code) ->
+    # Use relative path to hide server directory info
     moduleName = _.escapeSingleQuotes moduleName
-    "N['#{moduleName}'] = (function(module){function(require){#{code}})(requirer('#{moduleName}'));});\n"
+    console.log "moduleName is undefined: ", moduleName if not code
+    "N['#{moduleName}'] = (function(module,exports){(function(require,process,global,Buffer,__dirname,__filename){#{code}})(requirer('/'),P,G,B,'/','#{moduleName}');});\n"
 
   # Maps filePath -> code
   _fileToString = (filePath, code) ->
-    filePath = _.escapeSingleQuotes filePath
-    "F['#{filePath}'] = (function(module){function(require){#{code}})(requirer('#{filePath}'));});\n"
+    # Use relative and escaped path
+    filePath = relativePathWithEscaping filePath, process.cwd()
+    fileDir = path.dirname filePath
+    fileName = path.basename filePath
+    "F['#{filePath}'] = (function(module,exports){(function(require,process,global,Buffer,__dirname,__filename){#{code}})(requirer('#{filePath}'),P,G,B,'#{fileDir}','#{fileName}');});\n"
 
-  output =  """<script>// oj v#{oj.version}
+  output =  """<script>
+// Generated by oj v#{oj.version}
 (function(){
-var F = {}, M = {}, N = {};
+var F = {}, M = {}, N = {}, R = {}, P, G, B;
 
-// # Export OJ manually
-// module = {exports:{}}
-// N['oj'](module)
-// window.oj = module.exports
+// process
+var P = {
+  cwd: function(){return '/';}
 
-function resolve(m, f) {
-  var dir = path.dirname(f);
+}
 
-  // Relative
-  if(!!m.match(/\\//)){return path.join(dir, m);}
+// global
+var G = {
+
+}
+
+// Buffer
+var B = {
+
+}
+
+function code(m, f) {
 
   // Native
-  else if (N[m])){return N[m];}
+  if (N[m]){return N[m];}
+
+  // Relative
+  if(!!m.match(/\\//)){return path.join(path.dirname(f), m);}
 
   // App
   //else {}
@@ -473,16 +511,20 @@ function resolve(m, f) {
 
 function requirer(file){
   return function(module){
-    r = resolve(module, file);
+    c = code(module, file);
+    var exports = {};
+    var module = {exports:exports};
+    c(module,exports);
+    R[module] = m = module.exports;
+    return m;
   };
 }\n
 """
+
   # Save all the module info
   # { '/Users/evan/oj/node_modules': { underscore: 'underscore.js' } }
   for moduleDir, nameToMain of cache.modules
-    for moduleName, moduleMain of nameToMain
-      verbose 3, "serializing record `#{moduleDir}/#{moduleName}`"
-      output += _moduleToString moduleDir, moduleName, moduleMain
+    output += _modulesToString moduleDir, nameToMain
 
   # Save all the files
   for filePath, code of cache.files
@@ -494,15 +536,13 @@ function requirer(file){
     verbose 3, "serializing module '#{moduleName}'"
     output += _nativeModuleToString moduleName, code
 
-  # Initial file
-  initialFile = _.escapeSingleQuotes process.cwd() + "/."
-
   output += """
 
-window.require = requirer('#{initialFile}');
+window.require = requirer('/');
 window.oj = require('oj');
+
 }).call(this);
-</script>\n
+</script>
 """
 
   return output
