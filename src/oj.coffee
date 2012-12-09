@@ -3,8 +3,25 @@
 # ====================================================================
 # Templating framework for the people. Thirsty people.
 
-oj = module.exports
+_isLoaded = false
+_onLoad = []
+oj = module.exports = (fn) ->
+  # Execute onload
+  if _.isUndefined fn
+    while (f = _onload.shift())
+      f()
+    _isLoaded = true
+  # Store onload
+  else if _isLoaded
+    fn()
+  else
+    _onload.push fn
+  return
 
+oj.oj = oj
+oj.onload = oj.ready = oj
+
+_onload = []
 root = @
 
 # Register require.extension for .oj files
@@ -445,8 +462,9 @@ oj.compile = (options, ojml) ->
   # Join html only if generated
   html = options.html?.join ''
   out = html: html, types: options.types, js:->
-    for t in types
+    for t in options.types
       t.awaken()
+    undefined
 
 _styleKeyFromFancy = (key) ->
   out = ""

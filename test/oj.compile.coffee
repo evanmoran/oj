@@ -28,7 +28,7 @@ _clearAll = -> $('html').html headEmpty + bodyEmpty
 compileTest = (ojml, typesLength, html, options = {}) ->
   options = _.defaults {}, options
 
-  r = oj.compile ojml, options
+  r = oj.compile options, ojml
   expect(r.js).to.be.a 'function'
   expect(r.types).to.be.an 'array'
   expect(r.types.length).to.equal typesLength
@@ -39,7 +39,7 @@ compileTest = (ojml, typesLength, html, options = {}) ->
     expect(r.html).to.not.exist
 
 compileTestException = (ojml, exception, options = {}) ->
-  expect(-> oj.compile ojml, options).to.throw exception
+  expect(-> oj.compile options, ojml).to.throw exception
 
 describe 'oj.compile', ->
   beforeEach ->
@@ -129,12 +129,45 @@ describe 'oj.compile', ->
         oj.div 'b1'
       oj.div 'a2'
     expected = '<div style="color:red;text-align:center"><div>a1<div>b1</div></div><div>a2</div></div>'
-    compileTest ojml, 0, expected, pretty: false
+    compileTest ojml, 0, expected, debug: false
 
-  it 'nested with pretty printing', ->
+  it 'nested with debug printing', ->
     ojml = oj.div style: {'text-align':'center', color: 'red'}, ->
       oj.div 'a1', ->
         oj.div 'b1'
       oj.div 'a2'
     expected = '<div style="color:red;text-align:center">\n\t<div>\n\t\ta1\n\t\t<div>b1</div>\n\t</div>\n\t<div>a2</div>\n</div>'
-    compileTest ojml, 0, expected, pretty: true
+    compileTest ojml, 0, expected, debug: true
+
+  it '<html><body>', ->
+    ojml = oj.html ->
+      oj.body ->
+        oj.div 'a1'
+    expected = '<html><body><div>a1</div></body></html>'
+    compileTest ojml, 0, expected, debug: false
+
+  it '<html><body> with debug printing', ->
+    ojml = oj.html ->
+      oj.body ->
+        oj.div 'a1'
+    expected = '<html><body><div>a1</div></body></html>'
+    compileTest ojml, 0, expected, debug: true
+
+  it '<html><head><body>', ->
+      ojml = oj.html ->
+        oj.head ->
+          oj.script type: 'text/javascript', src: 'script.js'
+        oj.body ->
+          oj.div 'a1'
+      expected = '<html><head><script src="script.js" type="text/javascript"></script></head><body><div>a1</div></body></html>'
+      compileTest ojml, 0, expected, debug: false
+
+  it '<html><head><body> with debug printing', ->
+    ojml = oj.html ->
+      oj.head ->
+        oj.script type: 'text/javascript', src: 'script.js'
+      oj.body ->
+        oj.div 'a1'
+    expected = '<html>\n\t<head><script src="script.js" type="text/javascript"></script></head>\n\t<body><div>a1</div></body>\n</html>'
+    compileTest ojml, 0, expected, debug: true
+

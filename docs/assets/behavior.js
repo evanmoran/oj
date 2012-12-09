@@ -25,42 +25,137 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 1,
-            "title": "Read file",
-            "slug": "read-file"
+            "title": "command.coffee",
+            "slug": "commandcoffee"
           },
           "depth": 1
         }, {
           "type": "heading",
           "data": {
             "level": 1,
-            "title": "Add oj wrapper",
-            "slug": "add-oj-wrapper"
+            "title": "Commands",
+            "slug": "commands"
           },
-          "depth": 1
+          "depth": 1,
+          "children": [
+            {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "recurseIf",
+                "slug": "recurseif"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "compile",
+                "slug": "compile"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "watch",
+                "slug": "watch"
+              },
+              "depth": 2
+            }
+          ]
         }, {
           "type": "heading",
           "data": {
             "level": 1,
-            "title": "Compile to js if coffee",
-            "slug": "compile-to-js-if-coffee"
+            "title": "Helpers",
+            "slug": "helpers"
           },
-          "depth": 1
+          "depth": 1,
+          "children": [
+            {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "Output helpers",
+                "slug": "output-helpers"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "File helpers",
+                "slug": "file-helpers"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "String helpers",
+                "slug": "string-helpers"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "Code minification",
+                "slug": "code-minification"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "Requiring",
+                "slug": "requiring"
+              },
+              "depth": 2,
+              "children": [
+                {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "_buildFileCache: build file cache",
+                    "slug": "-buildfilecache-build-file-cache"
+                  },
+                  "depth": 3
+                }
+              ]
+            }
+          ]
         }, {
           "type": "heading",
           "data": {
             "level": 1,
-            "title": "oj.compile ojml, options",
-            "slug": "ojcompile-ojml-options"
+            "title": "Templating",
+            "slug": "templating"
           },
-          "depth": 1
-        }, {
-          "type": "heading",
-          "data": {
-            "level": 1,
-            "title": "output.js = \"asdf\"",
-            "slug": "outputjs--asdf"
-          },
-          "depth": 1
+          "depth": 1,
+          "children": [
+            {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "Code generation",
+                "slug": "code-generation"
+              },
+              "depth": 2,
+              "children": [
+                {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "_requireCacheToString",
+                    "slug": "-requirecachetostring"
+                  },
+                  "depth": 3
+                }
+              ]
+            }
+          ]
         }
       ]
     }, {
@@ -116,6 +211,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
+                "title": "oj.partial (module, arg1, arg2, ...)",
+                "slug": "ojpartial-module-arg1-arg2-"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
                 "title": "oj.tag (name, attributes, content, content, ...)",
                 "slug": "ojtag-name-attributes-content-content-"
               },
@@ -132,8 +235,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "oj.template",
-                "slug": "ojtemplate"
+                "title": "oj.compile",
+                "slug": "ojcompile"
               },
               "depth": 2
             }, {

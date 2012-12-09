@@ -1,6 +1,0 @@
-# coffee script
-
-_ = require 'underscore'
-
-module.exports = div 'test', ->
-  require '../test2'

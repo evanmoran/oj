@@ -1,0 +1,6 @@
+# coffee script
+_ = require 'underscore'
+
+module.exports = html ->
+  body ->
+    div 'test3'

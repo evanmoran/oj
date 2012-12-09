@@ -19,7 +19,7 @@ module.exports = ->
     .option('-d, --debug', 'Turn on debug output (default: false)', false)
     .option('-o, --output <dir>', 'Directory to output all files to (default: .)', process.cwd())
     .option('-r, --recurse', 'Recurse into directories (default: off)', false)
-    .option('-v, --verbose <level>', 'Turn on verbose level 0-3 (default: 0)', 0)
+    .option('-v, --verbose <level>', 'Turn on verbose level 0-3 (default: 1)', 1)
     .option('-m, --modules <modules>', 'List of modules to include', [])
     .parse(process.argv)
     # .option('-w, --watch <dir,dir,...>', 'Directories to watch (default: off)', trimArgList)
@@ -80,7 +80,7 @@ recurseIf = (condition, paths, cb) ->
 compile = (filePath, options = {}) ->
   outputDir = options.outputDir || process.cwd()
   fileOut = path.join outputDir, (path.basename filePath, '.oj') + '.html'
-  verbose 1, "compiling #{filePath}"
+  verbose 2, "requiring #{filePath}"
 
   # Cache of modules, files, and native modules
   cache = modules:{}, files:{}, native:{}
@@ -97,8 +97,8 @@ compile = (filePath, options = {}) ->
   # Add user defined modules
   for m in options.modules
     if isNodeModule m
-      verbose 2, "included #{m}"
       _buildNativeCacheFromModuleList cache.native, [m], options.debug
+      verbose 3, "included #{m}"
     else
       require m
 
@@ -114,18 +114,19 @@ compile = (filePath, options = {}) ->
   error "<body> tag is missing (#{filePath})" if html.indexOf('<body') == -1
 
   # Build cache
-  verbose 2, "building #{filePath}"
+  verbose 2, "caching #{filePath} (#{_length modules} files)"
   cache = _buildRequireCache modules, cache
 
   # Serialize cache
-  verbose 2, "serializing #{filePath}"
-  scriptHtml = _requireCacheToString cache
+  cacheLength = _length(cache.files) + _length(cache.modules) + _length(cache.native)
+  verbose 2, "serializing #{filePath} (#{cacheLength} files)"
+  scriptHtml = _requireCacheToString cache, options.debug
 
   # Insert script into html just before </body>
-  html = _.insertAt html, (html.lastIndexOf '</body>'), scriptHtml
+  html = _insertAt html, (html.lastIndexOf '</body>'), scriptHtml
 
   # Write file
-  verbose 1, "saving #{fileOut}"
+  verbose 1, "compiled #{fileOut}"
   fs.writeFileSync fileOut, html
 
 # watch
@@ -180,7 +181,7 @@ isDirectory = (dirpath) ->
 # relativePathWithEscaping
 # Example: '/User/name/folder1/file.oj' => '/file.oj'
 relativePathWithEscaping = (fullPath, relativeTo) ->
-  _.escapeSingleQuotes '/' + path.relative process.cwd(), fullPath
+  _escapeSingleQuotes '/' + path.relative process.cwd(), fullPath
 
 fullPaths = (relativePaths, dir) ->
   return _.map relativePaths, (p) -> path.join dir, p
@@ -215,7 +216,7 @@ readFileSync = (filePath) ->
 _commonPath = (moduleName, moduleParentPaths) ->
   return null unless moduleName? and _.isArray moduleParentPaths
   for p in moduleParentPaths
-    if _.startsWith moduleName, p + '/'
+    if _startsWith moduleName, p + '/'
       return p + '/'
   null
 
@@ -223,10 +224,10 @@ _commonPath = (moduleName, moduleParentPaths) ->
 # --------------------------------------------------------------------
 
 trimArgList = (v) ->
-  _.trim v.split(',')
+  _trim v.split(',')
 
 # trim
-_.trim = (any) ->
+_trim = (any) ->
   if _.isString any
     any.trim()
   else if _.isArray any
@@ -236,43 +237,62 @@ _.trim = (any) ->
     any
 
 # startsWith
-_.startsWith = (strInput, strStart) ->
+_startsWith = (strInput, strStart) ->
   throw 'startsWith: argument error' unless (_.isString strInput) and (_.isString strStart)
   strInput.length >= strStart.length and strInput.lastIndexOf(strStart, 0) == 0
 
-_.escapeSingleQuotes = (str) ->
+_escapeSingleQuotes = (str) ->
   str.replace /'/g, "\\'"
 
-_.insertAt = (str, ix, substr) ->
+_insertAt = (str, ix, substr) ->
   str.slice(0,ix) + substr + str.slice(ix)
+
+_length = (any) ->
+  any.length or _.keys(any).length
 
 # Code minification
 # --------------------------------------------------------------------
 
 minifyJS = (filename, js, options = {}) ->
-  verbose 3, "minifying #{filename}"
+  verbose 4, "minified #{filename}" if filename
   try
     js = uglifyjs js, options
   catch e
-    console.log "oj.command: could not minify: #{filename}"
+    console.log "oj.command: could not minify: #{filename}" if filename
     console.log e
     throw e
 
+minifyJSUnless = (isDebug, filename, js, options) ->
+  return js if isDebug
+  return minifyJS filename, js, options
+
+minifySimpleJS = (js, options = {}) ->
+  js = js.replace /\n/g, ''
+  js.replace /\s\s+/g, ' '
+
+minifySimpleJSUnless = (isDebug, js, options) ->
+  return js if isDebug
+  return minifySimpleJS js, options
+
 minifyCSS = (filename, css, structureOff = false) ->
-  verbose 3, "minifying #{filename}"
+  verbose 4, "minified #{filename}" if filename
   try
     css = csso.justDoIt css, structureOff
   catch e
-    console.log "oj.command: could not minify: #{filename}"
+    console.log "oj.command: could not minify: #{filename}" if filename
     console.log e
     throw e
+
+minifyCSSUnless = (isDebug, filename, css, structureOff) ->
+  return css if isDebug
+  return minifyCSS filename, css, structureOff
 
 # Requiring
 # --------------------------------------------------------------------
 
 # Remember require references
 _rememberModule = (modules, filename, code, module) ->
-  verbose 2, "found #{filename}" if code
+  verbose 3, "found #{filename}" if code
   modules[filename] = _.defaults {code: code, module: module}, (modules[filename] or {})
 
 # Hooking into require inspired by http://github.com/fgnass/node-dev
@@ -344,7 +364,6 @@ _first = (array, fn) ->
 # Load all modules by reading them if they are missing
 _buildRequireCache = (modules, cache) ->
   for filename, data of modules
-    verbose 3, "building #{filename}",
 
     # Read code if it is missing
     if not data.code?
@@ -354,7 +373,7 @@ _buildRequireCache = (modules, cache) ->
     _buildFileCache cache.files, filename, data.code, commander.debug
 
     pathComponents = _first module.parent.paths, (prefix) ->
-      if _.startsWith filename, prefix + path.sep
+      if _startsWith filename, prefix + path.sep
         modulePath = (filename.slice (prefix.length + 1)).split(path.sep)
         moduleName = modulePath[0]
         moduleMain = modulePath.slice(1).join(path.sep)
@@ -370,6 +389,9 @@ _buildRequireCache = (modules, cache) ->
     # Build cache.native given source code in _fileCache
     _buildNativeCache cache.native, data.code, commander.debug
 
+    # Store complete
+    verbose 3, "stored #{filename}"
+
   # Remove local oj if it exists.
   # This is a special case of the way stuff is included.
   # To ourselves oj is local so that is what is auto
@@ -381,14 +403,8 @@ _buildRequireCache = (modules, cache) ->
 
 # ###_buildFileCache: build file cache
 _buildFileCache = (_filesCache, filename, code, isDebug) ->
-
-  # Minify code if necessary
-  verbose 3, "loading file #{filename}"  if isDebug
-  if not isDebug
-    code = minifyJS filename, code
-
-  # Save code to _fileCache
-  _filesCache[filename] = code
+  # Minify code if necessary and cache it
+  _filesCache[filename] = minifyJSUnless isDebug, filename, code
 
 # build native module cache given moduleNameList
 pass = 1
@@ -432,18 +448,14 @@ _buildNativeCacheFromModuleList = (nativeCache, moduleNameList, isDebug) ->
 _ojModuleCode = (isDebug) ->
   code = readFileSync path.join __dirname, "../lib/oj.js"
   # Minify code if not debugging
-  if not isDebug
-    code = minifyJS 'oj', code
-  code
+  minifyJSUnless isDebug, 'oj', code
 
 # nativeModuleCode: Get code for native module
 _nativeModuleCode = (moduleName, isDebug) ->
-  verbose 3, "loading module #{moduleName}" if isDebug
+  verbose 3, "found #{moduleName}" if isDebug
   code = readFileSync path.join __dirname, "../modules/#{moduleName}.js"
   # Minify code if not debugging
-  if not isDebug
-    code = minifyJS moduleName, code
-  code
+  minifyJSUnless isDebug, moduleName, code
 
 # Templating
 # =====================================================================
@@ -453,7 +465,7 @@ _nativeModuleCode = (moduleName, isDebug) ->
 
 # ###_requireCacheToString
 # Output html from cache and file
-_requireCacheToString = (cache) ->
+_requireCacheToString = (cache, isDebug) ->
   # Maps from moduleDir -> moduleName -> moduleMain such that
   # the file path is: moduleDir/moduleName/moduleMain
   _modulesToString = (moduleDir, nameToMain) ->
@@ -464,9 +476,9 @@ _requireCacheToString = (cache) ->
   # Maps moduleName -> code for built in "native" modules
   _nativeModuleToString = (moduleName, code) ->
     # Use relative path to hide server directory info
-    moduleName = _.escapeSingleQuotes moduleName
+    moduleName = _escapeSingleQuotes moduleName
     console.log "moduleName is undefined: ", moduleName if not code
-    "N['#{moduleName}'] = (function(module,exports){(function(require,process,global,Buffer,__dirname,__filename){#{code}})(requirer('/'),P,G,B,'/','#{moduleName}');});\n"
+    "F['#{moduleName}'] = (function(module,exports){(function(require,process,global,__dirname,__filename){#{code}})(RR('/'),P,G,'/','#{moduleName}');});\n"
 
   # Maps filePath -> code
   _fileToString = (filePath, code) ->
@@ -474,75 +486,92 @@ _requireCacheToString = (cache) ->
     filePath = relativePathWithEscaping filePath, process.cwd()
     fileDir = path.dirname filePath
     fileName = path.basename filePath
-    "F['#{filePath}'] = (function(module,exports){(function(require,process,global,Buffer,__dirname,__filename){#{code}})(requirer('#{filePath}'),P,G,B,'#{fileDir}','#{fileName}');});\n"
+    "F['#{filePath}'] = (function(module,exports){(function(require,process,global,__dirname,__filename){#{code}})(RR('#{filePath}'),P,G,'#{fileDir}','#{fileName}');});\n"
 
-  output =  """<script>
-// Generated by oj v#{oj.version}
-(function(){
-var F = {}, M = {}, N = {}, R = {}, P, G, B;
-
-// process
-var P = {
-  cwd: function(){return '/';}
-
-}
-
-// global
-var G = {
-
-}
-
-// Buffer
-var B = {
-
-}
-
-function code(m, f) {
-
-  // Native
-  if (N[m]){return N[m];}
-
-  // Relative
-  if(!!m.match(/\\//)){return path.join(path.dirname(f), m);}
-
-  // App
-  //else {}
-}
-
-function requirer(file){
-  return function(module){
-    c = code(module, file);
-    var exports = {};
-    var module = {exports:exports};
-    c(module,exports);
-    R[module] = m = module.exports;
-    return m;
-  };
-}\n
-"""
-
-  # Save all the module info
+  # Client side code to include modules
+  _modules = ""
   # { '/Users/evan/oj/node_modules': { underscore: 'underscore.js' } }
   for moduleDir, nameToMain of cache.modules
-    output += _modulesToString moduleDir, nameToMain
+    _modules += _modulesToString moduleDir, nameToMain
 
-  # Save all the files
+  # Client side code to include files
+  _files = ""
   for filePath, code of cache.files
-    verbose 3, "serializing file `#{filePath}`"
-    output += _fileToString filePath, code
+    _files += _fileToString filePath, code
+    verbose 3, "serialized `#{filePath}`"
 
-  # Save all the native modules
+  # Client side code to include native modules
+  _native = ""
   for moduleName, code of cache.native
-    verbose 3, "serializing module '#{moduleName}'"
-    output += _nativeModuleToString moduleName, code
+    _native += _nativeModuleToString moduleName, code
+    verbose 3, "serialized '#{moduleName}'"
 
-  output += """
+  # Client side function to run module and cache result
+  _run = minifySimpleJSUnless isDebug, """function run(f) {
+    if(R[f] != null)
+      return R[f];
+    var eo = {},
+      mo = {exports: eo};
+    if(typeof F[f] != 'function')
+      throw new Error("file not found (" + f + ")");
+    F[f](mo,eo);
+    return R[f] = mo.exports;
+  }
+  """
 
-window.require = requirer('/');
-window.oj = require('oj');
+  # Client side function to find module
+  _find = minifySimpleJSUnless isDebug, """function find(m,f){
+    var r, p, dir, dm, ext, ex, i;
 
-}).call(this);
+    if (F[m] && F[m][0] !== '/') return m;
+
+    p = require('path');
+
+    if (!!m.match(/\\//)) {
+      r = p.resolve(f, p.join(p.dirname(f), m));
+      ext = ['.oj','.coffee','.js','.json'];
+      for(i = 0; i < ext.length; i++) {
+        ex = ext[i];
+        if(F[r+ex])
+          return r+ex;
+      }
+    } else {
+      dir = p.dirname(f);
+      while(true) {
+        dm = p.join(dir, 'node_modules');
+        if(M[dm] && M[dm][m])
+          return p.join(dm, m, M[dm][m]);
+        if(dir == '/')
+          break;
+        dir = p.resolve(dir, '..');
+      }
+    }
+    throw new Error("module not found (" + m + ")");
+  }
+  """
+
+  return """
+<script>
+  // oj v#{oj.version}
+  (function(){
+    var F = {}, M = {}, R = {}, P, G, RR;
+
+    #{_modules}
+    #{_files}
+    #{_native}
+
+    P = {cwd: function(){return '/';}};
+    G = {process: P,Buffer: {}};
+
+    RR = function(f){
+      return function(m){return run(find(m, f));};
+      #{_run}
+      #{_find}
+    }
+
+    require = RR('/');
+    oj = require('oj');
+
+  }).call(this);
 </script>
 """
-
-  return output

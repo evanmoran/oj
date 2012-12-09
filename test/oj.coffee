@@ -34,8 +34,8 @@ describe 'oj', ->
       oj.version.should.equal json.version
       done()
 
-  it 'should be an object ', ->
-    oj.should.be.an 'object'
+  it 'should be an function ', ->
+    oj.should.be.an 'function'
 
   it 'should have a version equal to the package.json', ->
     expect(oj.version).to.be.a 'string'
