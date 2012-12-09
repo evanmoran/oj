@@ -80,7 +80,7 @@ recurseIf = (condition, paths, cb) ->
 compile = (filePath, options = {}) ->
   outputDir = options.outputDir || process.cwd()
   fileOut = path.join outputDir, (path.basename filePath, '.oj') + '.html'
-  verbose 2, "requiring #{filePath}"
+  verbose 2, "compiling #{filePath}"
 
   # Cache of modules, files, and native modules
   cache = modules:{}, files:{}, native:{}
@@ -98,7 +98,7 @@ compile = (filePath, options = {}) ->
   for m in options.modules
     if isNodeModule m
       _buildNativeCacheFromModuleList cache.native, [m], options.debug
-      verbose 3, "included #{m}"
+      verbose 3, "found #{m}"
     else
       require m
 
