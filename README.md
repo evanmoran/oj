@@ -1,33 +1,32 @@
-oj - The big gulp of templating engines
+oj
+===============================================================
 
-Templates: html, css, and javascript simultaneously
+Javascript templating for the people. Thirsty people.
 
-### oj.tag
+### Introduction
 
-    oj.tag name [attributes], [content, content, ...]
-        name: String defining the tag name to serialize
-              If name starts with an '_' it is serialized verbatum. Otherwise it is constructed as an full OJ object and attributes are passed to the constructor
-        attributes: Object defining attributes to serialize into the tag
-        content: recursively defined ojml
+### Goals of OJ
+* Live the dream of 100% shared code on client and server
+* Never need HTML, CSS or JS files again.
+* OJ enabled views abstract the web.
+* Compatible with Backbone models and views
+* Commandline tool for easy server-side integration
 
+### Secondary Goals of OJ
 
-    oj.tag 'div', {},
-
-
-Goals of OJ
-
-* Template HTML, CSS, JS events in Javascript
-* Create a method representation of HTML and CSS.
-* Create an object representation of HTML and CSS.
-* Create a JSON representation of HTML and CSS.
-* jQuery client-side event triggering
-* Backbone model integration
-* Express 3 template integration
-* The Node.js dream of 100% shared client-server code is fulfilled
+* Rich Node.js support.
+* Compatible with Express 3
 
 Functions
 ---------
 
+### tag
+
+    tag name [attributes], [content, content, ...]
+        name: String defining the tag name to serialize
+              If name starts with an '_' it is serialized verbatum. Otherwise it is constructed as an full OJ object and attributes are passed to the constructor
+        attributes: Object defining attributes to serialize into the tag
+        content: recursively defined ojml
 
 
 OJ Objects
