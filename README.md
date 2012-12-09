@@ -1,28 +1,31 @@
 oj
-===============================================================
+================================================================================
 
 Javascript templating for the people. Thirsty people.
-
-### Introduction
 
 ### Goals of OJ
 * Live the dream of 100% shared code on client and server
 * Never need HTML, CSS or JS files again.
-* OJ enabled views abstract the web.
-* Compatible with Backbone models and views
-* Commandline tool for easy server-side integration
+* Abstract web elements with built-in OJ objects and functions
+* Abstract your own Views with OJ objects and functions
+* Compatible with Backbone models
+* Compatible with jQuery events
+* Fully unit tested
 
 ### Secondary Goals of OJ
 
-* Rich Node.js support.
+* Commandline tool for easy server-side integration
+* Compatible with Node.js
 * Compatible with Express 3
 
 Functions
----------
+--------------------------------------------------------------------------------
 
-### tag
+OJ defines a function for every tag in HTML. For example: 'html', 'body', 'div', 'span', and so on. They all have the same interface.
 
-    tag name [attributes], [content, content, ...]
+### oj.<tag>
+
+    <tag> name [attributes], [content, content, ...]
         name: String defining the tag name to serialize
               If name starts with an '_' it is serialized verbatum. Otherwise it is constructed as an full OJ object and attributes are passed to the constructor
         attributes: Object defining attributes to serialize into the tag
@@ -30,7 +33,7 @@ Functions
 
 
 OJ Objects
-------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 
 
@@ -290,110 +293,3 @@ Example: Table
                                     <tr> <td>3</td> <td>4</td> </tr>
                                   </tbody>
                                 </table>
-
-Thinking
-
-    Foo = oj.type 'Foo',
-      constructor: ->
-
-      destructor: ->
-
-      methods:
-
-      properties:
-
-      fields:
-        a: 1
-        b: 2
-
-      _fields : Array
-      _properties : Array
-      _methods : Array
-
-    Foo.addProperty
-    Foo.addMethod
-    Foo.addField
-
-    # Object.preventExtensions( obj )
-    # Should not be set because of obj.addProperty method
-
-    # {
-    #   value: "test",
-    #   writable: true,
-    #   enumerable: true,
-    #   configurable: true
-    # }
-
-    # Object.defineProperties(obj, {
-    #   "value": {
-    #     value: true,
-    #     writable: false
-    #   },
-    #   "name": {
-    #     value: "John",
-    #     writable: false
-    #   }
-    # });
-    table '.foo'
-      theme: [highlightEven(color: red)]
-      behavior: ['highlightEvenRows', 'highlightHoverRow']
-      hover: [fn,fn2]
-      style: ''
-      header: ['header1', 'header2', 'header3']
-      [[checkbox {enabled:true, name: 'checkbox'}, image {url: '../images/foo.png'}, div 'foo']]
-
-    <form action="demo_form.asp">
-      First name: <input type="text" name="fname" /><br />
-      Last name: <input type="text" name="lname" /><br />
-      <input type="submit" value="Submit" />
-    </form>
-
-
-
-
-Hard Problem with IDs
-----------------------
-
-Server side code will generate ids to bind css to html elements. Those same ids must be used
-to bind javascript events to html elements.
-
-Styles don't need ids:
-
-    <div style='color:red;'>my div</div>
-
-CSS and click events do
-div css: {color: red}, click, -> alert('hi'), 'my div'
-
-    <div id='oj3ZsR2M4'>my div</div>
-
-    #oj3ZsR2M4 {color:red;}
-
-    $('#oj3ZsR2M4').click -> alert('hi')
-
-The problem is this id cannot be added to the javascript code. It must be generated dynamically but the templating code. As far as I can see the only way to do this is for server and client-side code to generate these IDs independently.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
