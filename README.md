@@ -1,7 +1,7 @@
 oj
 ================================================================================
 
-Javascript templating for the people. Thirsty people.
+Unified web templating for the people. Thirsty people.
 
 ### Goals of OJ
 * Live the dream of 100% shared code on client and server
