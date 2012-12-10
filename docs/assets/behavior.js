@@ -187,6 +187,54 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
+                "title": "Helpers",
+                "slug": "helpers"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj function",
+                "slug": "oj-function"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.ready",
+                "slug": "ojready"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.load",
+                "slug": "ojload"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.id",
+                "slug": "ojid"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.guid",
+                "slug": "ojguid"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
                 "title": "Utility: Helpers",
                 "slug": "utility-helpers"
               },

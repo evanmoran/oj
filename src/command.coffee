@@ -78,8 +78,16 @@ recurseIf = (condition, paths, cb) ->
 # compile
 # --------------------------------------------------------------------
 compile = (filePath, options = {}) ->
+
+  # Figure out some paths
+  #    /input/dir/file.oj
   outputDir = options.outputDir || process.cwd()
+  #    /output/dir/file.html
   fileOut = path.join outputDir, (path.basename filePath, '.oj') + '.html'
+  #    /dir/file
+  fileClient = '/' + (path.relative outputDir, fileOut)
+  fileClient = path.join (path.dirname fileClient), (path.basename fileClient, '.html')
+
   verbose 2, "compiling #{filePath}"
 
   # Cache of modules, files, and native modules
@@ -120,7 +128,7 @@ compile = (filePath, options = {}) ->
   # Serialize cache
   cacheLength = _length(cache.files) + _length(cache.modules) + _length(cache.native)
   verbose 2, "serializing #{filePath} (#{cacheLength} files)"
-  scriptHtml = _requireCacheToString cache, options.debug
+  scriptHtml = _requireCacheToString cache, fileClient, options.debug
 
   # Insert script into html just before </body>
   html = _insertAt html, (html.lastIndexOf '</body>'), scriptHtml
@@ -465,7 +473,8 @@ _nativeModuleCode = (moduleName, isDebug) ->
 
 # ###_requireCacheToString
 # Output html from cache and file
-_requireCacheToString = (cache, isDebug) ->
+_requireCacheToString = (cache, clientFilePath, isDebug) ->
+
   # Maps from moduleDir -> moduleName -> moduleMain such that
   # the file path is: moduleDir/moduleName/moduleMain
   _modulesToString = (moduleDir, nameToMain) ->
@@ -550,28 +559,31 @@ _requireCacheToString = (cache, isDebug) ->
   }
   """
 
+  _compiledFile = _escapeSingleQuotes clientFilePath
+
   return """
 <script>
-  // oj v#{oj.version}
-  (function(){
-    var F = {}, M = {}, R = {}, P, G, RR;
 
-    #{_modules}
-    #{_files}
-    #{_native}
+// oj v#{oj.version}
+(function(){ var F = {}, M = {}, R = {}, P, G, RR;
 
-    P = {cwd: function(){return '/';}};
-    G = {process: P,Buffer: {}};
+#{_modules}
+#{_files}
+#{_native}
+P = {cwd: function(){return '/';}};
+G = {process: P,Buffer: {}};
 
-    RR = function(f){
-      return function(m){return run(find(m, f));};
-      #{_run}
-      #{_find}
-    }
+RR = function(f){
+  return function(m){return run(find(m, f));};
+  #{_run}
+  #{_find}
+};
 
-    require = RR('/');
-    oj = require('oj');
+require = RR('/');
+oj = require('oj');
+oj('#{_compiledFile}');
 
-  }).call(this);
+}).call(this);
+
 </script>
 """

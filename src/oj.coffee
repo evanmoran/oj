@@ -1,28 +1,106 @@
 
 # oj
-# ====================================================================
+# ==========================
 # Templating framework for the people. Thirsty people.
 
-_isLoaded = false
-_onLoad = []
-oj = module.exports = (fn) ->
-  # Execute onload
-  if _.isUndefined fn
-    while (f = _onload.shift())
-      f()
-    _isLoaded = true
-  # Store onload
-  else if _isLoaded
-    fn()
+# Helpers
+# --------------------------
+# Loading with either ready or onload
+_load = (evt, fn) ->
+  if $? and evt == 'ready'
+    $(fn)
   else
-    _onload.push fn
+    # Add onload if it hasn't happened yet
+    if document.readyState != "complete"
+      prevOnLoad = window.onload
+      window.onload = ->
+        prevOnLoad?()
+        fn()
+    # Otherwise call the function
+    else
+      fn()
   return
 
-oj.oj = oj
-oj.onload = oj.ready = oj
+# Generalized delay loading
+_loaderQueue =
+  ready: queue:[], loaded:false
+  load: queue:[], loaded:false
 
-_onload = []
-root = @
+_loader = (evt) ->
+  (fn) ->
+    # Call everything if no arguments
+    if _.isUndefined fn
+      _loaderQueue[evt].loaded = true
+      while (f = _loaderQueue[evt].queue.shift())
+        _load evt, f
+    # Call load if already loaded
+    else if _loaderQueue[evt].loaded
+      _load evt, f
+    # Queue function for later
+    else
+      _loaderQueue[evt].queue.push fn
+    return
+
+# oj function
+# --------------------------
+# Start oj by setting up dom and events
+oj = module.exports = (page) ->
+  # Compile
+  compiled = oj.compile (require page)
+
+  # Setup dom
+  html = compiled.html
+  throw new Error('oj: <html> element was not found') if html.indexOf('<html') != 0
+  html = html.slice (html.indexOf '>')+1, html.lastIndexOf '<'
+  (document.getElementsByTagName 'html')[0].innerHTML = html
+
+  # Setup jquery events and awaken oj objects
+  compiled.js()
+
+  # Setup jquery ready and onload events
+  oj.ready()
+  oj.load()
+
+# ## oj.ready
+oj.ready = _loader 'ready'
+
+# ## oj.load
+oj.load = _loader 'load'
+
+
+# ## oj.id
+oj.id = (len, chars) ->
+  'oj' + oj.guid len, chars
+
+# ## oj.guid
+_randomInteger = (min, max) ->
+  return null if min == null or max == null or min > max
+  diff = max - min;
+  # random int from zero to number minus one
+  rnd = Math.floor Math.random() * (diff + 1)
+  rnd + min
+
+_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split ''
+oj.guid = (len = 8, chars = _chars) ->
+  # Default arguments
+  base = chars.length
+
+  # Calculate how many chars can be determined by each random call
+  charsPerRand = Math.floor Math.log(Math.pow(2,31)-1) / Math.log(base)
+  randMin = 0
+  randMax = Math.pow(base, charsPerRand)-1
+
+  # Calculate random chars by calling random the minimum number of times
+  output = ""
+  for i in [0...len]
+    # Generate random number
+    if i % charsPerRand == 0
+      rand = _randomInteger randMin, randMax
+    charNext = chars[rand % base]
+    output += charNext
+    rand = Math.floor(rand / base)
+
+  output
 
 # Register require.extension for .oj files
 if require.extensions
@@ -43,6 +121,8 @@ if require.extensions
     catch e # js file, do nothing
     code = "(function(){with(require('oj')){#{code}}}).call(this);"
     module._compile code, filepath
+
+root = @
 
 oj.version = '0.0.5'
 
@@ -373,13 +453,20 @@ oj.tag = (name, args...) ->
   # console.log "calling oj.tag name: #{name}, args: ", args, ", result: ", oj._result
   throw 'oj.tag error: argument 1 is not a string (expected tag name)' unless _.isString name
 
-  # Get attributes
-  attributes = {}
-  if args.length > 0 and _.isObject args[0]
-    attributes = args.shift()
+  # Get attributes from arguments
+  # attributes = {}
+  # if args.length > 0 and _.isObject args[0]
+  #   attributes = args.shift()
 
   # Build ojml starting with tag
   ojml = [name]
+
+  attributes = {}
+  for arg in args
+    # TODO: evaluate argument if necessary
+    if _.isObject arg
+      attributes = arg
+      break
 
   # Add attributes to ojml if they exist
   ojml.push attributes unless _.isEmpty attributes
@@ -389,7 +476,9 @@ oj.tag = (name, args...) ->
 
   # Loop over attributes
   for arg in args
-    if _.isFunction arg
+    if _.isObject arg
+      continue
+    else if _.isFunction arg
       oj._result = ojml
       len = ojml.length
 
@@ -454,6 +543,7 @@ oj.compile = (options, ojml) ->
     debug: false
 
   options.html = if options.html then [] else null  # html accumulator
+  options.js = []                                   # code accumulator
   options.types = []                                # types accumulator
   options.indent = ''                               # indent counter
 
@@ -462,6 +552,10 @@ oj.compile = (options, ojml) ->
   # Join html only if generated
   html = options.html?.join ''
   out = html: html, types: options.types, js:->
+    # Call defered javascript
+    for fn in options.js
+      fn()
+    # Call awaken for all objects
     for t in options.types
       t.awaken()
     undefined
@@ -525,6 +619,9 @@ _compileAny = (ojml, options) ->
     else
       throw new Error 'oj.compile: #{typeof ojml} cannot be compiled'
 
+# Supported events from jquery
+events = bind:2, on:2, off:2, live:2, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
+
 # Compile ojml tag (an array)
 _compileTag = (ojml, options) ->
 
@@ -562,7 +659,28 @@ _compileTag = (ojml, options) ->
     # Convert attributes to string
     attr = ""
     if attributes
-      # Sort attribute keys for consistent output
+
+      # Filter out attributes that are events
+      for k,v of attributes
+        do(k,v) ->
+          if events[k]?
+            # Add attribute id if necessary
+            attributes.id ?= oj.id()
+
+            # Bind event if jquery exists
+            if $?
+              options.js?.push ->
+                $el = $('#' + attributes.id)
+                if _.isArray v
+                  $el[k].apply @, v
+                else
+                  $el[k](v)
+                return
+
+            attributes[k] = null
+          return
+
+      # Serialize attributes in order for consistent output
       for k in _.keys(attributes).sort()
         if (v = attributes[k])?
           attr += " #{k}=\"#{v}\""
