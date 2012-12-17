@@ -1,7 +1,7 @@
 {
   "name": "oj",
-  "version": "0.0.5",
-  "main": "lib/oj.js",
+  "version": "0.0.6",
+  "main": "lib/oj.server.js",
   "description": "A unified templating language for the people. Thirsty people.",
   "homepage": "http://github.com/evanmoran/oj/",
   "keywords": [
@@ -30,6 +30,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/evanmoran/queryfu.git"
+    "url": "git://github.com/evanmoran/gg.git"
   }
 }

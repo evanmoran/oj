@@ -1,7 +1,6 @@
 
-#───────────────────────────
 # Include
-#───────────────────────────
+# ------------------------------------------------------------------------------
 
 fs = require 'fs'
 cp = require 'child_process'
@@ -15,9 +14,8 @@ crypto = require 'crypto'
 http = require 'http'
 https = require 'https'
 
-#───────────────────────────
 # Utilities
-#───────────────────────────
+# ------------------------------------------------------------------------------
 
 optionsMode = (options, modes = ['production', 'staging', 'testing', 'development']) ->
   optionsCombine options, modes
@@ -110,9 +108,8 @@ save = (filepath, data, cb) ->
 load = (filepath, cb) ->
   fs.readFile filepath, "utf8", cb
 
-#───────────────────────────
 # Logging
-#───────────────────────────
+# ------------------------------------------------------------------------------
 
 code =
   red: '\u001b[31m'
@@ -140,9 +137,8 @@ launch = (cmd, args=[], options, callback = ->) ->
   app.stderr.pipe(process.stderr)
   app.on 'exit', (status) -> callback() if status is 0
 
-#───────────────────────────
 # Tasks
-#───────────────────────────
+# ------------------------------------------------------------------------------
 
 task "build", "Build everything and run tests", ->
   invoke "build:js"

@@ -1,10 +1,10 @@
 
 # oj
-# ==========================
+# ==============================================================================
 # Templating framework for the people. Thirsty people.
 
 # Helpers
-# --------------------------
+# ------------------------------------------------------------------------------
 # Loading with either ready or onload
 _load = (evt, fn) ->
   if $? and evt == 'ready'
@@ -42,7 +42,7 @@ _loader = (evt) ->
     return
 
 # oj function
-# --------------------------
+# ------------------------------------------------------------------------------
 # Start oj by setting up dom and events
 oj = module.exports = (page) ->
   # Compile
@@ -133,7 +133,7 @@ else
   root['oj'] = oj
 
 # Utility: Helpers
-# ----------------
+# ------------------------------------------------------------------------------
 
 ArrayP = Array.prototype
 FuncP = Function.prototype
@@ -429,7 +429,7 @@ _.defaults = (obj) ->
   obj
 
 # oj.partial (module, arg1, arg2, ...)
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Arguments are passed to exported module
 
 oj.partial = (module, json) ->
@@ -439,7 +439,7 @@ oj.partial = (module, json) ->
   m
 
 # oj.tag (name, attributes, content, content, ...)
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #     name          String of the tag to serialize
 #     attributes    (Optional) Object defining attributes of tag being serialized
 #                   Keys have smart mappings:
@@ -453,20 +453,18 @@ oj.tag = (name, args...) ->
   # console.log "calling oj.tag name: #{name}, args: ", args, ", result: ", oj._result
   throw 'oj.tag error: argument 1 is not a string (expected tag name)' unless _.isString name
 
-  # Get attributes from arguments
-  # attributes = {}
-  # if args.length > 0 and _.isObject args[0]
-  #   attributes = args.shift()
-
   # Build ojml starting with tag
   ojml = [name]
 
+  # Get attributes from args by unioning all objects
   attributes = {}
   for arg in args
     # TODO: evaluate argument if necessary
     if _.isObject arg
-      attributes = arg
-      break
+      _.extend attributes, arg
+
+  # Help the attributes out as they have shitting
+  attributes = _tagAttributes name, attributes
 
   # Add attributes to ojml if they exist
   ojml.push attributes unless _.isEmpty attributes
@@ -512,8 +510,26 @@ for t in oj.tag.elements.all
   do (t) ->
     oj[t] = -> oj.tag t, arguments...
 
+# Customize a few tags
+
+_defaultClear = (dest, d, e) ->
+  _.defaults dest, d
+  for k of e
+    dest[k] = null
+  dest
+
+_tagAttributes = (name, attributes) ->
+  attr = _.clone attributes
+  switch name
+    when 'link' then _defaultClear attr, {rel:'stylesheet', type:'text/css', href: attr.url or attr.src}, {url:0, src:0}
+    when 'script' then _defaultClear attr, {type:'text/javascript', src: attr.url}, url:0
+    when 'a' then _defaultClear attr, {href:attr.url}, url:0
+  attr
+
+# oj.styles = ()
+
 # oj.extend (context)
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #     Extend oj methods into a context. Common contexts are `global` `window`
 #     and `this` (used in coffee script). Helper methods are not extended (oj._)
 #
@@ -528,7 +544,7 @@ oj.extend = (context) ->
   _.extend context, o
 
 # oj.compile
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Return html and js after templating json
 
 oj.compile = (options, ojml) ->
@@ -620,7 +636,7 @@ _compileAny = (ojml, options) ->
       throw new Error 'oj.compile: #{typeof ojml} cannot be compiled'
 
 # Supported events from jquery
-events = bind:2, on:2, off:2, live:2, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
+events = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
 
 # Compile ojml tag (an array)
 _compileTag = (ojml, options) ->
@@ -704,7 +720,7 @@ _compileTag = (ojml, options) ->
     options.html?.push "</#{tag}>"
 
 # oj.Control
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Properties
 #   $             gets root element
 #   set           Initialize from element, $(selector), or ojml
@@ -719,11 +735,11 @@ _compileTag = (ojml, options) ->
 oj.Control = class Control
 
 # oj.Link
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # oj.Link = class Link extends Control
 
 # oj.domReplace
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Replace element's html with jsml.  Starts OJ objects.
 oj.replace = (el, ojml) ->
   # Element can be dom or jquery
@@ -736,7 +752,7 @@ oj.replace = (el, ojml) ->
   template.js()
 
 # domInsertElementAfter
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # DOM utility function to help insert elements after a given element (similar to domInsertBefore)
 
 _.domInsertElementAfter = (elLocation, elToInsert) ->
@@ -750,12 +766,13 @@ _.domInsertElementAfter = (elLocation, elToInsert) ->
     elParent.appendChild elToInsert
 
 # domReplaceHtml
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #
 # Source: http://www.bigdumbdev.com/2007/09/replacehtml-remove-insert-put-back-is.html
 #
 # Basic idea is that setting html on something not on the dom is faster
 # TODO: Allow insertion of TR into TBODY.  Must recognize parent tag of destination and make the temporary tag match this.  With TBODY you then need to add TABLE as well.
+
 _.domReplaceHtml = (el, html) ->
   throw new Error("domReplaceHtml error: element is null") unless el
   nextSibling = el.nextSibling
@@ -768,7 +785,7 @@ _.domReplaceHtml = (el, html) ->
     parent.appendChild el
 
 # domAppendHtml
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Append html after all children of element
 
 # TODO: Allow insertion of TR into TBODY.
@@ -781,9 +798,10 @@ _.domAppendHtml = (el, html) ->
   elTemp = undefined
 
 # domPrependHtml
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Prepend html before all children of element
 # TODO: Allow insertion of TR into TBODY.
+
 _.domPrependHtml = (el, html) ->
   throw new Error("oj.domPrependHtml: element is null") unless el
   elTemp = document.createElement 'div'
@@ -793,9 +811,10 @@ _.domPrependHtml = (el, html) ->
   elTemp = undefined
 
 # domInsertHtmlBefore
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Insert html before the given element
 # TODO: Allow insertion of TR into TBODY.
+
 _.domInsertHtmlBefore = (el, html) ->
   throw new Error("oj.domInsertHtmlBefore: element is null") unless el
   # special case
@@ -807,9 +826,10 @@ _.domInsertHtmlBefore = (el, html) ->
   elTemp = undefined
 
 # domInsertHtmlAfter
-# ----------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Insert html after the given element
 # TODO: Allow insertion of TR into TBODY.
+
 _.domInsertHtmlAfter = (el, html) ->
   throw new Error("oj.domInsertHtmlAfter: element is null") unless el
   elTemp = document.createElement 'div'
