@@ -1,7 +1,8 @@
 
-# oj.server.coffee
+# server.coffee
 # ==============================================================================
-# Server side component of oj.
+# Server side component of oj and the default include of nodejs
+# Supports everything in oj plus building and watching files
 
 path = require 'path'
 fs = require 'fs'

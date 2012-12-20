@@ -149,7 +149,6 @@ LIB_DIR = 'lib'
 
 task "build:js", "Compile coffee script files", ->
   launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/oj.coffee']
-  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/command.coffee']
 
 task "build:js:watch", "Watch compile coffee script files", ->
   launch 'coffee', ['--compile', '--lint', '-o', LIB_DIR, '--watch', 'src']

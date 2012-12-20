@@ -245,10 +245,10 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "singleLineComment": ["#"],
           "name": "CoffeeScript"
         },
-        "sourcePath": "/Users/evan/oj/src/oj.server.coffee",
-        "projectPath": "src/oj.server.coffee",
-        "targetPath": "oj.server",
-        "title": "oj.server"
+        "sourcePath": "/Users/evan/oj/src/server.coffee",
+        "projectPath": "src/server.coffee",
+        "targetPath": "server",
+        "title": "server"
       },
       "depth": 1,
       "outline": [
@@ -256,8 +256,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 1,
-            "title": "oj.server.coffee",
-            "slug": "ojservercoffee"
+            "title": "server.coffee",
+            "slug": "servercoffee"
           },
           "depth": 1
         }, {
@@ -309,6 +309,22 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "slug": "watchfile"
               },
               "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "watchDir",
+                "slug": "watchdir"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "Watch helpers",
+                "slug": "watch-helpers"
+              },
+              "depth": 2
             }
           ]
         }, {
@@ -340,8 +356,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "Watch helpers",
-                "slug": "watch-helpers"
+                "title": "Timing helpers",
+                "slug": "timing-helpers"
               },
               "depth": 2
             }, {

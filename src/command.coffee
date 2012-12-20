@@ -4,7 +4,7 @@
 
 _ = require 'underscore'
 commander = require 'commander'
-oj = require './oj.server'
+oj = require './server'
 
 module.exports = ->
 
