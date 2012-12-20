@@ -1,7 +1,7 @@
 
 # oj
 # ==============================================================================
-# Templating framework for the people. Thirsty people.
+# Unified templating framework for the people. Thirsty people.
 
 # Helpers
 # ------------------------------------------------------------------------------
@@ -124,7 +124,7 @@ if require.extensions
 
 root = @
 
-oj.version = '0.0.5'
+oj.version = '0.0.6'
 
 # Export for NodeJS if necessary
 if typeof module != 'undefined'
