@@ -46,7 +46,7 @@ _loader = (evt) ->
 # Start oj by setting up dom and events
 oj = module.exports = (page) ->
   # Compile
-  compiled = oj.compile (require page)
+  compiled = oj.compile require page
 
   # Setup dom
   html = compiled.html
@@ -108,19 +108,30 @@ if require.extensions
   coffee = require 'coffee-script'
   fs = require new String('fs') # Hack to avoid pulling fs to client
 
-  stripBOM = (c) ->
-    if c.charCodeAt(0) == 0xFEFF
-      c = c.slice 1
-    c
+  stripBOM = (c) -> if c.charCodeAt(0) == 0xFEFF then (c.slice 1) else c
+
+  isCS = (code) -> -1 != code.search /(^\s*#|\n\s*#|-\>)/
 
   require.extensions['.oj'] = (module, filepath) ->
     # Compile as coffee-script or javascript
     code = stripBOM fs.readFileSync filepath, 'utf8'
     try
       code = coffee.compile code, bare: true
-    catch e # js file, do nothing
-    code = "(function(){with(require('oj')){#{code}}}).call(this);"
-    module._compile code, filepath
+    catch eCoffee # js file, do nothing
+      # If this is coffee script throw this error
+      if isCS code
+        eCoffee.message = "(coffee-script error) #{filepath}: #{eCoffee.message}"
+        throw eCoffee
+
+    # Compile javascript
+    try
+      code = "(function(){with(require('oj')){#{code}}}).call(this);"
+      module._compile code, filepath
+
+    catch eJS
+      eJS.message = "(javascript error) #{filepath}: #{eJS.message}"
+      throw eJS
+    return
 
 root = @
 
@@ -576,6 +587,8 @@ oj.compile = (options, ojml) ->
       t.awaken()
     undefined
 
+  return out
+
 _styleKeyFromFancy = (key) ->
   out = ""
   # Loop over characters in key looking for camal case
@@ -629,11 +642,9 @@ _compileAny = (ojml, options) ->
     when 'function'
       _compileAny ojml(), options
 
-    when 'null', 'undefined'
-      # do nothing
+    # Do nothing for 'null', 'undefined', 'object'
 
-    else
-      throw new Error 'oj.compile: #{typeof ojml} cannot be compiled'
+  return
 
 # Supported events from jquery
 events = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
@@ -643,7 +654,7 @@ _compileTag = (ojml, options) ->
 
   # Get tag
   tag = ojml[0]
-  throw new Error('oj.compile: tag is missing') unless _.isString(tag) and tag.length > 0
+  throw new Error('oj.compile: tag is missing in array') unless _.isString(tag) and tag.length > 0
 
   # Create oj object if tag is capitalized
   if _.isCapitalLetter tag[0]

@@ -66,6 +66,7 @@ oj.command = (options = {}) ->
     compileOrWatch fullPath, options
 
 # compileOrWatch
+# Abstractly compile or watch a file or directory
 compileOrWatch = (fullPath, options = {}) ->
   if isDirectory fullPath
     if options.watch
@@ -73,7 +74,7 @@ compileOrWatch = (fullPath, options = {}) ->
     return compileDir fullPath, options
   includeDir = path.dirname fullPath
   if options.watch
-    return watchFile fullPath, includePath, options
+    return watchFile fullPath, includeDir, options
   compileFile fullPath, includeDir, options
 
 # compileDir
@@ -128,25 +129,35 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Save require cache
   _saveRequireCache()
 
-  # Add user defined modules
-  for m in includedModules
-    if isNodeModule m
-      _buildNativeCacheFromModuleList cache.native, [m], options.debug
-      verbose 3, "found #{m}"
-    else
-      require m
+  try
 
-  # Require this file to start the process
-  ojml = require filePath
-  html = (oj.compile debug: options.debug, ojml).html
+    # Require user defined modules
+    for m in includedModules
+      if isNodeModule m
+        _buildNativeCacheFromModuleList cache.native, [m], options.debug
+        verbose 3, "found #{m}"
+      else
+        require m
+
+    # Require this file to start the process
+    ojml = require filePath
+
+  # Abort require with message on failure
+  catch eRequire
+    verbose 1, eRequire.message
+    return
 
   # Restore require cache
   _restoreRequireCache()
   _unhookRequire modules, hookCache, hookOriginalCache
 
-  # Error if compiled file is missing required tags
-  error "<html> tag is missing (#{filePath})" if html.indexOf('<html') == -1
-  error "<body> tag is missing (#{filePath})" if html.indexOf('<body') == -1
+  # Compile
+  results = oj.compile debug: options.debug, ojml
+  html = results.html
+
+  # Error if compiled file is missing required <html> or <body>
+  return error "<html> tag is missing (#{filePath})" if html.indexOf('<html') == -1
+  return error "<body> tag is missing (#{filePath})" if html.indexOf('<body') == -1
 
   # Build cache
   verbose 2, "caching #{filePath} (#{_length modules} files)"
@@ -166,7 +177,8 @@ compileFile = (filePath, includeDir, options = {}) ->
     verbose 3, "mkdir #{dirOut}"
 
   # Write file
-  verbose 1, "compiled #{fileOut}"
+  timeStamp = if options.watch then "#{(new Date()).toLocaleTimeString()} - " else ""
+  verbose 1, "#{timeStamp}compiled #{fileOut}"
   fs.writeFileSync fileOut, html
 
   # Clear caches
@@ -180,8 +192,116 @@ compileFile = (filePath, includeDir, options = {}) ->
 watchFile = (filePath, includeDir, options = {}) ->
   verbose 2, "watching #{filePath}"
 
+  throw new Error('oj: watch file not found (#{filePath})') unless isFile filePath
 
+  prevStats = null
+  compileTimeout = null
 
+  _watchErr = (e) ->
+    if e.code is 'ENOENT'
+      try
+        _rewatch()
+        _compile()
+      catch e
+        verbose 2, "stopping watch on missing file: #{filePath}"
+    else throw e
+
+  _compile = ->
+    try
+      clearTimeout compileTimeout
+      compileTimeout = wait 0.025, ->
+        fs.stat filePath, (err, stats) ->
+          return _watchErr err if err
+          return _rewatch() if prevStats and stats.size is prevStats.size and
+            stats.mtime.getTime() is prevStats.mtime.getTime()
+          prevStats = stats
+          compileFile filePath, includeDir, options
+          _rewatch()
+    catch e
+      # TODO: Consider if this is necessary
+      verbose 1, 'unknown watch error occured'
+
+  try
+    _compile()
+    watcher = fs.watch filePath, _compile
+  catch e
+    _watchErr e
+
+  _rewatch = ->
+    watcher?.close()
+    watcher = fs.watch filePath, _compile
+
+# watchDir
+# ------------------------------------------------------------------------------
+
+# Watch a directory of files for new additions.
+watchDir = (filePath, base) ->
+
+  readdirTimeout = null
+  try
+    watcher = fs.watch filePath, ->
+      clearTimeout readdirTimeout
+      readdirTimeout = wait 25, ->
+        fs.readdir filePath, (err, files) ->
+          if err
+            throw err unless err.code is 'ENOENT'
+            watcher.close()
+            return unwatchDir filePath, base
+          for file in files when not isHiddenFile(file) and not notSources[file]
+            file = path.join filePath, file
+            continue if sources.some (s) -> s.indexOf(file) >= 0
+            sources.push file
+            sourceCode.push null
+            compileFile file, path.dirname(filePath), base
+  catch e
+    throw e unless e.code is 'ENOENT'
+
+unwatchDir = (source, base) ->
+  prevSources = sources[..]
+  toRemove = (file for file in sources when file.indexOf(source) >= 0)
+  removeSource file, base, yes for file in toRemove
+  return unless sources.some (s, i) -> prevSources[i] isnt s
+  compileJoin()
+
+# Watch helpers
+# ------------------------------------------------------------------------------
+
+_watch = (filePath, base) ->
+  prevStats = null
+  compileTimeout = null
+
+  _watchErr = (e) ->
+    if e.code is 'ENOENT'
+      return if sources.indexOf(filePath) is -1
+      try
+        _rewatch()
+        _compile()
+      catch e
+        removeSource filePath, base, yes
+        compileJoin()
+    else throw e
+
+  _compile = ->
+    clearTimeout compileTimeout
+    compileTimeout = wait 25, ->
+      fs.stat filePath, (err, stats) ->
+        return _watchErr err if err
+        return _rewatch() if prevStats and stats.size is prevStats.size and
+          stats.mtime.getTime() is prevStats.mtime.getTime()
+        prevStats = stats
+        fs.readFile filePath, (err, code) ->
+          return _watchErr err if err
+          compileFile filePath, code.toString(), base
+          _rewatch()
+
+  try
+    watcher = fs.watch source, compile
+  catch e
+    _watchErr e
+
+  _rewatch = ->
+    watcher?.close()
+    watcher = fs.watch source, compile
 
 
 # Helpers
@@ -190,9 +310,8 @@ watchFile = (filePath, includeDir, options = {}) ->
 # Output helpers
 # ------------------------------------------------------------------------------
 
-error = (message, exitCode = 1) ->
+error = (message) ->
   console.log '\n  error:', message, "\n"
-  process.exit exitCode
 
 success = ->
   process.exit 0
@@ -351,74 +470,10 @@ _commonPath = (moduleName, moduleParentPaths) ->
       return p + '/'
   null
 
-# Watch helpers
+# Timing helpers
 # ------------------------------------------------------------------------------
 
-_watch = (source, base) ->
-  prevStats = null
-  compileTimeout = null
-
-  _watchErr = (e) ->
-    if e.code is 'ENOENT'
-      return if sources.indexOf(source) is -1
-      try
-        _rewatch()
-        _compile()
-      catch e
-        removeSource source, base, yes
-        compileJoin()
-    else throw e
-
-  _compile = ->
-    clearTimeout compileTimeout
-    compileTimeout = wait 25, ->
-      fs.stat source, (err, stats) ->
-        return _watchErr err if err
-        return _rewatch() if prevStats and stats.size is prevStats.size and
-          stats.mtime.getTime() is prevStats.mtime.getTime()
-        prevStats = stats
-        fs.readFile source, (err, code) ->
-          return _watchErr err if err
-          compileFile source, code.toString(), base
-          _rewatch()
-
-  try
-    watcher = fs.watch source, compile
-  catch e
-    _watchErr e
-
-  _rewatch = ->
-    watcher?.close()
-    watcher = fs.watch source, compile
-
-
-# Watch a directory of files for new additions.
-watchDir = (filePath, base) ->
-  readdirTimeout = null
-  try
-    watcher = fs.watch filePath, ->
-      clearTimeout readdirTimeout
-      readdirTimeout = wait 25, ->
-        fs.readdir filePath, (err, files) ->
-          if err
-            throw err unless err.code is 'ENOENT'
-            watcher.close()
-            return unwatchDirectory filePath, base
-          for file in files when not isHiddenFile(file) and not notSources[file]
-            file = path.join filePath, file
-            continue if sources.some (s) -> s.indexOf(file) >= 0
-            sources.push file
-            sourceCode.push null
-            compileFile file, path.dirname(filePath), base
-  catch e
-    throw e unless e.code is 'ENOENT'
-
-unwatchDirectory = (source, base) ->
-  prevSources = sources[..]
-  toRemove = (file for file in sources when file.indexOf(source) >= 0)
-  removeSource file, base, yes for file in toRemove
-  return unless sources.some (s, i) -> prevSources[i] isnt s
-  compileJoin()
+wait = (seconds, fn) -> setTimeout fn, seconds*1000
 
 # String helpers
 # ------------------------------------------------------------------------------
@@ -514,7 +569,8 @@ _createHook = (ext, modules, hookCache, hookOriginalCache) ->
       moduleCompile = module._compile
       module._compile = (code) ->
         _rememberModule modules, filename, code, module.paths
-        return moduleCompile.apply this, arguments
+        moduleCompile.apply this, arguments
+        return
 
     # Invoke the original handler
     hookOriginalCache[ext](module, filename)
@@ -610,7 +666,7 @@ _buildRequireCache = (modules, cache, isDebug) ->
   # To ourselves oj is local but to them oj is native.
   # Removing this cache record ensures only the native copy
   # is saved to the client.
-  delete cache.files[require.resolve '../lib/oj.server.js']
+  delete cache.files[require.resolve './index.js']
   delete cache.files[require.resolve '../lib/oj.js']
 
   return cache

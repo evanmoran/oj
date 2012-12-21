@@ -8,7 +8,7 @@ oj = require './server'
 
 module.exports = ->
 
-  commander.version('0.0.5')
+  commander.version(oj.version)
     .usage('[options] <file> <dir> ...')
     .option('-d, --debug', 'Turn on debug output (default: false)', false)
     .option('-o, --output <dir>', 'Directory to output all files to (default: .)', process.cwd())
