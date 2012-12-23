@@ -27,19 +27,19 @@ module.exports = oj
 # ------------------------------------------------------------------------------
 
 oj.watch = (filesOrDirectories, options) ->
-  args = _.extend {}, options,
+  options = _.extend {}, options,
     args: filesOrDirectories
     watch: true
-  oj.command args
+  oj.command options
 
 # oj.build
 # ------------------------------------------------------------------------------
 
 oj.build = (filesOrDirectories, options) ->
-  args = _.extend {}, options,
+  options = _.extend {}, options,
     args: filesOrDirectories
     watch: false
-  oj.command args
+  oj.command options
 
 # oj.command
 # ------------------------------------------------------------------------------
@@ -63,28 +63,29 @@ oj.command = (options = {}) ->
   options.args = fullPaths options.args, process.cwd()
 
   for fullPath in options.args
-    compileOrWatch fullPath, options
+    compilePath fullPath, options
 
-# compileOrWatch
-# Abstractly compile or watch a file or directory
-compileOrWatch = (fullPath, options = {}) ->
+# compilePath
+# Compile any file or directory path
+compilePath = (fullPath, options = {}) ->
   if isDirectory fullPath
-    if options.watch
-      return watchDir fullPath, options
     return compileDir fullPath, options
   includeDir = path.dirname fullPath
-  if options.watch
-    return watchFile fullPath, includeDir, options
   compileFile fullPath, includeDir, options
 
 # compileDir
 compileDir = (dirPath, options = {}) ->
   # Handle recursion and gather files to compile
-  lsOjFiles dirPath, options, (err, files) ->
-    options_ = _.clone options
-    options_.root ?= dirPath
+  lsOJ dirPath, options, (err, files, dirs) ->
+
+    # Watch all directories if option is set
+    if options.watch
+      for d in dirs
+        watchDir d, dirPath, options
+
+    # Compile all files
     for f in files
-      compileFile f, dirPath, options_
+      compileFile f, dirPath, options
 
 # compileFile
 # ------------------------------------------------------------------------------
@@ -98,10 +99,14 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Default some values
   isDebug = options.debug or false
   includedModules = options.modules or []
-  includedModules.concat ['oj', 'path']
+  includedModules = includedModules.concat ['oj', 'path']
   rootDir = options.root or path.dirname filePath
 
   throw new Error('oj: root is not a directory') unless isDirectory rootDir
+
+  # Watch file if option is set
+  if options.watch
+    watchFile filePath, includeDir, options
 
   # Figure out some paths
   #    /input/dir/file.oj
@@ -129,14 +134,15 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Save require cache
   _saveRequireCache()
 
+  # Catch messages thrown by requiring
   try
 
     # Require user defined modules
     for m in includedModules
       if isNodeModule m
         _buildNativeCacheFromModuleList cache.native, [m], options.debug
-        verbose 3, "found #{m}"
       else
+        verbose 3, "including #{m}"
         require m
 
     # Require this file to start the process
@@ -156,16 +162,19 @@ compileFile = (filePath, includeDir, options = {}) ->
   html = results.html
 
   # Error if compiled file is missing required <html> or <body>
-  return error "<html> tag is missing (#{filePath})" if html.indexOf('<html') == -1
-  return error "<body> tag is missing (#{filePath})" if html.indexOf('<body') == -1
+  if html.indexOf('<html') == -1
+    return verbose 1, "(error) #{filePath}: <html> tag is missing"
+
+  if html.indexOf('<body') == -1
+    return verbose 1, "(error) #{filePath}: <body> tag is missing"
 
   # Build cache
-  verbose 2, "caching #{filePath} (#{_length modules} files)"
+  verbose 3, "caching #{filePath} (#{_length modules} files)"
   cache = _buildRequireCache modules, cache, isDebug
 
   # Serialize cache
   cacheLength = _length(cache.files) + _length(cache.modules) + _length(cache.native)
-  verbose 2, "serializing #{filePath} (#{cacheLength} files)"
+  verbose 3, "serializing #{filePath} (#{cacheLength} files)"
   scriptHtml = _requireCacheToString cache, filePath, isDebug
 
   # Insert script into html just before </body>
@@ -186,13 +195,21 @@ compileFile = (filePath, includeDir, options = {}) ->
   hookCache = null
   hookOriginalCache = null
 
+
+# Keep track of which files are watched
+watchCache = {}
+isWatched = (fullPath) ->
+  watchCache[fullPath]?
+
 # watchFile
 # ------------------------------------------------------------------------------
+# Based in part on coffee-script's watch implementation
+# github.com/jashkenas/coffee-script/
 
 watchFile = (filePath, includeDir, options = {}) ->
-  verbose 2, "watching #{filePath}"
 
-  throw new Error('oj: watch file not found (#{filePath})') unless isFile filePath
+  # Do nothing if this file is already watched
+  return if isWatched filePath
 
   prevStats = null
   compileTimeout = null
@@ -203,10 +220,20 @@ watchFile = (filePath, includeDir, options = {}) ->
         _rewatch()
         _compile()
       catch e
-        verbose 2, "stopping watch on missing file: #{filePath}"
+        verbose 2, "unwatching missing file: #{filePath}"
+        _unwatch()
     else throw e
 
+  timeLast = new Date(2000)
+  timeEpsilon = 2 # seconds
   _compile = ->
+
+    # Ignore recompiles within epsilon time
+    timeNow = new Date()
+    return if (timeNow - timeLast) / 1000 < timeEpsilon
+
+    timeLast = timeNow
+
     try
       clearTimeout compileTimeout
       compileTimeout = wait 0.025, ->
@@ -214,104 +241,91 @@ watchFile = (filePath, includeDir, options = {}) ->
           return _watchErr err if err
           return _rewatch() if prevStats and stats.size is prevStats.size and
             stats.mtime.getTime() is prevStats.mtime.getTime()
+          verbose 3, "updating #{filePath}"
           prevStats = stats
           compileFile filePath, includeDir, options
-          _rewatch()
     catch e
       # TODO: Consider if this is necessary
-      verbose 1, 'unknown watch error occured'
-
+      verbose 1, 'unknown watch error on #{filePath}'
+      _unwatch()
   try
-    _compile()
+    verbose 2, "watching #{filePath}"
     watcher = fs.watch filePath, _compile
+    watchCache[filePath] = watcher
   catch e
     _watchErr e
 
   _rewatch = ->
-    watcher?.close()
-    watcher = fs.watch filePath, _compile
+    verbose 3, 'rewatch #{filePath}'
+    _unwatch()
+
+    watchCache[filePath] = watcher = fs.watch filePath, _compile
+
+  _unwatch = ->
+    if isWatched filePath
+      watchCache[filePath].close()
+    watchCache[filePath] = null
 
 # watchDir
 # ------------------------------------------------------------------------------
 
 # Watch a directory of files for new additions.
-watchDir = (filePath, base) ->
+# This method does not recurse as it is called from methods that do (compileDir)
+watchDir = (dir, includeDir, options) ->
 
-  readdirTimeout = null
-  try
-    watcher = fs.watch filePath, ->
-      clearTimeout readdirTimeout
-      readdirTimeout = wait 25, ->
-        fs.readdir filePath, (err, files) ->
-          if err
-            throw err unless err.code is 'ENOENT'
-            watcher.close()
-            return unwatchDir filePath, base
-          for file in files when not isHiddenFile(file) and not notSources[file]
-            file = path.join filePath, file
-            continue if sources.some (s) -> s.indexOf(file) >= 0
-            sources.push file
-            sourceCode.push null
-            compileFile file, path.dirname(filePath), base
-  catch e
-    throw e unless e.code is 'ENOENT'
+  # Short circut if already watching this directory
+  return if isWatched dir
 
-unwatchDir = (source, base) ->
-  prevSources = sources[..]
-  toRemove = (file for file in sources when file.indexOf(source) >= 0)
-  removeSource file, base, yes for file in toRemove
-  return unless sources.some (s, i) -> prevSources[i] isnt s
-  compileJoin()
-
-# Watch helpers
-# ------------------------------------------------------------------------------
-
-_watch = (filePath, base) ->
-  prevStats = null
+  # Throttle
   compileTimeout = null
 
-  _watchErr = (e) ->
-    if e.code is 'ENOENT'
-      return if sources.indexOf(filePath) is -1
-      try
-        _rewatch()
-        _compile()
-      catch e
-        removeSource filePath, base, yes
-        compileJoin()
-    else throw e
+  verbose 2, "watching #{dir}/"
+  watcher = fs.watch dir, (err) ->
+    verbose 3, "updating #{dir}/"
 
-  _compile = ->
-    clearTimeout compileTimeout
-    compileTimeout = wait 25, ->
-      fs.stat filePath, (err, stats) ->
-        return _watchErr err if err
-        return _rewatch() if prevStats and stats.size is prevStats.size and
-          stats.mtime.getTime() is prevStats.mtime.getTime()
-        prevStats = stats
-        fs.readFile filePath, (err, code) ->
-          return _watchErr err if err
-          compileFile filePath, code.toString(), base
-          _rewatch()
+    # Unwatch missing directories
+    if err and not isDirectory dir
+      return unwatchDir dir
 
-  try
-    watcher = fs.watch source, compile
-  catch e
-    _watchErr e
+    # When the directory changes a file may have been added or removed
+    # Watch all the directories and files that aren't currently being watched
+    lsOJ dir, options, (err, files, dirs) ->
+      for d in dirs
+        watchDir d
+      for f in files
+        if not isWatched f
+          compileFile f, includeDir, options
 
-  _rewatch = ->
-    watcher?.close()
-    watcher = fs.watch source, compile
+  # Cache watch
+  watchCache[dir] = watcher
+  return
 
+unwatchDir = (dir) ->
+  verbose 2, "unwatching #{dir}/"
+  if isWatched dir
+    watchCache[dir].close()
+  watchCache[dir] = null
+  return
+
+unwatchAll = ->
+  verbose 2, "unwatching all files and directories"
+  for k in _.keys watchCache
+    if watchCache[k]?
+      watchCache[k].close()
+      watchCache[k] = null
+
+# Cleanup watches on exit
+process.on 'SIGINT', ->
+  verbose 1, "\n"
+  unwatchAll()
+  verbose 1, "oj exited successfully."
+  process.exit()
 
 # Helpers
 # =====================================================================
 
 # Output helpers
 # ------------------------------------------------------------------------------
-
-error = (message) ->
-  console.log '\n  error:', message, "\n"
 
 success = ->
   process.exit 0
@@ -372,13 +386,13 @@ commonPath = (paths, seperator = '/') ->
     return null
   (common.slice 0, ixCommon).join seperator
 
-# lsOjFiles
+# lsOJ
 # Abstract if recursion happened and filters to only files that don't start with _ and end in .oj
 
-lsOjFiles = (paths, options, cb) ->
-  options = _.extend {}, recurse: options.recurse, filter: (f) -> path.basename(f)[0] != '_' and path.extname(f) == '.oj'
+lsOJ = (paths, options, cb) ->
+  options = _.extend {}, recurse: options.recurse, filter: (f) -> path.basename(f)[0] != '_' and path.extname(f) == '.oj' and not isHiddenFile f
   ls paths, options, (err, results) ->
-    cb err, results.files
+    cb err, results.files, results.directories
   return
 
 # ls
@@ -589,7 +603,7 @@ _unhookRequire = (modules, hookCache, hookOriginalCache) ->
 
 # Remember require references
 _rememberModule = (modules, filename, code, module) ->
-  verbose 3, "found #{filename}" if code
+  verbose 3, "requiring #{filename}" if code
   modules[filename] = _.defaults {code: code, module: module}, (modules[filename] or {})
 
 _nodeModulesSupported = oj:1, assert:1, console:1, crypto:1, events:1, freelist:1, path:1, punycode:1, querystring:1, string_decoder:1, tty:1, url:1, util:1
@@ -659,7 +673,7 @@ _buildRequireCache = (modules, cache, isDebug) ->
     _buildNativeCache cache.native, data.code, isDebug
 
     # Store complete
-    verbose 3, "stored #{filename}"
+    verbose 4, "stored #{filename}"
 
   # Remove client and server oj if they exist.
   # This is a special case of the way stuff is included.
@@ -783,13 +797,13 @@ _requireCacheToString = (cache, filePath, isDebug) ->
   _files = ""
   for filePath, code of cache.files
     _files += _fileToString filePath, code
-    verbose 3, "serialized `#{filePath}`"
+    verbose 4, "serialized `#{filePath}`"
 
   # Client side code to include native modules
   _native = ""
   for moduleName, code of cache.native
     _native += _nativeModuleToString moduleName, code
-    verbose 3, "serialized '#{moduleName}'"
+    verbose 4, "serialized '#{moduleName}'"
 
   # Client side function to run module and cache result
     #console.log("run: file:", f);
@@ -854,14 +868,9 @@ P = {cwd: function(){return '/';}};
 G = {process: P,Buffer: {}};
 
 RR = function(f){
-  err = new Error();
-
-  r = function(m){
+  return function(m){
     return run(find(m, f));
   };
-  r.creationStack = err.stack;
-  r.f = f;
-  return r;
   #{_run}
   #{_find}
 };

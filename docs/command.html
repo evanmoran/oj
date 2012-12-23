@@ -4,7 +4,7 @@
 
 <span class="nv">module.exports = </span><span class="o">-&gt;</span>
 
-  <span class="nx">commander</span><span class="p">.</span><span class="nx">version</span><span class="p">(</span><span class="s">&#39;0.0.5&#39;</span><span class="p">)</span>
+  <span class="nx">commander</span><span class="p">.</span><span class="nx">version</span><span class="p">(</span><span class="nx">oj</span><span class="p">.</span><span class="nx">version</span><span class="p">)</span>
     <span class="p">.</span><span class="nx">usage</span><span class="p">(</span><span class="s">&#39;[options] &lt;file&gt; &lt;dir&gt; ...&#39;</span><span class="p">)</span>
     <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-d, --debug&#39;</span><span class="p">,</span> <span class="s">&#39;Turn on debug output (default: false)&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
     <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-o, --output &lt;dir&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;Directory to output all files to (default: .)&#39;</span><span class="p">,</span> <span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">())</span>

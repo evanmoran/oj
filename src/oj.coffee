@@ -135,7 +135,7 @@ if require.extensions
 
 root = @
 
-oj.version = '0.0.6'
+oj.version = '0.0.7'
 
 # Export for NodeJS if necessary
 if typeof module != 'undefined'
