@@ -6,17 +6,13 @@ Unified web templating for the people. Thirsty people.
 ### Goals of OJ
 * Live the dream of 100% shared code on client and server
 * Never need HTML, CSS or JS files again.
+* Commandline tool for easy server-side integration
 * Abstract web elements with built-in OJ objects and functions
 * Abstract your own Views with OJ objects and functions
-* Compatible with Backbone models
-* Compatible with jQuery events
+* Compatible with jQuery events and DOM manipulation
+* Compatible with Backbone models and views
+* Compatible with Express 3 (but doesn't require it)
 * Fully unit tested
-
-### Secondary Goals of OJ
-
-* Commandline tool for easy server-side integration
-* Compatible with Node.js
-* Compatible with Express 3
 
 Functions
 --------------------------------------------------------------------------------
