@@ -15,6 +15,7 @@ csso = require 'csso'
 uglifyjs = require 'uglify-js'
 
 oj = require './oj'
+oj.isClient = false
 
 verbosity = null
 

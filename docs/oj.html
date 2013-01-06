@@ -69,7 +69,9 @@
 
 <span class="nv">root = </span><span class="nx">@</span>
 
-<span class="nv">oj.version = </span><span class="s">&#39;0.0.7&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Export for NodeJS if necessary</p></div></div><div class="code"><div class="wrapper"><span class="k">if</span> <span class="k">typeof</span> <span class="nx">module</span> <span class="o">!=</span> <span class="s">&#39;undefined&#39;</span>
+<span class="nv">oj.version = </span><span class="s">&#39;0.0.7&#39;</span>
+
+<span class="nv">oj.isClient = </span><span class="kc">true</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Export for NodeJS if necessary</p></div></div><div class="code"><div class="wrapper"><span class="k">if</span> <span class="k">typeof</span> <span class="nx">module</span> <span class="o">!=</span> <span class="s">&#39;undefined&#39;</span>
   <span class="nv">exports = module.exports = </span><span class="nx">oj</span>
 <span class="k">else</span>
   <span class="nx">root</span><span class="p">[</span><span class="s">&#39;oj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nx">oj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-helpers">Utility: Helpers</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">ArrayP = </span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span>
@@ -364,6 +366,7 @@ context          Object to extend oj methods and objects into
 
   <span class="nv">options = </span><span class="nx">_</span><span class="p">.</span><span class="nx">defaults</span> <span class="p">{},</span> <span class="nx">options</span><span class="p">,</span>
     <span class="nv">html: </span><span class="kc">true</span>
+    <span class="nv">dom: </span><span class="kc">false</span>
     <span class="nv">debug: </span><span class="kc">false</span>
 
   <span class="nv">options.html = </span><span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">html</span> <span class="k">then</span> <span class="p">[]</span> <span class="k">else</span> <span class="kc">null</span>  <span class="c1"># html accumulator</span>
@@ -456,7 +459,15 @@ context          Object to extend oj methods and objects into
   <span class="k">else</span>
     <span class="k">for</span> <span class="nx">child</span> <span class="k">in</span> <span class="nx">children</span>
       <span class="nx">_compileDeeper</span> <span class="nx">_compileAny</span><span class="p">,</span> <span class="nx">child</span><span class="p">,</span> <span class="nx">options</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>End tag if you have children or your tag closes</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="nx">children</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">or</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">tag</span><span class="p">.</span><span class="nx">isClosed</span><span class="p">(</span><span class="nx">tag</span><span class="p">)</span>
-    <span class="nx">options</span><span class="p">.</span><span class="nx">html</span><span class="o">?</span><span class="p">.</span><span class="nx">push</span> <span class="s">&quot;&lt;/</span><span class="si">#{</span><span class="nx">tag</span><span class="si">}</span><span class="s">&gt;&quot;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojcontrol">oj.Control</h2>
+    <span class="nx">options</span><span class="p">.</span><span class="nx">html</span><span class="o">?</span><span class="p">.</span><span class="nx">push</span> <span class="s">&quot;&lt;/</span><span class="si">#{</span><span class="nx">tag</span><span class="si">}</span><span class="s">&gt;&quot;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojmake">oj.make</h2>
+
+<p>Make oj directly in the DOM</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.make = </span><span class="nf">(options, ojml) -&gt;</span>
+  <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span> <span class="nx">options</span><span class="p">,</span>
+    <span class="nv">dom: </span><span class="kc">true</span>
+    <span class="nv">html: </span><span class="kc">false</span>
+  <span class="nv">result = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">options</span><span class="p">,</span> <span class="nx">ojml</span>
+  <span class="nx">result</span><span class="p">.</span><span class="nx">js</span><span class="p">()</span>
+  <span class="nx">result</span><span class="p">.</span><span class="nx">dom</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojcontrol">oj.Control</h2>
 
 <p>Properties
   $             gets root element

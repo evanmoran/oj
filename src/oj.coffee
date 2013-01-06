@@ -137,6 +137,8 @@ root = @
 
 oj.version = '0.0.7'
 
+oj.isClient = true
+
 # Export for NodeJS if necessary
 if typeof module != 'undefined'
   exports = module.exports = oj
@@ -567,6 +569,7 @@ oj.compile = (options, ojml) ->
 
   options = _.defaults {}, options,
     html: true
+    dom: false
     debug: false
 
   options.html = if options.html then [] else null  # html accumulator
@@ -729,6 +732,18 @@ _compileTag = (ojml, options) ->
   # End tag if you have children or your tag closes
   if children.length > 0 or oj.tag.isClosed(tag)
     options.html?.push "</#{tag}>"
+
+# oj.make
+# ------------------------------------------------------------------------------
+# Make oj directly in the DOM
+
+oj.make = (options, ojml) ->
+  _.extend options,
+    dom: true
+    html: false
+  result = oj.compile options, ojml
+  result.js()
+  result.dom
 
 # oj.Control
 # ------------------------------------------------------------------------------

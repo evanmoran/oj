@@ -6,21 +6,38 @@ _users = require './partials/_users'
 userEvan = name: 'Evan', height: 6.1, id: 27
 userLaura = name: 'Laura', height: 5.5, id: 823
 
-# oj.View = class View
-#   $: (selector) -> @$el.find selector
-#   $el: null
-#   click: ()
-#   oj: ->
-#   html: ->
-#     oj.compile(@oj()).html
+class View
+  constructor: ->
+    console.log "View.constructor: ", arguments
 
-# oj.List = class List extends oj.View
-#   constructor: ->
-#     super arguments
-#     args = oj.construct arguments
-#     list = args[0]
-#   value: []
+  awaken: ->
+    console.log "View.awaken: ", arguments
+    @isAwake = true
 
+  $: (selector) -> @$el.find selector
+  $el: null
+
+  # css: selector -> styles
+  # events are done via oj
+
+  click: ->
+  oj: ->
+  html: ->
+    # compile(@oj()).html
+
+class List extends View
+  constructor: ->
+    console.log "List.constructor: ", arguments
+    super arguments
+    # args = oj.construct arguments
+    # list = args[0]
+
+  awaken: ->
+    console.log "List.awaken: ", arguments
+
+if isClient
+  window.List = List
+  window.View = View
 
 module.exports =
   html ->
