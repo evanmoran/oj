@@ -1,0 +1,6 @@
+
+module.exports = (users) ->
+  ul ->
+    for user in users
+      li ->
+        a user.name, href: "http://twitter.com/#{user.id}"

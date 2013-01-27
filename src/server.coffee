@@ -196,7 +196,6 @@ compileFile = (filePath, includeDir, options = {}) ->
   hookCache = null
   hookOriginalCache = null
 
-
 # Keep track of which files are watched
 watchCache = {}
 isWatched = (fullPath) ->

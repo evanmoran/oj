@@ -227,6 +227,7 @@ _.reduce = (obj = [], iterator, memo, context) ->
         return result
       self
 
+
 _.sortedIndex = (array, obj, iterator = _.identity) ->
   low = 0
   high = array.length;
@@ -247,6 +248,41 @@ _.indexOf = (array, item, isSorted) ->
       return i
   -1
 
+# _.create
+# ------------------------------------------------------------------------------
+# Abstract Object.create for older browsers
+#
+# Define this once to improve performance in older browsers
+F = ->
+_.create =
+  # Check for existing native / shimmed Object.create
+  if typeof Object.create == "function"
+    # found native/shim, so use it
+    Object.create
+
+  # Based on Crockford shim
+  else
+    (o) ->
+      # set the prototype of the function
+      # so we will get `o` as the prototype
+      # of the new object instance
+      F.prototype = o
+
+      # create a new object that inherits from
+      # the `o` parameter
+      child = new F()
+
+      # clean up just in case o is really large
+      F.prototype = null
+
+      # send it back
+      child
+
+_.getPrototypeOf =
+  if typeof Object.getPrototypeOf == "function"
+    Object.getPrototypeOf
+  else
+    (o) -> o.proto || o.constructor.prototype
 
 # Utility: Type Detection
 # -----------------------
@@ -310,30 +346,6 @@ oj.type = (name, args) ->
 
 oj.enum = (name, args) ->
   throw 'NYI'
-
-
-###
-Type = oj.type 'Foo',
-  methods:
-    a: ->
-    b: ->
-      oj.super()
-  properties:
-    a:
-      get:
-    b:
-      get:
-      set:
-
-type1 = new Type (arguments...)
-type2 = new Type (backboneModel)  # will call toJSON() to construct
-
-Type.addMethod(name, function)
-Type.addProperty(name, definition)
-Type.addStaticMethod(name, function)
-Type.addStaticProperty(name, definition)
-oj.type 'Type', extends: TypeBase,
-###
 
 # Utility: Iteration
 # ------------------------------------------------------------------------
@@ -440,6 +452,19 @@ _.defaults = (obj) ->
         obj[prop] = source[prop]
   ))
   obj
+
+_.uniqueSort = (array, isSorted = false) ->
+  if not isSorted
+    array.sort()
+  out = []
+  for item,ix in array
+    if ix > 0 and array[ix-1] == array[ix]
+      continue
+    out.push item
+  out
+
+_.uniqueSortedUnion = (array, array2) ->
+  _.uniqueSort (array.concat array2)
 
 # oj.partial (module, arg1, arg2, ...)
 # ------------------------------------------------------------------------------
@@ -670,6 +695,7 @@ _compileTag = (ojml, options) ->
 
   children = if attributes then ojml.slice 2 else ojml.slice 1
 
+  # Compile to html if requested
   if options.html
     # attribute.style can be set with objects
     if _.isObject attributes?.style
@@ -737,28 +763,228 @@ _compileTag = (ojml, options) ->
 # ------------------------------------------------------------------------------
 # Make oj directly in the DOM
 
-oj.make = (options, ojml) ->
-  _.extend options,
-    dom: true
-    html: false
-  result = oj.compile options, ojml
-  result.js()
-  result.dom
+# oj.make = (options, ojml) ->
+#   _.extend options,
+#     dom: true
+#     html: false
+#   result = oj.compile options, ojml
+#   result.js()
+#   result.dom
 
-# oj.Control
+# oj.addMethod
+# ------------------------------------------------------------------------------
+
+oj.addMethods = (obj, mapNameToMethod) ->
+  for methodName, method of mapNameToMethod
+    oj.addMethod obj, methodName, method
+
+# oj.addMethod
+# ------------------------------------------------------------------------------
+
+oj.addMethod = (obj, methodName, method) ->
+  throw 'oj.addMethod: string expected for second argument' unless _.isString methodName
+  throw 'oj.addMethod: function expected for thrid argument' unless _.isFunction method
+  Object.defineProperty obj, methodName,
+    value: method
+    enumerable: false
+    writable: false
+    configurable: true
+  return
+
+# oj.removeMethod
+# ------------------------------------------------------------------------------
+
+oj.removeMethod = (obj, methodName) ->
+  throw 'oj.removeMethod: string expected for second argument' unless _.isString methodName
+  delete obj[methodName]
+  return
+
+
+# oj.addProperties
+# ------------------------------------------------------------------------------
+
+oj.addProperties = (obj, mapNameToInfo) ->
+  for propName, propInfo of mapNameToInfo
+    # Prop value may be specified by an object with a get key or by value
+    if !(_.isObject propInfo) || !propInfo.get?
+      propInfo = value: propInfo
+
+    oj.addProperty obj, propName, propInfo
+
+# oj.addProperty
+# ------------------------------------------------------------------------------
+
+oj.addProperty = (obj, propName, propInfo) ->
+  throw 'oj.addProperty: string expected for second argument' unless _.isString propName
+  throw 'oj.addProperty: object expected for third argument' unless (_.isObject propInfo)
+  throw 'oj.addProperty: get or value key expected in third argument' unless (propInfo.get? or propInfo.value?)
+
+  _.defaults propInfo, enumerable: true, configurable: true
+
+  # Remove property if it already exists
+  if obj[propName]?
+    oj.removeProperty obj, propName
+
+  # Add the property
+  Object.defineProperty obj, propName, propInfo
+  return
+
+# oj.removeProperty
+# ------------------------------------------------------------------------------
+
+oj.removeProperty = (obj, propName) ->
+  throw 'oj.addProperty: string expected for second argument' unless _.isString propName
+  delete obj[propName]
+
+# oj.isProperty
+# ------------------------------------------------------------------------------
+# Determine if the specified key is was defined by addProperty
+
+oj.isProperty = (obj, propName) ->
+  throw 'oj.isProperty: string expected for second argument' unless _.isString propName
+
+  Object.getOwnPropertyDescriptor(obj, propName).get?
+
+# oj.copyProperty
+# ------------------------------------------------------------------------------
+# Determine copy source.propName to dest.propName
+
+oj.copyProperty = (dest, source, propName) ->
+  info = Object.getOwnPropertyDescriptor source, propName
+  Object.defineProperty dest, propName, info
+
+
+
+# oj.inherit
+# ------------------------------------------------------------------------------
+###
+
+  __extends = function(Child, Parent) {     #1
+    for (var key in Parent) {               #2
+      if (__hasProp.call(Parent, key))      #3
+        Child[key] = Parent[key];           #4
+    }
+    function ctor() {                       #5
+      this.constructor = Child;             #6 (MISSING)
+    }
+    ctor.prototype = Parent.prototype;      #7
+    Child.prototype = new ctor();           #8
+    Child.__super__ = Parent.prototype;     #9
+    return Child;                           #10
+  };
+
+###
+# Based on @islandr's https://github.com/jashkenas/coffee-script/issues/2385
+_.inherit = (Child, Parent) ->
+
+  # Move
+  for key of Parent
+    oj.copyProperty Child, Parent, key
+
+  ctor = ->
+  ctor::constructor = Child
+  ctor:: = Parent::
+  Child:: = new ctor()
+
+  # Child:: = Object.create Parent::
+
+  Child.__super__ = Parent::
+
+  Child::constructor = Child
+  # provides easy access to the given method on super (must use call or apply)
+  Child::super = (method) -> @constructor.__super__[method]
+
+  return
+
+
+# oj.createType
+# ------------------------------------------------------------------------------
+
+oj.createType = (name, args = {}) ->
+  throw 'oj.createType: string expected for first argument' unless _.isString name
+  throw 'oj.createType: object expected for second argument' unless _.isObject args
+
+  args.methods ?= {}
+  args.properties ?= {}
+
+  # return Child.__super__.constructor.apply(this, arguments);
+  Out = new Function("""return function #{name}(){
+    if ( !(this instanceof #{name}) )
+      return new #{name}();
+    if (#{name}.__super__ && #{name}.__super__.constructor) {
+      console.log("#{name}.__super__: ", #{name}.__super__.constructor);
+
+    }
+
+  }"""
+  )();
+
+  console.log "Out: ", Out
+
+  if args.extends?
+    _.inherit Out, args.extends
+
+  propKeys = (_.keys args.properties).sort()
+  methodKeys = (_.keys args.methods).sort()
+
+  # Add 'properties' helper to type
+  if Out::properties?
+    Out::properties = _.uniqueSortedUnion Out::properties, propKeys
+  else
+    oj.addProperty Out::, 'properties',
+      value:propKeys, writable:false, enumerable:false
+
+  # Add 'methods' helper to type
+  if Out::methods?
+    Out::methods = _.uniqueSortedUnion Out::methods, methodKeys
+  else
+    oj.addProperty Out::, 'methods',
+      value:methodKeys, writable:false, enumerable:false
+
+  oj.addMethods Out::, args.methods
+
+  oj.addProperties Out::, args.properties
+
+  Out
+
+# oj.createView
+# ------------------------------------------------------------------------------
+
+oj.createView = (name, args) ->
+  throw 'oj.createView: string expected for first argument' unless _.isString name
+  throw 'oj.createView: object expected for second argument' unless _.isObject args
+  args.extends ?= oj.View
+  oj.createType name, args
+
+# oj.View
 # ------------------------------------------------------------------------------
 # Properties
-#   $             gets root element
-#   set           Initialize from element, $(selector), or ojml
+#   $el           Reference el
+#   attributes    Initialize from element, $(selector), or ojml
 
 # Methods
+#   $             Find elements
+#   parse         Called when object is being constructed     (need this?)
+#   oj            Property to set or get ojml of this object. Will reinitialize if set
+#   toJSON        Alias for ojml get method
+#   css
+
+# Backbone Methods
 #   constructor   Called when object is first constructed
 #   initialize    Called when object is serialized into dom
-#   parse         Called when object is being constructed     (need this?)
-#   ojml          Property to set or get ojml of this object. Will reinitialize if set
-#   toJSON        Alias for ojml get method
+#   $el
+#   $
+#
 
-oj.Control = class Control
+# oj.List
+# ------------------------------------------------------------------------------
+# List control
+
+
+
+
+
+
 
 # oj.Link
 # ------------------------------------------------------------------------------

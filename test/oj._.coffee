@@ -202,6 +202,15 @@ describe 'oj._', ->
     (_.has obj3, 'two').should.equal true
     (_.has obj3, 'three').should.equal true
 
+  it 'uniqueSort', ->
+    (_.uniqueSort []).should.deep.equal []
+    (_.uniqueSort [1]).should.deep.equal [1]
+    (_.uniqueSort [1,2]).should.deep.equal [1,2]
+    (_.uniqueSort [2,1]).should.deep.equal [1,2]
+    (_.uniqueSort [2,1,2]).should.deep.equal [1,2]
+    (_.uniqueSort [2,1,2,1]).should.deep.equal [1,2]
+    (_.uniqueSort [1,1,1,1]).should.deep.equal [1]
+
   it 'isOJ'
   it 'isOJML'
   it 'isElement'

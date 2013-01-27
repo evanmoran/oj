@@ -148,6 +148,7 @@
         <span class="k">return</span> <span class="nx">result</span>
       <span class="nx">self</span>
 
+
 <span class="nv">_.sortedIndex = </span><span class="nf">(array, obj, iterator = _.identity) -&gt;</span>
   <span class="nv">low = </span><span class="mi">0</span>
   <span class="nv">high = </span><span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
@@ -166,7 +167,22 @@
   <span class="k">for</span> <span class="nx">v</span><span class="p">,</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">array</span>
     <span class="k">if</span> <span class="nx">v</span> <span class="o">==</span> <span class="nx">item</span>
       <span class="k">return</span> <span class="nx">i</span>
-  <span class="o">-</span><span class="mi">1</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-type-detection">Utility: Type Detection</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isjQuery</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isjQuery = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">jquery</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isBackbone</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isBackbone = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="kc">on</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">trigger</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isOJ</span> <span class="nx">obj</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isOJ
+  <span class="o">-</span><span class="mi">1</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-create">_.create</h2>
+
+<p>Abstract Object.create for older browsers</p>
+
+<p>Define this once to improve performance in older browsers</p></div></div><div class="code"><div class="wrapper"><span class="nv">F = </span><span class="o">-&gt;</span>
+<span class="nv">_.create =</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Check for existing native / shimmed Object.create</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="k">typeof</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span> <span class="o">==</span> <span class="s">&quot;function&quot;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>found native/shim, so use it</p></div></div><div class="code"><div class="wrapper">    <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Based on Crockford shim</p></div></div><div class="code"><div class="wrapper">  <span class="k">else</span>
+    <span class="nf">(o) -&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>set the prototype of the function
+so we will get <code>o</code> as the prototype
+of the new object instance</p></div></div><div class="code"><div class="wrapper">      <span class="nv">F.prototype = </span><span class="nx">o</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>create a new object that inherits from
+the <code>o</code> parameter</p></div></div><div class="code"><div class="wrapper">      <span class="nv">child = </span><span class="k">new</span> <span class="nx">F</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>clean up just in case o is really large</p></div></div><div class="code"><div class="wrapper">      <span class="nv">F.prototype = </span><span class="kc">null</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>send it back</p></div></div><div class="code"><div class="wrapper">      <span class="nx">child</span>
+
+<span class="nv">_.getPrototypeOf =</span>
+  <span class="k">if</span> <span class="k">typeof</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">getPrototypeOf</span> <span class="o">==</span> <span class="s">&quot;function&quot;</span>
+    <span class="nb">Object</span><span class="p">.</span><span class="nx">getPrototypeOf</span>
+  <span class="k">else</span>
+    <span class="nf">(o) -&gt;</span> <span class="nx">o</span><span class="p">.</span><span class="nx">proto</span> <span class="o">||</span> <span class="nx">o</span><span class="p">.</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">prototype</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-type-detection">Utility: Type Detection</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isjQuery</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isjQuery = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">jquery</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isBackbone</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isBackbone = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="kc">on</span> <span class="o">and</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">trigger</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isOJ</span> <span class="nx">obj</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.isOJ
 Determine if obj is an OJ instance
 TODO: Consider if this should be more duck typed on expected methods</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isOJ = </span><span class="nf">(obj) -&gt;</span> <span class="o">!!</span><span class="p">(</span><span class="nx">obj</span> <span class="o">and</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">ojtype</span><span class="p">))</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Determine if object or array is empty</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.isEmpty = </span><span class="nf">(obj) -&gt;</span>
   <span class="k">return</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span> <span class="nx">obj</span>
@@ -202,26 +218,7 @@ TODO: support options, deep: true</p></div></div><div class="code"><div class="w
     <span class="vi">@_fields = </span><span class="nx">args</span><span class="p">.</span><span class="nx">fields</span>
 
 <span class="nv">oj.enum = </span><span class="nf">(name, args) -&gt;</span>
-  <span class="k">throw</span> <span class="s">&#39;NYI&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="">#</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">Type = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;Foo&#39;</span><span class="p">,</span>
-  <span class="nv">methods:</span>
-    <span class="nv">a: </span><span class="o">-&gt;</span>
-    <span class="nv">b: </span><span class="o">-&gt;</span>
-      <span class="nx">oj</span><span class="p">.</span><span class="k">super</span><span class="p">()</span>
-  <span class="nv">properties:</span>
-    <span class="nv">a:</span>
-      <span class="nv">get:</span>
-    <span class="nv">b:</span>
-      <span class="nv">get:</span>
-      <span class="nv">set:</span>
-
-<span class="nv">type1 = </span><span class="k">new</span> <span class="nx">Type</span> <span class="p">(</span><span class="nx">arguments</span><span class="p">...)</span>
-<span class="nv">type2 = </span><span class="k">new</span> <span class="nx">Type</span> <span class="p">(</span><span class="nx">backboneModel</span><span class="p">)</span>  <span class="c1"># will call toJSON() to construct</span>
-
-<span class="nx">Type</span><span class="p">.</span><span class="nx">addMethod</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">function</span><span class="p">)</span>
-<span class="nx">Type</span><span class="p">.</span><span class="nx">addProperty</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">definition</span><span class="p">)</span>
-<span class="nx">Type</span><span class="p">.</span><span class="nx">addStaticMethod</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">function</span><span class="p">)</span>
-<span class="nx">Type</span><span class="p">.</span><span class="nx">addStaticProperty</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">definition</span><span class="p">)</span>
-<span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;Type&#39;</span><span class="p">,</span> <span class="k">extends</span><span class="o">:</span> <span class="nx">TypeBase</span><span class="p">,</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="">#</h1></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-iteration">Utility: Iteration</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_each(collection, iterator, context)</p>
+  <span class="k">throw</span> <span class="s">&#39;NYI&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-iteration">Utility: Iteration</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_each(collection, iterator, context)</p>
 
 <pre><code>Iterate over collection or function. If a function
 is encountered it is evaluated before iteration
@@ -293,7 +290,20 @@ options
       <span class="k">if</span> <span class="o">not</span> <span class="nx">obj</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span><span class="o">?</span>
         <span class="nx">obj</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span> <span class="o">=</span> <span class="nx">source</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span>
   <span class="p">))</span>
-  <span class="nx">obj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojpartial-module-arg1-arg2-">oj.partial (module, arg1, arg2, ...)</h2>
+  <span class="nx">obj</span>
+
+<span class="nv">_.uniqueSort = </span><span class="nf">(array, isSorted = false) -&gt;</span>
+  <span class="k">if</span> <span class="o">not</span> <span class="nx">isSorted</span>
+    <span class="nx">array</span><span class="p">.</span><span class="nx">sort</span><span class="p">()</span>
+  <span class="nv">out = </span><span class="p">[]</span>
+  <span class="k">for</span> <span class="nx">item</span><span class="p">,</span><span class="nx">ix</span> <span class="k">in</span> <span class="nx">array</span>
+    <span class="k">if</span> <span class="nx">ix</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">and</span> <span class="nx">array</span><span class="p">[</span><span class="nx">ix</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="nx">array</span><span class="p">[</span><span class="nx">ix</span><span class="p">]</span>
+      <span class="k">continue</span>
+    <span class="nx">out</span><span class="p">.</span><span class="nx">push</span> <span class="nx">item</span>
+  <span class="nx">out</span>
+
+<span class="nv">_.uniqueSortedUnion = </span><span class="nf">(array, array2) -&gt;</span>
+  <span class="nx">_</span><span class="p">.</span><span class="nx">uniqueSort</span> <span class="p">(</span><span class="nx">array</span><span class="p">.</span><span class="nx">concat</span> <span class="nx">array2</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojpartial-module-arg1-arg2-">oj.partial (module, arg1, arg2, ...)</h2>
 
 <p>Arguments are passed to exported module</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.partial = </span><span class="nf">(module, json) -&gt;</span>
   <span class="nv">m = </span><span class="nx">require</span> <span class="nx">module</span>
@@ -426,9 +436,7 @@ context          Object to extend oj methods and objects into
   <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">ojml</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="nv">attributes = </span><span class="nx">ojml</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
-  <span class="nv">children = </span><span class="k">if</span> <span class="nx">attributes</span> <span class="k">then</span> <span class="nx">ojml</span><span class="p">.</span><span class="nx">slice</span> <span class="mi">2</span> <span class="k">else</span> <span class="nx">ojml</span><span class="p">.</span><span class="nx">slice</span> <span class="mi">1</span>
-
-  <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">html</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>attribute.style can be set with objects</p></div></div><div class="code"><div class="wrapper">    <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">attributes</span><span class="o">?</span><span class="p">.</span><span class="nx">style</span>
+  <span class="nv">children = </span><span class="k">if</span> <span class="nx">attributes</span> <span class="k">then</span> <span class="nx">ojml</span><span class="p">.</span><span class="nx">slice</span> <span class="mi">2</span> <span class="k">else</span> <span class="nx">ojml</span><span class="p">.</span><span class="nx">slice</span> <span class="mi">1</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Compile to html if requested</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">html</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>attribute.style can be set with objects</p></div></div><div class="code"><div class="wrapper">    <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">attributes</span><span class="o">?</span><span class="p">.</span><span class="nx">style</span>
       <span class="nv">attributes.style = </span><span class="nx">_styleFromObject</span> <span class="nx">attributes</span><span class="p">.</span><span class="nx">style</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>attribute.c stands for class</p></div></div><div class="code"><div class="wrapper">    <span class="k">if</span> <span class="nx">attributes</span><span class="o">?</span><span class="p">.</span><span class="nx">c</span><span class="o">?</span>
       <span class="nv">attributes.class = </span><span class="nx">attributes</span><span class="p">.</span><span class="nx">c</span>
       <span class="nv">attributes.c = </span><span class="kc">null</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>attributes.class can be set with arrays</p></div></div><div class="code"><div class="wrapper">    <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span> <span class="nx">attributes</span><span class="o">?</span><span class="p">.</span><span class="k">class</span>
@@ -461,22 +469,129 @@ context          Object to extend oj methods and objects into
       <span class="nx">_compileDeeper</span> <span class="nx">_compileAny</span><span class="p">,</span> <span class="nx">child</span><span class="p">,</span> <span class="nx">options</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>End tag if you have children or your tag closes</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="nx">children</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">or</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">tag</span><span class="p">.</span><span class="nx">isClosed</span><span class="p">(</span><span class="nx">tag</span><span class="p">)</span>
     <span class="nx">options</span><span class="p">.</span><span class="nx">html</span><span class="o">?</span><span class="p">.</span><span class="nx">push</span> <span class="s">&quot;&lt;/</span><span class="si">#{</span><span class="nx">tag</span><span class="si">}</span><span class="s">&gt;&quot;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojmake">oj.make</h2>
 
-<p>Make oj directly in the DOM</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.make = </span><span class="nf">(options, ojml) -&gt;</span>
-  <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span> <span class="nx">options</span><span class="p">,</span>
-    <span class="nv">dom: </span><span class="kc">true</span>
-    <span class="nv">html: </span><span class="kc">false</span>
-  <span class="nv">result = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">options</span><span class="p">,</span> <span class="nx">ojml</span>
-  <span class="nx">result</span><span class="p">.</span><span class="nx">js</span><span class="p">()</span>
-  <span class="nx">result</span><span class="p">.</span><span class="nx">dom</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojcontrol">oj.Control</h2>
+<p>Make oj directly in the DOM</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>oj.make = (options, ojml) ->
+  _.extend options,
+    dom: true
+    html: false
+  result = oj.compile options, ojml
+  result.js()
+  result.dom</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojaddmethod">oj.addMethod</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.addMethods = </span><span class="nf">(obj, mapNameToMethod) -&gt;</span>
+  <span class="k">for</span> <span class="nx">methodName</span><span class="p">,</span> <span class="nx">method</span> <span class="k">of</span> <span class="nx">mapNameToMethod</span>
+    <span class="nx">oj</span><span class="p">.</span><span class="nx">addMethod</span> <span class="nx">obj</span><span class="p">,</span> <span class="nx">methodName</span><span class="p">,</span> <span class="nx">method</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojaddmethod">oj.addMethod</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.addMethod = </span><span class="nf">(obj, methodName, method) -&gt;</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.addMethod: string expected for second argument&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">methodName</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.addMethod: function expected for thrid argument&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isFunction</span> <span class="nx">method</span>
+  <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span> <span class="nx">obj</span><span class="p">,</span> <span class="nx">methodName</span><span class="p">,</span>
+    <span class="nv">value: </span><span class="nx">method</span>
+    <span class="nv">enumerable: </span><span class="kc">false</span>
+    <span class="nv">writable: </span><span class="kc">false</span>
+    <span class="nv">configurable: </span><span class="kc">true</span>
+  <span class="k">return</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojremovemethod">oj.removeMethod</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.removeMethod = </span><span class="nf">(obj, methodName) -&gt;</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.removeMethod: string expected for second argument&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">methodName</span>
+  <span class="k">delete</span> <span class="nx">obj</span><span class="p">[</span><span class="nx">methodName</span><span class="p">]</span>
+  <span class="k">return</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojaddproperties">oj.addProperties</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.addProperties = </span><span class="nf">(obj, mapNameToInfo) -&gt;</span>
+  <span class="k">for</span> <span class="nx">propName</span><span class="p">,</span> <span class="nx">propInfo</span> <span class="k">of</span> <span class="nx">mapNameToInfo</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Prop value may be specified by an object with a get key or by value</p></div></div><div class="code"><div class="wrapper">    <span class="k">if</span> <span class="o">!</span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">propInfo</span><span class="p">)</span> <span class="o">||</span> <span class="o">!</span><span class="nx">propInfo</span><span class="p">.</span><span class="nx">get</span><span class="o">?</span>
+      <span class="nv">propInfo = value: </span><span class="nx">propInfo</span>
+
+    <span class="nx">oj</span><span class="p">.</span><span class="nx">addProperty</span> <span class="nx">obj</span><span class="p">,</span> <span class="nx">propName</span><span class="p">,</span> <span class="nx">propInfo</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojaddproperty">oj.addProperty</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.addProperty = </span><span class="nf">(obj, propName, propInfo) -&gt;</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.addProperty: string expected for second argument&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">propName</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.addProperty: object expected for third argument&#39;</span> <span class="nx">unless</span> <span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">propInfo</span><span class="p">)</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.addProperty: get or value key expected in third argument&#39;</span> <span class="nx">unless</span> <span class="p">(</span><span class="nx">propInfo</span><span class="p">.</span><span class="nx">get</span><span class="o">?</span> <span class="o">or</span> <span class="nx">propInfo</span><span class="p">.</span><span class="nx">value</span><span class="o">?</span><span class="p">)</span>
+
+  <span class="nx">_</span><span class="p">.</span><span class="nx">defaults</span> <span class="nx">propInfo</span><span class="p">,</span> <span class="nv">enumerable: </span><span class="kc">true</span><span class="p">,</span> <span class="nv">configurable: </span><span class="kc">true</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Remove property if it already exists</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="nx">obj</span><span class="p">[</span><span class="nx">propName</span><span class="p">]</span><span class="o">?</span>
+    <span class="nx">oj</span><span class="p">.</span><span class="nx">removeProperty</span> <span class="nx">obj</span><span class="p">,</span> <span class="nx">propName</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Add the property</p></div></div><div class="code"><div class="wrapper">  <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span> <span class="nx">obj</span><span class="p">,</span> <span class="nx">propName</span><span class="p">,</span> <span class="nx">propInfo</span>
+  <span class="k">return</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojremoveproperty">oj.removeProperty</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.removeProperty = </span><span class="nf">(obj, propName) -&gt;</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.addProperty: string expected for second argument&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">propName</span>
+  <span class="k">delete</span> <span class="nx">obj</span><span class="p">[</span><span class="nx">propName</span><span class="p">]</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojisproperty">oj.isProperty</h2>
+
+<p>Determine if the specified key is was defined by addProperty</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.isProperty = </span><span class="nf">(obj, propName) -&gt;</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.isProperty: string expected for second argument&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">propName</span>
+
+  <span class="nb">Object</span><span class="p">.</span><span class="nx">getOwnPropertyDescriptor</span><span class="p">(</span><span class="nx">obj</span><span class="p">,</span> <span class="nx">propName</span><span class="p">).</span><span class="nx">get</span><span class="o">?</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojcopyproperty">oj.copyProperty</h2>
+
+<p>Determine copy source.propName to dest.propName</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.copyProperty = </span><span class="nf">(dest, source, propName) -&gt;</span>
+  <span class="nv">info = </span><span class="nb">Object</span><span class="p">.</span><span class="nx">getOwnPropertyDescriptor</span> <span class="nx">source</span><span class="p">,</span> <span class="nx">propName</span>
+  <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span> <span class="nx">dest</span><span class="p">,</span> <span class="nx">propName</span><span class="p">,</span> <span class="nx">info</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojinherit">oj.inherit</h2>
+
+<h1 id="">#</h1></div></div><div class="code"><div class="wrapper">  <span class="nv">__extends = </span><span class="nx">function</span><span class="p">(</span><span class="nx">Child</span><span class="p">,</span> <span class="nx">Parent</span><span class="p">)</span> <span class="p">{</span>     <span class="c1">#1</span>
+    <span class="k">for</span> <span class="p">(</span><span class="nx">var</span> <span class="nx">key</span> <span class="k">in</span> <span class="nx">Parent</span><span class="p">)</span> <span class="p">{</span>               <span class="c1">#2</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">__hasProp</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">Parent</span><span class="p">,</span> <span class="nx">key</span><span class="p">))</span>      <span class="c1">#3</span>
+        <span class="nx">Child</span><span class="p">[</span><span class="nx">key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">Parent</span><span class="p">[</span><span class="nx">key</span><span class="p">];</span>           <span class="c1">#4</span>
+    <span class="p">}</span>
+    <span class="nx">function</span> <span class="nx">ctor</span><span class="p">()</span> <span class="p">{</span>                       <span class="c1">#5</span>
+      <span class="k">this</span><span class="p">.</span><span class="nv">constructor = </span><span class="nx">Child</span><span class="p">;</span>             <span class="c1">#6 (MISSING)</span>
+    <span class="p">}</span>
+    <span class="nv">ctor.prototype = </span><span class="nx">Parent</span><span class="p">.</span><span class="nx">prototype</span><span class="p">;</span>      <span class="c1">#7</span>
+    <span class="nv">Child.prototype = </span><span class="k">new</span> <span class="nx">ctor</span><span class="p">();</span>           <span class="c1">#8</span>
+    <span class="nv">Child.__super__ = </span><span class="nx">Parent</span><span class="p">.</span><span class="nx">prototype</span><span class="p">;</span>     <span class="c1">#9</span>
+    <span class="k">return</span> <span class="nx">Child</span><span class="p">;</span>                           <span class="c1">#10</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="">#</h1>
+
+<p>Based on @islandr's https://github.com/jashkenas/coffee-script/issues/2385</p></div></div><div class="code"><div class="wrapper"><span class="nv">_.inherit = </span><span class="nf">(Child, Parent) -&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Move</p></div></div><div class="code"><div class="wrapper">  <span class="k">for</span> <span class="nx">key</span> <span class="k">of</span> <span class="nx">Parent</span>
+    <span class="nx">oj</span><span class="p">.</span><span class="nx">copyProperty</span> <span class="nx">Child</span><span class="p">,</span> <span class="nx">Parent</span><span class="p">,</span> <span class="nx">key</span>
+
+  <span class="nv">ctor = </span><span class="o">-&gt;</span>
+  <span class="nv">ctor::constructor = </span><span class="nx">Child</span>
+  <span class="nv">ctor:: = Parent::</span>
+  <span class="nv">Child:: = </span><span class="k">new</span> <span class="nx">ctor</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Child:: = Object.create Parent::</p></div></div><div class="code"><div class="wrapper">  <span class="nv">Child.__super__ = Parent::</span>
+
+  <span class="nv">Child::constructor = </span><span class="nx">Child</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>provides easy access to the given method on super (must use call or apply)</p></div></div><div class="code"><div class="wrapper">  <span class="nv">Child::super = </span><span class="nf">(method) -&gt;</span> <span class="nx">@constructor</span><span class="p">.</span><span class="nx">__super__</span><span class="p">[</span><span class="nx">method</span><span class="p">]</span>
+
+  <span class="k">return</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojcreatetype">oj.createType</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.createType = </span><span class="nf">(name, args = {}) -&gt;</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.createType: string expected for first argument&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">name</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.createType: object expected for second argument&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">args</span>
+
+  <span class="nx">args</span><span class="p">.</span><span class="nx">methods</span> <span class="o">?=</span> <span class="p">{}</span>
+  <span class="nx">args</span><span class="p">.</span><span class="nx">properties</span> <span class="o">?=</span> <span class="p">{}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>return Child.<strong>super</strong>.constructor.apply(this, arguments);</p></div></div><div class="code"><div class="wrapper">  <span class="nv">Out = </span><span class="k">new</span> <span class="nb">Function</span><span class="p">(</span><span class="s">&quot;&quot;&quot;return function </span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">(){</span>
+<span class="s">    if ( !(this instanceof </span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">) )</span>
+<span class="s">      return new </span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">();</span>
+<span class="s">    if (</span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">.__super__ &amp;&amp; </span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">.__super__.constructor) {</span>
+<span class="s">      console.log(&quot;</span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">.__super__: &quot;, </span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">.__super__.constructor);</span>
+
+<span class="s">    }</span>
+
+<span class="s">  }&quot;&quot;&quot;</span>
+  <span class="p">)();</span>
+
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;Out: &quot;</span><span class="p">,</span> <span class="nx">Out</span>
+
+  <span class="k">if</span> <span class="nx">args</span><span class="p">.</span><span class="k">extends</span><span class="o">?</span>
+    <span class="nx">_</span><span class="p">.</span><span class="nx">inherit</span> <span class="nx">Out</span><span class="p">,</span> <span class="nx">args</span><span class="p">.</span><span class="k">extends</span>
+
+  <span class="nv">propKeys = </span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">keys</span> <span class="nx">args</span><span class="p">.</span><span class="nx">properties</span><span class="p">).</span><span class="nx">sort</span><span class="p">()</span>
+  <span class="nv">methodKeys = </span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">keys</span> <span class="nx">args</span><span class="p">.</span><span class="nx">methods</span><span class="p">).</span><span class="nx">sort</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Add 'properties' helper to type</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="nx">Out</span><span class="o">::</span><span class="nx">properties</span><span class="o">?</span>
+    <span class="nv">Out::properties = </span><span class="nx">_</span><span class="p">.</span><span class="nx">uniqueSortedUnion</span> <span class="nx">Out</span><span class="o">::</span><span class="nx">properties</span><span class="p">,</span> <span class="nx">propKeys</span>
+  <span class="k">else</span>
+    <span class="nx">oj</span><span class="p">.</span><span class="nx">addProperty</span> <span class="nx">Out</span><span class="o">::</span><span class="p">,</span> <span class="s">&#39;properties&#39;</span><span class="p">,</span>
+      <span class="nx">value</span><span class="o">:</span><span class="nx">propKeys</span><span class="p">,</span> <span class="nx">writable</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span> <span class="nx">enumerable</span><span class="o">:</span><span class="kc">false</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Add 'methods' helper to type</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="nx">Out</span><span class="o">::</span><span class="nx">methods</span><span class="o">?</span>
+    <span class="nv">Out::methods = </span><span class="nx">_</span><span class="p">.</span><span class="nx">uniqueSortedUnion</span> <span class="nx">Out</span><span class="o">::</span><span class="nx">methods</span><span class="p">,</span> <span class="nx">methodKeys</span>
+  <span class="k">else</span>
+    <span class="nx">oj</span><span class="p">.</span><span class="nx">addProperty</span> <span class="nx">Out</span><span class="o">::</span><span class="p">,</span> <span class="s">&#39;methods&#39;</span><span class="p">,</span>
+      <span class="nx">value</span><span class="o">:</span><span class="nx">methodKeys</span><span class="p">,</span> <span class="nx">writable</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span> <span class="nx">enumerable</span><span class="o">:</span><span class="kc">false</span>
+
+  <span class="nx">oj</span><span class="p">.</span><span class="nx">addMethods</span> <span class="nx">Out</span><span class="o">::</span><span class="p">,</span> <span class="nx">args</span><span class="p">.</span><span class="nx">methods</span>
+
+  <span class="nx">oj</span><span class="p">.</span><span class="nx">addProperties</span> <span class="nx">Out</span><span class="o">::</span><span class="p">,</span> <span class="nx">args</span><span class="p">.</span><span class="nx">properties</span>
+
+  <span class="nx">Out</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojcreateview">oj.createView</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.createView = </span><span class="nf">(name, args) -&gt;</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.createView: string expected for first argument&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">name</span>
+  <span class="k">throw</span> <span class="s">&#39;oj.createView: object expected for second argument&#39;</span> <span class="nx">unless</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">args</span>
+  <span class="nx">args</span><span class="p">.</span><span class="k">extends</span> <span class="o">?=</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">View</span>
+  <span class="nx">oj</span><span class="p">.</span><span class="nx">createType</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">args</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojview">oj.View</h2>
 
 <p>Properties
-  $             gets root element
-  set           Initialize from element, $(selector), or ojml</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Methods
+  $el           Reference el
+  attributes    Initialize from element, $(selector), or ojml</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Methods
+  $             Find elements
+  parse         Called when object is being constructed     (need this?)
+  oj            Property to set or get ojml of this object. Will reinitialize if set
+  toJSON        Alias for ojml get method
+  css</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Backbone Methods
   constructor   Called when object is first constructed
   initialize    Called when object is serialized into dom
-  parse         Called when object is being constructed     (need this?)
-  ojml          Property to set or get ojml of this object. Will reinitialize if set
-  toJSON        Alias for ojml get method</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.Control = </span><span class="k">class</span> <span class="nx">Control</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojlink">oj.Link</h2>
+  $el
+  $</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojlist">oj.List</h2>
+
+<p>List control</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojlink">oj.Link</h2>
 
 <p>oj.Link = class Link extends Control</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojdomreplace">oj.domReplace</h2>
 
