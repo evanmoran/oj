@@ -166,7 +166,12 @@ describe 'oj._', ->
   it 'typeOf', ->
     assert.equal (_.typeOf {}), 'object', '{} case}'
     assert.equal (_.typeOf {a:1}), 'object', '{a:1} case}'
-    assert.equal (_.typeOf {ojtype: 'Table'}), 'Table', 'ojtype case'
+
+    Empty = oj.type 'Empty', {}
+    empty = Empty()
+    assert.equal (_.typeOf Empty), 'function', 'oj type case'
+    assert.equal (_.typeOf empty), 'Empty', 'oj instance case'
+
     assert.equal (_.typeOf new Array), 'array', 'new Array case'
     assert.equal (_.typeOf null), 'null', 'null case'
     assert.equal (_.typeOf undefined), 'undefined', 'undefined case'
@@ -178,6 +183,9 @@ describe 'oj._', ->
     assert.equal (_.typeOf 'string'), 'string', 'string case'
     assert.equal (_.typeOf new Date), 'date', 'new Date case'
     assert.equal (_.typeOf /abc/), 'regexp', '/abc/ case'
+
+    # TODO: Add these cases
+    # assert.equal (Document.createElement('div')), 'dom', 'dom case'
     # assert.equal (_.typeOf $()), 'jquery', 'jquery case'
     # assert.equal (_.typeOf new Backbone.Model.extend()), 'backbone', 'backbone case'
 
@@ -211,7 +219,9 @@ describe 'oj._', ->
     (_.uniqueSort [2,1,2,1]).should.deep.equal [1,2]
     (_.uniqueSort [1,1,1,1]).should.deep.equal [1]
 
-  it 'isOJ'
+  it 'isOJ', ->
+
+
   it 'isOJML'
   it 'isElement'
   it 'isjQuery'

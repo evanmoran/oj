@@ -1,7 +1,7 @@
 
 # oj
 # ==============================================================================
-# Unified templating framework for the people. Thirsty people.
+# A unified templating framework for the people. Thirsty people.
 
 # Helpers
 # ------------------------------------------------------------------------------
@@ -295,8 +295,7 @@ _.isBackbone = (obj) -> !!(obj and obj.on and obj.trigger and not _.isOJ obj)
 
 # _.isOJ
 # Determine if obj is an OJ instance
-# TODO: Consider if this should be more duck typed on expected methods
-_.isOJ = (obj) -> !!(obj and (_.isString obj.ojtype))
+_.isOJ = (obj) -> !!(obj?._oj)
 
 # Determine if object or array is empty
 _.isEmpty = (obj) ->
@@ -317,7 +316,7 @@ _.typeOf = (any) ->
     else if _.isDate any       then t = 'date'
     else if _.isBackbone any   then t = 'backbone'
     else if _.isjQuery any     then t = 'jquery'
-    else if _.isOJ any         then t = any.ojtype
+    else if _.isOJ any         then t = any._type
     else                       t = 'object'
   t
 
@@ -329,20 +328,6 @@ _.clone = (obj) ->
   # TODO: support options, deep: true
   return obj unless _.isObject obj
   if _.isArray obj then obj.slice() else _.extend {}, obj
-
-# oj.create 'name',
-#   methods:
-#   properties:
-#   events:
-
-oj.type = (name, args) ->
-  throw 'NYI'
-
-  constructor = ->
-    @_private = {}
-    @_properties = args.properties
-    @_methods = args.methods
-    @_fields = args.fields
 
 oj.enum = (name, args) ->
   throw 'NYI'
@@ -777,6 +762,7 @@ _compileTag = (ojml, options) ->
 oj.addMethods = (obj, mapNameToMethod) ->
   for methodName, method of mapNameToMethod
     oj.addMethod obj, methodName, method
+  return
 
 # oj.addMethod
 # ------------------------------------------------------------------------------
@@ -804,12 +790,21 @@ oj.removeMethod = (obj, methodName) ->
 # ------------------------------------------------------------------------------
 
 oj.addProperties = (obj, mapNameToInfo) ->
+
   for propName, propInfo of mapNameToInfo
-    # Prop value may be specified by an object with a get key or by value
-    if !(_.isObject propInfo) || !propInfo.get?
+    # Prop value may be specified by an object with a get/set or by value
+    # Examples:
+    #   age: 7    # defaults to {writable:true, enumerable:true}
+    #   age: {value:7, writable:false, enumerable:false}
+    #   age: {get:(-> 7), enumerable:false}
+
+    # Wrap the value if propInfo is not already a property definition
+    if not propInfo?.get? and not propInfo?.value?
       propInfo = value: propInfo
 
     oj.addProperty obj, propName, propInfo
+
+  return
 
 # oj.addProperty
 # ------------------------------------------------------------------------------
@@ -819,7 +814,9 @@ oj.addProperty = (obj, propName, propInfo) ->
   throw 'oj.addProperty: object expected for third argument' unless (_.isObject propInfo)
   throw 'oj.addProperty: get or value key expected in third argument' unless (propInfo.get? or propInfo.value?)
 
-  _.defaults propInfo, enumerable: true, configurable: true
+  _.defaults propInfo,
+    enumerable: true
+    configurable: true
 
   # Remove property if it already exists
   if obj[propName]?
@@ -854,107 +851,134 @@ oj.copyProperty = (dest, source, propName) ->
   Object.defineProperty dest, propName, info
 
 
-
-# oj.inherit
+# _.inherit
 # ------------------------------------------------------------------------------
-###
+# Based on, but sadly, incompatable with coffeescript inheritance
+_.inherit = (child, parent) ->
 
-  __extends = function(Child, Parent) {     #1
-    for (var key in Parent) {               #2
-      if (__hasProp.call(Parent, key))      #3
-        Child[key] = Parent[key];           #4
-    }
-    function ctor() {                       #5
-      this.constructor = Child;             #6 (MISSING)
-    }
-    ctor.prototype = Parent.prototype;      #7
-    Child.prototype = new ctor();           #8
-    Child.__super__ = Parent.prototype;     #9
-    return Child;                           #10
-  };
-
-###
-# Based on @islandr's https://github.com/jashkenas/coffee-script/issues/2385
-_.inherit = (Child, Parent) ->
-
-  # Move
-  for key of Parent
-    oj.copyProperty Child, Parent, key
+  # Copy class properties and methods
+  for key of parent
+    oj.copyProperty child, parent, key
 
   ctor = ->
-  ctor::constructor = Child
-  ctor:: = Parent::
-  Child:: = new ctor()
+  ctor:: = parent::
+  child:: = new ctor()
 
-  # Child:: = Object.create Parent::
-
-  Child.__super__ = Parent::
-
-  Child::constructor = Child
-  # provides easy access to the given method on super (must use call or apply)
-  Child::super = (method) -> @constructor.__super__[method]
+  # Provide easy access for super methods
+  # Inspired by: @islandr's ruminations https://github.com/jashkenas/coffee-script/issues/2385
+  # Example: @super.methodName(arguments...)
+  child::super = parent::
 
   return
 
-
-# oj.createType
+# oj.type
 # ------------------------------------------------------------------------------
 
-oj.createType = (name, args = {}) ->
-  throw 'oj.createType: string expected for first argument' unless _.isString name
-  throw 'oj.createType: object expected for second argument' unless _.isObject args
+oj.type = (name, args = {}) ->
+
+  throw 'oj.type: string expected for first argument' unless _.isString name
+  throw 'oj.type: object expected for second argument' unless _.isObject args
 
   args.methods ?= {}
   args.properties ?= {}
+  args.constructor ?= ->
 
-  # return Child.__super__.constructor.apply(this, arguments);
   Out = new Function("""return function #{name}(){
+    var _this = this;
     if ( !(this instanceof #{name}) )
-      return new #{name}();
-    if (#{name}.__super__ && #{name}.__super__.constructor) {
-      console.log("#{name}.__super__: ", #{name}.__super__.constructor);
+      _this = new #{name};
 
-    }
-
-  }"""
+    #{name}.prototype.constructor.apply(_this, arguments);
+    return _this;
+  }
+  """
   )();
 
-  console.log "Out: ", Out
+  # Alias 'extends' to 'inherits' for javascript folks
+  args.extends ?= args.inherits
 
+  # Inherit if necessary
   if args.extends?
     _.inherit Out, args.extends
 
+  # Add the constructor and wrap it to automatically call super.constructor
+  oj.addMethod Out::, 'constructor', ->
+
+    # Call your super's constructor
+    if args.extends?
+      (args.extends)::constructor arguments...
+
+    # Then call your own constructor
+    args.constructor arguments...
+    return @
+
+  # Mark new type and its instances with a non-enumerable _type and _oj properties
+  typeProps =
+    _type: {value:name, writable:false, enumerable:false}
+    _oj: {value:true, writable:false, enumerable:false}
+  oj.addProperties Out, typeProps
+  oj.addProperties Out::, typeProps
+
+  # Add _properties helper to instance and type
   propKeys = (_.keys args.properties).sort()
+  if Out::_properties?
+    propKeys = _.uniqueSortedUnion Out::_properties, propKeys
+  _properties = value:propKeys, writable:false, enumerable:false
+  oj.addProperty Out, '_properties', _properties
+  oj.addProperty Out::, '_properties', _properties
+
+
+  # Add _methods helper to instance and type
   methodKeys = (_.keys args.methods).sort()
+  if Out::_methods?
+    methodKeys = _.uniqueSortedUnion Out::_methods, methodKeys
+  _methods = value:methodKeys, writable:false, enumerable:false
+  oj.addProperty Out, '_methods', _methods
+  oj.addProperty Out::, '_methods', _methods
 
-  # Add 'properties' helper to type
-  if Out::properties?
-    Out::properties = _.uniqueSortedUnion Out::properties, propKeys
-  else
-    oj.addProperty Out::, 'properties',
-      value:propKeys, writable:false, enumerable:false
+  # Add methods to the type
+  _.extend args.methods,
 
-  # Add 'methods' helper to type
-  if Out::methods?
-    Out::methods = _.uniqueSortedUnion Out::methods, methodKeys
-  else
-    oj.addProperty Out::, 'methods',
-      value:methodKeys, writable:false, enumerable:false
+    # set: Set all properties on the object at once
+    set: (k,v) ->
+      obj = k
+      if not _.isObject k
+        obj = {}
+        obj[k] = v;
+      for key,value of obj
+        @[key] = value
+      return
 
+    # toJSON: Use properties to generate json
+    toJSON: ->
+      json = {}
+      for prop in @_properties
+        json[prop] = @[prop]
+      json
+
+    # toString: Convert view to HTML
+    # TODO: NYI
+    toString: ->
+      throw 'toString NYI'
+
+  # Add methods
   oj.addMethods Out::, args.methods
 
+  # Add the properties
   oj.addProperties Out::, args.properties
+
+
 
   Out
 
-# oj.createView
+# oj.view
 # ------------------------------------------------------------------------------
 
-oj.createView = (name, args) ->
-  throw 'oj.createView: string expected for first argument' unless _.isString name
-  throw 'oj.createView: object expected for second argument' unless _.isObject args
+oj.view = (name, args) ->
+  throw 'oj.view: string expected for first argument' unless _.isString name
+  throw 'oj.view: object expected for second argument' unless _.isObject args
   args.extends ?= oj.View
-  oj.createType name, args
+  oj.type name, args
 
 # oj.View
 # ------------------------------------------------------------------------------

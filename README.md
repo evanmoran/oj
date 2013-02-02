@@ -14,6 +14,24 @@ Unified web templating for the people. Thirsty people.
 * Compatible with Express 3 (but doesn't require it)
 * Fully unit tested
 
+
+Introduction
+================================================================================
+
+
+
+A function for every tag:
+
+    p "This is a paragraph"            p("This is a paragraph")
+
+
+
+
+Documentation
+================================================================================
+
+
+
 Functions
 --------------------------------------------------------------------------------
 

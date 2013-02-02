@@ -153,6 +153,9 @@ task "build:js", "Compile coffee script files", ->
 task "build:js:watch", "Watch compile coffee script files", ->
   launch 'coffee', ['--compile', '--lint', '-o', LIB_DIR, '--watch', 'src']
 
+task "watch", "Watch all build targets", ->
+  invoke 'build:js:watch'
+
 task "build:docs", "Build documentation", ->
   invoke 'build:groc'
 
