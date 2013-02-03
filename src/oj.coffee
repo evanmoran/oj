@@ -102,7 +102,7 @@ oj.guid = (len = 8, chars = _chars) ->
 
   output
 
-# Register require.extension for .oj files
+# Register require.extension for .oj files in node
 if require.extensions
 
   coffee = require 'coffee-script'
@@ -306,7 +306,7 @@ _.isEmpty = (obj) ->
   true
 
 # typeOf: Mimic behavior of built-in typeof operator and integrate jQuery, Backbone, and OJ types
-_.typeOf = (any) ->
+oj.typeOf = (any) ->
 
   return 'null' if any == null
   t = typeof any
@@ -321,7 +321,7 @@ _.typeOf = (any) ->
   t
 
 # Determine if obj is a vanilla object
-_.isObject = (obj) -> (_.typeOf obj) == 'object'
+_.isObject = (obj) -> (oj.typeOf obj) == 'object'
 
 _.clone = (obj) ->
   # TODO: support cloning OJ instances
@@ -583,15 +583,23 @@ oj.compile = (options, ojml) ->
     debug: false
 
   options.html = if options.html then [] else null  # html accumulator
+  options.dom = if options.dom then [] else null    # dom accumulator
   options.js = []                                   # code accumulator
   options.types = []                                # types accumulator
   options.indent = ''                               # indent counter
 
   _compileAny ojml, options
 
-  # Join html only if generated
+  # Join HTML only if the options ask for it
   html = options.html?.join ''
-  out = html: html, types: options.types, js:->
+
+  # Generate DOM only if the options ask for it
+  if document? and options.dom?
+    el = document.createElement 'div'
+    el.innerHTML = html
+    options.dom = el.firstChild
+
+  out = html: html, types: options.types, dom: options.dom, js:->
     # Call defered javascript
     for fn in options.js
       fn()
@@ -634,7 +642,7 @@ _compileDeeper = (method, ojml, options) ->
 # Compile ojml or any type
 _compileAny = (ojml, options) ->
 
-  switch _.typeOf ojml
+  switch oj.typeOf ojml
 
     when 'array'
       _compileTag ojml, options
@@ -667,6 +675,8 @@ _compileTag = (ojml, options) ->
 
   # Get tag
   tag = ojml[0]
+
+  # TODO: accept ojml with oj.Type instead of string for first element
   throw new Error('oj.compile: tag is missing in array') unless _.isString(tag) and tag.length > 0
 
   # Create oj object if tag is capitalized
@@ -865,7 +875,6 @@ _.inherit = (child, parent) ->
   child:: = new ctor()
 
   # Provide easy access for super methods
-  # Inspired by: @islandr's ruminations https://github.com/jashkenas/coffee-script/issues/2385
   # Example: @super.methodName(arguments...)
   child::super = parent::
 
@@ -888,7 +897,9 @@ oj.type = (name, args = {}) ->
     if ( !(this instanceof #{name}) )
       _this = new #{name};
 
+    _this.foo = 'foo';
     #{name}.prototype.constructor.apply(_this, arguments);
+
     return _this;
   }
   """
@@ -906,10 +917,14 @@ oj.type = (name, args = {}) ->
 
     # Call your super's constructor
     if args.extends?
-      (args.extends)::constructor arguments...
+      (args.extends)::constructor.apply @, arguments
 
     # Then call your own constructor
-    args.constructor arguments...
+    try
+      args.constructor.apply @, arguments
+    catch e
+      console.error "oj: #{name}.constructor failed with: ", e
+      throw e
     return @
 
   # Mark new type and its instances with a non-enumerable _type and _oj properties
@@ -926,7 +941,6 @@ oj.type = (name, args = {}) ->
   _properties = value:propKeys, writable:false, enumerable:false
   oj.addProperty Out, '_properties', _properties
   oj.addProperty Out::, '_properties', _properties
-
 
   # Add _methods helper to instance and type
   methodKeys = (_.keys args.methods).sort()
@@ -967,8 +981,6 @@ oj.type = (name, args = {}) ->
   # Add the properties
   oj.addProperties Out::, args.properties
 
-
-
   Out
 
 # oj.view
@@ -1000,9 +1012,80 @@ oj.view = (name, args) ->
 #   $
 #
 
+
+# oj.View
+# ------------------------------------------------------------------------------
+# View base class
+
+oj.View = oj.type 'View',
+  constructor: ->
+
+  properties:
+    element:      get: ->
+                    if @_element
+                      @_element
+                    else
+                      ojml = @make()
+                      result = oj.compile(dom:true, ojml).dom
+                      @_element = result
+                  set: (v) -> _element = v
+    $element:     get: -> $(@element)
+    el:           get: -> @element,
+    $el:          get: -> @$element
+
+    hidden:
+      get: -> $el.css('display') == 'none'
+      set: (v) -> if v then $el.hide() else $el.show()
+
+  methods:
+    # make: Return ojml that creates initial dom state
+    # should be overriden by subclass if it isn't
+    make: -> oj.div c:"oj.#{oj.typeOf @}", id:oj.id()
+
+    # Find sub elements via jquery selector
+    $: -> @$el.find(arguments...)
+    hide: -> @$el.hide()
+    show: -> @$el.show()
+    toString: -> @element.outerHTML
+
+    # Detach element from dom but remember where it went
+    detach: -> throw 'detach nyi'
+
+    # Attach element to dom where it use to be
+    attach: -> throw 'attach nyi'
+
+# oj.Checkbox
+# ------------------------------------------------------------------------------
+# Checkbox control
+
+oj.Checkbox = oj.type 'Checkbox'
+  extends: oj.View
+  constructor: ->
+    @set arguments...
+
+  properties:
+    make: ->
+      oj.input id: oj.id(), c:'oj.Checkbox', type:'checkbox'
+
+    value:
+      get: -> @el.checked
+      set: (v) -> @el.checked = v
+
+    disabled:
+      get: -> @el.disabled
+      set: (v) -> @el.disabled = v
+
+  methods:
+    testMethod: ->
+
 # oj.List
 # ------------------------------------------------------------------------------
 # List control
+
+# oj.List = oj.type 'List',
+#   constructor: ->
+
+#   methods:
 
 
 

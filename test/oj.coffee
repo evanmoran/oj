@@ -52,6 +52,33 @@ describe 'oj', ->
     # assert.isObject oj2.Image, 'extend should extend objects (Image)'
     # assert.isObject oj2.CheckBox, 'extend should extend objects (CheckBox)'
 
+  it 'typeOf', ->
+    assert.equal (oj.typeOf {}), 'object', '{} case}'
+    assert.equal (oj.typeOf {a:1}), 'object', '{a:1} case}'
+
+    Empty = oj.type 'Empty', {}
+    empty = Empty()
+    assert.equal (oj.typeOf Empty), 'function', 'oj type case'
+    assert.equal (oj.typeOf empty), 'Empty', 'oj instance case'
+
+    assert.equal (oj.typeOf new Array), 'array', 'new Array case'
+    assert.equal (oj.typeOf null), 'null', 'null case'
+    assert.equal (oj.typeOf undefined), 'undefined', 'undefined case'
+    assert.equal (oj.typeOf 0), 'number', '0 case'
+    assert.equal (oj.typeOf 1), 'number', '1 case'
+    assert.equal (oj.typeOf 3.14), 'number', '3.14 case'
+    assert.equal (oj.typeOf NaN), 'number', 'NaN case'
+    assert.equal (oj.typeOf ''), 'string', 'empty string case'
+    assert.equal (oj.typeOf 'string'), 'string', 'string case'
+    assert.equal (oj.typeOf new Date), 'date', 'new Date case'
+    assert.equal (oj.typeOf /abc/), 'regexp', '/abc/ case'
+
+    # TODO: Add these cases
+    # assert.equal (Document.createElement('div')), 'dom', 'dom case'
+    # assert.equal (oj.typeOf $()), 'jquery', 'jquery case'
+    # assert.equal (oj.typeOf new Backbone.Model.extend()), 'backbone', 'backbone case'
+
+
 
 
 

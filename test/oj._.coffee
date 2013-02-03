@@ -163,32 +163,6 @@ describe 'oj._', ->
     assert.isFalse (_.isArray 1), '1 case'
     assert.isFalse (_.isArray "string"), 'string case'
 
-  it 'typeOf', ->
-    assert.equal (_.typeOf {}), 'object', '{} case}'
-    assert.equal (_.typeOf {a:1}), 'object', '{a:1} case}'
-
-    Empty = oj.type 'Empty', {}
-    empty = Empty()
-    assert.equal (_.typeOf Empty), 'function', 'oj type case'
-    assert.equal (_.typeOf empty), 'Empty', 'oj instance case'
-
-    assert.equal (_.typeOf new Array), 'array', 'new Array case'
-    assert.equal (_.typeOf null), 'null', 'null case'
-    assert.equal (_.typeOf undefined), 'undefined', 'undefined case'
-    assert.equal (_.typeOf 0), 'number', '0 case'
-    assert.equal (_.typeOf 1), 'number', '1 case'
-    assert.equal (_.typeOf 3.14), 'number', '3.14 case'
-    assert.equal (_.typeOf NaN), 'number', 'NaN case'
-    assert.equal (_.typeOf ''), 'string', 'empty string case'
-    assert.equal (_.typeOf 'string'), 'string', 'string case'
-    assert.equal (_.typeOf new Date), 'date', 'new Date case'
-    assert.equal (_.typeOf /abc/), 'regexp', '/abc/ case'
-
-    # TODO: Add these cases
-    # assert.equal (Document.createElement('div')), 'dom', 'dom case'
-    # assert.equal (_.typeOf $()), 'jquery', 'jquery case'
-    # assert.equal (_.typeOf new Backbone.Model.extend()), 'backbone', 'backbone case'
-
   it 'isObject', ->
     assert.isTrue (_.isObject {}), '{} case'
     assert.isTrue (_.isObject {a:1, b:2}), '{a:1, b:2} case'

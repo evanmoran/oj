@@ -14,11 +14,9 @@ mkdirp = require 'mkdirp'
 csso = require 'csso'
 uglifyjs = require 'uglify-js'
 
+# Export server side oj
 oj = require './oj'
 oj.isClient = false
-
-verbosity = null
-
 module.exports = oj
 
 # Commands
@@ -51,6 +49,9 @@ oj.build = (filesOrDirectories, options) ->
 #     options.output (directory/path)
 #     options.modules (list of strings to include manually)
 #     options.verbose <level>
+
+# Remember verbosity level
+verbosity = null
 
 oj.command = (options = {}) ->
 

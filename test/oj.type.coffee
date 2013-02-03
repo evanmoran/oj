@@ -1,13 +1,8 @@
 # oj.type.coffee
+# ==============================================================================
 
 path = require 'path'
 fs = require 'fs'
-
-fileModifiedTime = (filepath, cb) ->
-  fs.stat filepath, (err, data) ->
-    return cb(err, data) if err
-    cb(err, data.mtime)
-
 oj = require '../src/oj.coffee'
 oj.extend this
 
@@ -16,6 +11,7 @@ describe 'oj.type', ->
   _parentConstructor = null
   Parent = oj.type 'Parent',
     constructor: ->
+      expect(typeof @set).to.equal 'function'
       _parentConstructor = arguments[0]
 
     methods:
@@ -55,6 +51,8 @@ describe 'oj.type', ->
     extends: Parent
 
     constructor: ->
+      expect(typeof @).to.equal 'object'
+      expect(typeof @set).to.equal 'function'
       _childConstructor = arguments[0]
 
     methods:
