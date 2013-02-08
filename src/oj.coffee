@@ -67,7 +67,6 @@ oj.ready = _loader 'ready'
 # ## oj.load
 oj.load = _loader 'load'
 
-
 # ## oj.id
 oj.id = (len, chars) ->
   'oj' + oj.guid len, chars
@@ -293,9 +292,9 @@ _.isjQuery = (obj) -> !!(obj and obj.jquery)
 # _.isBackbone
 _.isBackbone = (obj) -> !!(obj and obj.on and obj.trigger and not _.isOJ obj)
 
-# _.isOJ
+# oj.isOJ
 # Determine if obj is an OJ instance
-_.isOJ = (obj) -> !!(obj?._oj)
+oj.isOJ = (obj) -> !!(obj?.isOJ)
 
 # Determine if object or array is empty
 _.isEmpty = (obj) ->
@@ -316,7 +315,7 @@ oj.typeOf = (any) ->
     else if _.isDate any       then t = 'date'
     else if _.isBackbone any   then t = 'backbone'
     else if _.isjQuery any     then t = 'jquery'
-    else if _.isOJ any         then t = any._type
+    else if oj.isOJ any         then t = any.type
     else                       t = 'object'
   t
 
@@ -451,6 +450,96 @@ _.uniqueSort = (array, isSorted = false) ->
 _.uniqueSortedUnion = (array, array2) ->
   _.uniqueSort (array.concat array2)
 
+
+# oj.addMethod
+# ------------------------------------------------------------------------------
+oj.addMethods = (obj, mapNameToMethod) ->
+  for methodName, method of mapNameToMethod
+    oj.addMethod obj, methodName, method
+  return
+
+# oj.addMethod
+# ------------------------------------------------------------------------------
+oj.addMethod = (obj, methodName, method) ->
+  throw 'oj.addMethod: string expected for second argument' unless _.isString methodName
+  throw 'oj.addMethod: function expected for thrid argument' unless _.isFunction method
+  Object.defineProperty obj, methodName,
+    value: method
+    enumerable: false
+    writable: false
+    configurable: true
+  return
+
+# oj.removeMethod
+# ------------------------------------------------------------------------------
+oj.removeMethod = (obj, methodName) ->
+  throw 'oj.removeMethod: string expected for second argument' unless _.isString methodName
+  delete obj[methodName]
+  return
+
+# oj.addProperties
+# ------------------------------------------------------------------------------
+oj.addProperties = (obj, mapNameToInfo) ->
+
+  for propName, propInfo of mapNameToInfo
+    # Prop value may be specified by an object with a get/set or by value
+    # Examples:
+    #   age: 7    # defaults to {writable:true, enumerable:true}
+    #   age: {value:7, writable:false, enumerable:false}
+    #   age: {get:(-> 7), enumerable:false}
+
+    # Wrap the value if propInfo is not already a property definition
+    if not propInfo?.get? and not propInfo?.value?
+      propInfo = value: propInfo
+
+    oj.addProperty obj, propName, propInfo
+
+  return
+
+# oj.addProperty
+# ------------------------------------------------------------------------------
+oj.addProperty = (obj, propName, propInfo) ->
+  throw 'oj.addProperty: string expected for second argument' unless _.isString propName
+  throw 'oj.addProperty: object expected for third argument' unless (_.isObject propInfo)
+  throw 'oj.addProperty: get or value key expected in third argument' unless (propInfo.get? or propInfo.value?)
+
+  _.defaults propInfo,
+    enumerable: true
+    configurable: true
+
+  # Remove property if it already exists
+  if obj[propName]?
+    oj.removeProperty obj, propName
+
+  # Add the property
+  Object.defineProperty obj, propName, propInfo
+  return
+
+# oj.removeProperty
+# ------------------------------------------------------------------------------
+
+oj.removeProperty = (obj, propName) ->
+  throw 'oj.addProperty: string expected for second argument' unless _.isString propName
+  delete obj[propName]
+
+# oj.isProperty
+# ------------------------------------------------------------------------------
+# Determine if the specified key is was defined by addProperty
+
+oj.isProperty = (obj, propName) ->
+  throw 'oj.isProperty: string expected for second argument' unless _.isString propName
+
+  Object.getOwnPropertyDescriptor(obj, propName).get?
+
+# oj.copyProperty
+# ------------------------------------------------------------------------------
+# Determine copy source.propName to dest.propName
+
+oj.copyProperty = (dest, source, propName) ->
+  info = Object.getOwnPropertyDescriptor source, propName
+  Object.defineProperty dest, propName, info
+
+
 # oj.partial (module, arg1, arg2, ...)
 # ------------------------------------------------------------------------------
 # Arguments are passed to exported module
@@ -472,8 +561,23 @@ oj.partial = (module, json) ->
 
 oj._result = null
 
+# Result is top of the stack
+# oj._resultStack = []
+
+# oj.addProperty oj, '_result', get: -> if oj._resultStack.length then oj._resultStack[oj._resultStack.length-1] else null
+
+# oj._resultPush = (ojml = {}) ->
+#   oj._resultStack.push ojml
+
+# oj._resultPop = ->
+#   if _.resultStack.length
+#     return oj._resultStack.pop
+#   null
+
+# oj._resultLength = ->
+#   oj._result.length
+
 oj.tag = (name, args...) ->
-  # console.log "calling oj.tag name: #{name}, args: ", args, ", result: ", oj._result
   throw 'oj.tag error: argument 1 is not a string (expected tag name)' unless _.isString name
 
   # Build ojml starting with tag
@@ -766,100 +870,6 @@ _compileTag = (ojml, options) ->
 #   result.js()
 #   result.dom
 
-# oj.addMethod
-# ------------------------------------------------------------------------------
-
-oj.addMethods = (obj, mapNameToMethod) ->
-  for methodName, method of mapNameToMethod
-    oj.addMethod obj, methodName, method
-  return
-
-# oj.addMethod
-# ------------------------------------------------------------------------------
-
-oj.addMethod = (obj, methodName, method) ->
-  throw 'oj.addMethod: string expected for second argument' unless _.isString methodName
-  throw 'oj.addMethod: function expected for thrid argument' unless _.isFunction method
-  Object.defineProperty obj, methodName,
-    value: method
-    enumerable: false
-    writable: false
-    configurable: true
-  return
-
-# oj.removeMethod
-# ------------------------------------------------------------------------------
-
-oj.removeMethod = (obj, methodName) ->
-  throw 'oj.removeMethod: string expected for second argument' unless _.isString methodName
-  delete obj[methodName]
-  return
-
-
-# oj.addProperties
-# ------------------------------------------------------------------------------
-
-oj.addProperties = (obj, mapNameToInfo) ->
-
-  for propName, propInfo of mapNameToInfo
-    # Prop value may be specified by an object with a get/set or by value
-    # Examples:
-    #   age: 7    # defaults to {writable:true, enumerable:true}
-    #   age: {value:7, writable:false, enumerable:false}
-    #   age: {get:(-> 7), enumerable:false}
-
-    # Wrap the value if propInfo is not already a property definition
-    if not propInfo?.get? and not propInfo?.value?
-      propInfo = value: propInfo
-
-    oj.addProperty obj, propName, propInfo
-
-  return
-
-# oj.addProperty
-# ------------------------------------------------------------------------------
-
-oj.addProperty = (obj, propName, propInfo) ->
-  throw 'oj.addProperty: string expected for second argument' unless _.isString propName
-  throw 'oj.addProperty: object expected for third argument' unless (_.isObject propInfo)
-  throw 'oj.addProperty: get or value key expected in third argument' unless (propInfo.get? or propInfo.value?)
-
-  _.defaults propInfo,
-    enumerable: true
-    configurable: true
-
-  # Remove property if it already exists
-  if obj[propName]?
-    oj.removeProperty obj, propName
-
-  # Add the property
-  Object.defineProperty obj, propName, propInfo
-  return
-
-# oj.removeProperty
-# ------------------------------------------------------------------------------
-
-oj.removeProperty = (obj, propName) ->
-  throw 'oj.addProperty: string expected for second argument' unless _.isString propName
-  delete obj[propName]
-
-# oj.isProperty
-# ------------------------------------------------------------------------------
-# Determine if the specified key is was defined by addProperty
-
-oj.isProperty = (obj, propName) ->
-  throw 'oj.isProperty: string expected for second argument' unless _.isString propName
-
-  Object.getOwnPropertyDescriptor(obj, propName).get?
-
-# oj.copyProperty
-# ------------------------------------------------------------------------------
-# Determine copy source.propName to dest.propName
-
-oj.copyProperty = (dest, source, propName) ->
-  info = Object.getOwnPropertyDescriptor source, propName
-  Object.defineProperty dest, propName, info
-
 
 # _.inherit
 # ------------------------------------------------------------------------------
@@ -897,7 +907,6 @@ oj.type = (name, args = {}) ->
     if ( !(this instanceof #{name}) )
       _this = new #{name};
 
-    _this.foo = 'foo';
     #{name}.prototype.constructor.apply(_this, arguments);
 
     return _this;
@@ -929,26 +938,26 @@ oj.type = (name, args = {}) ->
 
   # Mark new type and its instances with a non-enumerable _type and _oj properties
   typeProps =
-    _type: {value:name, writable:false, enumerable:false}
-    _oj: {value:true, writable:false, enumerable:false}
+    type: {value:name, writable:false, enumerable:false}
+    isOJ: {value:true, writable:false, enumerable:false}
   oj.addProperties Out, typeProps
   oj.addProperties Out::, typeProps
 
-  # Add _properties helper to instance and type
+  # Add properties helper to instance and type
   propKeys = (_.keys args.properties).sort()
-  if Out::_properties?
-    propKeys = _.uniqueSortedUnion Out::_properties, propKeys
-  _properties = value:propKeys, writable:false, enumerable:false
-  oj.addProperty Out, '_properties', _properties
-  oj.addProperty Out::, '_properties', _properties
+  if Out::properties?
+    propKeys = _.uniqueSortedUnion Out::properties, propKeys
+  properties = value:propKeys, writable:false, enumerable:false
+  oj.addProperty Out, 'properties', properties
+  oj.addProperty Out::, 'properties', properties
 
-  # Add _methods helper to instance and type
+  # Add methods helper to instance and type
   methodKeys = (_.keys args.methods).sort()
-  if Out::_methods?
-    methodKeys = _.uniqueSortedUnion Out::_methods, methodKeys
-  _methods = value:methodKeys, writable:false, enumerable:false
-  oj.addProperty Out, '_methods', _methods
-  oj.addProperty Out::, '_methods', _methods
+  if Out::methods?
+    methodKeys = _.uniqueSortedUnion Out::methods, methodKeys
+  methods = value:methodKeys, writable:false, enumerable:false
+  oj.addProperty Out, 'methods', methods
+  oj.addProperty Out::, 'methods', methods
 
   # Add methods to the type
   _.extend args.methods,
@@ -966,14 +975,9 @@ oj.type = (name, args = {}) ->
     # toJSON: Use properties to generate json
     toJSON: ->
       json = {}
-      for prop in @_properties
+      for prop in @properties
         json[prop] = @[prop]
       json
-
-    # toString: Convert view to HTML
-    # TODO: NYI
-    toString: ->
-      throw 'toString NYI'
 
   # Add methods
   oj.addMethods Out::, args.methods
@@ -999,43 +1003,43 @@ oj.view = (name, args) ->
 #   attributes    Initialize from element, $(selector), or ojml
 
 # Methods
-#   $             Find elements
-#   parse         Called when object is being constructed     (need this?)
-#   oj            Property to set or get ojml of this object. Will reinitialize if set
-#   toJSON        Alias for ojml get method
 #   css
-
-# Backbone Methods
-#   constructor   Called when object is first constructed
-#   initialize    Called when object is serialized into dom
-#   $el
-#   $
-#
-
-
-# oj.View
-# ------------------------------------------------------------------------------
-# View base class
 
 oj.View = oj.type 'View',
   constructor: ->
 
+    @make.apply @, arguments
+
+    # Views act like tag methods and support the div -> syntax. This is terrible but necessary.
+    if oj._result
+      oj._result.push @
+
   properties:
-    element:      get: ->
-                    if @_element
-                      @_element
-                    else
-                      ojml = @make()
-                      result = oj.compile(dom:true, ojml).dom
-                      @_element = result
-                  set: (v) -> _element = v
-    $element:     get: -> $(@element)
-    el:           get: -> @element,
-    $el:          get: -> @$element
+    el:
+      get: ->
+        if @_el
+          @_el
+        else
+          ojml = @make()
+          result = oj.compile(dom:true, ojml).dom
+          @_el = result
+      set: (v) -> @_el = v
+    $el:
+      get: -> $(@el)
+    id:
+      get: -> @$el.attr 'id'
+      set: (v) -> @$el.attr 'id', v
 
     hidden:
       get: -> $el.css('display') == 'none'
       set: (v) -> if v then $el.hide() else $el.show()
+    css:
+      get: -> throw 'css getter nyi'
+      set: -> throw 'css setter nyi'
+
+    style:
+      get: -> throw 'style getter nyi'
+      set: -> throw 'style setter nyi'
 
   methods:
     # make: Return ojml that creates initial dom state
@@ -1046,7 +1050,7 @@ oj.View = oj.type 'View',
     $: -> @$el.find(arguments...)
     hide: -> @$el.hide()
     show: -> @$el.show()
-    toString: -> @element.outerHTML
+    toString: -> @el.outerHTML
 
     # Detach element from dom but remember where it went
     detach: -> throw 'detach nyi'
@@ -1064,19 +1068,25 @@ oj.Checkbox = oj.type 'Checkbox'
     @set arguments...
 
   properties:
-    make: ->
-      oj.input id: oj.id(), c:'oj.Checkbox', type:'checkbox'
 
     value:
-      get: -> @el.checked
-      set: (v) -> @el.checked = v
+      get: -> @_value
+      set: (v) -> @_value = v; return
 
     disabled:
       get: -> @el.disabled
-      set: (v) -> @el.disabled = v
+      set: (v) -> @el.disabled = v; return
 
   methods:
-    testMethod: ->
+    make: ->
+      # c = @value
+      console.log "@: ", @
+      # c = if @value then 'checked' else null
+      oj.input id: oj.id(), c:@type, type:'checkbox'#, checked:checked
+
+    toString: ->
+      console.log "toString: #{__filename}: 1079"
+      @super.toString.apply @,arguments
 
 # oj.List
 # ------------------------------------------------------------------------------
@@ -1086,12 +1096,6 @@ oj.Checkbox = oj.type 'Checkbox'
 #   constructor: ->
 
 #   methods:
-
-
-
-
-
-
 
 # oj.Link
 # ------------------------------------------------------------------------------
