@@ -550,6 +550,32 @@ oj.partial = (module, json) ->
     return m arguments.slice(1)...
   m
 
+# _.arguments
+# ------------------------------------------------------------------------------
+# Abstraction to wrap global arguments stack. This makes me sad but it is necessary for div -> syntax
+
+# Stack of results
+_.argumentsStack = []
+# Result is top of the stack
+oj.addProperty _, 'arguments', get: -> if _.argumentsStack.length then _.argumentsStack[_.argumentsStack.length-1] else null
+
+# Push scope onto arguments
+_.argumentsPush = (args = []) ->
+  _.argumentsStack.push args
+  return
+
+# Pop scope from arguments
+_.argumentsPop = ->
+  if _.argumentsStack.length
+    return _.argumentsStack.pop()
+  null
+
+# Append argument
+_.argumentsAppend = (arg) ->
+  if _.arguments
+    _.arguments.push arg
+  return
+
 # oj.tag (name, attributes, content, content, ...)
 # ------------------------------------------------------------------------------
 #     name          String of the tag to serialize
@@ -559,23 +585,6 @@ oj.partial = (module, json) ->
 #                       'fontSize' will map to 'font-size'
 #                       'borderRadius' will map to 'moz-border-radius', etc.
 
-oj._result = null
-
-# Result is top of the stack
-# oj._resultStack = []
-
-# oj.addProperty oj, '_result', get: -> if oj._resultStack.length then oj._resultStack[oj._resultStack.length-1] else null
-
-# oj._resultPush = (ojml = {}) ->
-#   oj._resultStack.push ojml
-
-# oj._resultPop = ->
-#   if _.resultStack.length
-#     return oj._resultStack.pop
-#   null
-
-# oj._resultLength = ->
-#   oj._result.length
 
 oj.tag = (name, args...) ->
   throw 'oj.tag error: argument 1 is not a string (expected tag name)' unless _.isString name
@@ -596,31 +605,34 @@ oj.tag = (name, args...) ->
   # Add attributes to ojml if they exist
   ojml.push attributes unless _.isEmpty attributes
 
-  # Push result. This is necessary to give the div -> syntax. It makes me sad.
-  lastResult = oj._result
+  # Push arguments to build up children tags
+  _.argumentsPush ojml
 
   # Loop over attributes
   for arg in args
     if _.isObject arg
       continue
     else if _.isFunction arg
-      oj._result = ojml
-      len = ojml.length
 
-      # Call the argument it will auto append to _result which is ojml
+      len = _.arguments.length
+
+      # Call the argument it will auto append to _.arguments which is ojml
       r = arg()
 
-      # If nothing was changed push the result instead div(-> 1)
-      if len == ojml.length and r?
-        ojml.push r
+      # Use return value if _.arguments weren't changed
+      if len == _.arguments.length and r?
+        _.argumentsAppend r
 
     else
-      ojml.push arg
+      _.argumentsAppend arg
 
-  # Pop result and result self
-  oj._result = lastResult
-  if oj._result
-    oj._result.push ojml
+  # Pop to restore previous context
+  _.argumentsPop()
+
+  # Append the final result to your parent's arguments
+  # if there exists an argument to append to
+  _.argumentsAppend ojml
+
   ojml
 
 oj.tag.elements =
