@@ -133,25 +133,25 @@ describe 'oj.type', ->
   it 'empty type', ->
     Empty = oj.type 'Empty', {}
     empty = new Empty()
-    expect(empty._type).to.equal 'Empty'
-    expect(empty._properties).to.deep.equal []
-    expect(empty._methods).to.deep.equal []
+    expect(empty.type).to.equal 'Empty'
+    expect(empty.properties).to.deep.equal []
+    expect(empty.methods).to.deep.equal []
 
   it 'empty type without new', ->
     Empty = oj.type 'Empty', {}
     empty = Empty()
-    expect(empty._type).to.equal 'Empty'
-    expect(empty._properties).to.deep.equal []
-    expect(empty._methods).to.deep.equal []
+    expect(empty.type).to.equal 'Empty'
+    expect(empty.properties).to.deep.equal []
+    expect(empty.methods).to.deep.equal []
 
   it 'base type', ->
     parent = new Parent()
-    expect(parent._properties).to.deep.equal ["parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]
-    expect(parent._methods).to.deep.equal ['method', 'parentMethod', 'superMethod']
+    expect(parent.properties).to.deep.equal ["parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]
+    expect(parent.methods).to.deep.equal ['method', 'parentMethod', 'superMethod']
 
   it 'base type without new', ->
     parent = Parent()
-    expect(parent._type).to.equal 'Parent'
+    expect(parent.type).to.equal 'Parent'
     expect(parent.value).to.equal 'Parent.value'
     expect(parent.method()).to.equal 'Parent.method'
 
@@ -203,8 +203,8 @@ describe 'oj.type', ->
 
   it 'inherited type', ->
     child = new Child()
-    expect(child._properties).to.deep.equal ["childReadOnly", "childReadWrite", "childValue", "parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]
-    expect(child._methods).to.deep.equal ['childMethod', 'method', 'parentMethod', 'superMethod']
+    expect(child.properties).to.deep.equal ["childReadOnly", "childReadWrite", "childValue", "parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]
+    expect(child.methods).to.deep.equal ['childMethod', 'method', 'parentMethod', 'superMethod']
 
   it 'inherited type with constructor', ->
     child = new Child('Child.constructor', 'Child.constructor')
@@ -213,7 +213,7 @@ describe 'oj.type', ->
 
   it 'inherited type without new', ->
     child = Child()
-    expect(child._type).to.equal 'Child'
+    expect(child.type).to.equal 'Child'
     expect(child.childValue).to.equal 'Child.childValue'
     expect(child.value).to.equal 'Child.value'
     expect(child.method()).to.equal 'Child.method'
@@ -225,7 +225,7 @@ describe 'oj.type', ->
 
   it 'inherited type value property', ->
     child = new Child()
-    expect(child._type).to.equal 'Child'
+    expect(child.type).to.equal 'Child'
     expect(child.value).to.equal 'Child.value'
     expect(child.childValue).to.equal 'Child.childValue'
     expect(child.parentValue).to.equal 'Parent.parentValue'
@@ -285,8 +285,8 @@ describe 'oj.type', ->
 
   it 'deeply inherited type', ->
     grandChild = new GrandChild()
-    expect(grandChild._properties).to.deep.equal ["childReadOnly", "childReadWrite", "childValue", "grandChildReadOnly", "grandChildReadWrite", "grandChildValue", "parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]
-    expect(grandChild._methods).to.deep.equal ['childMethod', 'grandChildMethod', 'method', 'parentMethod', 'superMethod']
+    expect(grandChild.properties).to.deep.equal ["childReadOnly", "childReadWrite", "childValue", "grandChildReadOnly", "grandChildReadWrite", "grandChildValue", "parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]
+    expect(grandChild.methods).to.deep.equal ['childMethod', 'grandChildMethod', 'method', 'parentMethod', 'superMethod']
 
   it 'deeply inherited type with constructor', ->
     grandChild = new GrandChild('GrandChild.constructor', 'GrandChild.constructor')
@@ -296,7 +296,7 @@ describe 'oj.type', ->
 
   it 'deeply inherited type without new', ->
     grandChild = GrandChild()
-    expect(grandChild._type).to.equal 'GrandChild'
+    expect(grandChild.type).to.equal 'GrandChild'
     expect(grandChild.value).to.equal 'GrandChild.value'
     expect(grandChild.grandChildValue).to.equal 'GrandChild.grandChildValue'
     expect(grandChild.childValue).to.equal 'Child.childValue'
@@ -310,7 +310,7 @@ describe 'oj.type', ->
 
   it 'deeply inherited type value property', ->
     grandChild = new GrandChild()
-    expect(grandChild._type).to.equal 'GrandChild'
+    expect(grandChild.type).to.equal 'GrandChild'
     expect(grandChild.value).to.equal 'GrandChild.value'
     expect(grandChild.grandChildValue).to.equal 'GrandChild.grandChildValue'
     expect(grandChild.parentValue).to.equal 'Parent.parentValue'

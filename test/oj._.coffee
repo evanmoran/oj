@@ -193,9 +193,6 @@ describe 'oj._', ->
     (_.uniqueSort [2,1,2,1]).should.deep.equal [1,2]
     (_.uniqueSort [1,1,1,1]).should.deep.equal [1]
 
-  it 'isOJ', ->
-
-
   it 'isOJML'
   it 'isElement'
   it 'isjQuery'

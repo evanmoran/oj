@@ -130,6 +130,7 @@ if require.extensions
     catch eJS
       eJS.message = "(javascript error) #{filepath}: #{eJS.message}"
       throw eJS
+
     return
 
 root = @
@@ -870,18 +871,45 @@ _compileTag = (ojml, options) ->
   if children.length > 0 or oj.tag.isClosed(tag)
     options.html?.push "</#{tag}>"
 
-# oj.make
+# oj.toDOM
 # ------------------------------------------------------------------------------
 # Make oj directly in the DOM
 
-# oj.make = (options, ojml) ->
-#   _.extend options,
-#     dom: true
-#     html: false
-#   result = oj.compile options, ojml
-#   result.js()
-#   result.dom
+oj.toDOM = (options, ojml) ->
+  # Options is optional
+  if not _.isObject options
+    ojml = options
+    options = {}
 
+  # Create dom not html
+  _.extend options,
+    dom: true
+    html: false
+
+  result = oj.compile options, ojml
+
+  # Bind js if it exists
+  result.js?()
+
+  result.dom
+
+# oj.toHTML
+# ------------------------------------------------------------------------------
+# Make oj directly to HTML. It will ignore all event bindings
+
+oj.toHTML = (options, ojml) ->
+  # Options is optional
+  if not _.isObject options
+    ojml = options
+    options = {}
+
+  # Create html only
+  _.extend options,
+    dom: false
+    html: true
+    js: false
+
+  (oj.compile options, ojml).html
 
 # _.inherit
 # ------------------------------------------------------------------------------
@@ -1020,11 +1048,13 @@ oj.view = (name, args) ->
 oj.View = oj.type 'View',
   constructor: ->
 
+    # TODO: Process arguments if they are functions and wrap _.arguments
+
     @make.apply @, arguments
 
-    # Views act like tag methods and support the div -> syntax. This is terrible but necessary.
-    if oj._result
-      oj._result.push @
+    # Views act like tag methods and support the div -> syntax.
+    # Append this to parent
+    _.argumentsAppend @
 
   properties:
     el:
@@ -1091,13 +1121,9 @@ oj.Checkbox = oj.type 'Checkbox'
 
   methods:
     make: ->
-      # c = @value
-      console.log "@: ", @
-      # c = if @value then 'checked' else null
       oj.input id: oj.id(), c:@type, type:'checkbox'#, checked:checked
 
     toString: ->
-      console.log "toString: #{__filename}: 1079"
       @super.toString.apply @,arguments
 
 # oj.List

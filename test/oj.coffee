@@ -52,14 +52,23 @@ describe 'oj', ->
     # assert.isObject oj2.Image, 'extend should extend objects (Image)'
     # assert.isObject oj2.CheckBox, 'extend should extend objects (CheckBox)'
 
+  it 'isOJ', ->
+    Empty = oj.type 'Empty', {}
+    empty = new Empty()
+    empty2 = Empty()
+    assert.equal (oj.isOJ empty), true, 'new case}'
+    assert.equal (oj.isOJ empty2), true, 'no new case}'
+
   it 'typeOf', ->
     assert.equal (oj.typeOf {}), 'object', '{} case}'
     assert.equal (oj.typeOf {a:1}), 'object', '{a:1} case}'
 
     Empty = oj.type 'Empty', {}
-    empty = Empty()
+    empty = new Empty()
+    empty2 = Empty()
     assert.equal (oj.typeOf Empty), 'function', 'oj type case'
     assert.equal (oj.typeOf empty), 'Empty', 'oj instance case'
+    assert.equal (oj.typeOf empty2), 'Empty', 'oj instance case (no new)'
 
     assert.equal (oj.typeOf new Array), 'array', 'new Array case'
     assert.equal (oj.typeOf null), 'null', 'null case'

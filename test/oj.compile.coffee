@@ -123,6 +123,12 @@ describe 'oj.compile', ->
     ojml = oj.div style: {textAlign:'center', color: 'red'}, ->
     compileTest ojml, 0, '<div style="color:red;text-align:center"></div>'
 
+  it 'simple nested', ->
+    ojml = oj.div ->
+      oj.span 'a1'
+    expected = '<div><span>a1</span></div>'
+    compileTest ojml, 0, expected, debug: false
+
   it 'nested', ->
     ojml = oj.div style: {'text-align':'center', color: 'red'}, ->
       oj.div 'a1', ->

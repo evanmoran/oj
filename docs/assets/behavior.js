@@ -244,24 +244,24 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "oj.inherit",
-                "slug": "ojinherit"
+                "title": "_.inherit",
+                "slug": "-inherit"
               },
               "depth": 2
             }, {
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "oj.createType",
-                "slug": "ojcreatetype"
+                "title": "oj.type",
+                "slug": "ojtype"
               },
               "depth": 2
             }, {
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "oj.createView",
-                "slug": "ojcreateview"
+                "title": "oj.view",
+                "slug": "ojview"
               },
               "depth": 2
             }, {
@@ -270,6 +270,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "level": 2,
                 "title": "oj.View",
                 "slug": "ojview"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.Checkbox",
+                "slug": "ojcheckbox"
               },
               "depth": 2
             }, {
