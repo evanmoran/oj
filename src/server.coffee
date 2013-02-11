@@ -17,6 +17,16 @@ uglifyjs = require 'uglify-js'
 # Export server side oj
 oj = require './oj'
 oj.isClient = false
+oj.codes =
+  reset: '\u001b[0m'
+  black: '\u001b[30m'
+  red: '\u001b[31m'
+  green: '\u001b[32m'
+  yellow: '\u001b[33m'
+  blue: '\u001b[34m'
+  magenta: '\u001b[35m'
+  cyan: '\u001b[36m'
+  gray: '\u001b[37m'
 module.exports = oj
 
 # Commands
@@ -68,7 +78,9 @@ oj.command = (options = {}) ->
     compilePath fullPath, options
 
 # compilePath
+# ------------------------------------------------------------------------------
 # Compile any file or directory path
+
 compilePath = (fullPath, options = {}) ->
   if isDirectory fullPath
     return compileDir fullPath, options
@@ -76,6 +88,8 @@ compilePath = (fullPath, options = {}) ->
   compileFile fullPath, includeDir, options
 
 # compileDir
+# ------------------------------------------------------------------------------
+
 compileDir = (dirPath, options = {}) ->
   # Handle recursion and gather files to compile
   lsOJ dirPath, options, (err, files, dirs) ->
@@ -89,9 +103,32 @@ compileDir = (dirPath, options = {}) ->
     for f in files
       compileFile f, dirPath, options
 
+# nodeModulePaths: Determine node_module paths from a given path
+# Implementation is from node.js' Module._nodeModulePaths
+# This is not a public API so it seemed to horrible.
+nodeModulePaths = (from) ->
+  from = path.resolve from
+  splitRe = (if process.platform == 'win32' then  /[\/\\]/ else /\//)
+  joiner = (if process.platform == 'win32' then '\\' else '/')
+  paths = []
+  parts = from.split splitRe
+  for tip in [(parts.length-1)..0]
+    # Don't search in .../node_modules/node_modules
+    if parts[tip] == 'node_modules'
+      continue
+    dir = parts.slice(0, tip + 1).concat('node_modules').join(joiner)
+    paths.push(dir)
+  paths
+
 # compileFile
 # ------------------------------------------------------------------------------
 compileFile = (filePath, includeDir, options = {}) ->
+
+  # Time this method
+  startTime = process.hrtime()
+
+  # Ensure our current directory is this path
+  process.chdir path.dirname(filePath)
 
   # Clear underscore as modules might need it
   _clearRequireCacheRecord 'underscore'
@@ -153,22 +190,22 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Abort require with message on failure
   catch eRequire
     verbose 1, eRequire.message
+    _restoreRequireCache()
+    _unhookRequire modules, hookCache, hookOriginalCache
     return
 
   # Restore require cache
   _restoreRequireCache()
   _unhookRequire modules, hookCache, hookOriginalCache
 
-  # Compile
-  results = oj.compile debug: options.debug, ojml
-  html = results.html
-
-  # Error if compiled file is missing required <html> or <body>
-  if html.indexOf('<html') == -1
-    return verbose 1, "(error) #{filePath}: <html> tag is missing"
-
-  if html.indexOf('<body') == -1
-    return verbose 1, "(error) #{filePath}: <body> tag is missing"
+  # Catch the messages thrown by compiling ojml
+  try
+    # Compile
+    results = oj.compile debug: options.debug, ojml
+    html = results.html
+  catch eCompile
+    oj.error "runtime error in #{filePath}: #{eCompile.message}"
+    return
 
   # Build cache
   verbose 3, "caching #{filePath} (#{_length modules} files)"
@@ -179,8 +216,9 @@ compileFile = (filePath, includeDir, options = {}) ->
   verbose 3, "serializing #{filePath} (#{cacheLength} files)"
   scriptHtml = _requireCacheToString cache, filePath, isDebug
 
-  # Insert script into html just before </body>
-  html = _insertAt html, (html.lastIndexOf '</body>'), scriptHtml
+  # Insert script before </body> or at the end
+  scriptIndex = (_lastIndexOf html, '</body>') ? html.length
+  html = _insertAt html, scriptIndex, scriptHtml
 
   # Create directory
   dirOut = path.dirname fileOut
@@ -188,14 +226,18 @@ compileFile = (filePath, includeDir, options = {}) ->
     verbose 3, "mkdir #{dirOut}"
 
   # Write file
-  timeStamp = if options.watch then "#{(new Date()).toLocaleTimeString()} - " else ""
-  verbose 1, "#{timeStamp}compiled #{fileOut}"
   fs.writeFileSync fileOut, html
 
   # Clear caches
   cache = null
   hookCache = null
   hookOriginalCache = null
+
+  # Record
+  deltaTime = process.hrtime(startTime)
+  timeStamp = " (#{deltaTime[0] + Math.round(10000*deltaTime[1]/1000000000)/10000} sec)"
+  verbose 1, "compiled #{fileOut}#{timeStamp}", 'cyan'
+  return
 
 # Keep track of which files are watched
 watchCache = {}
@@ -221,7 +263,7 @@ watchFile = (filePath, includeDir, options = {}) ->
         _rewatch()
         _compile()
       catch e
-        verbose 2, "unwatching missing file: #{filePath}"
+        verbose 2, "unwatching missing file: #{filePath}", 'yellow'
         _unwatch()
     else throw e
 
@@ -242,22 +284,21 @@ watchFile = (filePath, includeDir, options = {}) ->
           return _watchErr err if err
           return _rewatch() if prevStats and stats.size is prevStats.size and
             stats.mtime.getTime() is prevStats.mtime.getTime()
-          verbose 3, "updating #{filePath}"
+          verbose 2, "updating file #{filePath}", 'yellow'
           prevStats = stats
           compileFile filePath, includeDir, options
     catch e
-      # TODO: Consider if this is necessary
       verbose 1, 'unknown watch error on #{filePath}'
       _unwatch()
   try
-    verbose 2, "watching #{filePath}"
+    verbose 2, "watching file #{filePath}", 'yellow'
     watcher = fs.watch filePath, _compile
     watchCache[filePath] = watcher
   catch e
     _watchErr e
 
   _rewatch = ->
-    verbose 3, 'rewatch #{filePath}'
+    verbose 3, 'rewatch file #{filePath}', 'yellow'
     _unwatch()
 
     watchCache[filePath] = watcher = fs.watch filePath, _compile
@@ -280,9 +321,9 @@ watchDir = (dir, includeDir, options) ->
   # Throttle
   compileTimeout = null
 
-  verbose 2, "watching #{dir}/"
+  verbose 2, "watching directory #{dir}/", 'yellow'
   watcher = fs.watch dir, (err) ->
-    verbose 3, "updating #{dir}/"
+    verbose 2, "updating directory #{dir}/", 'yellow'
 
     # Unwatch missing directories
     if err and not isDirectory dir
@@ -302,14 +343,14 @@ watchDir = (dir, includeDir, options) ->
   return
 
 unwatchDir = (dir) ->
-  verbose 2, "unwatching #{dir}/"
+  verbose 2, "unwatching #{dir}/", 'yellow'
   if isWatched dir
     watchCache[dir].close()
   watchCache[dir] = null
   return
 
 unwatchAll = ->
-  verbose 2, "unwatching all files and directories"
+  verbose 2, "unwatching all files and directories", 'yellow'
   for k in _.keys watchCache
     if watchCache[k]?
       watchCache[k].close()
@@ -319,7 +360,7 @@ unwatchAll = ->
 process.on 'SIGINT', ->
   verbose 1, "\n"
   unwatchAll()
-  verbose 1, "oj exited successfully."
+  verbose 1, "oj exited successfully.", 'cyan'
   process.exit()
 
 # Helpers
@@ -338,9 +379,9 @@ spaces = (count) ->
   Array(count + 1).join(' ')
 
 # Print if verbose is set
-verbose = (level, message) ->
+verbose = (level, message, color = 'reset') ->
   if verbosity >= level
-    console.log "#{spaces(4 * (level-1))}#{message}"
+    console.log oj.codes[color] + "#{spaces(4 * (level-1))}#{message}" + oj.codes.reset
 
 # File helpers
 # ------------------------------------------------------------------------------
@@ -369,7 +410,8 @@ relativePathWithEscaping = (fullPath, relativeTo) ->
 
 # fullPaths: Convert relative paths to full paths from origin dir
 fullPaths = (relativePaths, dir) ->
-  _.map relativePaths, (p) -> path.join dir, p
+  _.map relativePaths, (p) -> path.resolve dir, p
+
 
 # commonPath: Given a list of full paths. Find the common root
 commonPath = (paths, seperator = '/') ->
@@ -391,7 +433,11 @@ commonPath = (paths, seperator = '/') ->
 # Abstract if recursion happened and filters to only files that don't start with _ and end in .oj
 
 lsOJ = (paths, options, cb) ->
-  options = _.extend {}, recurse: options.recurse, filter: (f) -> path.basename(f)[0] != '_' and path.extname(f) == '.oj' and not isHiddenFile f
+  # Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
+  options = _.extend {}, recurse: options.recurse, filter: (f) ->
+    basename = path.basename(f)
+    path.extname(f) == '.oj' and basename[0] != '_'and basename.slice(0,2) != 'oj' and not isHiddenFile f
+
   ls paths, options, (err, results) ->
     cb err, results.files, results.directories
   return
@@ -516,6 +562,11 @@ _escapeSingleQuotes = (str) ->
 
 _insertAt = (str, ix, substr) ->
   str.slice(0,ix) + substr + str.slice(ix)
+
+_lastIndexOf = (str, substr) ->
+    if (ix = str.lastIndexOf substr)
+      return null
+    ix
 
 _length = (any) ->
   any.length or _.keys(any).length
@@ -647,23 +698,27 @@ _first = (array, fn) ->
 
 # Load all modules by reading them if they are missing
 _buildRequireCache = (modules, cache, isDebug) ->
-  for filename, data of modules
+  for fileLocation, data of modules
 
     # Read code if it is missing
     if not data.code?
-      data.code = stripBOM readFileSync filename
+      throw new Error('data.code is missing')
+      # data.code = stripBOM readFileSync fileLocation
 
     # Save code to _fileCache
-    _buildFileCache cache.files, filename, data.code, isDebug
+    _buildFileCache cache.files, fileLocation, data.code, isDebug
 
-    pathComponents = _first module.parent.paths, (prefix) ->
-      if _startsWith filename, prefix + path.sep
-        modulePath = (filename.slice (prefix.length + 1)).split(path.sep)
+    # Generate possible node_module paths given this file
+    modulePrefixes = nodeModulePaths fileLocation
+
+    pathComponents = _first modulePrefixes, (prefix) ->
+      if _startsWith fileLocation, prefix + path.sep
+        modulePath = (fileLocation.slice (prefix.length + 1)).split(path.sep)
         moduleName = modulePath[0]
         moduleMain = modulePath.slice(1).join(path.sep)
         modulesDir: prefix, moduleName:  moduleName, moduleMain: moduleMain, moduleParentPath: module.id
 
-    # Save to cache.native
+    # Save to cache.modules
     if pathComponents
       if not cache.modules[pathComponents.modulesDir]
         cache.modules[pathComponents.modulesDir] = {}
@@ -674,7 +729,7 @@ _buildRequireCache = (modules, cache, isDebug) ->
     _buildNativeCache cache.native, data.code, isDebug
 
     # Store complete
-    verbose 4, "stored #{filename}"
+    verbose 4, "stored #{fileLocation}"
 
   # Remove client and server oj if they exist.
   # This is a special case of the way stuff is included.
@@ -687,9 +742,9 @@ _buildRequireCache = (modules, cache, isDebug) ->
   return cache
 
 # ###_buildFileCache: build file cache
-_buildFileCache = (_filesCache, filename, code, isDebug) ->
+_buildFileCache = (_filesCache, fileName, code, isDebug) ->
   # Minify code if necessary and cache it
-  _filesCache[filename] = minifyJSUnless isDebug, filename, code
+  _filesCache[fileName] = minifyJSUnless isDebug, fileName, code
 
 # build native module cache given moduleNameList
 pass = 1
@@ -777,7 +832,6 @@ _requireCacheToString = (cache, filePath, isDebug) ->
   _nativeModuleToString = (moduleName, code) ->
     # Use relative path to hide server directory info
     moduleName = _escapeSingleQuotes moduleName
-    console.log "moduleName is undefined: ", moduleName if not code
     """F['#{moduleName}'] = (function(module,exports){(function(process,global,__dirname,__filename){#{code}})(P,G,'/','#{moduleName}');});\n"""
 
   # Maps filePath -> code
@@ -858,7 +912,7 @@ _requireCacheToString = (cache, filePath, isDebug) ->
 
   return """
 <script>
-
+console.log('loading script');
 // oj v#{oj.version}
 (function(){ var F = {}, M = {}, R = {}, P, G, RR;
 
@@ -878,7 +932,7 @@ RR = function(f){
 
 req = require = RR('#{path.join clientDir, clientFile}');
 oj = require('oj');
-oj('#{clientFile}');
+oj.begin('#{clientFile}');
 
 }).call(this);
 

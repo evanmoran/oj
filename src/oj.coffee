@@ -3,6 +3,34 @@
 # ==============================================================================
 # A unified templating framework for the people. Thirsty people.
 
+
+# oj function
+# ------------------------------------------------------------------------------
+# Convert ojml to dom
+oj = module.exports = (ojml) ->
+  oj.toDOM ojml
+
+# Keep a reference to ourselves for templates to see
+oj.oj = oj
+
+# oj.begin
+# ------------------------------------------------------------------------------
+oj.begin = module.exports = (page) ->
+  # Compile
+  compiled = oj.compile require page
+
+  # Setup dom
+  html = compiled.html
+
+  document.write html
+
+  # Setup jquery events and awaken oj objects
+  compiled.js()
+
+  # Setup jquery ready and onload events
+  oj.ready()
+  oj.load()
+
 # Helpers
 # ------------------------------------------------------------------------------
 # Loading with either ready or onload
@@ -41,25 +69,11 @@ _loader = (evt) ->
       _loaderQueue[evt].queue.push fn
     return
 
-# oj function
-# ------------------------------------------------------------------------------
-# Start oj by setting up dom and events
-oj = module.exports = (page) ->
-  # Compile
-  compiled = oj.compile require page
-
-  # Setup dom
-  html = compiled.html
-  throw new Error('oj: <html> element was not found') if html.indexOf('<html') != 0
-  html = html.slice (html.indexOf '>')+1, html.lastIndexOf '<'
-  (document.getElementsByTagName 'html')[0].innerHTML = html
-
-  # Setup jquery events and awaken oj objects
-  compiled.js()
-
-  # Setup jquery ready and onload events
-  oj.ready()
-  oj.load()
+oj.error = (message) ->
+  red = oj.codes?.red ? ''
+  reset = oj.codes?.red ? ''
+  console.error "#{red}#{message}#{reset}"
+  return
 
 # ## oj.ready
 oj.ready = _loader 'ready'
@@ -110,16 +124,22 @@ if require.extensions
   stripBOM = (c) -> if c.charCodeAt(0) == 0xFEFF then (c.slice 1) else c
 
   isCS = (code) -> -1 != code.search /(^\s*#|\n\s*#|-\>)/
+  isJS = (code) -> -1 != code.search /var|function|((^|\n)\s*\/\/)/
 
   require.extensions['.oj'] = (module, filepath) ->
     # Compile as coffee-script or javascript
     code = stripBOM fs.readFileSync filepath, 'utf8'
+
+    # Transform into coffee script if necessary
     try
       code = coffee.compile code, bare: true
-    catch eCoffee # js file, do nothing
-      # If this is coffee script throw this error
-      if isCS code
-        eCoffee.message = "(coffee-script error) #{filepath}: #{eCoffee.message}"
+
+    catch eCoffee
+
+      eCoffee.message = "#{oj.codes?.red}coffee-script error in #{filepath}: #{eCoffee.message}#{oj.codes?.reset}"
+      # Report it as a coffee-script error if we are pretty
+      # sure it is
+      if (isCS code) or not (isJS code)
         throw eCoffee
 
     # Compile javascript
@@ -128,10 +148,9 @@ if require.extensions
       module._compile code, filepath
 
     catch eJS
-      eJS.message = "(javascript error) #{filepath}: #{eJS.message}"
-      throw eJS
 
-    return
+      eJS.message = "#{oj.codes?.red}javascript error in #{filepath}: #{eJS.message}#{oj.codes?.reset}"
+      throw eJS
 
 root = @
 
@@ -699,6 +718,10 @@ oj.compile = (options, ojml) ->
     dom: false
     debug: false
 
+  # TODO: When dom is implemented do not default html to always on
+  # but for now it is required to generate the dom using innerHTML
+  options.html = true
+
   options.html = if options.html then [] else null  # html accumulator
   options.dom = if options.dom then [] else null    # dom accumulator
   options.js = []                                   # code accumulator
@@ -725,7 +748,7 @@ oj.compile = (options, ojml) ->
       t.awaken()
     undefined
 
-  return out
+  out
 
 _styleKeyFromFancy = (key) ->
   out = ""
@@ -856,16 +879,16 @@ _compileTag = (ojml, options) ->
     # Start tag
     options.html?.push "<#{tag}#{attr}>"
 
-  if children.length > 1
-    for child in children
-      if options.debug
-        options.html?.push "\n\t#{options.indent}"
-      _compileDeeper _compileAny, child, options
-    if options.debug
-      options.html?.push "\n#{options.indent}"
-  else
-    for child in children
-      _compileDeeper _compileAny, child, options
+  # Compile your children if necessary
+  for child in children
+    # Skip intention if there is only one child
+    if options.debug && children.length > 1
+      options.html?.push "\n\t#{options.indent}"
+    _compileDeeper _compileAny, child, options
+
+  # Skip intention if there is only one child
+  if options.debug && children.length > 1
+    options.html?.push "\n#{options.indent}"
 
   # End tag if you have children or your tag closes
   if children.length > 0 or oj.tag.isClosed(tag)
@@ -972,7 +995,7 @@ oj.type = (name, args = {}) ->
     try
       args.constructor.apply @, arguments
     catch e
-      console.error "oj: #{name}.constructor failed with: ", e
+      console.error "#{name}.constructor failed with: ", e
       throw e
     return @
 
@@ -1242,4 +1265,14 @@ _.domInsertHtmlAfter = (el, html) ->
     elBefore = elBeforeNext
 
   elTemp = undefined
+
+
+
+oj.insertAfter
+oj.insertBefore
+oj.replace
+
+
+
+
 
