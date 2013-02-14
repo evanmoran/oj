@@ -190,6 +190,8 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Abort require with message on failure
   catch eRequire
     verbose 1, eRequire.message
+
+    # Unwind ourselves from require before failing
     _restoreRequireCache()
     _unhookRequire modules, hookCache, hookOriginalCache
     return
@@ -201,8 +203,9 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Catch the messages thrown by compiling ojml
   try
     # Compile
-    results = oj.compile debug: options.debug, ojml
+    results = oj.compile debug:isDebug, html:true, css:true, dom:false, ojml
     html = results.html
+    css = results.css
   catch eCompile
     oj.error "runtime error in #{filePath}: #{eCompile.message}"
     return
@@ -216,9 +219,26 @@ compileFile = (filePath, includeDir, options = {}) ->
   verbose 3, "serializing #{filePath} (#{cacheLength} files)"
   scriptHtml = _requireCacheToString cache, filePath, isDebug
 
-  # Insert script before </body> or at the end
-  scriptIndex = (_lastIndexOf html, '</body>') ? html.length
+  # Insert script before </body> or before </html> or at the end
+  if results.tags.body
+    scriptIndex = html.lastIndexOf '</body>'
+  else if results.tags.html
+    scriptIndex = html.lastIndexOf '</html>'
+  scriptIndex ?= html.length
   html = _insertAt html, scriptIndex, scriptHtml
+
+  # Insert styles before </head> or after <html> or at the beginning
+  if css
+    styleHtml = _minifyAndWrapCSSInStyleTags css, filePath, isDebug
+    if results.tags.head
+      styleIndex = html.lastIndexOf '</head>'
+    else if results.tags.html
+      # Find the front
+      styleIndex = html.indexOf '<html'
+      # Then find the end + 1
+      styleIndex = (html.indexOf '>', styleIndex) + 1
+    styleIndex ?= 0
+    html = _insertAt html, styleIndex, styleHtml
 
   # Create directory
   dirOut = path.dirname fileOut
@@ -563,11 +583,6 @@ _escapeSingleQuotes = (str) ->
 _insertAt = (str, ix, substr) ->
   str.slice(0,ix) + substr + str.slice(ix)
 
-_lastIndexOf = (str, substr) ->
-    if (ix = str.lastIndexOf substr)
-      return null
-    ix
-
 _length = (any) ->
   any.length or _.keys(any).length
 
@@ -803,6 +818,13 @@ _nativeModuleCode = (moduleName, isDebug) ->
 # Code generation
 # ------------------------------------------------------------------------------
 
+# ###_minifyAndWrapCSSInStyleTags
+# Wrap css in script tags and possibly minify it
+_minifyAndWrapCSSInStyleTags = (css, filePath, isDebug, structureOff) ->
+  css_ = minifyCSSUnless isDebug, filePath, css, structureOff
+  newline = if isDebug then '\n' else ''
+  "<style>#{newline}#{css_}#{newline}</style>"
+
 # ###_requireCacheToString
 # Output html from cache and file
 _requireCacheToString = (cache, filePath, isDebug) ->
@@ -860,6 +882,14 @@ _requireCacheToString = (cache, filePath, isDebug) ->
     _native += _nativeModuleToString moduleName, code
     verbose 4, "serialized '#{moduleName}'"
 
+  # Browser side node has these abbreviations:
+  #     G = Global
+  #     P = Process
+  #     RR = Require factory to generated require for a given path
+  #     R = Require cache
+  #     F = File cache
+  #     M = Module cache
+
   # Client side function to run module and cache result
     #console.log("run: file:", f);
   _run = minifySimpleJSUnless isDebug, """
@@ -912,16 +942,13 @@ _requireCacheToString = (cache, filePath, isDebug) ->
 
   return """
 <script>
-console.log('loading script');
+
 // oj v#{oj.version}
 (function(){ var F = {}, M = {}, R = {}, P, G, RR;
 
-#{_modules}
-#{_files}
-#{_native}
+#{_modules}#{_files}#{_native}
 P = {cwd: function(){return '/';}};
 G = {process: P,Buffer: {}};
-
 RR = function(f){
   return function(m){
     return run(find(m, f));
@@ -930,7 +957,7 @@ RR = function(f){
   #{_find}
 };
 
-req = require = RR('#{path.join clientDir, clientFile}');
+require = RR('#{path.join clientDir, clientFile}');
 oj = require('oj');
 oj.begin('#{clientFile}');
 

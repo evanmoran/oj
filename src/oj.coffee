@@ -16,27 +16,36 @@ oj.oj = oj
 # oj.begin
 # ------------------------------------------------------------------------------
 oj.begin = module.exports = (page) ->
-  # Compile
-  compiled = oj.compile require page
 
-  # Setup dom
-  html = compiled.html
+  # Defer dom manipulation until the page has loaded
+  _readyOrLoad ->
 
-  document.write html
+    # Compile
+    compiled = oj.compile require page
 
-  # Setup jquery events and awaken oj objects
-  compiled.js()
+    # Setup dom
+    html = compiled.html
 
-  # Setup jquery ready and onload events
-  oj.ready()
-  oj.load()
+    # Replace html
+    doc = document.open "text/html","replace"
+    doc.write html
+    doc.close()
+
+    # Setup jquery events and awaken oj objects
+    compiled.js()
+
+    # Trigger events bound through oj.ready
+    oj.ready()
 
 # Helpers
 # ------------------------------------------------------------------------------
-# Loading with either ready or onload
-_load = (evt, fn) ->
-  if $? and evt == 'ready'
+# Loading with either ready or onload (whichever exists)
+# Loads immediately if it is already loaded
+_readyOrLoad = (fn) ->
+  # Use jquery ready if it exists
+  if $?
     $(fn)
+  # Otherwise fall back to onload
   else
     # Add onload if it hasn't happened yet
     if document.readyState != "complete"
@@ -49,37 +58,28 @@ _load = (evt, fn) ->
       fn()
   return
 
-# Generalized delay loading
-_loaderQueue =
-  ready: queue:[], loaded:false
-  load: queue:[], loaded:false
-
-_loader = (evt) ->
-  (fn) ->
-    # Call everything if no arguments
-    if _.isUndefined fn
-      _loaderQueue[evt].loaded = true
-      while (f = _loaderQueue[evt].queue.shift())
-        _load evt, f
-    # Call load if already loaded
-    else if _loaderQueue[evt].loaded
-      _load evt, f
-    # Queue function for later
-    else
-      _loaderQueue[evt].queue.push fn
-    return
-
 oj.error = (message) ->
   red = oj.codes?.red ? ''
   reset = oj.codes?.red ? ''
   console.error "#{red}#{message}#{reset}"
   return
 
-# ## oj.ready
-oj.ready = _loader 'ready'
-
-# ## oj.load
-oj.load = _loader 'load'
+# oj.ready
+# -----------------------------------------------------------------------------
+_readyQueue = queue:[], loaded:false
+oj.ready = (fn) ->
+  # Call everything if no arguments
+  if _.isUndefined fn
+    _readyQueue.loaded = true
+    while (f = _readyQueue.queue.shift())
+      f()
+  # Call load if already loaded
+  else if _readyQueue.loaded
+    f()
+  # Queue function for later
+  else
+    _readyQueue.queue.push fn
+  return
 
 # ## oj.id
 oj.id = (len, chars) ->
@@ -470,7 +470,6 @@ _.uniqueSort = (array, isSorted = false) ->
 _.uniqueSortedUnion = (array, array2) ->
   _.uniqueSort (array.concat array2)
 
-
 # oj.addMethod
 # ------------------------------------------------------------------------------
 oj.addMethods = (obj, mapNameToMethod) ->
@@ -559,17 +558,6 @@ oj.copyProperty = (dest, source, propName) ->
   info = Object.getOwnPropertyDescriptor source, propName
   Object.defineProperty dest, propName, info
 
-
-# oj.partial (module, arg1, arg2, ...)
-# ------------------------------------------------------------------------------
-# Arguments are passed to exported module
-
-oj.partial = (module, json) ->
-  m = require module
-  if (_.isFunction m) and arguments.length > 1
-    return m arguments.slice(1)...
-  m
-
 # _.arguments
 # ------------------------------------------------------------------------------
 # Abstraction to wrap global arguments stack. This makes me sad but it is necessary for div -> syntax
@@ -657,7 +645,9 @@ oj.tag = (name, args...) ->
 
 oj.tag.elements =
   closed: 'a abbr acronym address applet article aside audio b bdo big blockquote body button canvas caption center cite code colgroup command datalist dd del details dfn dir div dl dt em embed fieldset figcaption figure font footer form frameset h1 h2 h3 h4 h5 h6 head header hgroup html i iframe ins keygen kbd label legend li map mark menu meter nav noframes noscript object ol optgroup option output p pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr tt u ul var video wbr xmp'.split ' '
-  open: 'area base br col command embed hr img input keygen link meta param source track wbr'.split ' '
+
+  # css is considered a tag for the sake of ojml. It is compiled differently.
+  open: 'area base br col command css embed hr img input keygen link meta param source track wbr'.split ' '
 
 oj.tag.elements.all = (oj.tag.elements.closed.concat oj.tag.elements.open).sort()
 
@@ -709,26 +699,35 @@ oj.extend = (context) ->
 oj.compile = (options, ojml) ->
 
   # Options is optional
-  if _.isArray options
+  if not ojml?
     ojml = options
     options = {}
 
   options = _.defaults {}, options,
     html: true
+    js: true
     dom: false
+    css: false
     debug: false
 
-  # TODO: When dom is implemented do not default html to always on
-  # but for now it is required to generate the dom using innerHTML
+  # TODO: Currently the dom is implemented via html so always
+  # keep this one. Eventually this should be switched to use
+  # something else.
   options.html = true
 
   options.html = if options.html then [] else null  # html accumulator
   options.dom = if options.dom then [] else null    # dom accumulator
   options.js = []                                   # code accumulator
-  options.types = []                                # types accumulator
+  options.css = if options.css then {} else null    # css accumulator
   options.indent = ''                               # indent counter
+  options.types = []                                # remember what types were used
+  options.tags = {}                                 # remember what tags were used
 
   _compileAny ojml, options
+
+  # Calculate css
+  if options.css
+    options.css = _cssFromObject options.css, options.debug
 
   # Join HTML only if the options ask for it
   html = options.html?.join ''
@@ -739,7 +738,7 @@ oj.compile = (options, ojml) ->
     el.innerHTML = html
     options.dom = el.firstChild
 
-  out = html: html, types: options.types, dom: options.dom, js:->
+  out = html: html, types: options.types, dom: options.dom, css: options.css, tags: options.tags, js:->
     # Call defered javascript
     for fn in options.js
       fn()
@@ -760,17 +759,36 @@ _styleKeyFromFancy = (key) ->
       out += c
   out
 
-# Convert object to string form
-_styleFromObject = (obj) ->
+# _styleFromObject: Convert object to string form
+# semi:true adds trailing semi
+# inline: true removes newlines
+# debug: true adds tabs
+_styleFromObject = (obj, options = {}) ->
+  _.defaults options,
+    inline: true
+    semi: false
+    debug: false
   out = ""
-  first = true
-  for kFancy in _.keys(obj).sort()
+  keys = _.keys(obj).sort()
+  indent = if options.debug and not options.inline then '\t' else ''
+  newline = if options.debug and not options.inline then '\n' else ''
+  for kFancy,ix in keys
+    semi = if options.semi or ix != keys.length-1 then ';' else ''
     k = _styleKeyFromFancy kFancy
-    if not first
-      out += ';'
-    out += "#{k}:#{obj[kFancy]}"
-    first = false
+    out += "#{indent}#{k}:#{obj[kFancy]}#{semi}#{newline}"
   out
+
+# _cssFromObject: Convert css selectors and rules to a string
+# When debug is true newlines and tabs will be added
+_cssFromObject = (cssMap, debug = false) ->
+  newline = if debug then '\n' else ''
+  space = if debug then ' ' else ''
+  inline = false
+  css = ""
+  for selector, styles of cssMap
+    rules = _styleFromObject styles, inline:false, debug:debug, semi:true
+    css += "#{selector}#{space}{#{newline}#{rules}#{newline}}"
+  css
 
 # Recursive helper for compiling that wraps indention
 _compileDeeper = (method, ojml, options) ->
@@ -823,6 +841,9 @@ _compileTag = (ojml, options) ->
   if _.isCapitalLetter tag[0]
     return _compileDeeper _compileAny, (new oj[tag] ojml.slice(1)), options
 
+  # Record tag
+  options.tags[tag] = true
+
   # Get attributes (optional)
   attributes = null
   if _.isObject ojml[1]
@@ -830,11 +851,21 @@ _compileTag = (ojml, options) ->
 
   children = if attributes then ojml.slice 2 else ojml.slice 1
 
+  # Compile to css if requested
+  if tag == 'css'
+    console.log "found css"
+    if options.css
+      # Extend options.css with rules
+      for selector,styles of attributes
+        options.css[selector] ?= styles
+        _.extend options.css[selector], styles
+    # css has no children to recurse to
+
   # Compile to html if requested
-  if options.html
+  else if options.html
     # attribute.style can be set with objects
     if _.isObject attributes?.style
-      attributes.style = _styleFromObject attributes.style
+      attributes.style = _styleFromObject attributes.style, inline:true
 
     # attribute.c stands for class
     if attributes?.c?
@@ -867,6 +898,8 @@ _compileTag = (ojml, options) ->
                 else
                   $el[k](v)
                 return
+            else if oj.isClient
+              console.error "oj: jquery is missing when binding a '#{k}' event"
 
             attributes[k] = null
           return
@@ -894,6 +927,8 @@ _compileTag = (ojml, options) ->
   if children.length > 0 or oj.tag.isClosed(tag)
     options.html?.push "</#{tag}>"
 
+  return
+
 # oj.toDOM
 # ------------------------------------------------------------------------------
 # Make oj directly in the DOM
@@ -907,7 +942,9 @@ oj.toDOM = (options, ojml) ->
   # Create dom not html
   _.extend options,
     dom: true
+    js: true
     html: false
+    css: false
 
   result = oj.compile options, ojml
 
@@ -929,10 +966,30 @@ oj.toHTML = (options, ojml) ->
   # Create html only
   _.extend options,
     dom: false
-    html: true
     js: false
+    html: true
+    css: false
 
   (oj.compile options, ojml).html
+
+# oj.toCSS
+# ------------------------------------------------------------------------------
+# Make oj directly to css. It will ignore all event bindings and html
+
+oj.toCSS = (options, ojml) ->
+  # Options is optional
+  if not _.isObject options
+    ojml = options
+    options = {}
+
+  # Create html only
+  _.extend options,
+    dom: false
+    js: false
+    html: false
+    css: true
+
+  (oj.compile options, ojml).css
 
 # _.inherit
 # ------------------------------------------------------------------------------
@@ -1161,117 +1218,6 @@ oj.Checkbox = oj.type 'Checkbox'
 # oj.Link
 # ------------------------------------------------------------------------------
 # oj.Link = class Link extends Control
-
-# oj.domReplace
-# ------------------------------------------------------------------------------
-# Replace element's html with jsml.  Starts OJ objects.
-oj.replace = (el, ojml) ->
-  # Element can be dom or jquery
-  el = el.get(0) if _.isjQuery el
-  # Template
-  template = oj.template ojml
-  # Replace
-  _.domReplaceHtml el, template.html
-  # initialize
-  template.js()
-
-# domInsertElementAfter
-# ------------------------------------------------------------------------------
-# DOM utility function to help insert elements after a given element (similar to domInsertBefore)
-
-_.domInsertElementAfter = (elLocation, elToInsert) ->
-  throw new Error("domInsertElementAfter error: elementLocation is null") unless elLocation
-  throw new Error("domInsertElementAfter error: elementToInsert is null") unless elToInsert
-  elNext = elLocation.nextSibling
-  elParent = elLocation.parentNode
-  if elNext
-    elParent.insertBefore elToInsert, elNext
-  else
-    elParent.appendChild elToInsert
-
-# domReplaceHtml
-# ------------------------------------------------------------------------------
-#
-# Source: http://www.bigdumbdev.com/2007/09/replacehtml-remove-insert-put-back-is.html
-#
-# Basic idea is that setting html on something not on the dom is faster
-# TODO: Allow insertion of TR into TBODY.  Must recognize parent tag of destination and make the temporary tag match this.  With TBODY you then need to add TABLE as well.
-
-_.domReplaceHtml = (el, html) ->
-  throw new Error("domReplaceHtml error: element is null") unless el
-  nextSibling = el.nextSibling
-  parent = el.parentNode
-  parent.removeChild el
-  el.innerHTML = html
-  if nextSibling
-    parent.insertBefore el, nextSibling
-  else
-    parent.appendChild el
-
-# domAppendHtml
-# ------------------------------------------------------------------------------
-# Append html after all children of element
-
-# TODO: Allow insertion of TR into TBODY.
-_.domAppendHtml = (el, html) ->
-  throw new Error("oj.domAppendHtml: element is null") unless el
-  elTemp = document.createElement 'div'
-  elTemp.innerHTML = html
-  while elTemp.childNodes.length
-    el.appendChild elTemp.childNodes[0]
-  elTemp = undefined
-
-# domPrependHtml
-# ------------------------------------------------------------------------------
-# Prepend html before all children of element
-# TODO: Allow insertion of TR into TBODY.
-
-_.domPrependHtml = (el, html) ->
-  throw new Error("oj.domPrependHtml: element is null") unless el
-  elTemp = document.createElement 'div'
-  elTemp.innerHTML = html
-  while elTemp.childNodes.length
-    el.insertBefore elTemp.childNodes[elTemp.childNodes.length-1], el.childNodes[0]
-  elTemp = undefined
-
-# domInsertHtmlBefore
-# ------------------------------------------------------------------------------
-# Insert html before the given element
-# TODO: Allow insertion of TR into TBODY.
-
-_.domInsertHtmlBefore = (el, html) ->
-  throw new Error("oj.domInsertHtmlBefore: element is null") unless el
-  # special case
-  elTemp = document.createElement 'div'
-  elTemp.innerHTML = html
-  parent = el.parentNode
-  while elTemp.childNodes.length
-    parent.insertBefore elTemp.childNodes[elTemp.childNodes.length-1], el
-  elTemp = undefined
-
-# domInsertHtmlAfter
-# ------------------------------------------------------------------------------
-# Insert html after the given element
-# TODO: Allow insertion of TR into TBODY.
-
-_.domInsertHtmlAfter = (el, html) ->
-  throw new Error("oj.domInsertHtmlAfter: element is null") unless el
-  elTemp = document.createElement 'div'
-  elTemp.innerHTML = html
-  elBefore = el
-  while elTemp.childNodes.length
-    elBeforeNext = elTemp.childNodes[0]
-    _.domInsertElementAfter elBefore, elTemp.childNodes[0]
-    elBefore = elBeforeNext
-
-  elTemp = undefined
-
-
-
-oj.insertAfter
-oj.insertBefore
-oj.replace
-
 
 
 
