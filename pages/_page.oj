@@ -1,7 +1,0 @@
-
-h2 'Pages'
-
-p ->
-  span 'Entire pages can be included through require. This is identical to the '
-  a {href: 'http://wiki.commonjs.org/wiki/CommonJS'}, 'CommonJS'
-  span ' system provided by node.js.'

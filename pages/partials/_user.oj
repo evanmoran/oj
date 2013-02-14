@@ -1,6 +1,0 @@
-
-# Defining a function is the same as defining a partial
-module.exports = (user = {}) ->
-  span 'data-id':user.id, ->
-    a href: "/user/#{user.id}", ->
-      user.name
