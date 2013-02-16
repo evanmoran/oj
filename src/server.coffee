@@ -205,6 +205,7 @@ compileFile = (filePath, includeDir, options = {}) ->
     # Compile
     results = oj.compile debug:isDebug, html:true, css:true, dom:false, ojml
     html = results.html
+    console.log "html: ", html
     css = results.css
   catch eCompile
     oj.error "runtime error in #{filePath}: #{eCompile.message}"
@@ -219,25 +220,28 @@ compileFile = (filePath, includeDir, options = {}) ->
   verbose 3, "serializing #{filePath} (#{cacheLength} files)"
   scriptHtml = _requireCacheToString cache, filePath, isDebug
 
+  if !results.tags.html
+    oj.error "validation error #{filePath}: <html> tag is missing"
+    return
+
+  else if !results.tags.head
+    oj.error "validation error #{filePath}: <head> tag is missing"
+    return
+
+  else if !results.tags.body
+    oj.error "validation error #{filePath}: <body> tag is missing"
+    return
+
+  # TODO: Should we check for doctype?
+
   # Insert script before </body> or before </html> or at the end
-  if results.tags.body
-    scriptIndex = html.lastIndexOf '</body>'
-  else if results.tags.html
-    scriptIndex = html.lastIndexOf '</html>'
-  scriptIndex ?= html.length
+  scriptIndex = html.lastIndexOf '</body>'
   html = _insertAt html, scriptIndex, scriptHtml
 
   # Insert styles before </head> or after <html> or at the beginning
   if css
     styleHtml = _minifyAndWrapCSSInStyleTags css, filePath, isDebug
-    if results.tags.head
-      styleIndex = html.lastIndexOf '</head>'
-    else if results.tags.html
-      # Find the front
-      styleIndex = html.indexOf '<html'
-      # Then find the end + 1
-      styleIndex = (html.indexOf '>', styleIndex) + 1
-    styleIndex ?= 0
+    styleIndex = html.lastIndexOf '</head>'
     html = _insertAt html, styleIndex, styleHtml
 
   # Create directory

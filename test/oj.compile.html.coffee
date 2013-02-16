@@ -176,3 +176,14 @@ describe 'oj.compile.html', ->
     expected = '<html>\n\t<head><script src="script.js" type="text/javascript"></script></head>\n\t<body><div>a1</div></body>\n</html>'
     compileTest ojml, 0, expected, debug: true
 
+  it '<html><head><body> with ignore', ->
+    ojml = oj.html ->
+      oj.head ->
+        oj.script type: 'text/javascript', src: 'script.js'
+      oj.body ->
+        oj.div 'a1'
+    expected = '<body><div>a1</div></body>'
+    compileTest ojml, 0, expected, body:true
+
+
+

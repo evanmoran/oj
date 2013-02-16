@@ -14,6 +14,101 @@ crypto = require 'crypto'
 http = require 'http'
 https = require 'https'
 
+# Paths
+# ------------------------------------------------------------------------------
+
+CAKE_DIR = __dirname
+WWW_DIR = path.join CAKE_DIR, 'www'
+PAGES_DIR = path.join CAKE_DIR, 'pages'
+LIB_DIR = path.join CAKE_DIR, 'lib'
+
+# Tasks
+# ------------------------------------------------------------------------------
+
+task "build", "Build everything and run tests", ->
+  invoke "build:js"
+  invoke "build:docs"
+  invoke "test"
+
+
+task "build:js", "Compile coffee script files", ->
+  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/oj.coffee']
+
+task "build:js:watch", "Watch compile coffee script files", ->
+  launch 'coffee', ['--compile', '--lint', '-o', LIB_DIR, '--watch', 'src']
+
+task "ddd", "Build debug www", ->
+  launch 'oj', ['--recursive', '--verbose', '1', '--debug', '--output', WWW_DIR, PAGES_DIR]
+
+task "ddd:watch", "Watch debug www", ->
+  launch 'oj', ['--recursive', '--watch', '--verbose', '1', '--debug', '--output', WWW_DIR, PAGES_DIR]
+
+task "www", "Build www", ->
+  launch 'oj', ['--recursive', '--output', WWW_DIR, PAGES_DIR]
+
+task "www:watch", "Watch build www", ->
+  launch 'oj', ['--watch', '--recursive', '-o', WWW_DIR, PAGES_DIR]
+
+task "watch", "Watch all build targets", ->
+  invoke 'build:js:watch'
+
+task "build:docs", "Build documentation", ->
+  invoke 'build:groc'
+
+task "build:groc", "Build groc documentation", ->
+  launch 'groc', ['--out', 'docs', 'src/*.coffee']
+
+task "build:docco", "Build docco documentation", ->
+  launch 'docco', ['src/*.coffee']
+
+task "view:docs", "Open documentation in a browser", ->
+  launch 'open', ['docs/oj.html']
+
+task "docs", "Build and view docs", ->
+  invoke 'build:docs'
+  setTimeout (-> invoke 'view:docs'), 1000
+
+task "test", "Run unit tests", ->
+  exec "NODE_ENV=testing mocha", (err, output) ->
+    throw err if err
+    console.log output
+
+task "test:watch", "Watch unit tests", ->
+  launch 'mocha', ['--reporter', 'min', '--watch']
+
+_modules =
+  assert: 'https://raw.github.com/joyent/node/master/lib/assert.js',
+  console: 'https://raw.github.com/joyent/node/master/lib/console.js',
+  crypto: 'https://raw.github.com/joyent/node/master/lib/crypto.js',
+  events: 'https://raw.github.com/joyent/node/master/lib/events.js',
+  freelist: 'https://raw.github.com/joyent/node/master/lib/freelist.js',
+  punycode: 'https://raw.github.com/joyent/node/master/lib/punycode.js',
+  querystring: 'https://raw.github.com/joyent/node/master/lib/querystring.js'
+  string_decoder: 'https://raw.github.com/joyent/node/master/lib/string_decoder.js',
+  url: 'https://raw.github.com/joyent/node/master/lib/url.js',
+  util: 'https://raw.github.com/joyent/node/master/lib/util.js',
+  tty: 'https://raw.github.com/gist/2649813/01789078ef19464e8065416a3e95661f4c71b52f/tty.js'
+  # Overriding path to remove util dependency
+  # path: 'https://raw.github.com/joyent/node/master/lib/path.js',
+task 'list', 'list node modules', ->
+  console.log _.keys _modules
+
+# Download all the built in node module files
+task 'download', 'download node modules', ->
+  moduleDir = path.join __dirname, 'modules'
+  for module, url of _modules
+    do (module, url) ->
+      filepath = path.join moduleDir, "#{module}.js"
+
+      console.log 'downloading: ', url
+      download url, (err, data) ->
+
+        console.log "saving: #{filepath} (#{data.length} characters)"
+        save filepath, data, (err) ->
+          throw err if err
+
+
+
 # Utilities
 # ------------------------------------------------------------------------------
 
@@ -141,78 +236,3 @@ launch = (cmd, args=[], options, callback = ->) ->
   app.stdout.pipe(process.stdout)
   app.stderr.pipe(process.stderr)
   app.on 'exit', (status) -> callback() if status is 0
-
-# Tasks
-# ------------------------------------------------------------------------------
-
-task "build", "Build everything and run tests", ->
-  invoke "build:js"
-  invoke "build:docs"
-  invoke "test"
-
-LIB_DIR = 'lib'
-
-task "build:js", "Compile coffee script files", ->
-  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/oj.coffee']
-
-task "build:js:watch", "Watch compile coffee script files", ->
-  launch 'coffee', ['--compile', '--lint', '-o', LIB_DIR, '--watch', 'src']
-
-task "watch", "Watch all build targets", ->
-  invoke 'build:js:watch'
-
-task "build:docs", "Build documentation", ->
-  invoke 'build:groc'
-
-task "build:groc", "Build groc documentation", ->
-  launch 'groc', ['--out', 'docs', 'src/*.coffee']
-
-task "build:docco", "Build docco documentation", ->
-  launch 'docco', ['src/*.coffee']
-
-task "view:docs", "Open documentation in a browser", ->
-  launch 'open', ['docs/oj.html']
-
-task "docs", "Build and view docs", ->
-  invoke 'build:docs'
-  setTimeout (-> invoke 'view:docs'), 1000
-
-task "test", "Run unit tests", ->
-  exec "NODE_ENV=testing mocha", (err, output) ->
-    throw err if err
-    console.log output
-
-task "test:watch", "Watch unit tests", ->
-  launch 'mocha', ['--reporter', 'min', '--watch']
-
-_modules =
-  assert: 'https://raw.github.com/joyent/node/master/lib/assert.js',
-  console: 'https://raw.github.com/joyent/node/master/lib/console.js',
-  crypto: 'https://raw.github.com/joyent/node/master/lib/crypto.js',
-  events: 'https://raw.github.com/joyent/node/master/lib/events.js',
-  freelist: 'https://raw.github.com/joyent/node/master/lib/freelist.js',
-  punycode: 'https://raw.github.com/joyent/node/master/lib/punycode.js',
-  querystring: 'https://raw.github.com/joyent/node/master/lib/querystring.js'
-  string_decoder: 'https://raw.github.com/joyent/node/master/lib/string_decoder.js',
-  url: 'https://raw.github.com/joyent/node/master/lib/url.js',
-  util: 'https://raw.github.com/joyent/node/master/lib/util.js',
-  tty: 'https://raw.github.com/gist/2649813/01789078ef19464e8065416a3e95661f4c71b52f/tty.js'
-  # Overriding path to remove util dependency
-  # path: 'https://raw.github.com/joyent/node/master/lib/path.js',
-task 'list', 'list node modules', ->
-  console.log _.keys _modules
-
-# Download all the built in node module files
-task 'download', 'download node modules', ->
-  moduleDir = path.join __dirname, 'modules'
-  for module, url of _modules
-    do (module, url) ->
-      filepath = path.join moduleDir, "#{module}.js"
-
-      console.log 'downloading: ', url
-      download url, (err, data) ->
-
-        console.log "saving: #{filepath} (#{data.length} characters)"
-        save filepath, data, (err) ->
-          throw err if err
-

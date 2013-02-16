@@ -20,16 +20,19 @@ oj.begin = module.exports = (page) ->
   # Defer dom manipulation until the page has loaded
   _readyOrLoad ->
 
-    # Compile
-    compiled = oj.compile require page
+    # Compile only the body and below
+    compiled = oj.compile body:true, (require page)
 
     # Setup dom
     html = compiled.html
 
     # Replace html
-    doc = document.open "text/html","replace"
-    doc.write html
-    doc.close()
+    bodyEl = document.getElementsByTagName 'body'
+    if bodyEl.length == 0
+      console.error 'oj: <body> was not found'
+      return
+
+    bodyEl[0].outerHTML = html
 
     # Setup jquery events and awaken oj objects
     compiled.js()
@@ -645,8 +648,6 @@ oj.tag = (name, args...) ->
 
 oj.tag.elements =
   closed: 'a abbr acronym address applet article aside audio b bdo big blockquote body button canvas caption center cite code colgroup command datalist dd del details dfn dir div dl dt em embed fieldset figcaption figure font footer form frameset h1 h2 h3 h4 h5 h6 head header hgroup html i iframe ins keygen kbd label legend li map mark menu meter nav noframes noscript object ol optgroup option output p pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr tt u ul var video wbr xmp'.split ' '
-
-  # css is considered a tag for the sake of ojml. It is compiled differently.
   open: 'area base br col command css embed hr img input keygen link meta param source track wbr'.split ' '
 
 oj.tag.elements.all = (oj.tag.elements.closed.concat oj.tag.elements.open).sort()
@@ -694,7 +695,15 @@ oj.extend = (context) ->
 
 # oj.compile
 # ------------------------------------------------------------------------------
-# Return html and js after templating json
+# Compile ojml into meaningful parts
+# options
+#     html:true           Compile to html
+#     js:true             Compile to js
+#     dom:true            Compile to dom
+#     css:true            Compile to css
+#     debug:true          Keep all source including comments
+#     ignore:{html:1}     Map of tags to ignore while compiling
+#     body:true           Shortcut to ignore all top level tags except body
 
 oj.compile = (options, ojml) ->
 
@@ -704,24 +713,27 @@ oj.compile = (options, ojml) ->
     options = {}
 
   options = _.defaults {}, options,
-    html: true
-    js: true
+    html: false
+    js: false
     dom: false
     css: false
     debug: false
+    body: false
+    ignore: {}
 
-  # TODO: Currently the dom is implemented via html so always
-  # keep this one. Eventually this should be switched to use
-  # something else.
+  # TODO: Currently the dom is implemented via html so it is always required. Eventually this should use direct dom manipulation.
   options.html = true
 
-  options.html = if options.html then [] else null  # html accumulator
-  options.dom = if options.dom then [] else null    # dom accumulator
-  options.js = []                                   # code accumulator
-  options.css = if options.css then {} else null    # css accumulator
-  options.indent = ''                               # indent counter
-  options.types = []                                # remember what types were used
-  options.tags = {}                                 # remember what tags were used
+  options.html = if options.html then [] else null    # html accumulator
+  options.dom = if options.dom then [] else null      # dom accumulator
+  options.js = []                                     # code accumulator
+  options.css = if options.css then {} else null      # css accumulator
+  options.indent = ''                                 # indent counter
+  options.types = []                                  # remember what types were used
+  options.tags = {}                                   # remember what tags were used
+
+  if options.body
+    options.ignore = html:1,doctype:1,head:1,link:1,script:1,comment:1
 
   _compileAny ojml, options
 
@@ -738,7 +750,7 @@ oj.compile = (options, ojml) ->
     el.innerHTML = html
     options.dom = el.firstChild
 
-  out = html: html, types: options.types, dom: options.dom, css: options.css, tags: options.tags, js:->
+  out = html:html, types:options.types, dom:options.dom, css:options.css, tags:options.tags, js:->
     # Call defered javascript
     for fn in options.js
       fn()
@@ -760,34 +772,48 @@ _styleKeyFromFancy = (key) ->
   out
 
 # _styleFromObject: Convert object to string form
-# semi:true adds trailing semi
-# inline: true removes newlines
-# debug: true adds tabs
+# -----------------------------------------------------------------------------
+#
+#     inline:false      inline:true                inline:false,indent:true
+#     color:red;        color:red;font-size:10px   \tcolor:red;
+#     font-size:10px;                              \tfont-size:10px;
+#
+
 _styleFromObject = (obj, options = {}) ->
   _.defaults options,
     inline: true
-    semi: false
-    debug: false
+    indent: false
+  # Trailing semi should only exist on when we aren't indenting
+  options.semi = !options.inline
   out = ""
   keys = _.keys(obj).sort()
-  indent = if options.debug and not options.inline then '\t' else ''
-  newline = if options.debug and not options.inline then '\n' else ''
+  indent = if options.indent then '\t' else ''
+  newline = if options.inline then '' else '\n'
   for kFancy,ix in keys
-    semi = if options.semi or ix != keys.length-1 then ';' else ''
+    # Add semi if it is not inline or it is not the last key
+    semi = if options.semi or ix != keys.length-1 then ";" else ''
     k = _styleKeyFromFancy kFancy
     out += "#{indent}#{k}:#{obj[kFancy]}#{semi}#{newline}"
   out
 
-# _cssFromObject: Convert css selectors and rules to a string
-# When debug is true newlines and tabs will be added
-_cssFromObject = (cssMap, debug = false) ->
-  newline = if debug then '\n' else ''
-  space = if debug then ' ' else ''
-  inline = false
-  css = ""
+# _cssFromObject:
+# -----------------------------------------------------------------------------
+# Convert css selectors and rules to a string
+#
+#     debug:true               debug:false
+#     .cls {                   .cls{color: red}
+#         color: red;
+#     }
+
+_cssFromObject = (cssMap, isDebug = false) ->
+  newline = if isDebug then '\n' else ''
+  space = if isDebug then ' ' else ''
+  inline = !isDebug
+  indent = isDebug
+  css = ''
   for selector, styles of cssMap
-    rules = _styleFromObject styles, inline:false, debug:debug, semi:true
-    css += "#{selector}#{space}{#{newline}#{rules}#{newline}}"
+    rules = _styleFromObject styles, inline:inline, indent:indent
+    css += "#{selector}#{space}{#{newline}#{rules}}"
   css
 
 # Recursive helper for compiling that wraps indention
@@ -853,7 +879,6 @@ _compileTag = (ojml, options) ->
 
   # Compile to css if requested
   if tag == 'css'
-    console.log "found css"
     if options.css
       # Extend options.css with rules
       for selector,styles of attributes
@@ -862,7 +887,7 @@ _compileTag = (ojml, options) ->
     # css has no children to recurse to
 
   # Compile to html if requested
-  else if options.html
+  else if not options.ignore[tag] and options.html
     # attribute.style can be set with objects
     if _.isObject attributes?.style
       attributes.style = _styleFromObject attributes.style, inline:true
@@ -924,7 +949,7 @@ _compileTag = (ojml, options) ->
     options.html?.push "\n#{options.indent}"
 
   # End tag if you have children or your tag closes
-  if children.length > 0 or oj.tag.isClosed(tag)
+  if not options.ignore[tag] and (children.length > 0 or oj.tag.isClosed(tag))
     options.html?.push "</#{tag}>"
 
   return
@@ -1116,6 +1141,20 @@ oj.view = (name, args) ->
   args.extends ?= oj.View
   oj.type name, args
 
+# optionsUnion:
+# Take arguments and tranform them into options and args.
+# options is a union of all items in `arguments` that are objects
+# args is a concat of all arguments that aren't objects in the same order
+_.optionsUnion = (argList) ->
+  obj = {}
+  list = []
+  for v in argList
+    if _.isObject v
+      obj = _.extend obj, v
+    else
+      list.push v
+  options: obj, args: list
+
 # oj.View
 # ------------------------------------------------------------------------------
 # Properties
@@ -1126,68 +1165,100 @@ oj.view = (name, args) ->
 #   css
 
 oj.View = oj.type 'View',
+
+  # Views are special objects map properties together. This is a union of arguments
+  # With the remaining arguments becoming a list
+
+  ###
+    CheckBox is constructed
+      => Its properties are set (and this makes the el)
+      => value is storied in the dom element
+
+      When it is pushed into the dom
+        => Its dom.outerHTML is called?
+
+      Later when you manipulate it on the client
+      makeOrGet awakens it in place in the dom
+
+  ###
   constructor: ->
+    # Simplify arguments to a single object of properties and a single list of arguments
+    {options, args} = _.optionsUnion arguments
 
-    # TODO: Process arguments if they are functions and wrap _.arguments
-
-    @make.apply @, arguments
+    # Generate id if missing
+    options.id ?= oj.id()
+    @_id = options.id
 
     # Views act like tag methods and support the div -> syntax.
     # Append this to parent
     _.argumentsAppend @
 
+    @set options
+    return
+
   properties:
     el:
+      # Getting an element is the key to OJ. It takes a few steps:
       get: ->
-        if @_el
-          @_el
-        else
-          ojml = @make()
-          result = oj.compile(dom:true, ojml).dom
-          @_el = result
-      set: (v) -> @_el = v
+        # Step one: use the cached version if possible
+        return @_el if _.isElement @_el
+
+        # Step two: search for the element in the dom
+        # This will "awaken" this object to allow live editing
+        if document?
+          @_el = document.getElementsById @_id
+          return @_el if _.isElement @_el
+
+        # Step three: create it ourselves
+        ojml = @make()
+        results = oj.compile(dom:true, ojml)
+        results.js()
+        results.dom
+
     $el:
       get: -> $(@el)
-    id:
-      get: -> @$el.attr 'id'
-      set: (v) -> @$el.attr 'id', v
+
+    # Read only generated oj-guid
+    id: get: -> @_id
+
+    attributes:
+      get: -> @$el.attributes()
+      set: -> @$el.attributes arguments...
 
     hidden:
       get: -> $el.css('display') == 'none'
       set: (v) -> if v then $el.hide() else $el.show()
-    css:
-      get: -> throw 'css getter nyi'
-      set: -> throw 'css setter nyi'
-
-    style:
-      get: -> throw 'style getter nyi'
-      set: -> throw 'style setter nyi'
 
   methods:
     # make: Return ojml that creates initial dom state
-    # should be overriden by subclass if it isn't
-    make: -> oj.div c:"oj.#{oj.typeOf @}", id:oj.id()
+    # Override this to create your own structure
+    make: ->
+      ojml = oj.div c:"oj.#{oj.typeOf @}", id:oj.id()
+      oj.toDOM ojml
 
     # Find sub elements via jquery selector
-    $: -> @$el.find(arguments...)
-    hide: -> @$el.hide()
-    show: -> @$el.show()
-    toString: -> @el.outerHTML
+    $: -> @$el.find arguments...
 
-    # Detach element from dom but remember where it went
+    toHTML: -> @el.outerHTML
+    toDOM: -> @el
+    toString: -> @toHTML()
+
+    # Detach element from dom
     detach: -> throw 'detach nyi'
+      # The implementation is to set el manipulate it, and remember how to set it back
 
     # Attach element to dom where it use to be
     attach: -> throw 'attach nyi'
+      # The implementation is to unset el from detach
 
-# oj.Checkbox
+# oj.CheckBox
 # ------------------------------------------------------------------------------
-# Checkbox control
+# CheckBox control
 
-oj.Checkbox = oj.type 'Checkbox'
+oj.CheckBox = oj.type 'CheckBox'
   extends: oj.View
-  constructor: ->
-    @set arguments...
+  # constructor: ->
+  #   @set arguments...
 
   properties:
 
@@ -1200,8 +1271,8 @@ oj.Checkbox = oj.type 'Checkbox'
       set: (v) -> @el.disabled = v; return
 
   methods:
-    make: ->
-      oj.input id: oj.id(), c:@type, type:'checkbox'#, checked:checked
+    make: (props) ->
+      oj.input id: oj.id(), c:@type, type:'checkbox'
 
     toString: ->
       @super.toString.apply @,arguments

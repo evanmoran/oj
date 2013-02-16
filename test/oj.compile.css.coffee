@@ -34,14 +34,6 @@ describe 'oj.compile.css', ->
     expect(oj.compile).to.exist
     oj.compile.should.be.a 'function'
 
-  it 'values without css', ->
-    cssTest undefined, ''
-    cssTest '', ''
-    cssTest 'test', ''
-    cssTest 42, ''
-    cssTest true, ''
-    cssTest false, ''
-
   it 'span without css', ->
     ojml = oj.span 'test'
     cssTest ojml, ''
@@ -64,7 +56,7 @@ describe 'oj.compile.css', ->
       '.selector':
         border: '1px solid black'
 
-    cssTest ojml, 'body{color:red}'
+    cssTest ojml, 'body{color:red}.selector{border:1px solid black}'
 
   it 'one rule debug', ->
     ojml = oj.css
@@ -72,6 +64,20 @@ describe 'oj.compile.css', ->
         color: 'red'
     cssTest ojml, 'body {\n\tcolor:red;\n}', debug:true
 
-  it 'toCSS one rule', ->
-    ojml = oj.css 'body':{color: 'red'}
-    expect(oj.toCSS ojml).to.equal 'body{color:red}'
+  # TODO: This can only work if css minifier is really smart. Not sure if it supports this..
+  it 'merged rules'
+    # ojml = oj.css
+    #   '.c1':
+    #     color: 'red'
+    #   '.c2':
+    #     color: 'red'
+    # cssTest ojml, '.c1,.c2{color:red}'
+
+  it 'merged rules debug', ->
+    ojml = oj.css
+      '.c1':
+        color: 'red'
+      '.c2':
+        color: 'red'
+    cssTest ojml, '.c1 {\n\tcolor:red;\n}.c2 {\n\tcolor:red;\n}',debug:true
+
