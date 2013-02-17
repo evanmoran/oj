@@ -1,4 +1,4 @@
-# test/oj.compile.coffee
+# test/oj.compile.html.coffee
 #
 # Test oj.compile method for generating html, css, javascript
 
@@ -26,7 +26,13 @@ _logAll = -> console.log _getAll()
 _clearAll = -> $('html').html headEmpty + bodyEmpty
 
 compileTest = (ojml, typesLength, html, options = {}) ->
-  options = _.defaults {}, options
+  options = _.defaults {}, options,
+    html:true
+    css:true
+    js:false
+    dom:false
+    debug:false
+    body:false
 
   r = oj.compile options, ojml
   expect(r.js).to.be.a 'function'
@@ -54,8 +60,6 @@ describe 'oj.compile.html', ->
     compileTest ojml, 0, '<div>test</div>'
 
   it 'values', ->
-    compileTest null, 0, ''
-    compileTest undefined, 0, ''
     compileTest '', 0, ''
     compileTest 'test', 0, 'test'
     compileTest 42, 0, '42'

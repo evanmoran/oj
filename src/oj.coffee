@@ -721,9 +721,6 @@ oj.compile = (options, ojml) ->
     body: false
     ignore: {}
 
-  # TODO: Currently the dom is implemented via html so it is always required. Eventually this should use direct dom manipulation.
-  options.html = true
-
   options.html = if options.html then [] else null    # html accumulator
   options.dom = if options.dom then [] else null      # dom accumulator
   options.js = []                                     # code accumulator
@@ -737,18 +734,13 @@ oj.compile = (options, ojml) ->
 
   _compileAny ojml, options
 
+
   # Calculate css
   if options.css
     options.css = _cssFromObject options.css, options.debug
 
   # Join HTML only if the options ask for it
   html = options.html?.join ''
-
-  # Generate DOM only if the options ask for it
-  if document? and options.dom?
-    el = document.createElement 'div'
-    el.innerHTML = html
-    options.dom = el.firstChild
 
   out = html:html, types:options.types, dom:options.dom, css:options.css, tags:options.tags, js:->
     # Call defered javascript
@@ -796,6 +788,24 @@ _styleFromObject = (obj, options = {}) ->
     out += "#{indent}#{k}:#{obj[kFancy]}#{semi}#{newline}"
   out
 
+# _attributesFromObject: Convert object to attribute string
+# -----------------------------------------------------------------------------
+# This object has nothing special. No renamed keys, no jquery events. It is
+# precicely what must be serialized with no adjustment.
+_attributesFromObject = (obj) ->
+  # Pass through non objects
+  return obj if not _.isObject obj
+
+  out = ''
+  # Serialize attributes in order for consistent output
+  space = ''
+  for k in _.keys(obj).sort()
+    # Ignore null
+    if (v = obj[k])?
+      out += "#{space}#{k}=\"#{v}\""
+    space = ' '
+  out
+
 # _cssFromObject:
 # -----------------------------------------------------------------------------
 # Convert css selectors and rules to a string
@@ -824,16 +834,13 @@ _compileDeeper = (method, ojml, options) ->
   options.indent = i
 
 # Compile ojml or any type
+pass = ->
 _compileAny = (ojml, options) ->
 
   switch oj.typeOf ojml
 
     when 'array'
       _compileTag ojml, options
-
-    when 'oj'
-      # Found an oj object. Compile its result
-      _compileAny ojml.oj(), options
 
     when 'jquery'
       options.html?.push ojml[0].outerHTML
@@ -848,11 +855,37 @@ _compileAny = (ojml, options) ->
       _compileAny ojml(), options
 
     # Do nothing for 'null', 'undefined', 'object'
+    when 'null' then break
+    when 'undefined' then break
+    when 'object' then break
+
+    else
+      # OJ type
+      if oj.isOJ ojml
+        _compileOJInstance ojml
 
   return
 
 # Supported events from jquery
 events = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
+
+# Compile ojml as oj object
+_compileOJInstance = (ojml, options) ->
+  console.log "complingOJInstance: ", ojml
+  if options.html
+    options.html.push ojml.toHTML options
+  if options.dom
+    options.dom.push ojml.toDOM options
+  return
+
+# Compile ojml as element
+_compileElement = (ojml, options) ->
+  console.log "complingElement: ", ojml
+  if options.html
+    options.html.push ojml.outerHTML;
+  if options.dom
+    options.dom.push ojml
+  return
 
 # Compile ojml tag (an array)
 _compileTag = (ojml, options) ->
@@ -884,58 +917,45 @@ _compileTag = (ojml, options) ->
       for selector,styles of attributes
         options.css[selector] ?= styles
         _.extend options.css[selector], styles
-    # css has no children to recurse to
 
   # Compile to html if requested
-  else if not options.ignore[tag] and options.html
-    # attribute.style can be set with objects
-    if _.isObject attributes?.style
-      attributes.style = _styleFromObject attributes.style, inline:true
+  else if not options.ignore[tag]
 
-    # attribute.c stands for class
-    if attributes?.c?
-      attributes.class = attributes.c
-      attributes.c = null
+    # Alias c to class
+    _attributeCMeansClass attributes
 
-    # attributes.class can be set with arrays
-    if _.isArray attributes?.class
-      attributes.class = attributes.join ' '
+    # style takes objects
+    _attributeStyleAllowsObject attributes
 
-    # TODO: consider jsoning any object (good for attribute.data)
+    # class takes arrays
+    _attributeClassAllowsArrays attributes
 
-    # Convert attributes to string
-    attr = ""
-    if attributes
+    # filter out jquery events from attributes
+    _attributesAllowEventBinding attributes, options
 
-      # Filter out attributes that are events
-      for k,v of attributes
-        do(k,v) ->
-          if events[k]?
-            # Add attribute id if necessary
-            attributes.id ?= oj.id()
+    # TODO: Consider jsoning anything that isn't a string
+    # any keys that aren't strings are jsoned
+    # _attributesJSONAllKeys attributes
 
-            # Bind event if jquery exists
-            if $?
-              options.js?.push ->
-                $el = $('#' + attributes.id)
-                if _.isArray v
-                  $el[k].apply @, v
-                else
-                  $el[k](v)
-                return
-            else if oj.isClient
-              console.error "oj: jquery is missing when binding a '#{k}' event"
+    # Convert attributes to a string
+    if options.html
+      attr = _attributesFromObject attributes
+      if attr?
+        options.html.push "<#{tag} #{attr}>"
+      else
+        options.html.push "<#{tag}>"
 
-            attributes[k] = null
-          return
+    if options.dom and document?
+      # Create element and set attributes
+      el = document.createElement tag
+      for attrName,attrValue of attributes
+        el.setAttribute attrName, attrValue
 
-      # Serialize attributes in order for consistent output
-      for k in _.keys(attributes).sort()
-        if (v = attributes[k])?
-          attr += " #{k}=\"#{v}\""
+      # Add self to parent
+      options.dom.appendChild el
 
-    # Start tag
-    options.html?.push "<#{tag}#{attr}>"
+      # Push ourselves on the dom stack
+      options.dom = el
 
   # Compile your children if necessary
   for child in children
@@ -948,11 +968,62 @@ _compileTag = (ojml, options) ->
   if options.debug && children.length > 1
     options.html?.push "\n#{options.indent}"
 
-  # End tag if you have children or your tag closes
-  if not options.ignore[tag] and (children.length > 0 or oj.tag.isClosed(tag))
-    options.html?.push "</#{tag}>"
+  # End html tag if you have children or your tag closes
+  if not options.ignore[tag]
+    # Close tag if html
+    if options.html and (children.length > 0 or oj.tag.isClosed(tag))
+      options.html?.push "</#{tag}>"
+    # Pop ourselves if dom
+    if options.dom
+      options.dom = options.dom.parentNode
 
   return
+
+# Allow attributes to take style as an object
+_attributeStyleAllowsObject = (attr) ->
+  if _.isObject attr?.style
+    attr.style = _styleFromObject attr.style, inline:true
+  return
+
+# Allow attributes to alias c to class
+_attributeCMeansClass = (attr) ->
+  if attr?.c?
+    attr.class = attr.c
+    delete attr.c
+  return
+
+# Allow attributes to take class as an array of strings
+_attributeClassAllowsArrays = (attr) ->
+  if _.isArray attr?.class
+    attr.class = attr.join ' '
+  return
+
+# Allow attributes to overload jquery event bindings
+# Filter those bindings out in the final result
+_attributesAllowEventBinding = (attr, options) ->
+  if attr
+    # Filter out attributes that are events
+    for k,v of attr
+      do(k,v) ->
+        # If this attribute (k) is an event
+        if events[k]?
+          # Ensure there is an attribute id
+          attr.id ?= oj.id()
+          # Bind event if jquery exists
+          if $?
+            # Event binding is a queued structure of js calls
+            options.js?.push ->
+              $el = $('#' + attr.id)
+              if _.isArray v
+                $el[k].apply @, v
+              else
+                $el[k](v)
+              return
+          else if oj.isClient
+            console.error "oj: jquery is missing when binding a '#{k}' event"
+
+          # Null out the event
+          attr[k] = null
 
 # oj.toDOM
 # ------------------------------------------------------------------------------
@@ -1239,8 +1310,10 @@ oj.View = oj.type 'View',
     # Find sub elements via jquery selector
     $: -> @$el.find arguments...
 
-    toHTML: -> @el.outerHTML
+    toHTML: (options) -> @el.outerHTML + (if options.debug then '\n' else '')
+
     toDOM: -> @el
+
     toString: -> @toHTML()
 
     # Detach element from dom

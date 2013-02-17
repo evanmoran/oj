@@ -11,8 +11,12 @@ oj.extend this
 
 cssTest = (ojml, css, options) ->
   options = _.defaults {}, options,
+    html:true
     css:true
+    dom:false
     debug:false
+    js:false
+
   r = oj.compile options, ojml
   expect(r.js).to.be.a 'function'
   if not (options.css == false)
