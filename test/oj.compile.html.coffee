@@ -29,13 +29,11 @@ compileTest = (ojml, typesLength, html, options = {}) ->
   options = _.defaults {}, options,
     html:true
     css:true
-    js:false
     dom:false
     debug:false
     body:false
 
   r = oj.compile options, ojml
-  expect(r.js).to.be.a 'function'
   expect(r.types).to.be.an 'array'
   expect(r.types.length).to.equal typesLength
   if not (options.html == false)
@@ -187,7 +185,7 @@ describe 'oj.compile.html', ->
       oj.body ->
         oj.div 'a1'
     expected = '<body><div>a1</div></body>'
-    compileTest ojml, 0, expected, body:true
+    compileTest ojml, 0, expected, ignore: {html:1, doctype:1, head:1, link:1, script:1}
 
 
 

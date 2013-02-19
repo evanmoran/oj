@@ -100,81 +100,81 @@ describe 'oj._', ->
     # expect(_.values 1).should.throw 'Invalid object'
 
   it 'isUndefined', ->
-    (_.isUndefined undefined).should.equal true
-    (_.isUndefined null).should.equal false
-    (_.isUndefined true).should.equal false
-    (_.isUndefined 1).should.equal false
-    (_.isUndefined "string").should.equal false
-    (_.isUndefined []).should.equal false
-    (_.isUndefined {}).should.equal false
-    (_.isUndefined ->).should.equal false
+    (oj.isUndefined undefined).should.equal true
+    (oj.isUndefined null).should.equal false
+    (oj.isUndefined true).should.equal false
+    (oj.isUndefined 1).should.equal false
+    (oj.isUndefined "string").should.equal false
+    (oj.isUndefined []).should.equal false
+    (oj.isUndefined {}).should.equal false
+    (oj.isUndefined ->).should.equal false
 
   it 'isBoolean', ->
-    (_.isBoolean undefined).should.equal false
-    (_.isBoolean null).should.equal false
-    (_.isBoolean true).should.equal true
-    (_.isBoolean false).should.equal true
-    (_.isBoolean 0).should.equal false
-    (_.isBoolean 1).should.equal false
-    (_.isBoolean "string").should.equal false
+    (oj.isBoolean undefined).should.equal false
+    (oj.isBoolean null).should.equal false
+    (oj.isBoolean true).should.equal true
+    (oj.isBoolean false).should.equal true
+    (oj.isBoolean 0).should.equal false
+    (oj.isBoolean 1).should.equal false
+    (oj.isBoolean "string").should.equal false
 
   it 'isNumber', ->
-    (_.isNumber undefined).should.equal false
-    (_.isNumber null).should.equal false
-    (_.isNumber true).should.equal false
-    (_.isNumber 1).should.equal true
-    (_.isNumber "string").should.equal false
+    (oj.isNumber undefined).should.equal false
+    (oj.isNumber null).should.equal false
+    (oj.isNumber true).should.equal false
+    (oj.isNumber 1).should.equal true
+    (oj.isNumber "string").should.equal false
 
   it 'isString', ->
-    (_.isString undefined).should.equal false
-    (_.isString null).should.equal false
-    (_.isString true).should.equal false
-    (_.isString 1).should.equal false
-    (_.isString "string").should.equal true
+    (oj.isString undefined).should.equal false
+    (oj.isString null).should.equal false
+    (oj.isString true).should.equal false
+    (oj.isString 1).should.equal false
+    (oj.isString "string").should.equal true
 
 
   it 'isDate', ->
-    (_.isDate new Date()).should.equal true
-    (_.isDate new Date("2012-2-1")).should.equal true
-    (_.isDate undefined).should.equal false
-    (_.isDate null).should.equal false
-    (_.isDate true).should.equal false
-    (_.isDate "string").should.equal false
+    (oj.isDate new Date()).should.equal true
+    (oj.isDate new Date("2012-2-1")).should.equal true
+    (oj.isDate undefined).should.equal false
+    (oj.isDate null).should.equal false
+    (oj.isDate true).should.equal false
+    (oj.isDate "string").should.equal false
 
   it 'isFunction', ->
-    assert.isTrue (_.isFunction (v)->v), 'identity function case'
-    assert.isFalse (_.isFunction []), '[] case'
-    assert.isFalse (_.isFunction {}), '{} case'
-    assert.isFalse (_.isFunction undefined), 'undefined case'
-    assert.isFalse (_.isFunction null), 'null case'
-    assert.isFalse (_.isFunction true, 'true case')
-    assert.isFalse (_.isFunction 1), '1 case'
-    assert.isFalse (_.isFunction "string"), 'string case'
+    assert.isTrue (oj.isFunction (v)->v), 'identity function case'
+    assert.isFalse (oj.isFunction []), '[] case'
+    assert.isFalse (oj.isFunction {}), '{} case'
+    assert.isFalse (oj.isFunction undefined), 'undefined case'
+    assert.isFalse (oj.isFunction null), 'null case'
+    assert.isFalse (oj.isFunction true, 'true case')
+    assert.isFalse (oj.isFunction 1), '1 case'
+    assert.isFalse (oj.isFunction "string"), 'string case'
 
   it 'isArray', ->
-    assert.isTrue (_.isArray []), '[] case'
-    assert.isTrue (_.isArray [1,2]), '[1,2] case'
-    assert.isTrue (_.isArray new Array), 'new Array case'
-    assert.isFalse (_.isArray {}), '{} case'
-    assert.isFalse (_.isArray {a:1, b:2}), '{a:1, b:2} case'
-    assert.isFalse (_.isArray undefined), 'undefined case'
-    assert.isFalse (_.isArray null), 'null case'
-    assert.isFalse (_.isArray true, 'true case')
-    assert.isFalse (_.isArray 1), '1 case'
-    assert.isFalse (_.isArray "string"), 'string case'
+    assert.isTrue (oj.isArray []), '[] case'
+    assert.isTrue (oj.isArray [1,2]), '[1,2] case'
+    assert.isTrue (oj.isArray new Array), 'new Array case'
+    assert.isFalse (oj.isArray {}), '{} case'
+    assert.isFalse (oj.isArray {a:1, b:2}), '{a:1, b:2} case'
+    assert.isFalse (oj.isArray undefined), 'undefined case'
+    assert.isFalse (oj.isArray null), 'null case'
+    assert.isFalse (oj.isArray true, 'true case')
+    assert.isFalse (oj.isArray 1), '1 case'
+    assert.isFalse (oj.isArray "string"), 'string case'
 
   it 'isObject', ->
-    assert.isTrue (_.isObject {}), '{} case'
-    assert.isTrue (_.isObject {a:1, b:2}), '{a:1, b:2} case'
-    assert.isFalse (_.isObject []), '[] case'
-    assert.isFalse (_.isObject /abc/), '/abc/ case'
-    assert.isFalse (_.isObject new Array), 'new Array case'
-    assert.isFalse (_.isObject undefined), 'undefined case'
-    assert.isFalse (_.isObject null), 'null case'
-    assert.isFalse (_.isObject true, 'true case')
-    assert.isFalse (_.isObject new Date, 'new Date case')
-    assert.isFalse (_.isObject 1), '1 case'
-    assert.isFalse (_.isObject "string"), 'string case'
+    assert.isTrue (oj.isObject {}), '{} case'
+    assert.isTrue (oj.isObject {a:1, b:2}), '{a:1, b:2} case'
+    assert.isFalse (oj.isObject []), '[] case'
+    assert.isFalse (oj.isObject /abc/), '/abc/ case'
+    assert.isFalse (oj.isObject new Array), 'new Array case'
+    assert.isFalse (oj.isObject undefined), 'undefined case'
+    assert.isFalse (oj.isObject null), 'null case'
+    assert.isFalse (oj.isObject true, 'true case')
+    assert.isFalse (oj.isObject new Date, 'new Date case')
+    assert.isFalse (oj.isObject 1), '1 case'
+    assert.isFalse (oj.isObject "string"), 'string case'
 
   it 'has', ->
     (_.has obj3, 'zero').should.equal false

@@ -15,10 +15,8 @@ cssTest = (ojml, css, options) ->
     css:true
     dom:false
     debug:false
-    js:false
 
   r = oj.compile options, ojml
-  expect(r.js).to.be.a 'function'
   if not (options.css == false)
     expect(r.css).to.be.a 'string'
     expect(r.css).to.equal css
@@ -66,9 +64,10 @@ describe 'oj.compile.css', ->
     ojml = oj.css
       body:
         color: 'red'
-    cssTest ojml, 'body {\n\tcolor:red;\n}', debug:true
+    cssTest ojml, 'body {\n\tcolor:red;\n}\n', debug:true
 
-  # TODO: This can only work if css minifier is really smart. Not sure if it supports this..
+  # TODO: This can only work if css minifier is really smart. Not sure if
+  # there is a node minifier that supports this...
   it 'merged rules'
     # ojml = oj.css
     #   '.c1':
@@ -83,5 +82,5 @@ describe 'oj.compile.css', ->
         color: 'red'
       '.c2':
         color: 'red'
-    cssTest ojml, '.c1 {\n\tcolor:red;\n}.c2 {\n\tcolor:red;\n}',debug:true
+    cssTest ojml, '.c1 {\n\tcolor:red;\n}\n.c2 {\n\tcolor:red;\n}\n',debug:true
 

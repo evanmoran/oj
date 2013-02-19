@@ -4,7 +4,6 @@ coffee = require 'coffee-script'
 
 module.exports =
 
-
   html ->
     head ->
       title 'oj -- Unified web templating for the people. Thirsty people.'
@@ -48,17 +47,19 @@ module.exports =
     body c:'gg', ->
       h2 'Editor'
 
-      cb = CheckBox value:true
+      # cb = CheckBox value:true
 
       span c:'row', ->
 
         textInput = null
         textOutput = null
+
         span c:'gg50', ->
           textarea
             c:'code-input'
             keyup: (e) ->
               recompile()
+
         span c:'gg50', ->
           textarea c:'code-output'
 

@@ -205,7 +205,6 @@ compileFile = (filePath, includeDir, options = {}) ->
     # Compile
     results = oj.compile debug:isDebug, html:true, css:true, dom:false, ojml
     html = results.html
-    console.log "html: ", html
     css = results.css
   catch eCompile
     oj.error "runtime error in #{filePath}: #{eCompile.message}"

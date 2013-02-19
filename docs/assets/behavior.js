@@ -60,14 +60,6 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "Helpers",
-                "slug": "helpers"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
                 "title": "oj function",
                 "slug": "oj-function"
               },
@@ -76,16 +68,24 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "oj.ready",
-                "slug": "ojready"
+                "title": "oj.begin",
+                "slug": "ojbegin"
               },
               "depth": 2
             }, {
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "oj.load",
-                "slug": "ojload"
+                "title": "Helpers",
+                "slug": "helpers"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.ready",
+                "slug": "ojready"
               },
               "depth": 2
             }, {
@@ -108,6 +108,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
+                "title": "Type Helpers",
+                "slug": "type-helpers"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
                 "title": "Utility: Helpers",
                 "slug": "utility-helpers"
               },
@@ -124,56 +132,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "Utility: Type Detection",
-                "slug": "utility-type-detection"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
                 "title": "Utility: Iteration",
                 "slug": "utility-iteration"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "oj.partial (module, arg1, arg2, ...)",
-                "slug": "ojpartial-module-arg1-arg2-"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "oj.tag (name, attributes, content, content, ...)",
-                "slug": "ojtag-name-attributes-content-content-"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "oj.extend (context)",
-                "slug": "ojextend-context"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "oj.compile",
-                "slug": "ojcompile"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "oj.make",
-                "slug": "ojmake"
               },
               "depth": 2
             }, {
@@ -244,6 +204,86 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
+                "title": "_.arguments",
+                "slug": "-arguments"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.tag (name, attributes, content, content, ...)",
+                "slug": "ojtag-name-attributes-content-content-"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.extend (context)",
+                "slug": "ojextend-context"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.compile",
+                "slug": "ojcompile"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "_styleFromObject: Convert object to string form",
+                "slug": "-stylefromobject-convert-object-to-string-form"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "_attributesFromObject: Convert object to attribute string",
+                "slug": "-attributesfromobject-convert-object-to-attribute-string"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "_cssFromObject:",
+                "slug": "-cssfromobject"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.toDOM",
+                "slug": "ojtodom"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.toHTML",
+                "slug": "ojtohtml"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.toCSS",
+                "slug": "ojtocss"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
                 "title": "_.inherit",
                 "slug": "-inherit"
               },
@@ -276,7 +316,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "oj.Checkbox",
+                "title": "oj.CheckBox",
                 "slug": "ojcheckbox"
               },
               "depth": 2
@@ -294,62 +334,6 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "level": 2,
                 "title": "oj.Link",
                 "slug": "ojlink"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "oj.domReplace",
-                "slug": "ojdomreplace"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "domInsertElementAfter",
-                "slug": "dominsertelementafter"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "domReplaceHtml",
-                "slug": "domreplacehtml"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "domAppendHtml",
-                "slug": "domappendhtml"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "domPrependHtml",
-                "slug": "domprependhtml"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "domInsertHtmlBefore",
-                "slug": "dominserthtmlbefore"
-              },
-              "depth": 2
-            }, {
-              "type": "heading",
-              "data": {
-                "level": 2,
-                "title": "domInsertHtmlAfter",
-                "slug": "dominserthtmlafter"
               },
               "depth": 2
             }
@@ -411,6 +395,22 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "level": 2,
                 "title": "oj.command",
                 "slug": "ojcommand"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "compilePath",
+                "slug": "compilepath"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "compileDir",
+                "slug": "compiledir"
               },
               "depth": 2
             }, {
@@ -528,6 +528,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "depth": 2,
               "children": [
                 {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "_minifyAndWrapCSSInStyleTags",
+                    "slug": "-minifyandwrapcssinstyletags"
+                  },
+                  "depth": 3
+                }, {
                   "type": "heading",
                   "data": {
                     "level": 3,

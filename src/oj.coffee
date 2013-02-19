@@ -15,27 +15,33 @@ oj.oj = oj
 
 # oj.begin
 # ------------------------------------------------------------------------------
-oj.begin = module.exports = (page) ->
+
+oj.begin = (page) ->
 
   # Defer dom manipulation until the page has loaded
   _readyOrLoad ->
 
     # Compile only the body and below
-    compiled = oj.compile body:true, (require page)
+    bodyOnly = html:1, doctype:1, head:1, link:1, script:1
+    {dom} = oj.compile dom:1, html:0, css:0, ignore:bodyOnly, (require page)
 
-    # Setup dom
-    html = compiled.html
-
-    # Replace html
-    bodyEl = document.getElementsByTagName 'body'
-    if bodyEl.length == 0
-      console.error 'oj: <body> was not found'
+    if not dom?
+      console.error 'oj: dom failed to compile'
       return
 
-    bodyEl[0].outerHTML = html
+    # Find body
+    body = document.getElementsByTagName('body')
+    if body.length == 0
+      console.error 'oj: <body> was not found'
+      return
+    body = body[0]
 
-    # Setup jquery events and awaken oj objects
-    compiled.js()
+    # Clear body and insert dom elements
+    body.innerHTML = ''
+    if not oj.isArray dom
+      dom = [dom]
+    for d in dom
+      body.appendChild d
 
     # Trigger events bound through oj.ready
     oj.ready()
@@ -72,7 +78,7 @@ oj.error = (message) ->
 _readyQueue = queue:[], loaded:false
 oj.ready = (fn) ->
   # Call everything if no arguments
-  if _.isUndefined fn
+  if oj.isUndefined fn
     _readyQueue.loaded = true
     while (f = _readyQueue.queue.shift())
       f()
@@ -167,8 +173,30 @@ if typeof module != 'undefined'
 else
   root['oj'] = oj
 
+# Type Helpers
+# ------------------------------------------------------------------------------
+# Based on [underscore.js](http://underscorejs.org/)
+# The potential duplication saddens me but oj needs sophisticated type detection
+oj.isUndefined = (obj) -> obj == undefined
+oj.isBoolean = (obj) -> obj == true or obj == false or toString.call(obj) == '[object Boolean]'
+oj.isNumber = (obj) -> !!(obj == 0 or (obj and obj.toExponential and obj.toFixed))
+oj.isString = (obj) -> !!(obj == '' or (obj and obj.charCodeAt and obj.substr))
+oj.isDate = (obj) -> !!(obj and obj.getTimezoneOffset and obj.setUTCFullYear)
+oj.isFunction = (obj) -> typeof obj == 'function'
+oj.isArray = Array.isArray or (obj) -> toString.call(obj) == '[object Array]'
+oj.isRegEx = (obj) -> toString.call(obj) == '[object RegExp]'
+oj.isDOM = (obj) -> !!(obj and obj.nodeType?)
+oj.isDOMElement = (obj) -> !!(obj and obj.nodeType == 1)
+oj.isDOMAttribute = (obj) -> !!(obj and obj.nodeType == 2)
+oj.isDOMText = (obj) -> !!(obj and obj.nodeType == 3)
+oj.isjQuery = (obj) -> !!(obj and obj.jquery)
+oj.isBackbone = (obj) -> !!(obj and obj.on and obj.trigger and not _.isOJ obj)
+oj.isOJ = (obj) -> !!(obj?.isOJ)
+oj.isArguments = (obj) -> toString.call(obj) == '[object Arguments]'
+
 # Utility: Helpers
 # ------------------------------------------------------------------------------
+# Some are from [underscore.js](http://underscorejs.org/).
 
 ArrayP = Array.prototype
 FuncP = Function.prototype
@@ -177,17 +205,7 @@ ObjP = Object.prototype
 slice = ArrayP.slice
 unshift = ArrayP.unshift
 
-# Methods from [underscore.js](http://underscorejs.org/), because some methods just need to exist.
 oj.__ = _ = {}
-_.isUndefined = (obj) -> obj == undefined
-_.isBoolean = (obj) -> obj == true or obj == false or toString.call(obj) == '[object Boolean]'
-_.isNumber = (obj) -> !!(obj == 0 or (obj and obj.toExponential and obj.toFixed))
-_.isString = (obj) -> !!(obj == '' or (obj and obj.charCodeAt and obj.substr))
-_.isDate = (obj) -> !!(obj and obj.getTimezoneOffset and obj.setUTCFullYear)
-_.isRegExp = (obj) -> toString.call(obj) == '[object RegExp]'
-_.isFunction = (obj) -> typeof obj == 'function'
-_.isArray = Array.isArray or (obj) -> toString.call(obj) == '[object Array]'
-_.isElement = (obj) -> !!(obj and obj.nodeType == 1)
 _.isCapitalLetter = (c) -> !!(c.match /[A-Z]/)
 _.identity = (v) -> v
 _.property = (obj, options = {}) ->
@@ -209,7 +227,7 @@ _.values = (obj) ->
 
 _.flatten = (array, shallow) ->
   _.reduce array, ((memo, value) ->
-    if _.isArray value
+    if oj.isArray value
       return memo.concat(if shallow then value else _.flatten(value))
     memo[memo.length] = value
     memo
@@ -237,7 +255,7 @@ _.reduce = (obj = [], iterator, memo, context) ->
   _.bind = (func, context) ->
     if func.bind == FuncP.bind and FuncP.bind
       return FuncP.bind.apply func, slice.call(arguments, 1)
-    throw new TypeError unless _.isFunction(func)
+    throw new TypeError unless oj.isFunction(func)
     args = slice.call arguments, 2
     return bound = ->
       unless this instanceof bound
@@ -269,6 +287,13 @@ _.indexOf = (array, item, isSorted) ->
     if v == item
       return i
   -1
+
+_.toArray = (obj) ->
+  return [] if !obj
+  return slice.call obj if oj.isArray obj
+  return slice.call obj if oj.isArguments obj
+  return obj.toArray() if obj.toArray and oj.isFunction(obj.toArray)
+  _.values obj
 
 # _.create
 # ------------------------------------------------------------------------------
@@ -306,22 +331,10 @@ _.getPrototypeOf =
   else
     (o) -> o.proto || o.constructor.prototype
 
-# Utility: Type Detection
-# -----------------------
-
-# _.isjQuery
-_.isjQuery = (obj) -> !!(obj and obj.jquery)
-
-# _.isBackbone
-_.isBackbone = (obj) -> !!(obj and obj.on and obj.trigger and not _.isOJ obj)
-
-# oj.isOJ
-# Determine if obj is an OJ instance
-oj.isOJ = (obj) -> !!(obj?.isOJ)
 
 # Determine if object or array is empty
 _.isEmpty = (obj) ->
-  return obj.length == 0 if _.isArray obj
+  return obj.length == 0 if oj.isArray obj
   for k of obj
     if _.has obj, k
       return false
@@ -333,23 +346,26 @@ oj.typeOf = (any) ->
   return 'null' if any == null
   t = typeof any
   if t == 'object'
-    if _.isArray any           then t = 'array'
-    else if _.isRegExp any     then t = 'regexp'
-    else if _.isDate any       then t = 'date'
-    else if _.isBackbone any   then t = 'backbone'
-    else if _.isjQuery any     then t = 'jquery'
-    else if oj.isOJ any         then t = any.type
-    else                       t = 'object'
+    if oj.isArray any               then t = 'array'
+    else if oj.isOJ any             then t = any.type
+    else if oj.isRegEx any          then t = 'regexp'
+    else if oj.isDate any            then t = 'date'
+    else if oj.isDOMElement any     then t = 'element'
+    else if oj.isDOMText any        then t = 'text'
+    else if oj.isDOMAttribute any   then t = 'attribute'
+    else if oj.isBackbone any       then t = 'backbone'
+    else if oj.isjQuery any         then t = 'jquery'
+    else                            t = 'object'
   t
 
 # Determine if obj is a vanilla object
-_.isObject = (obj) -> (oj.typeOf obj) == 'object'
+oj.isObject = (obj) -> (oj.typeOf obj) == 'object'
 
 _.clone = (obj) ->
   # TODO: support cloning OJ instances
   # TODO: support options, deep: true
-  return obj unless _.isObject obj
-  if _.isArray obj then obj.slice() else _.extend {}, obj
+  return obj unless oj.isObject obj
+  if oj.isArray obj then obj.slice() else _.extend {}, obj
 
 oj.enum = (name, args) ->
   throw 'NYI'
@@ -372,7 +388,7 @@ _.each = (col, iterator, context) ->
   return if col == null
   if ArrayP.forEach and col.forEach == ArrayP.forEach
     col.forEach iterator, context
-  else if _.isArray col
+  else if oj.isArray col
     for v, i in col
       if iterator.call(context, v, i, col) == _.breaker
         return _.breaker
@@ -408,18 +424,18 @@ _.map = (obj, iterator, options = {}) ->
         _.map v, iterator, options_
 
   # Evaluate functions if necessary
-  if _.isFunction obj
+  if oj.isFunction obj
 
     # Functions pass through if evaluate isn't set
     return obj unless evaluate
 
-    while evaluate and _.isFunction obj
+    while evaluate and oj.isFunction obj
       obj = obj()
 
   out = obj
 
   # Array case
-  if _.isArray obj
+  if oj.isArray obj
     out = []
     return out unless obj
     return (obj.map iterator_, context) if ArrayP.map and obj.map == ArrayP.map
@@ -431,7 +447,7 @@ _.map = (obj, iterator, options = {}) ->
       out.length = obj.length
 
   # Object case
-  else if _.isObject obj
+  else if oj.isObject obj
     out = {}
     return out unless obj
     for k,v of obj
@@ -483,8 +499,8 @@ oj.addMethods = (obj, mapNameToMethod) ->
 # oj.addMethod
 # ------------------------------------------------------------------------------
 oj.addMethod = (obj, methodName, method) ->
-  throw 'oj.addMethod: string expected for second argument' unless _.isString methodName
-  throw 'oj.addMethod: function expected for thrid argument' unless _.isFunction method
+  throw 'oj.addMethod: string expected for second argument' unless oj.isString methodName
+  throw 'oj.addMethod: function expected for thrid argument' unless oj.isFunction method
   Object.defineProperty obj, methodName,
     value: method
     enumerable: false
@@ -495,7 +511,7 @@ oj.addMethod = (obj, methodName, method) ->
 # oj.removeMethod
 # ------------------------------------------------------------------------------
 oj.removeMethod = (obj, methodName) ->
-  throw 'oj.removeMethod: string expected for second argument' unless _.isString methodName
+  throw 'oj.removeMethod: string expected for second argument' unless oj.isString methodName
   delete obj[methodName]
   return
 
@@ -521,8 +537,8 @@ oj.addProperties = (obj, mapNameToInfo) ->
 # oj.addProperty
 # ------------------------------------------------------------------------------
 oj.addProperty = (obj, propName, propInfo) ->
-  throw 'oj.addProperty: string expected for second argument' unless _.isString propName
-  throw 'oj.addProperty: object expected for third argument' unless (_.isObject propInfo)
+  throw 'oj.addProperty: string expected for second argument' unless oj.isString propName
+  throw 'oj.addProperty: object expected for third argument' unless (oj.isObject propInfo)
   throw 'oj.addProperty: get or value key expected in third argument' unless (propInfo.get? or propInfo.value?)
 
   _.defaults propInfo,
@@ -541,7 +557,7 @@ oj.addProperty = (obj, propName, propInfo) ->
 # ------------------------------------------------------------------------------
 
 oj.removeProperty = (obj, propName) ->
-  throw 'oj.addProperty: string expected for second argument' unless _.isString propName
+  throw 'oj.addProperty: string expected for second argument' unless oj.isString propName
   delete obj[propName]
 
 # oj.isProperty
@@ -549,7 +565,7 @@ oj.removeProperty = (obj, propName) ->
 # Determine if the specified key is was defined by addProperty
 
 oj.isProperty = (obj, propName) ->
-  throw 'oj.isProperty: string expected for second argument' unless _.isString propName
+  throw 'oj.isProperty: string expected for second argument' unless oj.isString propName
 
   Object.getOwnPropertyDescriptor(obj, propName).get?
 
@@ -598,7 +614,7 @@ _.argumentsAppend = (arg) ->
 
 
 oj.tag = (name, args...) ->
-  throw 'oj.tag error: argument 1 is not a string (expected tag name)' unless _.isString name
+  throw 'oj.tag error: argument 1 is not a string (expected tag name)' unless oj.isString name
 
   # Build ojml starting with tag
   ojml = [name]
@@ -607,7 +623,7 @@ oj.tag = (name, args...) ->
   attributes = {}
   for arg in args
     # TODO: evaluate argument if necessary
-    if _.isObject arg
+    if oj.isObject arg
       _.extend attributes, arg
 
   # Help the attributes out as they have shitting
@@ -621,9 +637,9 @@ oj.tag = (name, args...) ->
 
   # Loop over attributes
   for arg in args
-    if _.isObject arg
+    if oj.isObject arg
       continue
-    else if _.isFunction arg
+    else if oj.isFunction arg
 
       len = _.arguments.length
 
@@ -665,7 +681,7 @@ for t in oj.tag.elements.all
 _defaultClear = (dest, d, e) ->
   _.defaults dest, d
   for k of e
-    dest[k] = null
+    delete dest[k]
   dest
 
 _tagAttributes = (name, attributes) ->
@@ -698,12 +714,10 @@ oj.extend = (context) ->
 # Compile ojml into meaningful parts
 # options
 #     html:true           Compile to html
-#     js:true             Compile to js
 #     dom:true            Compile to dom
 #     css:true            Compile to css
 #     debug:true          Keep all source including comments
 #     ignore:{html:1}     Map of tags to ignore while compiling
-#     body:true           Shortcut to ignore all top level tags except body
 
 oj.compile = (options, ojml) ->
 
@@ -712,44 +726,59 @@ oj.compile = (options, ojml) ->
     ojml = options
     options = {}
 
+  # Default options to compile everything
   options = _.defaults {}, options,
-    html: false
-    js: false
-    dom: false
-    css: false
+    html: true
+    dom: true
+    css: true
     debug: false
-    body: false
     ignore: {}
 
+  # Always ignore oj and css tags
+  _.extend options.ignore, oj:1,css:1
+
   options.html = if options.html then [] else null    # html accumulator
-  options.dom = if options.dom then [] else null      # dom accumulator
-  options.js = []                                     # code accumulator
+  options.dom = if options.dom and document? then (document.createElement 'OJ') else null
   options.css = if options.css then {} else null      # css accumulator
   options.indent = ''                                 # indent counter
   options.types = []                                  # remember what types were used
   options.tags = {}                                   # remember what tags were used
 
-  if options.body
-    options.ignore = html:1,doctype:1,head:1,link:1,script:1,comment:1
-
   _compileAny ojml, options
 
-
-  # Calculate css
+  # Generate css if necessary
   if options.css
-    options.css = _cssFromObject options.css, options.debug
+    css = _cssFromObject options.css, options.debug
 
-  # Join HTML only if the options ask for it
-  html = options.html?.join ''
+  # Generate HTML if necessary
+  if options.html?
+    html = options.html.join ''
 
-  out = html:html, types:options.types, dom:options.dom, css:options.css, tags:options.tags, js:->
-    # Call defered javascript
-    for fn in options.js
-      fn()
-    # Call awaken for all objects
-    for t in options.types
-      t.awaken()
-    undefined
+  # Generate dom if necessary
+  if options.dom?
+
+    # Remove the <oj> wrapping from the dom element
+    dom = options.dom.childNodes
+
+    # Cleanup inconsistencies of childNodes
+    if dom.length?
+      # Make dom a real array
+      dom = _.toArray dom
+      # Filter out anything that isn't a dom element
+      dom = dom.filter (v) -> oj.isDOM(v)
+
+    # Ensure dom is null if empty
+    if dom.length == 0
+      dom = null
+
+    # Single elements are returned themselves not as a list
+    # Reasoning: The common cases don't have multiple elements <html>,<body>
+    # or the complexity doesn't matter because insertion is abstracted for you
+    # In short it is easier to check for _.isArray dom, then _isArray dom && dom.length > 0
+    else if dom.length == 1
+      dom = dom[0]
+
+  out = html:html, dom:dom, css:css, types:options.types, tags:options.tags
 
   out
 
@@ -794,7 +823,7 @@ _styleFromObject = (obj, options = {}) ->
 # precicely what must be serialized with no adjustment.
 _attributesFromObject = (obj) ->
   # Pass through non objects
-  return obj if not _.isObject obj
+  return obj if not oj.isObject obj
 
   out = ''
   # Serialize attributes in order for consistent output
@@ -813,7 +842,7 @@ _attributesFromObject = (obj) ->
 #     debug:true               debug:false
 #     .cls {                   .cls{color: red}
 #         color: red;
-#     }
+#     }\n
 
 _cssFromObject = (cssMap, isDebug = false) ->
   newline = if isDebug then '\n' else ''
@@ -823,7 +852,7 @@ _cssFromObject = (cssMap, isDebug = false) ->
   css = ''
   for selector, styles of cssMap
     rules = _styleFromObject styles, inline:inline, indent:indent
-    css += "#{selector}#{space}{#{newline}#{rules}}"
+    css += "#{selector}#{space}{#{newline}#{rules}}#{newline}"
   css
 
 # Recursive helper for compiling that wraps indention
@@ -843,13 +872,17 @@ _compileAny = (ojml, options) ->
       _compileTag ojml, options
 
     when 'jquery'
-      options.html?.push ojml[0].outerHTML
+      # TODO: Missing unit tests for the jquery case
+      options.html?.push ojml.html()
+      options.dom?.concat ojml.get()
 
     when 'string'
       options.html?.push ojml
+      options.dom?.appendChild document.createTextNode ojml
 
     when 'boolean', 'number'
       options.html?.push "#{ojml}"
+      options.dom?.appendChild document.createTextNode "#{ojml}"
 
     when 'function'
       _compileAny ojml(), options
@@ -862,16 +895,15 @@ _compileAny = (ojml, options) ->
     else
       # OJ type
       if oj.isOJ ojml
-        _compileOJInstance ojml
+        _compileOJInstance ojml, options
 
   return
 
 # Supported events from jquery
-events = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
+jqueryEvents = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
 
 # Compile ojml as oj object
 _compileOJInstance = (ojml, options) ->
-  console.log "complingOJInstance: ", ojml
   if options.html
     options.html.push ojml.toHTML options
   if options.dom
@@ -880,7 +912,6 @@ _compileOJInstance = (ojml, options) ->
 
 # Compile ojml as element
 _compileElement = (ojml, options) ->
-  console.log "complingElement: ", ojml
   if options.html
     options.html.push ojml.outerHTML;
   if options.dom
@@ -894,7 +925,7 @@ _compileTag = (ojml, options) ->
   tag = ojml[0]
 
   # TODO: accept ojml with oj.Type instead of string for first element
-  throw new Error('oj.compile: tag is missing in array') unless _.isString(tag) and tag.length > 0
+  throw new Error('oj.compile: tag is missing in array') unless oj.isString(tag) and tag.length > 0
 
   # Create oj object if tag is capitalized
   if _.isCapitalLetter tag[0]
@@ -905,21 +936,20 @@ _compileTag = (ojml, options) ->
 
   # Get attributes (optional)
   attributes = null
-  if _.isObject ojml[1]
+  if oj.isObject ojml[1]
     attributes = ojml[1]
 
   children = if attributes then ojml.slice 2 else ojml.slice 1
 
   # Compile to css if requested
-  if tag == 'css'
-    if options.css
-      # Extend options.css with rules
-      for selector,styles of attributes
-        options.css[selector] ?= styles
-        _.extend options.css[selector], styles
+  if options.css and tag == 'css'
+    # Extend options.css with rules
+    for selector,styles of attributes
+      options.css[selector] ?= styles
+      _.extend options.css[selector], styles
 
   # Compile to html if requested
-  else if not options.ignore[tag]
+  if not options.ignore[tag]
 
     # Alias c to class
     _attributeCMeansClass attributes
@@ -930,32 +960,46 @@ _compileTag = (ojml, options) ->
     # class takes arrays
     _attributeClassAllowsArrays attributes
 
-    # filter out jquery events from attributes
-    _attributesAllowEventBinding attributes, options
+    events = _attributesFilterOutEvents attributes
 
     # TODO: Consider jsoning anything that isn't a string
     # any keys that aren't strings are jsoned
     # _attributesJSONAllKeys attributes
 
-    # Convert attributes to a string
-    if options.html
-      attr = _attributesFromObject attributes
-      if attr?
-        options.html.push "<#{tag} #{attr}>"
-      else
-        options.html.push "<#{tag}>"
-
+    # Add dom element with attributes
     if options.dom and document?
-      # Create element and set attributes
+      # Create element
       el = document.createElement tag
-      for attrName,attrValue of attributes
-        el.setAttribute attrName, attrValue
 
       # Add self to parent
-      options.dom.appendChild el
+      if oj.isDOMElement options.dom
+        options.dom.appendChild el
 
-      # Push ourselves on the dom stack
+      # Push ourselves on the dom stack (to handle children)
       options.dom = el
+
+      # Set attributes in sorted order for consistency
+      if oj.isObject attributes
+        for attrName in _.keys(attributes).sort()
+          attrValue = attributes[attrName]
+          el.setAttribute attrName, attrValue
+
+      # Bind events
+      for ek,ev of events
+        if $?
+          if oj.isArray ev
+            $(el)[ek].apply @, ev
+          else
+            $(el)[ek](ev);
+        else
+          console.error "oj: jquery is missing when binding a '#{ek}' event"
+
+    # Add tag with attributes
+    if options.html
+      attr = (_attributesFromObject attributes) ? ''
+      space = if attr == '' then '' else ' '
+      options.html.push "<#{tag}#{space}#{attr}>"
+
 
   # Compile your children if necessary
   for child in children
@@ -981,7 +1025,7 @@ _compileTag = (ojml, options) ->
 
 # Allow attributes to take style as an object
 _attributeStyleAllowsObject = (attr) ->
-  if _.isObject attr?.style
+  if oj.isObject attr?.style
     attr.style = _styleFromObject attr.style, inline:true
   return
 
@@ -994,36 +1038,21 @@ _attributeCMeansClass = (attr) ->
 
 # Allow attributes to take class as an array of strings
 _attributeClassAllowsArrays = (attr) ->
-  if _.isArray attr?.class
+  if oj.isArray attr?.class
     attr.class = attr.join ' '
   return
 
-# Allow attributes to overload jquery event bindings
-# Filter those bindings out in the final result
-_attributesAllowEventBinding = (attr, options) ->
+# Filter out jquery events
+_attributesFilterOutEvents = (attr) ->
+  out = {}
   if attr
-    # Filter out attributes that are events
+    # Filter out attributes that are jqueryEvents
     for k,v of attr
-      do(k,v) ->
-        # If this attribute (k) is an event
-        if events[k]?
-          # Ensure there is an attribute id
-          attr.id ?= oj.id()
-          # Bind event if jquery exists
-          if $?
-            # Event binding is a queued structure of js calls
-            options.js?.push ->
-              $el = $('#' + attr.id)
-              if _.isArray v
-                $el[k].apply @, v
-              else
-                $el[k](v)
-              return
-          else if oj.isClient
-            console.error "oj: jquery is missing when binding a '#{k}' event"
-
-          # Null out the event
-          attr[k] = null
+      # If this attribute (k) is an event
+      if jqueryEvents[k]?
+        out[k] = v
+        delete attr[k]
+  out
 
 # oj.toDOM
 # ------------------------------------------------------------------------------
@@ -1031,16 +1060,15 @@ _attributesAllowEventBinding = (attr, options) ->
 
 oj.toDOM = (options, ojml) ->
   # Options is optional
-  if not _.isObject options
+  if not oj.isObject options
     ojml = options
     options = {}
 
   # Create dom not html
   _.extend options,
     dom: true
-    js: true
-    html: false
-    css: false
+    html: true
+    css: true
 
   result = oj.compile options, ojml
 
@@ -1055,7 +1083,7 @@ oj.toDOM = (options, ojml) ->
 
 oj.toHTML = (options, ojml) ->
   # Options is optional
-  if not _.isObject options
+  if not oj.isObject options
     ojml = options
     options = {}
 
@@ -1074,7 +1102,7 @@ oj.toHTML = (options, ojml) ->
 
 oj.toCSS = (options, ojml) ->
   # Options is optional
-  if not _.isObject options
+  if not oj.isObject options
     ojml = options
     options = {}
 
@@ -1111,8 +1139,8 @@ _.inherit = (child, parent) ->
 
 oj.type = (name, args = {}) ->
 
-  throw 'oj.type: string expected for first argument' unless _.isString name
-  throw 'oj.type: object expected for second argument' unless _.isObject args
+  throw 'oj.type: string expected for first argument' unless oj.isString name
+  throw 'oj.type: object expected for second argument' unless oj.isObject args
 
   args.methods ?= {}
   args.properties ?= {}
@@ -1181,7 +1209,7 @@ oj.type = (name, args = {}) ->
     # set: Set all properties on the object at once
     set: (k,v) ->
       obj = k
-      if not _.isObject k
+      if not oj.isObject k
         obj = {}
         obj[k] = v;
       for key,value of obj
@@ -1207,8 +1235,8 @@ oj.type = (name, args = {}) ->
 # ------------------------------------------------------------------------------
 
 oj.view = (name, args) ->
-  throw 'oj.view: string expected for first argument' unless _.isString name
-  throw 'oj.view: object expected for second argument' unless _.isObject args
+  throw 'oj.view: string expected for first argument' unless oj.isString name
+  throw 'oj.view: object expected for second argument' unless oj.isObject args
   args.extends ?= oj.View
   oj.type name, args
 
@@ -1220,7 +1248,7 @@ _.optionsUnion = (argList) ->
   obj = {}
   list = []
   for v in argList
-    if _.isObject v
+    if oj.isObject v
       obj = _.extend obj, v
     else
       list.push v
@@ -1272,13 +1300,13 @@ oj.View = oj.type 'View',
       # Getting an element is the key to OJ. It takes a few steps:
       get: ->
         # Step one: use the cached version if possible
-        return @_el if _.isElement @_el
+        return @_el if oj.isDOMElement @_el
 
         # Step two: search for the element in the dom
         # This will "awaken" this object to allow live editing
         if document?
           @_el = document.getElementsById @_id
-          return @_el if _.isElement @_el
+          return @_el if oj.isDOMElement @_el
 
         # Step three: create it ourselves
         ojml = @make()
