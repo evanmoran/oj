@@ -1,0 +1,131 @@
+module.exports = [
+    {
+      name: ''
+      value: """
+        html ->
+          head ->
+          body ->
+            h1 'OJ Examples'
+            p 'Anything you type in the black box will generate oj. You may type in coffee-script or javascript. '
+
+            p 'The live examples support:'
+            ul ->
+              li 'tags are functions in lowercase'
+              li 'Objects are in uppercase'
+
+            p 'Server side the following works:'
+            ul ->
+              li 'minification can be done server side'
+              li ''
+      """
+    }
+    {
+      name: 'Header and Paragraph'
+      value: """
+        html ->
+          head ->
+          body ->
+            h1 'A Header for the Ages'
+            p 'Paragraphs and headers can be made by simply using tag functions. Live change this text to see how it works!'
+            p 'P.S. The deliciousness of oj is apparent with the very first sip. Sip away my friend. Sip away.'
+      """
+    }
+    {
+      name: 'Creating a Template'
+      value: """
+        # Define a simple template with a title and a content function
+        myTemplate = (pageTitle, pageContent) ->
+          html ->
+            head ->
+              title pageTitle
+            body ->
+              pageContent()
+
+        # Run the template
+        myTemplate 'My Title', ->
+          h1 'Creating a Template'
+          p 'It turns out that templates are just functions. Simply take an argument that is your content and call it in the right place. Presto, it works!'
+
+      """
+    }
+    {
+      name: 'Creating a Partial'
+      value: """
+
+        # Define a partial that creates a twitter link for a user
+        _userTwitterLink = (user) ->
+          a "Follow #\{user.name\}",
+            href: "http://twitter.com/#\{user.twitter\}"
+
+        # Define some users
+        users = [
+          {name:'Evan', twitter:'evanmoran'}
+          {name:'Laura', twitter:'savinola'}
+        ]
+
+        # Generate the html
+        html ->
+          head ->
+          body ->
+            h1 'Creating a Partial'
+            for user in users
+              p ->
+                _userTwitterLink user
+      """
+    }
+    {
+      name: 'Table using tags'
+      value: """
+        # Define the table with tag oj tag functions
+        html ->
+          head ->
+          body ->
+            h1 'Table Using Tags'
+            table ->
+              tbody ->
+                tr ->
+                  td 1
+                  td 2
+                  td 3
+                tr ->
+                  # Loops work as you would hope!
+                  for i in [4,5,6]
+                    td i
+
+              # CSS works anywhere you want
+              css
+                # All tr tags have padding and black border
+                tr:
+                  border: '1px solid black'
+                  padding: '4px'
+      """
+    }
+    {
+      name: 'Table partial'
+      value: """
+        # A partial that creates a table from rows
+        # where rows is a list of lists
+        makeTable = (header, rows) ->
+
+          table ->
+            if header
+              thead ->
+                tr ->
+                  for h in header
+                    th h
+            if rows
+              tbody ->
+                for row in rows
+                  tr ->
+                    for column in row
+                      td column
+
+        # Make it by calling the function!
+        makeTable ['Column1', 'Column2', 'Column3'], [
+          [1,2,3]
+          [4,5,6]
+          [7,8,9]
+        ]
+      """
+    }
+  ]
