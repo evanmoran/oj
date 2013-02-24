@@ -692,6 +692,23 @@ _tagAttributes = (name, attributes) ->
     when 'a' then _defaultClear attr, {href:attr.url}, url:0
   attr
 
+# oj.page
+# ------------------------------------------------------------------------------
+# General template for oj to not need html, head, body tags
+
+oj.page = (options, content) ->
+  # Options is optional
+  if not content?
+    content = options
+    options = {}
+
+  oj.html ->
+    oj.head ->
+      if options.title?
+        oj.title options.title
+    oj.body ->
+      content()
+
 # oj.styles = ()
 
 # oj.extend (context)

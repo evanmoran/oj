@@ -2,178 +2,18 @@ _ = require 'underscore'
 # coffee = require 'coffee-script'
 
 examples = require './_examples'
+siteCSS = require './_styles'
 
 module.exports =
 
   html ->
+    siteCSS()
     head ->
       title 'oj -- Unified web templating for the people. Thirsty people.'
       script url: 'scripts/jquery.js'
       link url:'styles/reset.css'
       link url:'styles/gg.css'
-      script url:'scripts/coffee-script.js'
-
-    css
-      h1:
-        fontFamily: 'Lucida Grande; Tahoma'
-        fontSize: '24px'
-        fontWeight: 'lighter'
-        marginTop: '6px'
-        marginBottom: '12px'
-        textTransform: 'uppercase'
-        color: '#666'
-        letterSpacing: '0.2em'
-      h2:
-        fontFamily: 'Lucida Grande; Tahoma'
-        fontSize: '16px'
-        fontWeight: 'lighter'
-        marginTop: '6px'
-        marginBottom: '9px'
-        textTransform: 'uppercase'
-        color: '#666'
-        letterSpacing: '0.2em'
-      h3:
-        fontFamily: 'Lucida Grande; Tahoma'
-        fontSize: '12px'
-        fontWeight: 'lighter'
-        marginTop: '3px'
-        marginBottom: '3px'
-        textTransform: 'uppercase'
-        color: '#666'
-        letterSpacing: '0.2em'
-      h4:
-        fontFamily: 'Lucida Grande; Tahoma'
-        fontSize: '12px'
-        fontWeight: 'lighter'
-        marginTop: '3px'
-        marginBottom: '3px'
-        color: '#666'
-        letterSpacing: '0.2em'
-      p:
-        fontFamily: 'Lucida Grande; Tahoma'
-        fontSize: '14px'
-        fontWeight: 'lighter'
-        marginBottom: '12px'
-        color: '#222'
-        letterSpacing: '0.5 em'
-      ul:
-        margin: '0px 0px 22px 30px'
-      li:
-        margin: '0px 0px 4px 0px'
-
-      '.oj-html, .oj-css':
-        marginBottom: '10px'
-      textarea:
-        width:'100%'
-        height:'100px'
-        borderColor: '#f4f4f4'
-      '.oj-console':
-        color:'green'
-        textAlign: 'right'
-        borderRadius: '5px'
-        padding: '2px 4px'
-        margin: '0px 0px 10px 0px'
-      '.oj-console.error':
-        color:'rgb(230,0,0)'
-      '.oj-dom':
-        display: 'inline-block'
 
     body c:'gg', ->
-      h2 'Editor'
-
-      # cb = CheckBox value:true'
-
-      span c:'row', ->
-
-        clickToggleNext =
-          click: (e) -> $(e.target).next().toggle()
-
-        h4 'Choose an example: ', style: {display:'inline-block', float:'right', marginTop:'10px'}, ->
-          select c:'oj-example', change: ((e) -> chooseExample(e)), ->
-            for ex in examples
-              option value:ex.value, "#{ex.name}"
-
-        span c:'gg33', ->
-          h3 'oj', style:marginTop: '20px'
-          textarea c:'oj-code', style:{height:'200px', borderColor:'#ddd'}, keyup: (e) -> recompile()
-          div c:'oj-console', 'Success'
-
-          h3 'html', clickToggleNext
-          textarea c:'oj-html'
-          h3 'css', clickToggleNext
-          textarea c:'oj-css'
-          h3 'js', clickToggleNext
-          textarea c:'oj-js'
-
-        span c:'gg66 oj-dom'
-
-    ready ->
-      chooseExample()
-
-    chooseExample = ->
-      $example = $ '.oj-example'
-      code = $example.val()
-      $code = $ '.oj-code'
-      $code.val code
-      recompile()
-      return
-
-    recompile = ->
-
-      $code = $ '.oj-code'
-      $html = $ '.oj-html'
-      $css = $ '.oj-css'
-      $js = $ '.oj-js'
-      $dom = $ '.oj-dom'
-      $console = $ '.oj-console'
-
-      code = $code.val()
-
-      try
-        js = CoffeeScript.compile code, bare:true
-      catch eCoffee
-        # Set console message
-        error '<b>coffee-script error:</b> ' + eCoffee.message
-        return
-
-      # Update js
-      $js.val(js)
-
-      # Run the result to generate ojml
-      wrapjs = "with(oj){#{js}}"
-      try
-        ojml = eval wrapjs
-      catch eRuntime
-        error '<b>javascript error:</b> ' + eRuntime.message
-        return
-
-      # Compile the ojml into dom, html and css
-      try
-        results = oj.compile debug:true, ojml
-      catch eCompile
-        error '<b>oj error:</b> ' + eCompile.message
-        return
-
-      # Update the page parts
-      $html.val results.html
-      $css.val results.css
-
-      # Clear html and replace it with new dom
-      $('.oj-dom').html ''
-      $(results.dom).appendTo($('.oj-dom'))
-
-      success()
-
-    error = (message) ->
-      $console = $('.oj-console')
-      $console.html message
-      $console.addClass 'error'
-      return
-    success = ->
-      $console = $('.oj-console')
-      $console.html 'Success'
-      $console.removeClass 'error'
-      return
-
-
-
+      h2 'What is OJ?'
+      p 'It is the future and the past. The hope. The essence of dreams.'

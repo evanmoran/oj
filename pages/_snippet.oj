@@ -1,0 +1,19 @@
+module.exports = (default_code) ->
+  id = oj.id()
+  div ->
+    ready ->
+      editor = ace.edit(id)
+      editor.setTheme("ace/theme/solarized_light")
+      editor.getSession().setMode "ace/mode/coffee"
+      editor.getSession().setUseSoftTabs true
+      editor.getSession().setUseWorker false
+      editor.setDisplayIndentGuides false
+      editor.getSession().setTabSize 2
+      editor.renderer.setShowGutter false
+      editor.setHighlightActiveLine false
+      editor.setReadOnly true
+      editor.setFontSize 14
+      editor.renderer.setShowPrintMargin false
+
+    div c:'snippet', id:id, default_code
+

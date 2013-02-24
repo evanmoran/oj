@@ -1,0 +1,28 @@
+_ = require 'underscore'
+
+siteCSS = require './_styles'
+_snippet = require './_snippet'
+_editor = require './_editor'
+
+module.exports =
+
+  html lang:'en', ->
+    siteCSS()
+
+    head ->
+      link url:'styles/reset.css'
+      script url: 'scripts/jquery.js'
+      script url:'scripts/coffee-script.js'
+      script url: 'scripts/ace/ace.js'
+
+      meta charset:'UTF-8'
+      meta 'http-equiv':"X-UA-Compatible", content:'IE=edge,chrome=1'
+      title 'Try OJ'
+
+    body ->
+
+      _editor """
+        h1 'OJ: Live Editor'
+        p 'Step 1: Learn about OJ using the pulldown to change examples'
+        p 'Step 2: Type in the box to live edit OJ'
+      """

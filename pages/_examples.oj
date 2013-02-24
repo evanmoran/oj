@@ -2,130 +2,172 @@ module.exports = [
     {
       name: ''
       value: """
-        html ->
-          head ->
-          body ->
-            h1 'OJ Examples'
-            p 'Anything you type in the black box will generate oj. You may type in coffee-script or javascript. '
-
-            p 'The live examples support:'
-            ul ->
-              li 'tags are functions in lowercase'
-              li 'Objects are in uppercase'
-
-            p 'Server side the following works:'
-            ul ->
-              li 'minification can be done server side'
-              li ''
       """
     }
     {
-      name: 'Header and Paragraph'
+      name: 'Headers and Paragraphs'
       value: """
-        html ->
-          head ->
-          body ->
-            h1 'A Header for the Ages'
-            p 'Paragraphs and headers can be made by simply using tag functions. Live change this text to see how it works!'
-            p 'P.S. The deliciousness of oj is apparent with the very first sip. Sip away my friend. Sip away.'
+        h1 'Headers and Paragraphs'
+        p 'Paragraphs and headers can be made by simply using tag functions. Live change this text to see how it works!'
+      """
+    }
+    {
+      name: 'Defining ID and Class'
+      value: """
+        # Define id with 'id'
+        div id:'my-id', 'This div has id "my-id".'
+
+        # Define class with 'c' or 'class'
+        div c:'my-class', 'This div has class "my-class"',
+
+        css
+          '#my-id': color: 'purple'
+          '.my-class': color: 'blue'
+      """
+    }
+    {
+      name: 'Tags with Inline Styles'
+      value: """
+        div 'This div has an inline styles',
+
+          # Inline styles are defined with and object
+          style:
+
+            border:'1px solid lightgrey'
+            padding: '15px'
+
+            # camalCase is automatically seperated-by-dashes
+            borderRadius: '5px'
+      """
+    }
+    {
+      name: 'Tags with Click Events'
+      value: """
+        div c:'button', 'Click Me',
+          # Click event binds automatically through jquery!
+          click: ->
+            alert 'Click works!'
+
+          # Make it look like a button
+          css
+            '.button':
+              border:'1px solid black'
+              width: 100
+              borderRadius: 5
+              padding: 5
+              boxShadow: '3px 3px 5px #999'
+              cursor:'pointer'
+      """
+    }
+    {
+      name: 'Tags with Several Attributes'
+      value: """
+        div c:'my-class', id: 'my-id', 'This div has three attributes (click me to see)',
+          # Attributes can be defined before or after the content
+          'data-id': '1234'
+
+          click: (e) ->
+            $target = $(e.target)
+            alert \"\"\"
+              data-id: #\{$target.attr('data-id')\}
+              class: #\{$target.attr('class')\}
+              id: #\{$target.attr('id')\}
+            \"\"\"
       """
     }
     {
       name: 'Creating a Template'
       value: """
         # Define a simple template with a title and a content function
-        myTemplate = (pageTitle, pageContent) ->
+        # Create a template that takes data as input and outputs the page
+        myTemplate = (data) ->
           html ->
             head ->
-              title pageTitle
+              title data.title
             body ->
-              pageContent()
+              h1 data.header
+              data.content()
 
         # Run the template
-        myTemplate 'My Title', ->
-          h1 'Creating a Template'
-          p 'It turns out that templates are just functions. Simply take an argument that is your content and call it in the right place. Presto, it works!'
-
+        myTemplate title:'My Title', header:'Creating a Template', content:->
+          p 'Templates are just functions that call html, head and body. Presto, they just work!'
       """
     }
     {
-      name: 'Creating a Partial'
+      name: 'Create a Partial'
       value: """
-
         # Define a partial that creates a twitter link for a user
         _userTwitterLink = (user) ->
-          a "Follow #\{user.name\}",
-            href: "http://twitter.com/#\{user.twitter\}"
+          a "Follow \#{user.name} on Twitter",
+            href: "http://twitter.com/\#{user.twitter}"
 
         # Define some users
         users = [
           {name:'Evan', twitter:'evanmoran'}
+          {name:'James', twitter:'iamthelawton'}
           {name:'Laura', twitter:'savinola'}
         ]
 
-        # Generate the html
-        html ->
-          head ->
-          body ->
-            h1 'Creating a Partial'
-            for user in users
-              p ->
-                _userTwitterLink user
-      """
-    }
-    {
-      name: 'Table using tags'
-      value: """
-        # Define the table with tag oj tag functions
-        html ->
-          head ->
-          body ->
-            h1 'Table Using Tags'
-            table ->
-              tbody ->
-                tr ->
-                  td 1
-                  td 2
-                  td 3
-                tr ->
-                  # Loops work as you would hope!
-                  for i in [4,5,6]
-                    td i
+        p 'Partials are just functions. This function turns a user into a Twitter link:'
 
-              # CSS works anywhere you want
-              css
-                # All tr tags have padding and black border
-                tr:
-                  border: '1px solid black'
-                  padding: '4px'
+        for user in users
+          p ->
+            # Use the partial!
+            _userTwitterLink user
       """
     }
     {
-      name: 'Table partial'
+      name: 'Tables with Loops'
       value: """
-        # A partial that creates a table from rows
-        # where rows is a list of lists
+        table ->
+          tbody ->
+            tr ->
+              td 'A1'
+              td 'A2'
+              td 'A3'
+              td 'A4'
+            tr ->
+              # Loops work as you would hope!
+              for i in ['B1','B2','B3','B4']
+                td i
+
+
+      """
+    }
+    {
+      name: 'Table with a Partial'
+      value: """
+        # Create a partial that creates a table from its
+        # header (a list of strings) and its rows (a list of lists)
         makeTable = (header, rows) ->
 
           table ->
-            if header
-              thead ->
+            # Define headers
+            thead ->
+              tr ->
+                for h in header
+                  th h
+
+            # Define rows
+            tbody ->
+              for row in rows
                 tr ->
-                  for h in header
-                    th h
-            if rows
-              tbody ->
-                for row in rows
-                  tr ->
-                    for column in row
-                      td column
+                  for column in row
+                    td column
 
         # Make it by calling the function!
-        makeTable ['Column1', 'Column2', 'Column3'], [
-          [1,2,3]
-          [4,5,6]
-          [7,8,9]
-        ]
+        div ->
+          makeTable ['H1', 'H2', 'H3', 'H4'], [
+            ['A1','A2','A3','A4']
+            ['B1','B2','B3','B4']
+            ['C1','C2','C3','C4']
+          ]
+          css
+            th:
+              color: 'darkorange'
+            td:
+              backgroundColor: 'orange'
+              padding:'50px'
       """
     }
   ]

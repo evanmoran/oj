@@ -1,0 +1,219 @@
+examples = require './_examples'
+
+editor_oj_id = oj.id()
+editor_html_id = oj.id()
+editor_css_id = oj.id()
+editor_js_id = oj.id()
+
+module.exports = (default_code) ->
+  div c:'editor', ->
+    ready ->
+      setupEditor editor_oj_id, 'coffee', recompile
+      recompile()
+
+    css
+      '.editor-source':
+        position: 'relative'
+        width: '100%'
+        height: '30%'
+        border: '1px solid orange'
+        padding: '6px'
+        display: 'block'
+
+      '.editor-source-oj':
+        display: 'block'
+        width: '100%'
+        height: '100%'
+
+      '.editor-source-js':
+        display: 'block'
+        width: '100%'
+        height: '100%'
+
+      '.editor-source-css':
+        display: 'block'
+        width: '100%'
+        height: '100%'
+
+      '.editor-source-html':
+        display: 'block'
+        width: '100%'
+        height: '100%'
+
+      '.editor-frame':
+        display: 'block'
+        position: 'relative'
+        width: '100%'
+        height: '65%'
+
+      '.editor-iframe':
+        display: 'block'
+        width: '100%'
+        height: '100%'
+
+      '.editor-console':
+        position: 'absolute'
+        top: 0
+        left: 0
+        color:'darkorange'
+        backgroundColor: 'RGBA(255,255,255,0.9)'
+        textAlign: 'center'
+        fontSize: '18px'
+        padding: '14px 4px'
+        margin: '0px 0px 10px 0px'
+        width: '100%'
+        height: '100%'
+
+      '.editor-bar':
+        position:'absolute'
+        top: '0px'
+        right: '0px'
+        margin: '8px 8px 0 0'
+        width: '100%'
+        zIndex: 2
+
+      '.editor-chooser':
+        position:'absolute'
+        top: '0px'
+        right: '0px'
+        margin: '8px 8px 0 0'
+        zIndex: 3
+
+      '.editor-resizer':
+        width: '100%'
+        height: '10px'
+        backgroundColor: '#FFBA4D'
+
+    select c:'editor-chooser', change: ((e) -> chooseExample(e)), ->
+      for ex in examples
+        option value:ex.value, "#{ex.name}"
+
+    div c:'editor-source', ->
+      div c:'editor-source-oj', id:editor_oj_id, default_code
+
+    div c:'editor-frame', ->
+      div c:'editor-console'
+      iframe c:'editor-iframe'
+
+# Get value out of chooser and set the editor
+chooseExample = ->
+  $editorChooser = $ '.editor-chooser'
+  code = $editorChooser.val()
+  setEditor editor_oj_id, code
+  return
+
+recompile = ->
+  $editorFrame = $ '.editor-iframe'
+  $editorSource = $ '.editor-source'
+  $editorHTML = $ '.editor-html'
+  $editorCSS = $ '.editor-css'
+  $editorJS = $ '.editor-js'
+
+  code = getEditor editor_oj_id
+
+  try
+    js = CoffeeScript.compile code, bare:true
+  catch eCoffee
+    # Set console message
+    error '<b>coffee-script error:</b> ' + eCoffee.message
+    return
+
+  # Update js
+  # setEditor editor_js_id, js
+  $editorJS.val js
+
+  # Run the result to generate ojml
+  wrapjs = "with(oj){#{js}}"
+  try
+    ojml = eval wrapjs
+  catch eRuntime
+    error '<b>javascript error:</b> ' + eRuntime.message
+    return
+
+  # Compile the ojml into dom, html and css
+  try
+    results = oj.compile debug:true, ojml
+
+    # For simplicity wrap html, body, head around content if none of those tags exist
+    if not results.tags.html? and not results.tags.head? and not results.tags.body?
+      wrapjs = """with(oj){
+        html(function(){
+          head();
+          body(function(){
+            #{js}
+          });
+        })
+      }
+      """
+      ojml = eval wrapjs
+      results = oj.compile debug:true, ojml
+
+    # Error if html, head, body are missing after all of this
+    if not results.tags.html?
+      error '<b>validation error</b>: <html> tag is missing'
+      return
+    if not results.tags.head?
+      error '<b>validation error</b>: <head> tag is missing'
+      return
+    if not results.tags.body?
+      error '<b>validation error</b>: <body> tag is missing'
+      return
+
+  catch eCompile
+    error '<b>oj error:</b> ' + eCompile.message
+    return
+
+  # Update html
+  # setEditor editor_html_id, results.html
+  $editorHTML.val results.html
+
+  # Update css
+  # setEditor editor_css_id, results.html
+  $editorCSS.val results.css
+
+  # Append html to iframe
+  $editorFrame.contents().find('html').replaceWith($(results.dom))
+
+  # Append style to iframe
+  $editorFrame.contents().find('head').append("<style>#{results.css}</style>")
+
+  success()
+
+error = (message) ->
+  $editorConsole = $('.editor-console')
+  $editorConsole.html message
+  $editorConsole.show()
+  return
+
+success = ->
+  $editorConsole = $('.editor-console')
+  $editorConsole.hide()
+  return
+
+clickToggleNext = ->
+  click: (e) -> $(e.target).next().toggle()
+
+setupEditor = (editor_id, language, onChange) ->
+  editor = ace.edit editor_id
+  editor.setTheme("ace/theme/solarized_light")
+  editor.getSession().setMode "ace/mode/#{language}"
+  editor.getSession().setUseSoftTabs true
+  editor.getSession().setUseWorker false
+  editor.setDisplayIndentGuides true
+  editor.getSession().setTabSize 2
+  editor.renderer.setShowGutter false
+  editor.setHighlightActiveLine false
+  editor.renderer.setShowPrintMargin false
+  editor.setReadOnly false
+  editor.setFontSize 14
+  editor.getSession().doc.on 'change', onChange
+  return
+
+setEditor = (editor_id, code) ->
+  editor = ace.edit editor_id
+  editor.getSession().setValue(code)
+  return
+
+getEditor = (editor_id) ->
+  editor = ace.edit editor_id
+  editor.getSession().getValue()
