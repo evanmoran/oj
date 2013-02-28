@@ -22,7 +22,11 @@ module.exports =
     body ->
 
       _editor """
-        h1 'OJ: Live Editor'
-        p 'Step 1: Learn about OJ using the pulldown to change examples'
-        p 'Step 2: Type in the box to live edit OJ'
+        CheckBox value:true, change: (cb) -> alert "The checkbox changed to: \#{cb.value}"
       """
+
+      # """
+      #   h1 'OJ: Live Editor'
+      #   p 'Step 1: Learn about OJ using the pulldown to change examples'
+      #   p 'Step 2: Type in the box to live edit OJ'
+      # """

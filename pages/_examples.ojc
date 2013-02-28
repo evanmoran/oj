@@ -76,6 +76,12 @@ module.exports = [
       """
     }
     {
+      name: 'Create a Checkbox'
+      value: """
+        CheckBox value:true, change: (control) -> alert "The checkbox changed to: \#{control.value}"
+      """
+    }
+    {
       name: 'Creating a Template'
       value: """
         # Define a simple template with a title and a content function

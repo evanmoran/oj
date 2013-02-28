@@ -11,6 +11,7 @@ describe 'oj.type', ->
   _parentConstructor = null
   Parent = oj.type 'Parent',
     constructor: ->
+      expect(typeof @).to.equal 'object'
       expect(typeof @set).to.equal 'function'
       _parentConstructor = arguments[0]
 
@@ -363,3 +364,53 @@ describe 'oj.type', ->
     expect(GrandChild.grandChildProp).to.equal 'GrandChild.grandChildProp'
     GrandChild.grandChildProp = 'Worked'
     expect(GrandChild.grandChildProp).to.equal 'GrandChild.grandChildPropWorked'
+
+  it 'deeply inherited type calls constructor minimally', ->
+    _increment = 0
+    P = oj.type 'P',
+      constructor: -> _increment++
+
+    C = oj.type 'C',
+      extends: P
+      constructor: -> _increment++
+
+    GC = oj.type 'GC',
+      extends: C
+      constructor: -> _increment++
+
+    _increment = 0
+    p = new P()
+    expect(_increment).to.equal 1
+
+    _increment = 0
+    c = new C()
+    expect(_increment).to.equal 2
+
+    _increment = 0
+    gc = new GC()
+    expect(_increment).to.equal 3
+
+  it 'deeply inherited type calls constructor minimally (without new)', ->
+    _increment = 0
+    P = oj.type 'P',
+      constructor: -> _increment++
+
+    C = oj.type 'C',
+      extends: P
+      constructor: -> _increment++
+
+    GC = oj.type 'GC',
+      extends: C
+      constructor: -> _increment++
+
+    _increment = 0
+    p = P()
+    expect(_increment).to.equal 1
+
+    _increment = 0
+    c = C()
+    expect(_increment).to.equal 2
+
+    _increment = 0
+    gc = GC()
+    expect(_increment).to.equal 3

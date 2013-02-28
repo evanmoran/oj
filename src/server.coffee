@@ -14,6 +14,12 @@ mkdirp = require 'mkdirp'
 csso = require 'csso'
 uglifyjs = require 'uglify-js'
 
+# Run in the context of the dom and jquery
+jsdom = (require 'jsdom').jsdom
+global.$ = require 'jquery'
+global.document = jsdom "<html><head></head><body></body></html>"
+global.window = document.createWindow()
+
 # Export server side oj
 oj = require './oj'
 oj.isClient = false
@@ -120,15 +126,18 @@ nodeModulePaths = (from) ->
     paths.push(dir)
   paths
 
+# basenameForExtensions: Get basename for multiple extensions
+basenameForExtensions = (p, arrayOfExt = []) ->
+  out = path.basename p
+  for ext in arrayOfExt
+    out = path.basename out, ext
+  out
+
 # compileFile
 # ------------------------------------------------------------------------------
 compileFile = (filePath, includeDir, options = {}) ->
-
   # Time this method
   startTime = process.hrtime()
-
-  # Ensure our current directory is this path
-  process.chdir path.dirname(filePath)
 
   # Clear underscore as modules might need it
   _clearRequireCacheRecord 'underscore'
@@ -157,7 +166,8 @@ compileFile = (filePath, includeDir, options = {}) ->
   subDir = path.relative includeDir, path.dirname filePath
 
   #    /output/dir/file.html
-  fileOut = path.join outputDir, subDir, (path.basename filePath, '.oj') + '.html'
+  fileBaseName = basenameForExtensions filePath, ['.oj', '.ojc', 'ojlc']
+  fileOut = path.join outputDir, subDir, fileBaseName + '.html'
 
   verbose 2, "compiling #{filePath}"
 
@@ -239,10 +249,14 @@ compileFile = (filePath, includeDir, options = {}) ->
 
   # Insert styles before </head> or after <html> or at the beginning
   if css
-    styleHtml = _minifyAndWrapCSSInStyleTags css, filePath, isDebug
-    styleIndex = html.lastIndexOf '</head>'
-    html = _insertAt html, styleIndex, styleHtml
-
+    try
+      styleHtml = _minifyAndWrapCSSInStyleTags css, filePath, isDebug
+      styleIndex = html.lastIndexOf '</head>'
+      html = _insertAt html, styleIndex, styleHtml
+    catch eCSS
+      oj.error "css minification error #{filePath}: #{eCSS.message}"
+      oj.error "generated css: #{css}"
+      return
   # Create directory
   dirOut = path.dirname fileOut
   if mkdirp.sync dirOut
@@ -337,6 +351,7 @@ watchFile = (filePath, includeDir, options = {}) ->
 # Watch a directory of files for new additions.
 # This method does not recurse as it is called from methods that do (compileDir)
 watchDir = (dir, includeDir, options) ->
+  console.log "watchDir: #{__filename}: 358"
 
   # Short circut if already watching this directory
   return if isWatched dir
@@ -453,13 +468,14 @@ commonPath = (paths, seperator = '/') ->
   (common.slice 0, ixCommon).join seperator
 
 # lsOJ
-# Abstract if recursion happened and filters to only files that don't start with _ and end in .oj
+# Abstract if recursion happened and filters to only files that don't start with _ and end in an oj filetype (.oj, .ojc, .ojlc)
 
 lsOJ = (paths, options, cb) ->
   # Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
   options = _.extend {}, recurse: options.recurse, filter: (f) ->
-    basename = path.basename(f)
-    path.extname(f) == '.oj' and basename[0] != '_'and basename.slice(0,2) != 'oj' and not isHiddenFile f
+    basename = path.basename f
+    extname = path.extname f
+    (extname == '.oj' or extname == '.ojc' or extname == '.ojlc') and basename[0] != '_'and basename.slice(0,2) != 'oj' and not isHiddenFile f
 
   ls paths, options, (err, results) ->
     cb err, results.files, results.directories
@@ -594,12 +610,7 @@ _length = (any) ->
 
 minifyJS = (filename, js, options = {}) ->
   verbose 4, "minified #{filename}" if filename
-  try
-    js = uglifyjs js, options
-  catch e
-    console.log "oj.command: could not minify: #{filename}" if filename
-    console.log e
-    throw e
+  js = uglifyjs js, options
 
 minifyJSUnless = (isDebug, filename, js, options) ->
   return js if isDebug
@@ -615,12 +626,7 @@ minifySimpleJSUnless = (isDebug, js, options) ->
 
 minifyCSS = (filename, css, structureOff = false) ->
   verbose 4, "minified #{filename}" if filename
-  try
-    css = csso.justDoIt css, structureOff
-  catch e
-    console.log "oj.command: could not minify: #{filename}" if filename
-    console.log e
-    throw e
+  css = csso.justDoIt css, structureOff
 
 minifyCSSUnless = (isDebug, filename, css, structureOff) ->
   return css if isDebug

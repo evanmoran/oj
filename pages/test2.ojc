@@ -1,0 +1,9 @@
+module.exports =
+  html ->
+    head ->
+    body ->
+      CheckBox value:1
+
+
+
+

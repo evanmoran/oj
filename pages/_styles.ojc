@@ -2,7 +2,7 @@ module.exports = ->
 
   css
     h1:
-      fontFamily: 'Lucida Grande; Tahoma'
+      fontFamily: 'Lucida Grande, Tahoma'
       fontSize: '24px'
       fontWeight: 'lighter'
       marginTop: '6px'
@@ -11,7 +11,7 @@ module.exports = ->
       color: '#666'
       letterSpacing: '0.2em'
     h2:
-      fontFamily: 'Lucida Grande; Tahoma'
+      fontFamily: 'Lucida Grande, Tahoma'
       fontSize: '18px'
       fontWeight: 'lighter'
       marginTop: '6px'
@@ -20,7 +20,7 @@ module.exports = ->
       color: '#666'
       letterSpacing: '0.2em'
     h3:
-      fontFamily: 'Lucida Grande; Tahoma'
+      fontFamily: 'Lucida Grande, Tahoma'
       fontSize: '14px'
       fontWeight: 'lighter'
       marginTop: '3px'
@@ -29,7 +29,7 @@ module.exports = ->
       color: '#666'
       letterSpacing: '0.2em'
     h4:
-      fontFamily: 'Lucida Grande; Tahoma'
+      fontFamily: 'Lucida Grande, Tahoma'
       fontSize: '12px'
       fontWeight: 'lighter'
       marginTop: '3px'
@@ -37,7 +37,7 @@ module.exports = ->
       color: '#666'
       letterSpacing: '0.2em'
     p:
-      fontFamily: 'Lucida Grande; Tahoma'
+      fontFamily: 'Lucida Grande, Tahoma'
       fontSize: '14px'
       fontWeight: 'lighter'
       marginBottom: '12px'
@@ -52,7 +52,7 @@ module.exports = ->
       width:'100%'
       height:'100px'
       borderColor: '#f4f4f4'
-      fontFamily: 'Lucida Grande; Tahoma'
+      fontFamily: 'Lucida Grande, Tahoma'
       fontSize: '14px'
 
     '.snippet':

@@ -135,31 +135,45 @@ if require.extensions
   isCS = (code) -> -1 != code.search /(^\s*#|\n\s*#|-\>)/
   isJS = (code) -> -1 != code.search /var|function|((^|\n)\s*\/\/)/
 
+  wrapJS = (code) ->
+    "(function(){with(require('oj')){#{code}}}).call(this);"
+
+  wrapCSMessage = (message, filepath) ->
+    "#{oj.codes?.red}coffee-script error in #{filepath}: #{message}#{oj.codes?.reset}"
+  wrapJSMessage = (message, filepath) ->
+    "#{oj.codes?.red}javascript error in #{filepath}: #{message}#{oj.codes?.reset}"
+
+  # .oj files are compiled as javascript
   require.extensions['.oj'] = (module, filepath) ->
-    # Compile as coffee-script or javascript
+    code = stripBOM fs.readFileSync filepath, 'utf8'
+    try
+      code = wrapJS code
+      module._compile code, filepath
+    catch eJS
+      eJS.message = wrapJSMessage eJS.message, filepath
+      throw eJS
+
+  # .ojc files are compiled as coffee-script
+  require.extensions['.ojc'] = (module, filepath) ->
     code = stripBOM fs.readFileSync filepath, 'utf8'
 
-    # Transform into coffee script if necessary
+    # Compile in coffee-script
     try
       code = coffee.compile code, bare: true
-
     catch eCoffee
-
-      eCoffee.message = "#{oj.codes?.red}coffee-script error in #{filepath}: #{eCoffee.message}#{oj.codes?.reset}"
-      # Report it as a coffee-script error if we are pretty
-      # sure it is
-      if (isCS code) or not (isJS code)
-        throw eCoffee
+      eCoffee.message = wrapCSMessage eCoffee.message, filepath
+      throw eCoffee
 
     # Compile javascript
     try
-      code = "(function(){with(require('oj')){#{code}}}).call(this);"
+      code = wrapJS code
       module._compile code, filepath
 
     catch eJS
-
-      eJS.message = "#{oj.codes?.red}javascript error in #{filepath}: #{eJS.message}#{oj.codes?.reset}"
+      eJS.message = wrapJSMessage eJS.message, filepath
       throw eJS
+
+  # TODO: .ojlc files are compiled as literate coffee-script
 
 root = @
 
@@ -190,7 +204,7 @@ oj.isDOMElement = (obj) -> !!(obj and obj.nodeType == 1)
 oj.isDOMAttribute = (obj) -> !!(obj and obj.nodeType == 2)
 oj.isDOMText = (obj) -> !!(obj and obj.nodeType == 3)
 oj.isjQuery = (obj) -> !!(obj and obj.jquery)
-oj.isBackbone = (obj) -> !!(obj and obj.on and obj.trigger and not _.isOJ obj)
+oj.isBackbone = (obj) -> !!(obj and obj.on and obj.off and obj.trigger)
 oj.isOJ = (obj) -> !!(obj?.isOJ)
 oj.isArguments = (obj) -> toString.call(obj) == '[object Arguments]'
 
@@ -546,7 +560,7 @@ oj.addProperty = (obj, propName, propInfo) ->
     configurable: true
 
   # Remove property if it already exists
-  if obj[propName]?
+  if Object.getOwnPropertyDescriptor(obj, propName)?
     oj.removeProperty obj, propName
 
   # Add the property
@@ -614,6 +628,7 @@ _.argumentsAppend = (arg) ->
 
 
 oj.tag = (name, args...) ->
+
   throw 'oj.tag error: argument 1 is not a string (expected tag name)' unless oj.isString name
 
   # Build ojml starting with tag
@@ -742,7 +757,6 @@ oj.compile = (options, ojml) ->
   if not ojml?
     ojml = options
     options = {}
-
   # Default options to compile everything
   options = _.defaults {}, options,
     html: true
@@ -912,28 +926,13 @@ _compileAny = (ojml, options) ->
     else
       # OJ type
       if oj.isOJ ojml
-        _compileOJInstance ojml, options
+        options.html?.push ojml.el.outerHTML
+        options.dom?.appendChild ojml.el
 
   return
 
 # Supported events from jquery
 jqueryEvents = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
-
-# Compile ojml as oj object
-_compileOJInstance = (ojml, options) ->
-  if options.html
-    options.html.push ojml.toHTML options
-  if options.dom
-    options.dom.push ojml.toDOM options
-  return
-
-# Compile ojml as element
-_compileElement = (ojml, options) ->
-  if options.html
-    options.html.push ojml.outerHTML;
-  if options.dom
-    options.dom.push ojml
-  return
 
 # Compile ojml tag (an array)
 _compileTag = (ojml, options) ->
@@ -1166,9 +1165,10 @@ oj.type = (name, args = {}) ->
   Out = new Function("""return function #{name}(){
     var _this = this;
     if ( !(this instanceof #{name}) )
-      _this = new #{name};
+      _this = new #{name}('__IGNORE_ARGUMENTS__');
 
-    #{name}.prototype.constructor.apply(_this, arguments);
+    if (arguments && arguments[0] != '__IGNORE_ARGUMENTS__')
+      #{name}.prototype.constructor.apply(_this, arguments);
 
     return _this;
   }
@@ -1193,7 +1193,6 @@ oj.type = (name, args = {}) ->
     try
       args.constructor.apply @, arguments
     catch e
-      console.error "#{name}.constructor failed with: ", e
       throw e
     return @
 
@@ -1248,15 +1247,6 @@ oj.type = (name, args = {}) ->
 
   Out
 
-# oj.view
-# ------------------------------------------------------------------------------
-
-oj.view = (name, args) ->
-  throw 'oj.view: string expected for first argument' unless oj.isString name
-  throw 'oj.view: object expected for second argument' unless oj.isObject args
-  args.extends ?= oj.View
-  oj.type name, args
-
 # optionsUnion:
 # Take arguments and tranform them into options and args.
 # options is a union of all items in `arguments` that are objects
@@ -1285,21 +1275,11 @@ oj.View = oj.type 'View',
   # Views are special objects map properties together. This is a union of arguments
   # With the remaining arguments becoming a list
 
-  ###
-    CheckBox is constructed
-      => Its properties are set (and this makes the el)
-      => value is storied in the dom element
-
-      When it is pushed into the dom
-        => Its dom.outerHTML is called?
-
-      Later when you manipulate it on the client
-      makeOrGet awakens it in place in the dom
-
-  ###
   constructor: ->
     # Simplify arguments to a single object of properties and a single list of arguments
-    {options, args} = _.optionsUnion arguments
+    optionsUnion = _.optionsUnion arguments
+
+    {options, args} = optionsUnion
 
     # Generate id if missing
     options.id ?= oj.id()
@@ -1309,8 +1289,11 @@ oj.View = oj.type 'View',
     # Append this to parent
     _.argumentsAppend @
 
+    # Views are smart and automatically apply constructor
+    # arguments directly to properties
     @set options
-    return
+
+    optionsUnion
 
   properties:
     el:
@@ -1321,16 +1304,24 @@ oj.View = oj.type 'View',
 
         # Step two: search for the element in the dom
         # This will "awaken" this object to allow live editing
-        if document?
-          @_el = document.getElementsById @_id
+        if $?
+          @_el = $('#' + @_id).get(0)
           return @_el if oj.isDOMElement @_el
 
         # Step three: create it ourselves
+        # Wrapped with push/pop to ensure we don't oj outside of ourselves
+        _.argumentsPush()
         ojml = @make()
-        results = oj.compile(dom:true, ojml)
-        results.js()
-        results.dom
+        _.argumentsPop()
+        dom = (oj.compile dom:true, html:false, css:false, ojml).dom
 
+        # Add id and type if necessary
+        $dom = $(dom)
+        if not $dom.attr 'id'
+          $dom.attr id:oj.id()
+        $dom.addClass @type
+
+        @_el = dom
     $el:
       get: -> $(@el)
 
@@ -1348,18 +1339,22 @@ oj.View = oj.type 'View',
   methods:
     # make: Return ojml that creates initial dom state
     # Override this to create your own structure
-    make: ->
-      ojml = oj.div c:"oj.#{oj.typeOf @}", id:oj.id()
-      oj.toDOM ojml
+    make: -> oj.div()
 
     # Find sub elements via jquery selector
-    $: -> @$el.find arguments...
+    $: -> @$el.find.apply @, arguments
 
-    toHTML: (options) -> @el.outerHTML + (if options.debug then '\n' else '')
+    toHTML: (options) ->
+      console.log "---- CALLING toHTML"
+      @el.outerHTML + (if options.debug then '\n' else '')
 
-    toDOM: -> @el
+    toDOM: ->
+      console.log "---- CALLING toDOM"
+      @el
 
-    toString: -> @toHTML()
+    toString: ->
+      console.log "---- CALLING toHTML"
+      @toHTML()
 
     # Detach element from dom
     detach: -> throw 'detach nyi'
@@ -1369,31 +1364,118 @@ oj.View = oj.type 'View',
     attach: -> throw 'attach nyi'
       # The implementation is to unset el from detach
 
+
+# oj.ModelView
+# ------------------------------------------------------------------------------
+# Model view base class
+oj.ModelView = oj.type 'ModelView'
+  extends: oj.View
+
+  properties:
+    model:
+      get: -> @_model
+      set: (v) ->
+        # Remove events on the old model
+        if oj.isBackbone @_model
+          @_model.off 'change', @modelChange
+
+        # Add event hooks on the new model
+        @_model = v;
+        if oj.isBackbone @_model
+          @_model.on 'change', @modelChange
+        return
+
+  methods:
+    modelChange: -> #optional override to handle modelChange events
+    viewChange: -> #optional override to handle viewChange events
+
+# oj.FormView
+# ------------------------------------------------------------------------------
+# A base class for form elements that adds the notion of key/value.
+#
+#     key is the attribute to set on the model as things change
+#     value is an accessor to the dom
+#
+#     formValue is the value sent to the form on submit
+#     formName is the name sent to the form on submit
+
+oj.FormView = oj.type 'FormView'
+  extends: oj.ModelView
+
+  properties:
+    key:
+      get: -> @_key
+      set: (v) -> @_key = v; return
+
+    # Value directly gets and sets to the dom
+    # when it changes it must trigger viewChange
+    value:
+      get: -> throw 'value get needs override'
+      set: (v) -> throw 'value set needs override'
+
+    # Change handler can be set to track changes manually
+    change:
+      get: -> @_change
+      set: (v) -> @_change = v; return
+
+    formValue:
+      get: -> @$el.attr('value')
+      set: (v) -> @$el.attr('value', v); return
+
+  methods:
+    modelChange: ->
+      # Update value from model
+      if @model? and @key?
+        @value = @model[@key]
+
+    viewChange: ->
+      # Update model
+      if @model? and @key?
+        @model[@key] = @value
+      # Trigger change event
+      @change?(@)
+
+# oj.TextBox
+# ------------------------------------------------------------------------------
+# TextBox control
+
+oj.TextBox = oj.type 'TextBox'
+  extends: oj.FormView
+
+  properties:
+    value:
+      get: -> @el.value
+      set: (v) -> @el.value = v; return
+
+  methods:
+    make: (props) ->
+      oj.input type:'text', change: => @viewChange()
+
 # oj.CheckBox
 # ------------------------------------------------------------------------------
 # CheckBox control
 
 oj.CheckBox = oj.type 'CheckBox'
-  extends: oj.View
-  # constructor: ->
-  #   @set arguments...
+  extends: oj.FormView
 
   properties:
-
     value:
-      get: -> @_value
-      set: (v) -> @_value = v; return
-
-    disabled:
-      get: -> @el.disabled
-      set: (v) -> @el.disabled = v; return
+      get: -> @el.checked
+      set: (v) ->
+        v = !!v
+        @el.checked = v
+        if v
+          @$el.attr 'checked', 'checked'
+        else
+          @$el.removeAttr 'checked'
+        return
 
   methods:
     make: (props) ->
-      oj.input id: oj.id(), c:@type, type:'checkbox'
+      oj.input type:'checkbox', change: => @viewChange()
 
-    toString: ->
-      @super.toString.apply @,arguments
+    # viewChange: ->
+    #   @super.viewChange.apply @, arguments
 
 # oj.List
 # ------------------------------------------------------------------------------
