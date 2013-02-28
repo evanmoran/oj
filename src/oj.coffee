@@ -1477,6 +1477,25 @@ oj.CheckBox = oj.type 'CheckBox'
     # viewChange: ->
     #   @super.viewChange.apply @, arguments
 
+# oj.TextArea
+# ------------------------------------------------------------------------------
+# TextArea control
+
+oj.TextArea = oj.type 'TextArea'
+  extends: oj.FormView
+
+  properties:
+    value:
+      get: -> @el.value
+      set: (v) -> @el.value = v; return
+
+  methods:
+    make: (props) ->
+      oj.textarea change: => @viewChange()
+
+    # viewChange: ->
+    #   @super.viewChange.apply @, arguments
+
 # oj.List
 # ------------------------------------------------------------------------------
 # List control

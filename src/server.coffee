@@ -850,7 +850,7 @@ _requireCacheToString = (cache, filePath, isDebug) ->
   clientDir = _escapeSingleQuotes '/' + path.relative commonDir, path.dirname filePath
 
   # Determine file for client given the above directory
-  clientFile = _escapeSingleQuotes '/' + path.basename filePath, '.oj'
+  clientFile = _escapeSingleQuotes '/' + basenameForExtensions filePath, ['.ojc', '.oj', '.coffee', '.js']
 
   # Maps from moduleDir -> moduleName -> moduleMain such that
   # the file path is: moduleDir/moduleName/moduleMain
@@ -928,7 +928,7 @@ _requireCacheToString = (cache, filePath, isDebug) ->
 
       if (!!m.match(/\\//)) {
         r = p.resolve(f, p.join(p.dirname(f), m));
-        ext = ['.oj','.coffee','.js','.json'];
+        ext = ['.ojc','.oj','.coffee','.js','.json'];
         for(i = 0; i < ext.length; i++){
           ex = ext[i];
           if(F[r+ex])
