@@ -2,7 +2,7 @@ module.exports =
   html ->
     head ->
     body ->
-      CheckBox value:1
+      TextArea value:1
 
 
 

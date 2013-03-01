@@ -11,3 +11,7 @@ OJ Simplifies:
   * Significantly
 
 ###
+
+module.exports = ->
+  page ->
+    p ->

@@ -8,7 +8,7 @@ editor_js_id = oj.id()
 module.exports = (default_code) ->
   div c:'editor', ->
     ready ->
-      setupEditor editor_oj_id, 'coffee', recompile
+      setupEditor editor_oj_id, 'ojc', recompile
       recompile()
 
     css
@@ -16,9 +16,11 @@ module.exports = (default_code) ->
         position: 'relative'
         width: '100%'
         height: '30%'
-        border: '1px solid orange'
+        border: '2px solid #fbcb7c'
         padding: '6px'
         display: 'block'
+        backgroundColor: '#fefaf3'
+        boxShadow: '2px 2px 4px RGBA(0,0,0,0.15)'
 
       '.editor-source-oj':
         display: 'block'
@@ -195,7 +197,7 @@ clickToggleNext = ->
 
 setupEditor = (editor_id, language, onChange) ->
   editor = ace.edit editor_id
-  editor.setTheme("ace/theme/solarized_light")
+  editor.setTheme("ace/theme/oj")
   editor.getSession().setMode "ace/mode/#{language}"
   editor.getSession().setUseSoftTabs true
   editor.getSession().setUseWorker false
@@ -205,7 +207,7 @@ setupEditor = (editor_id, language, onChange) ->
   editor.setHighlightActiveLine false
   editor.renderer.setShowPrintMargin false
   editor.setReadOnly false
-  editor.setFontSize 14
+  editor.setFontSize 16
   editor.getSession().doc.on 'change', onChange
   return
 

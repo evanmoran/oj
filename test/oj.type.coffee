@@ -49,7 +49,7 @@ describe 'oj.type', ->
 
   _childConstructor = null
   Child = oj.type 'Child',
-    extends: Parent
+    inherits: Parent
 
     constructor: ->
       expect(typeof @).to.equal 'object'
@@ -90,7 +90,7 @@ describe 'oj.type', ->
 
   _grandChildConstructor = null
   GrandChild = oj.type 'GrandChild',
-    extends: Child
+    inherits: Child
 
     constructor: ->
       _grandChildConstructor = arguments[0]
@@ -371,11 +371,11 @@ describe 'oj.type', ->
       constructor: -> _increment++
 
     C = oj.type 'C',
-      extends: P
+      inherits: P
       constructor: -> _increment++
 
     GC = oj.type 'GC',
-      extends: C
+      inherits: C
       constructor: -> _increment++
 
     _increment = 0
@@ -396,11 +396,11 @@ describe 'oj.type', ->
       constructor: -> _increment++
 
     C = oj.type 'C',
-      extends: P
+      inherits: P
       constructor: -> _increment++
 
     GC = oj.type 'GC',
-      extends: C
+      inherits: C
       constructor: -> _increment++
 
     _increment = 0

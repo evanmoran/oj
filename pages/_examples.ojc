@@ -26,6 +26,57 @@ module.exports = [
       """
     }
     {
+      name: 'Syntax highlighting'
+      value: """
+        a = undefined
+        b = null
+        win = window
+        num = 42
+        str = new String('string')
+        list = [1,2,3]
+        doc = document
+        regex = /^#?([\w-]+)$/
+        regex_id = /^#/
+        strEscape = "This is a string \n"
+        tagExpr = /<([\w:]+)/
+        undefined
+        null
+        NaN
+
+        fn = (e) ->
+          [].slice.call(e, 0)
+
+        Parent = type 'Parent'
+          constructor: ->
+            console.log "foo: ", foo
+          properties:
+            foo:
+              get: ->
+              set: ->
+
+        Bar = type 'Bar',
+          constructor: ->
+          inherits: Parent
+          properties:
+            val: 5
+          methods:
+            meth: ->
+
+        try
+          a = slice(document.documentElement.childNodes)[0].nodeType
+        catch e
+          return 5
+
+      """
+    }
+
+
+
+
+
+
+
+    {
       name: 'Tags with Inline Styles'
       value: """
         div 'This div has an inline styles',

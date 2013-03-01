@@ -62,6 +62,4 @@ module.exports = ->
       height: '100px'
       border: '1px solid #orange'
 
-    '.ace-solarized-light .ace_scroller':
-      backgroundColor: 'white !important'
 

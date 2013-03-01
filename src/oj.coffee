@@ -1162,12 +1162,13 @@ oj.type = (name, args = {}) ->
   args.properties ?= {}
   args.constructor ?= ->
 
+  delay = '__DELAYED__'
   Out = new Function("""return function #{name}(){
     var _this = this;
     if ( !(this instanceof #{name}) )
-      _this = new #{name}('__IGNORE_ARGUMENTS__');
+      _this = new #{name}('#{delay}');
 
-    if (arguments && arguments[0] != '__IGNORE_ARGUMENTS__')
+    if (arguments && arguments[0] != '#{delay}')
       #{name}.prototype.constructor.apply(_this, arguments);
 
     return _this;
@@ -1175,19 +1176,16 @@ oj.type = (name, args = {}) ->
   """
   )();
 
-  # Alias 'extends' to 'inherits' for javascript folks
-  args.extends ?= args.inherits
-
   # Inherit if necessary
-  if args.extends?
-    _.inherit Out, args.extends
+  if args.inherits?
+    _.inherit Out, args.inherits
 
   # Add the constructor and wrap it to automatically call super.constructor
   oj.addMethod Out::, 'constructor', ->
 
     # Call your super's constructor
-    if args.extends?
-      (args.extends)::constructor.apply @, arguments
+    if args.inherits?
+      (args.inherits)::constructor.apply @, arguments
 
     # Then call your own constructor
     try
@@ -1369,7 +1367,7 @@ oj.View = oj.type 'View',
 # ------------------------------------------------------------------------------
 # Model view base class
 oj.ModelView = oj.type 'ModelView'
-  extends: oj.View
+  inherits: oj.View
 
   properties:
     model:
@@ -1400,7 +1398,7 @@ oj.ModelView = oj.type 'ModelView'
 #     formName is the name sent to the form on submit
 
 oj.FormView = oj.type 'FormView'
-  extends: oj.ModelView
+  inherits: oj.ModelView
 
   properties:
     key:
@@ -1440,7 +1438,7 @@ oj.FormView = oj.type 'FormView'
 # TextBox control
 
 oj.TextBox = oj.type 'TextBox'
-  extends: oj.FormView
+  inherits: oj.FormView
 
   properties:
     value:
@@ -1456,7 +1454,7 @@ oj.TextBox = oj.type 'TextBox'
 # CheckBox control
 
 oj.CheckBox = oj.type 'CheckBox'
-  extends: oj.FormView
+  inherits: oj.FormView
 
   properties:
     value:
@@ -1482,7 +1480,7 @@ oj.CheckBox = oj.type 'CheckBox'
 # TextArea control
 
 oj.TextArea = oj.type 'TextArea'
-  extends: oj.FormView
+  inherits: oj.FormView
 
   properties:
     value:
@@ -1507,7 +1505,7 @@ oj.TextArea = oj.type 'TextArea'
 
 # oj.Link
 # ------------------------------------------------------------------------------
-# oj.Link = class Link extends Control
+# oj.Link = class Link inherits Control
 
 
 
