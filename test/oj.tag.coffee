@@ -31,6 +31,7 @@ describe 'oj.tag', ->
     (oj.tag 'div').should.deep.equal ['div']
     (div()).should.deep.equal ['div']
     (span()).should.deep.equal ['span']
+    (oj()).should.deep.equal ['oj']
 
   it 'name, [String, ...]', ->
     (div str).should.deep.equal ['div', str]
@@ -93,3 +94,12 @@ describe 'oj.tag', ->
 
   it 'empty function', ->
     (div ->).should.deep.equal ['div']
+
+  it 'oj empty function', ->
+    (oj ->).should.deep.equal ['oj']
+
+  it 'oj function', ->
+    (oj ->
+      div 1
+      div 2
+    ).should.deep.equal ['oj', ['div',1],['div',2]]

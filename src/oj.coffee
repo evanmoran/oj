@@ -8,7 +8,7 @@
 # ------------------------------------------------------------------------------
 # Convert ojml to dom
 oj = module.exports = (ojml) ->
-  oj.toDOM ojml
+  oj.tag 'oj', ojml
 
 # Keep a reference to ourselves for templates to see
 oj.oj = oj
@@ -690,6 +690,7 @@ oj.tag.isClosed = (tag) ->
 for t in oj.tag.elements.all
   do (t) ->
     oj[t] = -> oj.tag t, arguments...
+    oj[t].type = t
 
 # Customize a few tags
 
@@ -916,7 +917,8 @@ _compileAny = (ojml, options) ->
       options.dom?.appendChild document.createTextNode "#{ojml}"
 
     when 'function'
-      _compileAny ojml(), options
+      # Wrap function call to allow full oj generation within ojml
+      _compileAny (oj ojml), options
 
     # Do nothing for 'null', 'undefined', 'object'
     when 'null' then break
@@ -939,8 +941,12 @@ _compileTag = (ojml, options) ->
 
   # Get tag
   tag = ojml[0]
+  tagType = typeof tag
 
-  # TODO: accept ojml with oj.Type instead of string for first element
+  # Allow ojml's tag parameter to be 'table' or table or Table
+  tag = if (tagType == 'function' or tagType == 'object') and tag.type? then tag.type else tag
+
+  # Fail if we couldn't find a string by now
   throw new Error('oj.compile: tag is missing in array') unless oj.isString(tag) and tag.length > 0
 
   # Create oj object if tag is capitalized

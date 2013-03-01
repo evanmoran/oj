@@ -21,22 +21,7 @@ module.exports =
 
     body ->
 
-      _editor """
-        CheckBox value:true, change: (cb) ->
-          alert "The checkbox changed to: \#{cb.value}"
-        a = constructor: (a,b) ->
-          return
-        tagExpr = /<([w:]+)/
-        doc = document
-        regex = /^#?([w-]+)$/
-        regex_id = /^#/
-        div ->
-          f1 = [undefined, null, NaN, Infinity, arguments]
-          f2 = inherits: 1
-          f3 = Array(5)
-          f4 = String("asdf")
-          f6 = isNaN(5)
-
+      _editor """div 'click me', click: -> alert 'it works!'
       """
 
       # """

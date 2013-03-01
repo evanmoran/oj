@@ -1,14 +1,15 @@
 examples = require './_examples'
 
-editor_oj_id = oj.id()
+editor_cs_id = oj.id()
+editor_js_id = oj.id()
 editor_html_id = oj.id()
 editor_css_id = oj.id()
-editor_js_id = oj.id()
 
 module.exports = (default_code) ->
   div c:'editor', ->
     ready ->
-      setupEditor editor_oj_id, 'ojc', recompile
+      setupEditor editor_cs_id, 'ojc', recompile
+      setupEditor editor_js_id, 'oj', recompile
       recompile()
 
     css
@@ -17,20 +18,26 @@ module.exports = (default_code) ->
         width: '100%'
         height: '30%'
         border: '2px solid #fbcb7c'
-        padding: '6px'
+        padding: '10px'
         display: 'block'
         backgroundColor: '#fefaf3'
         boxShadow: '2px 2px 4px RGBA(0,0,0,0.15)'
 
-      '.editor-source-oj':
+      '.editor-source-cs':
         display: 'block'
         width: '100%'
         height: '100%'
+
+      '.editor-source-cs.hidden':
+        display: 'none'
 
       '.editor-source-js':
         display: 'block'
         width: '100%'
         height: '100%'
+
+      '.editor-source-js.hidden':
+        display: 'none'
 
       '.editor-source-css':
         display: 'block'
@@ -66,43 +73,80 @@ module.exports = (default_code) ->
         width: '100%'
         height: '100%'
 
+      '.editor-resizer':
+        width: '100%'
+        height: '10px'
+        backgroundColor: '#FFBA4D'
+        zIndex: 10
+
       '.editor-bar':
         position:'absolute'
         top: '0px'
         right: '0px'
         margin: '8px 8px 0 0'
-        width: '100%'
-        zIndex: 2
+        height: '21px'
+        zIndex: 5
 
-      '.editor-chooser':
-        position:'absolute'
-        top: '0px'
-        right: '0px'
-        margin: '8px 8px 0 0'
-        zIndex: 3
+      '.editor-example-chooser':
+        position:'relative'
+        float:'right'
+        height: '100%'
+        zIndex: 10
+        fontSize: '20px'
+        marginLeft:'8px'
 
-      '.editor-resizer':
-        width: '100%'
-        height: '10px'
-        backgroundColor: '#FFBA4D'
+      '.editor-language-tab':
+        display:'inline-block'
+        width: '30px'
+        height: '100%'
+        float: 'right'
+        marginLeft: '0px'
+        zIndex: 10
+        backgroundColor:'white'
+        border:'1px solid gray'
+        borderRadius:'3px'
 
-    select c:'editor-chooser', change: ((e) -> chooseExample(e)), ->
-      for ex in examples
-        option value:ex.value, "#{ex.name}"
+      '.editor-language-tab.selected':
+        backgroundColor: '#FECD78'
 
+    div c:'editor-bar', ->
+      select c:'editor-example-chooser', change: ((e) -> chooseExample(e)), ->
+        for ex,ix in examples
+          option value:ix, "#{ex.name}"
+
+      button 'JS', c:'editor-language-tab js', click: (e) ->
+        switchLanguageTabs()
+        recompile()
+      button 'CS', c:'selected editor-language-tab cs', click: (e) ->
+        switchLanguageTabs()
+        recompile()
     div c:'editor-source', ->
-      div c:'editor-source-oj', id:editor_oj_id, default_code
+      div c:'editor-source-cs', id:editor_cs_id, default_code
+      div c:'editor-source-js hidden', id:editor_js_id, default_code
 
     div c:'editor-frame', ->
       div c:'editor-console'
       iframe c:'editor-iframe'
 
+isCS = -> not $(".editor-source-cs").is(':hidden')
+
 # Get value out of chooser and set the editor
 chooseExample = ->
-  $editorChooser = $ '.editor-chooser'
-  code = $editorChooser.val()
-  setEditor editor_oj_id, code
+  $editorChooser = $ '.editor-example-chooser'
+  ix = $editorChooser.val()
+  if isCS()
+    setEditor editor_cs_id, examples[ix].cs
+  else
+    setEditor editor_js_id, examples[ix].js
   return
+
+switchLanguageTabs = ->
+  $(".editor-language-tab.cs").toggleClass('selected')
+  $(".editor-language-tab.js").toggleClass('selected')
+  $(".editor-source-cs").toggleClass('hidden')
+  $(".editor-source-js").toggleClass('hidden')
+  chooseExample()
+  recompile()
 
 recompile = ->
   $editorFrame = $ '.editor-iframe'
@@ -111,25 +155,24 @@ recompile = ->
   $editorCSS = $ '.editor-css'
   $editorJS = $ '.editor-js'
 
-  code = getEditor editor_oj_id
+  if isCS()
+    code = getEditor editor_cs_id
 
-  try
-    js = CoffeeScript.compile code, bare:true
-  catch eCoffee
-    # Set console message
-    error '<b>coffee-script error:</b> ' + eCoffee.message
-    return
-
-  # Update js
-  # setEditor editor_js_id, js
-  $editorJS.val js
+    try
+      code = CoffeeScript.compile code, bare:true
+    catch eCoffee
+      # Set console message
+      error '<b>coffee-script error:</b> ' + eCoffee.message
+      return
+  else
+    code = getEditor editor_js_id
 
   # Run the result to generate ojml
-  wrapjs = "with(oj){#{js}}"
+  wrapjs = "with(oj){#{code}}"
   try
     ojml = eval wrapjs
   catch eRuntime
-    error '<b>javascript error:</b> ' + eRuntime.message
+    error '<b>runtime error:</b> ' + eRuntime.message
     return
 
   # Compile the ojml into dom, html and css
@@ -142,7 +185,7 @@ recompile = ->
         html(function(){
           head();
           body(function(){
-            #{js}
+            #{code}
           });
         })
       }
@@ -197,7 +240,7 @@ clickToggleNext = ->
 
 setupEditor = (editor_id, language, onChange) ->
   editor = ace.edit editor_id
-  editor.setTheme("ace/theme/oj")
+  editor.setTheme("ace/theme/orange")
   editor.getSession().setMode "ace/mode/#{language}"
   editor.getSession().setUseSoftTabs true
   editor.getSession().setUseWorker false

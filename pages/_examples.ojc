@@ -1,19 +1,28 @@
 module.exports = [
     {
       name: ''
-      value: """
+      cs: """
+      """
+      js: """
       """
     }
     {
       name: 'Headers and Paragraphs'
-      value: """
+      cs: """
         h1 'Headers and Paragraphs'
-        p 'Paragraphs and headers can be made by simply using tag functions. Live change this text to see how it works!'
+        p 'Paragraphs and headers can be made by simply using tag functions.'
+        p 'Live change this text to see how it works!'
       """
+      js: """
+        h1('Headers and Paragraphs');
+        p('Paragraphs and headers can be made by simply using tag functions.');
+        p(' Live change this text to see how it works!');
+      """
+
     }
     {
       name: 'Defining ID and Class'
-      value: """
+      cs: """
         # Define id with 'id'
         div id:'my-id', 'This div has id "my-id".'
 
@@ -24,61 +33,22 @@ module.exports = [
           '#my-id': color: 'purple'
           '.my-class': color: 'blue'
       """
-    }
-    {
-      name: 'Syntax highlighting'
-      value: """
-        a = undefined
-        b = null
-        win = window
-        num = 42
-        str = new String('string')
-        list = [1,2,3]
-        doc = document
-        regex = /^#?([\w-]+)$/
-        regex_id = /^#/
-        strEscape = "This is a string \n"
-        tagExpr = /<([\w:]+)/
-        undefined
-        null
-        NaN
+      js: """
+        // Define id with 'id'
+        div({id:'my-id'}, 'This div has id "my-id".');
 
-        fn = (e) ->
-          [].slice.call(e, 0)
+        // Define class with 'c' or 'class'
+        div({c:'my-class'}, 'This div has class "my-class"');
 
-        Parent = type 'Parent'
-          constructor: ->
-            console.log "foo: ", foo
-          properties:
-            foo:
-              get: ->
-              set: ->
-
-        Bar = type 'Bar',
-          constructor: ->
-          inherits: Parent
-          properties:
-            val: 5
-          methods:
-            meth: ->
-
-        try
-          a = slice(document.documentElement.childNodes)[0].nodeType
-        catch e
-          return 5
-
+        css({
+          '#my-id': {color: 'purple'},
+          '.my-class': {color: 'blue'}
+        });
       """
     }
-
-
-
-
-
-
-
     {
       name: 'Tags with Inline Styles'
-      value: """
+      cs: """
         div 'This div has an inline styles',
 
           # Inline styles are defined with and object
@@ -90,30 +60,66 @@ module.exports = [
             # camalCase is automatically seperated-by-dashes
             borderRadius: '5px'
       """
+      js: """
+        div('This div has an inline styles', {
+
+          // Inline styles are defined with and object
+          style: {
+
+            border:'1px solid lightgrey',
+            padding: '15px',
+
+            // camalCase is automatically seperated-by-dashes
+            borderRadius: '5px'
+          }
+        });
+      """
     }
     {
       name: 'Tags with Click Events'
-      value: """
+      cs: """
         div c:'button', 'Click Me',
           # Click event binds automatically through jquery!
           click: ->
             alert 'Click works!'
 
-          # Make it look like a button
-          css
-            '.button':
-              border:'1px solid black'
-              width: 100
-              borderRadius: 5
-              padding: 5
-              boxShadow: '3px 3px 5px #999'
-              cursor:'pointer'
+        # Make it look like a button
+        css
+          '.button':
+            border:'1px solid black'
+            width: 100
+            borderRadius: 5
+            padding: 5
+            boxShadow: '3px 3px 5px #999'
+            cursor:'pointer'
+      """
+      js: """
+        div({c:'button'}, 'Click Me', {
+          // Click event binds automatically through jquery!
+          click: function(){
+            alert('Click works!');
+          }
+        });
+
+        // Make it look like a button
+        css ({
+          '.button': {
+            border:'1px solid black',
+            width: 100,
+            borderRadius: 5,
+            padding: 5,
+            boxShadow: '3px 3px 5px #999',
+            cursor:'pointer'
+          }
+        });
       """
     }
     {
       name: 'Tags with Several Attributes'
-      value: """
-        div c:'my-class', id: 'my-id', 'This div has three attributes (click me to see)',
+      cs: """
+        div c:'my-class', id: 'my-id',
+          'This div has three attributes (click me to see)',
+
           # Attributes can be defined before or after the content
           'data-id': '1234'
 
@@ -121,38 +127,127 @@ module.exports = [
             $target = $(e.target)
             alert \"\"\"
               data-id: #\{$target.attr('data-id')\}
-              class: #\{$target.attr('class')\}
-              id: #\{$target.attr('id')\}
+              class:   #\{$target.attr('class')\}
+              id:      #\{$target.attr('id')\}
             \"\"\"
+      """
+      js: """
+        div({c:'my-class', id: 'my-id'},
+          'This div has three attributes (click me to see)', {
+          // Attributes can be defined before or after the content
+          'data-id': '1234',
+
+          click: function(e) {
+            $target = $(e.target)
+            alert( "data-id: " + $target.attr('data-id') + "\\n" +
+                   "class: "   + $target.attr('class')   + "\\n" +
+                   "id: "      + $target.attr('id') );
+          }
+        });
       """
     }
     {
       name: 'Create a Checkbox'
-      value: """
-        CheckBox value:true, change: (control) -> alert "The checkbox changed to: \#{control.value}"
+      cs: """
+        CheckBox value:true, change: (control) ->
+          alert "The checkbox changed to: \#{control.value}"
+      """
+      js: """
+        CheckBox({value:true, change: function(control){
+          alert("The checkbox changed to: " + control.value);
+        }});
+      """
+    }
+    {
+      name: 'Create a TextBox'
+      cs: """
+        TextBox value:'The text goes here', change: (control) ->
+          alert "The textbox changed to: \#{control.value}"
+      """
+      js: """
+        TextBox({value:'The text goes here', change: function(control){
+          alert("The textbox changed to: " + control.value);
+        }});
+      """
+    }
+    {
+      name: 'Create a TextArea'
+      cs: """
+        TextArea value:'The text goes here', change: (control) ->
+          alert "The textarea changed to: \#{control.value}"
+      """
+      js: """
+        TextArea({value:'The text goes here', change: function(control){
+          alert("The textarea changed to: " + control.value);
+        }});
       """
     }
     {
       name: 'Creating a Template'
-      value: """
+      cs: """
         # Define a simple template with a title and a content function
         # Create a template that takes data as input and outputs the page
         myTemplate = (data) ->
           html ->
             head ->
+              # Template the title
               title data.title
             body ->
               h1 data.header
+              # Template the content
               data.content()
 
         # Run the template
         myTemplate title:'My Title', header:'Creating a Template', content:->
           p 'Templates are just functions that call html, head and body. Presto, they just work!'
       """
+
+      # // Define a simple template with a title and a content function
+      # // Create a template that takes data as input and outputs the page
+      # myTemplate = function(data){
+      #   html(function(){
+      #     head(function(){
+      #       // Tempate the title
+      #       title(data.title);
+      #     });
+      #     body(function(){
+      #       h1(data.header);
+
+      #       // Template the content
+      #       data.content();
+      #     });
+      #   });
+      # };
+
+      # // Run the template
+      # myTemplate({ title:'My Title', header:'Creating a Template', content:function(){
+      #   p('Templates are just functions that call html, head and body. Presto, they just work!');
+      # }});
+
+      js: """
+        // Define a simple template with a title and a content function
+        // Create a template that takes data as input and outputs the page
+        myTemplate = function(data){ return [
+          html,
+            [head,
+              [title, data.title]
+            ],
+            [body,
+              [h1, data.header],
+              // Template the content
+              data.content
+            ]
+          ];
+        }
+        // Run the template
+        myTemplate({ title:'My Title', header:'Creating a Template', content:function(){
+          p('Templates are just functions that call html, head and body. Presto, they just work!');
+        }});
+      """
     }
     {
       name: 'Create a Partial'
-      value: """
+      cs: """
         # Define a partial that creates a twitter link for a user
         _userTwitterLink = (user) ->
           a "Follow \#{user.name} on Twitter",
@@ -168,14 +263,35 @@ module.exports = [
         p 'Partials are just functions. This function turns a user into a Twitter link:'
 
         for user in users
-          p ->
-            # Use the partial!
-            _userTwitterLink user
+          # Use the partial!
+          p _userTwitterLink user
+      """
+      js: """
+        // Define a partial that creates a twitter link for a user
+        _userTwitterLink = function(user){
+          a("Follow " + user.name + " on Twitter", {
+            href: "http://twitter.com/" + user.twitter});
+        };
+        // Define some users
+        users = [
+          {name:'Evan', twitter:'evanmoran'},
+          {name:'James', twitter:'iamthelawton'},
+          {name:'Laura', twitter:'savinola'}
+        ];
+
+        p('Partials are just functions. This function turns a user into a Twitter link:');
+
+        var user;
+        for(var ix = 0; ix < users.length; ix++){
+          user = users[ix];
+          // Use the partial!
+          p(_userTwitterLink(user));
+        }
       """
     }
     {
-      name: 'Tables with Loops'
-      value: """
+      name: 'Create a Table'
+      cs: """
         table ->
           tbody ->
             tr ->
@@ -185,15 +301,33 @@ module.exports = [
               td 'A4'
             tr ->
               # Loops work as you would hope!
-              for i in ['B1','B2','B3','B4']
-                td i
-
-
+              for cell in ['B1','B2','B3','B4']
+                td cell
+      """
+      js: """
+        table(
+          [tbody,
+            [tr,
+              [td, 'A1'],
+              [td, 'A2'],
+              [td, 'A3'],
+              [td, 'A4']
+            ],
+            function(){
+              var cells =  ['B1','B2','B3','B4'], cell;
+              for(var ix = 0; ix < cells.length; ix++) {
+                cell = cells[ix];
+                td(cell);
+              }
+            }
+          ]
+        ];
+      ]);
       """
     }
     {
-      name: 'Table with a Partial'
-      value: """
+      name: 'Create a Table Partial'
+      cs: """
         # Create a partial that creates a table from its
         # header (a list of strings) and its rows (a list of lists)
         makeTable = (header, rows) ->

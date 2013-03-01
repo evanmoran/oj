@@ -351,7 +351,6 @@ watchFile = (filePath, includeDir, options = {}) ->
 # Watch a directory of files for new additions.
 # This method does not recurse as it is called from methods that do (compileDir)
 watchDir = (dir, includeDir, options) ->
-  console.log "watchDir: #{__filename}: 358"
 
   # Short circut if already watching this directory
   return if isWatched dir
