@@ -21,6 +21,37 @@ module.exports = [
 
     }
     {
+      name: 'Markdown'
+      cs: """
+        # Use the markdown plugin
+        use require 'oj-markdown'
+
+        # The plugin enables this function:
+        markdown \"\"\"
+          # Markdown
+
+          It is _so easy_ to use markdown with oj:
+
+          1. Just `use` the plugin
+          2. Then call the `markdown` function!
+        \"\"\"
+      """
+      js: """
+        // Use the markdown plugin
+        use(require('oj-markdown'));
+
+        // The plugin enables this function:
+        markdown(
+          "# Markdown                                  \\n" +
+          "                                            \\n" +
+          "It is _so easy_ to use markdown with oj:    \\n" +
+          "                                            \\n" +
+          "1. Just `use` the plugin                    \\n" +
+          "2. Then call the `markdown` function!       \\n"
+        );
+      """
+    }
+    {
       name: 'Defining ID and Class'
       cs: """
         # Define id with 'id'
@@ -303,6 +334,11 @@ module.exports = [
               # Loops work as you would hope!
               for cell in ['B1','B2','B3','B4']
                 td cell
+
+          css
+            td:
+              border: '1px solid darkorange'
+              padding: 10
       """
       js: """
         table(
@@ -314,15 +350,19 @@ module.exports = [
               [td, 'A4']
             ],
             function(){
-              var cells =  ['B1','B2','B3','B4'], cell;
+              var cells = ['B1','B2','B3','B4'];
               for(var ix = 0; ix < cells.length; ix++) {
-                cell = cells[ix];
-                td(cell);
+                td(cells[ix]);
               }
             }
           ]
-        ];
-      ]);
+        );
+        css({
+          td:{
+            border: '1px solid darkorange',
+            padding: 10
+          }
+        });
       """
     }
     {

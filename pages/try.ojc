@@ -1,5 +1,7 @@
 _ = require 'underscore'
 
+oj.use require 'oj-markdown'
+
 siteCSS = require './_styles'
 _snippet = require './_snippet'
 _editor = require './_editor'
@@ -21,8 +23,9 @@ module.exports =
 
     body ->
 
-      _editor """div 'click me', click: -> alert 'it works!'
-      """
+      _editor ""
+      # """div 'click me', click: -> alert 'it works!'
+      # """
 
       # """
       #   h1 'OJ: Live Editor'
