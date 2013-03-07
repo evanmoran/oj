@@ -261,11 +261,6 @@ compileFile = (filePath, includeDir, options = {}) ->
   if mkdirp.sync dirOut
     verbose 3, "mkdir #{dirOut}"
 
-  console.log "dirOut: ", dirOut
-  console.log "fileOut: ", fileOut
-  console.log "path.resolve process.cwd(), dirOut: ", path.resolve process.cwd(), dirOut
-
-
   # Write file
   fs.writeFileSync fileOut, html
 
@@ -462,7 +457,6 @@ fullPaths = (relativePaths, dir) ->
 
 # commonPath: Given a list of full paths. Find the common root
 commonPath = (paths, seperator = '/') ->
-  console.log "commonPath paths: ", paths
   if paths.length == 1
     return path.dirname paths[0]
 
@@ -852,20 +846,11 @@ _requireCacheToString = (cache, filePath, isDebug) ->
   # Calculate common path root between all cached files
   commonDir = commonPath _.keys cache.files
 
-  console.log "commonDir: ", commonDir
-
-  console.log "path.dirname filePath: ", path.dirname filePath
-  console.log "path.relative commonDir, path.dirname filePath: ", path.relative commonDir, path.dirname filePath
   # Determine directory for client using common path
   clientDir = _escapeSingleQuotes '/' + path.relative commonDir, path.dirname filePath
 
-  console.log "clientDir: ", clientDir
   # Determine file for client given the above directory
   clientFile = _escapeSingleQuotes '/' + basenameForExtensions filePath, ['.ojc', '.oj', '.coffee', '.js']
-
-  console.log "clientFile: ", clientFile
-
-  console.log "path.join clientDir, clientFile: ", path.join clientDir, clientFile
 
   # Maps from moduleDir -> moduleName -> moduleMain such that
   # the file path is: moduleDir/moduleName/moduleMain
@@ -915,7 +900,6 @@ _requireCacheToString = (cache, filePath, isDebug) ->
   #     M = Module cache
 
   # Client side function to run module and cache result
-    #console.log("run: file:", f);
   _run = minifySimpleJSUnless isDebug, """
   function run(f){
       if(R[f] != null)
@@ -930,7 +914,6 @@ _requireCacheToString = (cache, filePath, isDebug) ->
 """
 
   # Client side function to find module
-    #console.log('find: module:', m, ' file:', f);
   _find = minifySimpleJSUnless isDebug, """
   function find(m,f){
       var r, dir, dm, ext, ex, i;

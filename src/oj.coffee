@@ -943,7 +943,15 @@ _compileAny = (ojml, options) ->
 
     when 'string'
       options.html?.push ojml
-      options.dom?.appendChild document.createTextNode ojml
+      if ojml.length > 0 and ojml[0] == '<'
+        root = document.createElement 'div'
+        root.innerHTML = ojml
+        els = root.childNodes
+        options.dom?.appendChild root
+        # for el in els
+        #   options.dom?.appendChild el
+      else
+        options.dom?.appendChild document.createTextNode ojml
 
     when 'boolean', 'number'
       options.html?.push "#{ojml}"
