@@ -147,7 +147,7 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Default some values
   isDebug = options.debug or false
   includedModules = options.modules or []
-  includedModules = includedModules.concat ['oj', 'path']
+  includedModules = includedModules.concat ['oj']
   rootDir = options.root or path.dirname filePath
 
   throw new Error('oj: root is not a directory') unless isDirectory rootDir
@@ -217,7 +217,7 @@ compileFile = (filePath, includeDir, options = {}) ->
     html = results.html
     css = results.css
   catch eCompile
-    oj.error "runtime error in #{filePath}: #{eCompile.message}"
+    error "runtime error in #{filePath}: #{eCompile.message}"
     return
 
   # Build cache
@@ -230,19 +230,18 @@ compileFile = (filePath, includeDir, options = {}) ->
   scriptHtml = _requireCacheToString cache, filePath, isDebug
 
   if !results.tags.html
-    oj.error "validation error #{filePath}: <html> tag is missing"
+    error "validation error #{filePath}: <html> tag is missing"
     return
 
   else if !results.tags.head
-    oj.error "validation error #{filePath}: <head> tag is missing"
+    error "validation error #{filePath}: <head> tag is missing"
     return
 
   else if !results.tags.body
-    oj.error "validation error #{filePath}: <body> tag is missing"
+    error "validation error #{filePath}: <body> tag is missing"
     return
 
   # TODO: Should we check for doctype?
-
   # Insert script before </body> or before </html> or at the end
   scriptIndex = html.lastIndexOf '</body>'
   html = _insertAt html, scriptIndex, scriptHtml
@@ -254,13 +253,18 @@ compileFile = (filePath, includeDir, options = {}) ->
       styleIndex = html.lastIndexOf '</head>'
       html = _insertAt html, styleIndex, styleHtml
     catch eCSS
-      oj.error "css minification error #{filePath}: #{eCSS.message}"
-      oj.error "generated css: #{css}"
+      error "css minification error #{filePath}: #{eCSS.message}"
+      error "generated css: #{css}"
       return
   # Create directory
   dirOut = path.dirname fileOut
   if mkdirp.sync dirOut
     verbose 3, "mkdir #{dirOut}"
+
+  console.log "dirOut: ", dirOut
+  console.log "fileOut: ", fileOut
+  console.log "path.resolve process.cwd(), dirOut: ", path.resolve process.cwd(), dirOut
+
 
   # Write file
   fs.writeFileSync fileOut, html
@@ -420,6 +424,12 @@ verbose = (level, message, color = 'reset') ->
   if verbosity >= level
     console.log oj.codes[color] + "#{spaces(4 * (level-1))}#{message}" + oj.codes.reset
 
+error = (message) ->
+  red = oj.codes?.red ? ''
+  reset = oj.codes?.red ? ''
+  console.error "#{red}#{message}#{reset}"
+  return
+
 # File helpers
 # ------------------------------------------------------------------------------
 
@@ -452,6 +462,10 @@ fullPaths = (relativePaths, dir) ->
 
 # commonPath: Given a list of full paths. Find the common root
 commonPath = (paths, seperator = '/') ->
+  console.log "commonPath paths: ", paths
+  if paths.length == 1
+    return path.dirname paths[0]
+
   common = paths[0].split seperator
   ixCommon = common.length
   for p in paths
@@ -561,13 +575,6 @@ ls = (paths, options, cb) ->
 
 readFileSync = (filePath) ->
   fs.readFileSync filePath, 'utf8'
-
-_commonPath = (moduleName, moduleParentPaths) ->
-  return null unless moduleName? and _.isArray moduleParentPaths
-  for p in moduleParentPaths
-    if _startsWith moduleName, p + '/'
-      return p + '/'
-  null
 
 # Timing helpers
 # ------------------------------------------------------------------------------
@@ -845,11 +852,20 @@ _requireCacheToString = (cache, filePath, isDebug) ->
   # Calculate common path root between all cached files
   commonDir = commonPath _.keys cache.files
 
+  console.log "commonDir: ", commonDir
+
+  console.log "path.dirname filePath: ", path.dirname filePath
+  console.log "path.relative commonDir, path.dirname filePath: ", path.relative commonDir, path.dirname filePath
   # Determine directory for client using common path
   clientDir = _escapeSingleQuotes '/' + path.relative commonDir, path.dirname filePath
 
+  console.log "clientDir: ", clientDir
   # Determine file for client given the above directory
   clientFile = _escapeSingleQuotes '/' + basenameForExtensions filePath, ['.ojc', '.oj', '.coffee', '.js']
+
+  console.log "clientFile: ", clientFile
+
+  console.log "path.join clientDir, clientFile: ", path.join clientDir, clientFile
 
   # Maps from moduleDir -> moduleName -> moduleMain such that
   # the file path is: moduleDir/moduleName/moduleMain
@@ -917,16 +933,14 @@ _requireCacheToString = (cache, filePath, isDebug) ->
     #console.log('find: module:', m, ' file:', f);
   _find = minifySimpleJSUnless isDebug, """
   function find(m,f){
-      var r, p, dir, dm, ext, ex, i;
+      var r, dir, dm, ext, ex, i;
 
       if (F[m] && !m.match(/\\//)) {
         return m;
       }
 
-      p = require('path');
-
       if (!!m.match(/\\//)) {
-        r = p.resolve(f, p.join(p.dirname(f), m));
+        r = oj.__.pathResolve(f, oj.__.pathJoin(oj.__.pathDirname(f), m));
         ext = ['.ojc','.oj','.coffee','.js','.json'];
         for(i = 0; i < ext.length; i++){
           ex = ext[i];
@@ -934,14 +948,14 @@ _requireCacheToString = (cache, filePath, isDebug) ->
             return r+ex;
         }
       } else {
-        dir = p.dirname(f);
+        dir = oj.__.pathDirname(f);
         while(true) {
-          dm = p.join(dir, 'node_modules');
+          dm = oj.__.pathJoin(dir, 'node_modules');
           if(M[dm] && M[dm][m])
-            return p.join(dm, m, M[dm][m]);
+            return oj.__.pathJoin(dm, m, M[dm][m]);
           if(dir == '/')
             break;
-          dir = p.resolve(dir, '..');
+          dir = oj.__.pathResolve(dir, '..');
         }
       }
       throw new Error("module not found (" + m + ")");
@@ -951,7 +965,7 @@ _requireCacheToString = (cache, filePath, isDebug) ->
   return """
 <script>
 
-// oj v#{oj.version}
+// Generated with oj v#{oj.version}
 (function(){ var F = {}, M = {}, R = {}, P, G, RR;
 
 #{_modules}#{_files}#{_native}

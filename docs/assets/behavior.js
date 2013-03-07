@@ -124,16 +124,16 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "_.create",
-                "slug": "-create"
+                "title": "Utility: Iteration",
+                "slug": "utility-iteration"
               },
               "depth": 2
             }, {
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "Utility: Iteration",
-                "slug": "utility-iteration"
+                "title": "Path Helpers",
+                "slug": "path-helpers"
               },
               "depth": 2
             }, {
@@ -308,6 +308,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
+                "title": "oj.enum",
+                "slug": "ojenum"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
                 "title": "oj.View",
                 "slug": "ojview"
               },
@@ -348,6 +356,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
+                "title": "oj.TextArea",
+                "slug": "ojtextarea"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
                 "title": "oj.List",
                 "slug": "ojlist"
               },
@@ -358,6 +374,22 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "level": 2,
                 "title": "oj.Link",
                 "slug": "ojlink"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.sandbox",
+                "slug": "ojsandbox"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.use",
+                "slug": "ojuse"
               },
               "depth": 2
             }

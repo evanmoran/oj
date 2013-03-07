@@ -67,12 +67,6 @@ _readyOrLoad = (fn) ->
       fn()
   return
 
-oj.error = (message) ->
-  red = oj.codes?.red ? ''
-  reset = oj.codes?.red ? ''
-  console.error "#{red}#{message}#{reset}"
-  return
-
 # oj.ready
 # -----------------------------------------------------------------------------
 _readyQueue = queue:[], loaded:false
@@ -132,11 +126,8 @@ if require.extensions
 
   stripBOM = (c) -> if c.charCodeAt(0) == 0xFEFF then (c.slice 1) else c
 
-  isCS = (code) -> -1 != code.search /(^\s*#|\n\s*#|-\>)/
-  isJS = (code) -> -1 != code.search /var|function|((^|\n)\s*\/\/)/
-
   wrapJS = (code) ->
-    "(function(){with(require('oj')){#{code}}}).call(this);"
+    "(function(){with(require('oj').sandbox){#{code}}}).call(this);"
 
   wrapCSMessage = (message, filepath) ->
     "#{oj.codes?.red}coffee-script error in #{filepath}: #{message}#{oj.codes?.reset}"
@@ -208,6 +199,27 @@ oj.isBackbone = (obj) -> !!(obj and obj.on and obj.off and obj.trigger)
 oj.isOJ = (obj) -> !!(obj?.isOJ)
 oj.isArguments = (obj) -> toString.call(obj) == '[object Arguments]'
 
+# typeOf: Mimic behavior of built-in typeof operator and integrate jQuery, Backbone, and OJ types
+oj.typeOf = (any) ->
+
+  return 'null' if any == null
+  t = typeof any
+  if t == 'object'
+    if oj.isArray any               then t = 'array'
+    else if oj.isOJ any             then t = any.type
+    else if oj.isRegEx any          then t = 'regexp'
+    else if oj.isDate any            then t = 'date'
+    else if oj.isDOMElement any     then t = 'element'
+    else if oj.isDOMText any        then t = 'text'
+    else if oj.isDOMAttribute any   then t = 'attribute'
+    else if oj.isBackbone any       then t = 'backbone'
+    else if oj.isjQuery any         then t = 'jquery'
+    else                            t = 'object'
+  t
+
+# Determine if obj is a vanilla object
+oj.isObject = (obj) -> (oj.typeOf obj) == 'object'
+
 # Utility: Helpers
 # ------------------------------------------------------------------------------
 # Some are from [underscore.js](http://underscorejs.org/).
@@ -225,7 +237,7 @@ _.identity = (v) -> v
 _.property = (obj, options = {}) ->
   # _.defaults options, configurable: false
   Object.defineProperty obj, options
-_.has = (obj, key) -> Object.prototype.hasOwnProperty.call(obj, key)
+_.has = (obj, key) -> ObjP.hasOwnProperty.call(obj, key)
 _.keys = Object.keys || (obj) ->
   throw 'Invalid object' if obj != Object(obj)
   keys = [];
@@ -281,7 +293,6 @@ _.reduce = (obj = [], iterator, memo, context) ->
         return result
       self
 
-
 _.sortedIndex = (array, obj, iterator = _.identity) ->
   low = 0
   high = array.length;
@@ -309,43 +320,6 @@ _.toArray = (obj) ->
   return obj.toArray() if obj.toArray and oj.isFunction(obj.toArray)
   _.values obj
 
-# _.create
-# ------------------------------------------------------------------------------
-# Abstract Object.create for older browsers
-#
-# Define this once to improve performance in older browsers
-F = ->
-_.create =
-  # Check for existing native / shimmed Object.create
-  if typeof Object.create == "function"
-    # found native/shim, so use it
-    Object.create
-
-  # Based on Crockford shim
-  else
-    (o) ->
-      # set the prototype of the function
-      # so we will get `o` as the prototype
-      # of the new object instance
-      F.prototype = o
-
-      # create a new object that inherits from
-      # the `o` parameter
-      child = new F()
-
-      # clean up just in case o is really large
-      F.prototype = null
-
-      # send it back
-      child
-
-_.getPrototypeOf =
-  if typeof Object.getPrototypeOf == "function"
-    Object.getPrototypeOf
-  else
-    (o) -> o.proto || o.constructor.prototype
-
-
 # Determine if object or array is empty
 _.isEmpty = (obj) ->
   return obj.length == 0 if oj.isArray obj
@@ -354,35 +328,12 @@ _.isEmpty = (obj) ->
       return false
   true
 
-# typeOf: Mimic behavior of built-in typeof operator and integrate jQuery, Backbone, and OJ types
-oj.typeOf = (any) ->
-
-  return 'null' if any == null
-  t = typeof any
-  if t == 'object'
-    if oj.isArray any               then t = 'array'
-    else if oj.isOJ any             then t = any.type
-    else if oj.isRegEx any          then t = 'regexp'
-    else if oj.isDate any            then t = 'date'
-    else if oj.isDOMElement any     then t = 'element'
-    else if oj.isDOMText any        then t = 'text'
-    else if oj.isDOMAttribute any   then t = 'attribute'
-    else if oj.isBackbone any       then t = 'backbone'
-    else if oj.isjQuery any         then t = 'jquery'
-    else                            t = 'object'
-  t
-
-# Determine if obj is a vanilla object
-oj.isObject = (obj) -> (oj.typeOf obj) == 'object'
-
 _.clone = (obj) ->
   # TODO: support cloning OJ instances
   # TODO: support options, deep: true
   return obj unless oj.isObject obj
   if oj.isArray obj then obj.slice() else _.extend {}, obj
 
-oj.enum = (name, args) ->
-  throw 'NYI'
 
 # Utility: Iteration
 # ------------------------------------------------------------------------
@@ -502,6 +453,89 @@ _.uniqueSort = (array, isSorted = false) ->
 
 _.uniqueSortedUnion = (array, array2) ->
   _.uniqueSort (array.concat array2)
+
+# Path Helpers
+# ------------------------------------------------------------------------------
+# Based on node.js/path module
+# All we need is join,resolve,dirname
+
+pathNormalizeArray = (parts, allowAboveRoot) ->
+  up = 0
+  i = parts.length - 1
+  while i >= 0
+    last = parts[i]
+    if last == '.'
+      parts.splice i, 1
+    else if last == '..'
+      parts.splice i, 1
+      up++
+    else if up
+      parts.splice i, 1
+      up--
+    i--
+
+  if allowAboveRoot
+    while up--
+      parts.unshift '..'
+
+  parts
+
+pathSplitRe = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/
+pathSplit = (filename) ->
+  result = pathSplitRe.exec filename
+  [result[1] or '', result[2] or '', result[3] or '', result[4] or '']
+
+_.pathResolve = ->
+  resolvedPath = ''
+  resolvedAbsolute = false
+  i = arguments.length-1
+  while i >= -1 and !resolvedAbsolute
+    path = if (i >= 0) then arguments[i] else process.cwd()
+    if (typeof path != 'string') or !path
+      continue
+    resolvedPath = path + '/' + resolvedPath
+    resolvedAbsolute = path.charAt(0) == '/'
+    i--
+  resolvedPath = pathNormalizeArray(resolvedPath.split('/').filter((p) ->
+    return !!p
+  ), !resolvedAbsolute).join('/')
+
+  ((if resolvedAbsolute then '/' else '') + resolvedPath) or '.'
+
+_.pathNormalize = (path) ->
+  isAbsolute = path.charAt(0) == '/'
+  trailingSlash = path.substr(-1) == '/'
+
+  # Normalize the path
+  path = pathNormalizeArray(path.split('/').filter((p) ->
+    !!p
+  ), !isAbsolute).join('/')
+
+  if !path and !isAbsolute
+    path = '.'
+
+  if path and trailingSlash
+    path += '/'
+
+  (if isAbsolute then '/' else '') + path
+
+_.pathJoin = ->
+  paths = Array.prototype.slice.call arguments, 0
+  _.pathNormalize(paths.filter((p, index) ->
+    p and typeof p == 'string'
+  ).join('/'))
+
+_.pathDirname = (path) ->
+  result = pathSplit path
+  root = result[0]
+  dir = result[1]
+  if !root and !dir
+    # No dirname whatsoever
+    return '.'
+  if dir
+    # It has a dirname, strip trailing slash
+    dir = dir.substr 0, dir.length - 1
+  root + dir
 
 # oj.addMethod
 # ------------------------------------------------------------------------------
@@ -625,7 +659,6 @@ _.argumentsAppend = (arg) ->
 #                       'c'  will map to 'class'
 #                       'fontSize' will map to 'font-size'
 #                       'borderRadius' will map to 'moz-border-radius', etc.
-
 
 oj.tag = (name, args...) ->
 
@@ -1265,6 +1298,11 @@ _.optionsUnion = (argList) ->
       list.push v
   options: obj, args: list
 
+# oj.enum
+# ------------------------------------------------------------------------
+oj.enum = (name, args) ->
+  throw 'NYI'
+
 # oj.View
 # ------------------------------------------------------------------------------
 # Properties
@@ -1512,6 +1550,23 @@ oj.TextArea = oj.type 'TextArea'
 # oj.Link
 # ------------------------------------------------------------------------------
 # oj.Link = class Link inherits Control
+
+# oj.sandbox
+# ------------------------------------------------------------------------------
+# The sandbox is a readonly version of oj that is exposed to the user
+oj.sandbox = {}
+for key in _.keys oj
+  unless key[0] == '_'
+    oj.addProperty oj.sandbox, key, value:oj[key], writable:false
+
+# oj.use
+# ------------------------------------------------------------------------------
+# Include a plugin of oj
+
+oj.use = (plugin) ->
+  oj[plugin.name] = plugin
+  oj.addProperty oj.sandbox, plugin.name, value:plugin, writable: false
+
 
 
 

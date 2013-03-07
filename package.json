@@ -3,7 +3,7 @@
   "version": "0.0.7",
   "main": "src",
   "description": "A unified templating language for the people. Thirsty people.",
-  "homepage": "http://github.com/evanmoran/oj/",
+  "homepage": "http://ojjs.org",
   "keywords": [
     "templating",
     "html",
@@ -33,6 +33,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/evanmoran/gg.git"
+    "url": "git://github.com/ojjs/oj.git"
   }
 }
