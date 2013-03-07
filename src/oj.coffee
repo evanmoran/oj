@@ -1556,16 +1556,26 @@ oj.TextArea = oj.type 'TextArea'
 # The sandbox is a readonly version of oj that is exposed to the user
 oj.sandbox = {}
 for key in _.keys oj
-  unless key[0] == '_'
+  if key.length > 0 and key[0] != '_'
     oj.addProperty oj.sandbox, key, value:oj[key], writable:false
 
 # oj.use
 # ------------------------------------------------------------------------------
 # Include a plugin of oj
 
-oj.use = (plugin) ->
-  oj[plugin.name] = plugin
-  oj.addProperty oj.sandbox, plugin.name, value:plugin, writable: false
+oj.use = (plugin, settings = {}) ->
+  throw new Error('oj.use: function expected for first argument') unless oj.isFunction plugin
+  throw new Error('oj.use: object expected for second argument') unless oj.isObject settings
+
+  # Call plugin to gather extension map
+  pluginMap = plugin oj, settings
+
+  # Extend all properties
+  for name,value of pluginMap
+    oj[name] = value
+    # Add to sandbox
+    oj.addProperty oj.sandbox, name, value:value, writable: false
+
 
 
 
