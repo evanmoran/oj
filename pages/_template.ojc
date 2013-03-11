@@ -1,0 +1,86 @@
+_ = require 'underscore'
+
+# Creates several parts
+# parts.title, parts.header, parts.footer, parts.left, parts.right
+
+_styles = require './_styles'
+
+module.exports = _template = (parts) ->
+  html ->
+    head ->
+      title parts.title
+
+      if _.isArray parts.styles
+        for s in parts.styles
+          link url: "styles/#{s}"
+
+      if _.isArray parts.scripts
+        for s in parts.scripts
+          script url: "scripts/#{s}"
+
+      parts.head?()
+
+      _styles()
+
+    body ->
+      parts.body?()
+      div c:'orange-corner left'
+      div c:'orange-corner right'
+
+      div c:'all gg', ->
+
+        div c:'row', ->
+          header c:'gg100', ->
+            _header()
+
+          div c:'middle gg100', ->
+            div c:'row', ->
+              div c:'left gg25', ->
+                parts?.left?()
+
+              div c:'right gg75', ->
+                parts?.right?()
+
+          footer c:'gg100', ->
+            _footer()
+
+  orangeSize = '75px'
+  css
+    '.orange-corner':
+      width: orangeSize
+      height: orangeSize
+      position: 'absolute'
+      top: '0px'
+      backgroundSize: 'contain'
+    '.orange-corner.left':
+      backgroundImage:'url(media/orange_left.png)'
+      left:'0px'
+
+    '.orange-corner.right':
+      backgroundImage:'url(media/orange_right.png)'
+      right:'0px'
+
+_header = ->
+
+  div c:'row', ->
+    div c:'gg25', ->
+      a c:'header-logo', href: 'index.html'
+
+    div c:'gg75', (->
+      a 'Learn', c:'header-option', href:'learn.html'
+      a 'Docs', c:'header-option', href:'docs.html'
+      a 'Try', c:'header-option', href:'try.html'
+    ), style:
+      margin: '20px 0'
+
+  css
+    header:
+      marginBottom: '0px !important'
+
+    '.header-logo':
+      width: '100%'
+      height: '50px'
+      background: 'url(media/oj_logo.png) no-repeat center'
+      display:'inline-block'
+
+_footer = ->

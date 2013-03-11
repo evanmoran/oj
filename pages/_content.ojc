@@ -1,0 +1,29 @@
+
+# From content format, create
+module.exports =
+  renderTOC: (data) ->
+    for section,ix in data
+      tocSection section, ix
+
+  renderContent: (data) ->
+    for section,ix in data
+      contentSection section, ix
+
+# Create table of contents
+tocSection = (section, ix) ->
+  a "#{section.section}", c:'toc-section', href:"\##{section.anchor}"
+  if section.items?
+    for item in section.items
+      a "#{item.name}", c:'toc-item', href:"\##{section.anchor}"
+
+# Create content of page
+contentSection = (section, ix) ->
+  h1 section.section, id: section.anchor
+  section?.content()
+  if section.items?
+    for item, ixItem in section.items
+      contentItem item, ixItem
+
+contentItem = (item, ix) ->
+  h2 item.name, id:"#{item.anchor}"
+  item.content?()

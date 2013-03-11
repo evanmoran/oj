@@ -3,50 +3,72 @@ module.exports = ->
   css
     h1:
       fontFamily: 'Lucida Grande, Tahoma'
-      fontSize: '24px'
+      fontSize: '25px'
       fontWeight: 'lighter'
-      marginTop: '6px'
+      marginTop: '40px'
       marginBottom: '12px'
-      textTransform: 'uppercase'
+      paddingBottom: '6px'
       color: '#666'
-      letterSpacing: '0.2em'
+      borderBottom:'2px solid #FFD36B'
+
+    'h1:first-child':
+      marginTop: '0px'
+
     h2:
       fontFamily: 'Lucida Grande, Tahoma'
-      fontSize: '18px'
+      fontSize: '20px'
       fontWeight: 'lighter'
-      marginTop: '6px'
-      marginBottom: '9px'
-      textTransform: 'uppercase'
-      color: '#666'
-      letterSpacing: '0.2em'
-    h3:
-      fontFamily: 'Lucida Grande, Tahoma'
-      fontSize: '14px'
-      fontWeight: 'lighter'
-      marginTop: '3px'
-      marginBottom: '3px'
-      textTransform: 'uppercase'
-      color: '#666'
-      letterSpacing: '0.2em'
-    h4:
-      fontFamily: 'Lucida Grande, Tahoma'
-      fontSize: '12px'
-      fontWeight: 'lighter'
-      marginTop: '3px'
-      marginBottom: '3px'
-      color: '#666'
-      letterSpacing: '0.2em'
+      marginTop: '10px'
+      marginBottom: '6px'
+      color: '#444'
+
+    a:
+      color: '#E78B00'
+      textDecoration:'none'
+
+    'a:hover':
+      textDecoration:'underline'
+
     p:
+      color: '#444444'
       fontFamily: 'Lucida Grande, Tahoma'
       fontSize: '14px'
-      fontWeight: 'lighter'
-      marginBottom: '12px'
-      color: '#222'
-      letterSpacing: '0.5 em'
-    ul:
-      margin: '0px 0px 22px 30px'
-    li:
-      margin: '0px 0px 4px 0px'
+      margin: '16px 0'
+      lineHeight: '20px'
+
+    pre:
+      border:'2px solid #FFD36B'
+      backgroundColor: '#FEFAF3'
+      padding: '8px'
+
+    '.header-option':
+      fontFamily: 'Helvetica, Arial, Tahoma'
+      color: '#E98C00'
+      fontSize:20
+      fontWeight: '100'
+      marginRight:25
+
+    '.toc-section':
+      backgroundColor: '#FF9900'
+      padding: '8px'
+      display:'block'
+      color: 'white'
+      textTransform: 'uppercase'
+      fontFamily: 'Lucida Grande, Tahoma'
+      fontSize: '13px'
+      margin: '0 0 15px 0'
+
+    # '.toc-section:hover':
+    #   backgroundColor: '#FFDC73'
+
+    '.toc-item':
+      display:'block'
+      backgroundColor: '#FEFAF3'
+      fontSize: '18px'
+      padding: '4px 0 4px 15px'
+
+    '.left':
+      marginBottom: '10px'
 
     textarea:
       width:'100%'

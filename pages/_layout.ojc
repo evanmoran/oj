@@ -1,0 +1,30 @@
+
+# Creates several parts
+# parts.title, parts.header, parts.footer, parts.left, parts.right
+
+module.exports = _layout = (parts) ->
+  html ->
+    head ->
+      title parts.title
+      link url:'styles/reset.css'
+      link url:'styles/gg.css'
+      script url: 'scripts/jquery.js'
+      script url: 'scripts/underscore.js'
+      script url: 'scripts/backbone.js'
+      script url:'scripts/coffee-script.js'
+      script url: 'scripts/ace/ace.js'
+
+    body c:'gg', ->
+      header c:'gg100', ->
+        parts?.header?()
+
+      div c:'middle gg100', ->
+        div c:'row', ->
+          div c:'left gg25', ->
+            parts?.left?()
+
+          div c:'right gg75', ->
+            parts?.right?()
+
+      footer c:'gg100', ->
+        parts?.footer?()
