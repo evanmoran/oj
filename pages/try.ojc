@@ -18,6 +18,8 @@ module.exports =
       link url:'styles/reset.css'
       script url: 'scripts/jquery.js'
       script url:'scripts/coffee-script.js'
+      script url: 'scripts/underscore.js'
+      script url: 'scripts/backbone.js'
       script url: 'scripts/ace/ace.js'
 
       meta charset:'UTF-8'
@@ -25,9 +27,16 @@ module.exports =
 
     body ->
 
-      _editor ""
-      # """div 'click me', click: -> alert 'it works!'
-      # """
+      _editor """
+        CheckBox value:1, change: (control) ->
+          alert "The checkbox changed to: \#{control.value}"
+      """
+      ###"""
+        Sidebar = Backbone.Model.extend
+          promptColor: ->
+            cssColor = prompt("Please enter a CSS color:")
+            @set({color: cssColor})
+      """###
 
       # """
       #   h1 'OJ: Live Editor'

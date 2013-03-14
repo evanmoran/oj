@@ -44,12 +44,16 @@ module.exports = ->
     right: ->
       _content.renderContent data
 
+    body: ->
+    head: ->
 data = [
   {
     section: 'Introduction'
     anchor: 'intro'
     content: ->
-      p 'This is a great introduction. Indeed. This is the best one yet.'
+      markdown """
+        This is the full documentation for OJ. The goal is to have all topics be explained clearly with examples. If you see anything missing or confusing please add an [issue](https://github.com/ojjs/oj/issues). If you are feeling particularly helpful send a [pull request](https://github.com/ojjs/oj)!
+      """
   }
   {
     section: 'Installation'
@@ -68,10 +72,6 @@ data = [
 
             sudo apt-get install nodejs npm
 
-        Install `node` on Windows:
-
-            ??? =) ???
-
         Finally install `oj` with `npm`:
 
             npm install -g oj
@@ -89,7 +89,29 @@ data = [
         * `.oj` is javascript
         * `.ojc` is coffee-script
 
-        The `oj` command uses node's extension system to allow node to understand these files in a first class way. When they are found they will automatically give your code access to what is in oj.
+        The `oj` command uses node's extension system to allow node to understand these files using its standard `require` system. When they are required they will automatically give your code access to what is in oj.
+
+        The files then must use node's `module.exports` to set what that module should return to `require`.
+
+        .oj example (javascript):
+
+            # hello.oj
+            module.exports = return [html,
+              [head],
+              [body,
+                [div 'Hello world']
+              ]
+            ]
+
+        .ojc example (coffee-script):
+
+            # hello.ojc
+            module.exports = ->
+              html ->
+                head ->
+                body ->
+                  div 'Hello world'
+
       """
   }
   {
@@ -97,7 +119,46 @@ data = [
     anchor: 'command-line'
     content: ->
       markdown """
-        Commandline usage goes here...
+        The `oj` command can build `.oj` and `.ojc` [file types])(file-types) into html files. Directories can be watched to automatically build entire websites. Specify the `--output` directory to redirect all output to a location such as `www`. When `--debug` is set files are not minified at all.
+
+        When building, `oj` recognizes files that start with `_` as a partial or a template. Since these are meant to be included with `require` instead of built standalone they are ignored. In addition `oj` skips files that start with `oj.`. These are assumed to be custom created oj types and functions that also will be required instead of built.
+
+        Usage:
+
+            oj [options] <file> <dir> ...
+
+            Options:
+
+              -h, --help               output usage information
+              -V, --version            output the version number
+              -d, --debug              Turn on debug output
+              -o, --output <dir>       Directory to output all files to
+              -r, --recurse            Recurse into directories
+              -m, --modules <modules>  List of modules to include
+              -v, --verbose <level>    Turn on verbose level 0-3
+              -w, --watch              Turn on watch mode
+
+        Defaults:
+
+            --output directory defaults to "./"
+            --debug defaults to off
+            --verbose defaults to 1
+
+
+        Examples
+
+            oj hello.oj                 # Outputs './hello.html'
+
+            oj -d -o www hello.oj       # Outputs debug './www/hello.html'
+
+            oj --watch -o www hello.oj  # Watch  './www/hello.html'
+
+            oj -o www pages             # Build pages directory to www
+
+            oj -r -o www pages          # Recursively build pages to www
+
+            oj -w -r -o www pages       # Recursively watch pages to www
+
       """
   }
   {
@@ -105,7 +166,7 @@ data = [
     anchor: 'creating-types'
     content: ->
       markdown """
-        Creating types...
+        This is what OJ is about. OJ includes its own way of creating new javascript types, with the `type` function. This function
       """
     items: [
       {
@@ -113,7 +174,6 @@ data = [
         anchor:'type-function'
         content: ->
           markdown """
-            The `type` function exists
           """
       }
       {
@@ -171,14 +231,37 @@ Layout Libraries
   Tabs
 
 Form Libraries
+  All Controls
+    model: <Backbone>, auto watch for change events
+    key:  <string>  stores key to change in model
+    value: <bool>
+    formName: control name value when posting (maps to attr: name, defaults to key)
+    formValue: control value value when posting a form (maps to attr:value, defaults to value.toString())
+
+    # Custom event triggered when the view OR the model changes
+    change: (control) ->
+    modelChange: (control) -> only when model changes
+    viewChange: (control) -> only when view changes
+
+    # Backbone event hooks
+    # Anything with a model should intercept this at construction
+    #   Save them to a temporary
+    #   And then bind them to the model on set (unbind on unset)
+    on:
+      change: ->
+      fetch: ->
+
+    # jquery event hooks set directly on root element
+    attr:
+      change:->
 
   Form
-  CheckBox
-  ListBox
-  TextBox
-  TextArea
-  FilterBox
-  SearchBox
+  CheckBox   change = check/uncheck
+  ListBox  change = select thing
+  TextBox  change = keyup
+  TextArea    change = keyup
+  FilterBox  change = select thing
+  SearchBox change = keyup
 
 Utility Libraries
 

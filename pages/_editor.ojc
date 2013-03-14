@@ -205,8 +205,11 @@ recompile = ->
       return
 
   catch eCompile
-    error '<b>oj error:</b> ' + eCompile.message
-    return
+    # error '<b>oj error:</b> ' + eCompile.message
+    console.log "failure"
+    throw eCompile
+
+    # return
 
   # Update html
   # setEditor editor_html_id, results.html

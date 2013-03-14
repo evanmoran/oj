@@ -30,10 +30,17 @@ module.exports = ->
       textDecoration:'underline'
 
     p:
-      color: '#444444'
+      color: '#444'
       fontFamily: 'Lucida Grande, Tahoma'
       fontSize: '14px'
       margin: '16px 0'
+      lineHeight: '20px'
+
+    li:
+      marginLeft: '20px'
+      color: '#444'
+      fontFamily: 'Lucida Grande, Tahoma'
+      fontSize: '14px'
       lineHeight: '20px'
 
     pre:
