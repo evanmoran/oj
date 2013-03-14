@@ -4,9 +4,9 @@
 # Server side component of oj and the default include of nodejs
 # Supports everything in oj plus building and watching files
 
-path = require 'path'
-fs = require 'fs'
-vm = require 'vm'
+# Include common
+for m in ['path', 'fs', 'vm']
+  global[m] = require m
 
 _ = require 'underscore'
 coffee = require 'coffee-script'
@@ -97,17 +97,23 @@ compilePath = (fullPath, options = {}) ->
 # ------------------------------------------------------------------------------
 
 compileDir = (dirPath, options = {}) ->
-  # Handle recursion and gather files to compile
-  lsOJ dirPath, options, (err, files, dirs) ->
+  # Handle recursion and gather files to watch and compile
+  lsWatch dirPath, options, (err, files, dirs) ->
 
     # Watch all directories if option is set
     if options.watch
       for d in dirs
         watchDir d, dirPath, options
 
-    # Compile all files
     for f in files
-      compileFile f, dirPath, options
+
+      # Compile and watch all pages
+      if isOJPage f
+        compileFile f, dirPath, options
+
+      # Watch files that aren't pages
+      else if options.watch
+        watchFile f, dirPath, options
 
 # nodeModulePaths: Determine node_module paths from a given path
 # Implementation is from node.js' Module._nodeModulePaths
@@ -176,11 +182,12 @@ compileFile = (filePath, includeDir, options = {}) ->
 
   # Hook require to intercept requires in oj files
   modules = {}
+  moduleParents = {}  # map file name to parent list
   hookCache = {}
   hookOriginalCache = {}
   _hookRequire modules, hookCache, hookOriginalCache
 
-  # Save require cache
+  # Save require cache to restore it later
   _saveRequireCache()
 
   # Catch messages thrown by requiring
@@ -209,6 +216,9 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Restore require cache
   _restoreRequireCache()
   _unhookRequire modules, hookCache, hookOriginalCache
+
+  # Watch needs records of file dependencies
+  _rememberModuleDependencies modules
 
   # Catch the messages thrown by compiling ojml
   try
@@ -279,14 +289,18 @@ compileFile = (filePath, includeDir, options = {}) ->
 watchCache = {}
 isWatched = (fullPath) ->
   watchCache[fullPath]?
+triggerWatched = (fullPath) ->
+  watchCache[fullPath]?._events?.change?()
+# Keep track of dependency tree of files
+watchParents = {}
 
 # watchFile
 # ------------------------------------------------------------------------------
 # Based in part on coffee-script's watch implementation
 # github.com/jashkenas/coffee-script/
 
-watchFile = (filePath, includeDir, options = {}) ->
 
+watchFile = (filePath, includeDir, options = {}) ->
   # Do nothing if this file is already watched
   return if isWatched filePath
 
@@ -304,40 +318,47 @@ watchFile = (filePath, includeDir, options = {}) ->
     else throw e
 
   timeLast = new Date(2000)
-  timeEpsilon = 2 # seconds
-  _compile = ->
+  timeEpsilon = 2 # milliseconds
 
-    # Ignore recompiles within epsilon time
-    timeNow = new Date()
-    return if (timeNow - timeLast) / 1000 < timeEpsilon
-
-    timeLast = timeNow
-
+  _onWatch = ->
     try
       clearTimeout compileTimeout
       compileTimeout = wait 0.025, ->
-        fs.stat filePath, (err, stats) ->
-          return _watchErr err if err
-          return _rewatch() if prevStats and stats.size is prevStats.size and
-            stats.mtime.getTime() is prevStats.mtime.getTime()
-          verbose 2, "updating file #{filePath}", 'yellow'
-          prevStats = stats
-          compileFile filePath, includeDir, options
+
+        # Ignore recompiles within epsilon time
+        timeNow = new Date()
+        return if (timeNow - timeLast) / 1000 < timeEpsilon
+        timeLast = timeNow
+
+        # Files that aren't pages should trigger their parents
+        if not isOJPage filePath
+          parents = watchParents[filePath]
+          if parents?
+            for parent in parents
+              triggerWatched parent
+
+        # Files that are pages should recompile
+        else
+          fs.stat filePath, (err, stats) ->
+            return _watchErr err if err
+            verbose 2, "updating file #{filePath}", 'yellow'
+            compileFile filePath, includeDir, options
+
     catch e
       verbose 1, 'unknown watch error on #{filePath}'
       _unwatch()
   try
     verbose 2, "watching file #{filePath}", 'yellow'
-    watcher = fs.watch filePath, _compile
+    watcher = fs.watch filePath, _onWatch
     watchCache[filePath] = watcher
   catch e
     _watchErr e
 
   _rewatch = ->
-    verbose 3, 'rewatch file #{filePath}', 'yellow'
+    verbose 3, "rewatch file #{filePath}", 'yellow'
     _unwatch()
 
-    watchCache[filePath] = watcher = fs.watch filePath, _compile
+    watchCache[filePath] = watcher = fs.watch filePath, _onWatch
 
   _unwatch = ->
     if isWatched filePath
@@ -351,7 +372,7 @@ watchFile = (filePath, includeDir, options = {}) ->
 # This method does not recurse as it is called from methods that do (compileDir)
 watchDir = (dir, includeDir, options) ->
 
-  # Short circut if already watching this directory
+  # Short circuit if already watching this directory
   return if isWatched dir
 
   # Throttle
@@ -359,6 +380,7 @@ watchDir = (dir, includeDir, options) ->
 
   verbose 2, "watching directory #{dir}/", 'yellow'
   watcher = fs.watch dir, (err) ->
+    console.log "onWatchDir: ", dir
     verbose 2, "updating directory #{dir}/", 'yellow'
 
     # Unwatch missing directories
@@ -369,7 +391,8 @@ watchDir = (dir, includeDir, options) ->
     # Watch all the directories and files that aren't currently being watched
     lsOJ dir, options, (err, files, dirs) ->
       for d in dirs
-        watchDir d
+        if not isWatched d
+          watchDir d
       for f in files
         if not isWatched f
           compileFile f, includeDir, options
@@ -435,6 +458,21 @@ isFile = (filePath) ->
   catch e
     false
 
+isOJFile = (filePath) ->
+  ext = path.extname filePath
+  ext == '.oj' or ext == '.ojc'
+
+# isOJPage: Determine if path is an oj page.
+isOJPage = (filePath) ->
+  ext = path.extname filePath
+  base = path.basename filePath
+  (isOJFile filePath) and base[0] != '_'and base.slice(0,2) != 'oj' and not isHiddenFile filePath
+
+# isWatchFile: Determine if file can be required and therefore is worth watching
+isWatchFile = (filePath) ->
+  ext = path.extname filePath
+  (isOJFile filePath) or ext == '.js' or ext == '.coffee' or ext == '.json'
+
 # isHiddenFile: Determine if file is hidden
 isHiddenFile = (file) -> /^\.|~$/.test file
 
@@ -453,7 +491,6 @@ relativePathWithEscaping = (fullPath, relativeTo) ->
 # fullPaths: Convert relative paths to full paths from origin dir
 fullPaths = (relativePaths, dir) ->
   _.map relativePaths, (p) -> path.resolve dir, p
-
 
 # commonPath: Given a list of full paths. Find the common root
 commonPath = (paths, seperator = '/') ->
@@ -479,11 +516,20 @@ commonPath = (paths, seperator = '/') ->
 
 lsOJ = (paths, options, cb) ->
   # Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
-  options = _.extend {}, recurse: options.recurse, filter: (f) ->
-    basename = path.basename f
-    extname = path.extname f
-    (extname == '.oj' or extname == '.ojc' or extname == '.ojlc') and basename[0] != '_'and basename.slice(0,2) != 'oj' and not isHiddenFile f
+  options = _.extend {}, recurse: options.recurse, filter: (f) -> isOJPage f
 
+  ls paths, options, (err, results) ->
+    cb err, results.files, results.directories
+  return
+
+# lsWatch
+# Look for all files I should consider watching.
+# This includes: .js, .coffee, .oj, .ojc, with no limitations on
+# hidden, underscore or oj prefixes.
+
+lsWatch = (paths, options, cb) ->
+  # Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
+  options = _.extend {}, recurse: options.recurse, filter: (f) -> isWatchFile f
   ls paths, options, (err, results) ->
     cb err, results.files, results.directories
   return
@@ -635,7 +681,7 @@ minifyCSSUnless = (isDebug, filename, css, structureOff) ->
 # Requiring
 # ------------------------------------------------------------------------------
 
-# Hooking into require inspired by http://github.com/fgnass/node-dev
+# Hooking into require inspired by [node-dev](http://github.com/fgnass/node-dev)
 _hookRequire = (modules, hookCache={}, hookOriginalCache={}) ->
   handlers = require.extensions
   for ext of handlers
@@ -651,14 +697,15 @@ _hookRequire = (modules, hookCache={}, hookOriginalCache={}) ->
 # Hook into one extension
 _createHook = (ext, modules, hookCache, hookOriginalCache) ->
   (module, filename) ->
+
     # Override compile to intercept file
     if !module.loaded
-      _rememberModule modules, filename, null, module.paths
+      _rememberModule modules, filename, null, module.parent.filename
 
       # if path.extension filename _.indexOf ['.coffee']
       moduleCompile = module._compile
       module._compile = (code) ->
-        _rememberModule modules, filename, code, module.paths
+        _rememberModule modules, filename, code, module.parent.filename
         moduleCompile.apply this, arguments
         return
 
@@ -678,9 +725,15 @@ _unhookRequire = (modules, hookCache, hookOriginalCache) ->
   return
 
 # Remember require references
-_rememberModule = (modules, filename, code, module) ->
+_rememberModule = (modules, filename, code, parent) ->
   verbose 3, "requiring #{filename}" if code
-  modules[filename] = _.defaults {code: code, module: module}, (modules[filename] or {})
+  modules[filename] = _.defaults {code: code, parent:parent}, (modules[filename] or {})
+
+_rememberModuleDependencies = (modules) ->
+  for filename, module of modules
+    watchParents[filename] ?= []
+    watchParents[filename].push module.parent
+    watchParents[filename] = _.unique watchParents[filename]
 
 _nodeModulesSupported = oj:1, assert:1, console:1, crypto:1, events:1, freelist:1, path:1, punycode:1, querystring:1, string_decoder:1, tty:1, url:1, util:1
 _nodeModuleUnsupported = child_process:1, domain:1, fs:1, net:1, os:1, vm:1, buffer:1
@@ -782,6 +835,7 @@ _buildNativeCacheFromModuleList = (nativeCache, moduleNameList, isDebug) ->
 
   # Loop over modules and add them to native cache
   while moduleName = moduleNameList.shift()
+
     # Continue on already loaded native modules
     continue if nativeCache[moduleName]
 

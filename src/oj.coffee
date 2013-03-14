@@ -7,8 +7,8 @@
 # oj function
 # ------------------------------------------------------------------------------
 # Convert ojml to dom
-oj = module.exports = (ojml) ->
-  oj.tag 'oj', ojml
+oj = module.exports = ->
+  oj.tag 'oj', arguments...
 
 # Keep a reference to ourselves for templates to see
 oj.oj = oj
@@ -961,6 +961,10 @@ _compileAny = (ojml, options) ->
       # Wrap function call to allow full oj generation within ojml
       _compileAny (oj ojml), options
 
+    when 'date'
+      options.html?.push "#{ojml.toLocaleString()}"
+      options.dom?.appendChild document.createTextNode "#{ojml.toLocaleString()}"
+
     # Do nothing for 'null', 'undefined', 'object'
     when 'null' then break
     when 'undefined' then break
@@ -1468,9 +1472,9 @@ oj.FormView = oj.type 'FormView'
       get: -> @_change
       set: (v) -> @_change = v; return
 
-    formValue:
-      get: -> @$el.attr('value')
-      set: (v) -> @$el.attr('value', v); return
+    # formValue:
+    #   get: -> @$el.attr('value')
+    #   set: (v) -> @$el.attr('value', v); return
 
   methods:
     modelChange: ->
@@ -1482,6 +1486,7 @@ oj.FormView = oj.type 'FormView'
       # Update model
       if @model? and @key?
         @model[@key] = @value
+
       # Trigger change event
       @change?(@)
 
