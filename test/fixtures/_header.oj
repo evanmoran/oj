@@ -1,2 +1,0 @@
-header ->
-  'Welcome #{user.name}'

@@ -1,0 +1,8 @@
+module.exports = function(){
+  html(function(){
+    head();
+    body(function(){
+      div('goodbye');
+    });
+  });
+};

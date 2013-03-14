@@ -1,0 +1,8 @@
+_userTwitterLink = require './_userTwitterLink'
+
+user = name: 'Evan Moran', twitter:'evanmoran'
+module.exports = ->
+  html ->
+    head ->
+    body ->
+      _userTwitterLink user

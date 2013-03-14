@@ -1,5 +1,0 @@
-
-module.exports = class View
-  oj: ->
-    div c: 'View', ->
-

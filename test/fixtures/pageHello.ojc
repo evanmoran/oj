@@ -1,0 +1,5 @@
+module.exports = ->
+  html ->
+    head ->
+    body ->
+      div 'hello'

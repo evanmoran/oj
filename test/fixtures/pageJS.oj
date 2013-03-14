@@ -1,0 +1,29 @@
+module.exports = function(){
+  html(function(){
+    head(function(){
+      script({url:'scripts/script.js'});
+      link({url:'styles/style.css'});
+    });
+    body(function(){
+      div('page js', {
+        click: function(){
+          window.divClick = 'div click';
+      }});
+      var cb = CheckBox({value:false, change: function(e){
+        window.checkboxClick = 'checkbox click';
+        // window.checkboxValue = thiss.oj.value;
+      }});
+
+      cb.value = true;
+      css({
+        div:{
+          color: 'red'
+        }
+      });
+
+      ready(function(){
+        window.ready = 'ready';
+      });
+    });
+  });
+};

@@ -1,0 +1,26 @@
+module.exports = ->
+  html ->
+    head ->
+      script url:'scripts/jquery.js'
+      script url:'scripts/underscore.js'
+      script url:'scripts/backbone.js'
+      script url:'scripts/script.js'
+      link url:'styles/style.css'
+
+    body ->
+      div 'page coffee',
+        click: ->
+          window.divClick = 'div click'
+
+      cb = CheckBox value:false, change: (e) ->
+        window.checkboxClick = 'checkbox click'
+        # window.checkboxValue = @oj.value
+
+      cb.value = true
+
+    css
+      div:
+        color: 'red'
+
+  ready ->
+    window.ready = 'ready'

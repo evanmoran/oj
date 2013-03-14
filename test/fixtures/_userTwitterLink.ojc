@@ -1,0 +1,3 @@
+module.exports = (user) ->
+  a "Follow #{user.name} on Twitter",
+    href: "http://twitter.com/#{user.twitter}"
