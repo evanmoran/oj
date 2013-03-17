@@ -587,7 +587,6 @@ oj.addProperties = (obj, mapNameToInfo) ->
 oj.addProperty = (obj, propName, propInfo) ->
   throw 'oj.addProperty: string expected for second argument' unless oj.isString propName
   throw 'oj.addProperty: object expected for third argument' unless (oj.isObject propInfo)
-  throw 'oj.addProperty: get or value key expected in third argument' unless (propInfo.get? or propInfo.value?)
 
   _.defaults propInfo,
     enumerable: true
@@ -1379,6 +1378,7 @@ oj.View = oj.type 'View',
     $el:
       get: -> $(@el)
 
+    # TODO: D I need this?
     # Read only generated oj-guid
     id: get: -> @_id
 
@@ -1399,15 +1399,12 @@ oj.View = oj.type 'View',
     $: -> @$el.find.apply @, arguments
 
     toHTML: (options) ->
-      console.log "---- CALLING toHTML"
       @el.outerHTML + (if options.debug then '\n' else '')
 
     toDOM: ->
-      console.log "---- CALLING toDOM"
       @el
 
     toString: ->
-      console.log "---- CALLING toHTML"
       @toHTML()
 
     # Detach element from dom
@@ -1418,6 +1415,19 @@ oj.View = oj.type 'View',
     attach: -> throw 'attach nyi'
       # The implementation is to unset el from detach
 
+# oj.CollectionView
+# ------------------------------------------------------------------------------
+# Model view base class
+oj.CollectionView = oj.type 'CollectionView'
+  inherits: oj.View
+
+  properties:
+    models:
+      get: -> @_model
+      set: (v) -> @_model = v; return
+
+  methods:
+    m:->
 
 # oj.ModelView
 # ------------------------------------------------------------------------------
@@ -1440,20 +1450,27 @@ oj.ModelView = oj.type 'ModelView'
         return
 
   methods:
-    modelChange: -> #optional override to handle modelChange events
-    viewChange: -> #optional override to handle viewChange events
+    modelChange: -> #optional override
+    viewChange: -> #optional override
 
-# oj.FormView
+###
+  When a collection view changes it updates for each
+    (automatic)
+    Table
+    List
+
+  When a model view changes it updates itself
+
+  When a key model collection view updates it sets the value from the model
+    (automatic)
+###
+
+# oj.ModelKeyView
 # ------------------------------------------------------------------------------
-# A base class for form elements that adds the notion of key/value.
-#
-#     key is the attribute to set on the model as things change
-#     value is an accessor to the dom
-#
-#     formValue is the value sent to the form on submit
-#     formName is the name sent to the form on submit
+# Model key view base class
+oj.ModelKeyView = oj.type 'ModelKeyView'
 
-oj.FormView = oj.type 'FormView'
+  # Inherit ModelView to handle model and bindings
   inherits: oj.ModelView
 
   properties:
@@ -1464,38 +1481,28 @@ oj.FormView = oj.type 'FormView'
     # Value directly gets and sets to the dom
     # when it changes it must trigger viewChange
     value:
-      get: -> throw 'value get needs override'
-      set: (v) -> throw 'value set needs override'
-
-    # Change handler can be set to track changes manually
-    change:
-      get: -> @_change
-      set: (v) -> @_change = v; return
-
-    # formValue:
-    #   get: -> @$el.attr('value')
-    #   set: (v) -> @$el.attr('value', v); return
+      get: -> throw "#{@type}.value get needs override"
+      set: (v) -> throw "#{@type}.value set needs override"
 
   methods:
+    # When the model changes update the value
     modelChange: ->
-      # Update value from model
       if @model? and @key?
         @value = @model[@key]
+      return
 
+    # When the view changes update the model
     viewChange: ->
-      # Update model
       if @model? and @key?
         @model[@key] = @value
-
-      # Trigger change event
-      @change?(@)
+      return
 
 # oj.TextBox
 # ------------------------------------------------------------------------------
 # TextBox control
 
 oj.TextBox = oj.type 'TextBox'
-  inherits: oj.FormView
+  inherits: oj.ModelKeyView
 
   properties:
     value:
@@ -1511,7 +1518,7 @@ oj.TextBox = oj.type 'TextBox'
 # CheckBox control
 
 oj.CheckBox = oj.type 'CheckBox'
-  inherits: oj.FormView
+  inherits: oj.ModelKeyView
 
   properties:
     value:
@@ -1529,15 +1536,12 @@ oj.CheckBox = oj.type 'CheckBox'
     make: (props) ->
       oj.input type:'checkbox', change: => @viewChange()
 
-    # viewChange: ->
-    #   @super.viewChange.apply @, arguments
-
 # oj.TextArea
 # ------------------------------------------------------------------------------
 # TextArea control
 
 oj.TextArea = oj.type 'TextArea'
-  inherits: oj.FormView
+  inherits: oj.ModelKeyView
 
   properties:
     value:
@@ -1551,14 +1555,44 @@ oj.TextArea = oj.type 'TextArea'
     # viewChange: ->
     #   @super.viewChange.apply @, arguments
 
+# oj.Table
+# ------------------------------------------------------------------------------
+# oj.Table = oj.type 'Table',
+#   inherits: oj.CollectionView
+
+#   properties:
+#     rows: (list) ->
+#     rowCount: ->
+#     cellCount: ->
+
+#   methods:
+#     row: (r) ->
+#     cell: (r, c) ->
+
+# oj.Table.Row = oj.type 'Table.Row',
+#   inherits: oj.ModelView
+#   properties:
+#     row:
+#       get: ->
+#       set: (list) ->
+#   methods:
+#     cell: ->
+
 # oj.List
 # ------------------------------------------------------------------------------
 # List control
 
-# oj.List = oj.type 'List',
-#   constructor: ->
+oj.List = oj.type 'List',
+  inherits: oj.CollectionView
 
-#   methods:
+  properties:
+    count:
+      get: -> $('> li').length
+
+  methods:
+    make: ->
+      ul c:'foo',
+    model: ->
 
 # oj.Link
 # ------------------------------------------------------------------------------

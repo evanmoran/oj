@@ -34,18 +34,13 @@ launchOJ = (args, options, callback) ->
 
 describe 'oj.command', ->
 
-  it 'exists', (done) ->
+  # it 'exists', (done) ->
 
-    # console.log "here"
-    child = exec "oj", (error, stdout, stderr) ->
+  #   # console.log "here"
+  #   child = exec "oj", (error, stdout, stderr) ->
 
-      console.log('stdout: ' + stdout)
-      console.log('stderr: ' + stderr)
-      if error != null
-        console.log('exec error: ' + error)
+  #     done()
 
-      done()
-
-    # launch 'oj', [], (status, stdout, stderr) ->
-    #   done()
+  #   # launch 'oj', [], (status, stdout, stderr) ->
+  #   #   done()
 

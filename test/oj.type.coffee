@@ -131,6 +131,7 @@ describe 'oj.type', ->
     assert oj.type != null, 'oj.type is null'
     oj.type.should.be.a 'function'
 
+
   it 'empty type', ->
     Empty = oj.type 'Empty', {}
     empty = new Empty()
@@ -144,6 +145,38 @@ describe 'oj.type', ->
     expect(empty.type).to.equal 'Empty'
     expect(empty.properties).to.deep.equal []
     expect(empty.methods).to.deep.equal []
+
+  it 'simple type', ->
+
+    # Fixing current date for unit test consistency
+    currentDate = new Date(2013, 1,1)
+    User = oj.type 'User',
+      constructor: (args) ->
+        @set args
+
+      # Types can define properties
+      properties:
+        name: 'default name'
+        birthDate: null
+
+      # Types can define methods
+      methods:
+        age: ->
+          # Calculate age from @birthDate
+          today = currentDate
+          age = today.getFullYear() - @birthDate.getFullYear()
+          m = today.getMonth() - @birthDate.getMonth()
+          if m < 0 or (m == 0 and today.getDate() < @birthDate.getDate())
+            age--
+          age
+
+    birthDate = new Date 1945, 6, 23
+
+    user = User name: 'Joseph', birthDate: birthDate
+
+    expect(user.name).to.equal 'Joseph'
+    expect(user.birthDate).to.equal birthDate
+    expect(user.age()).to.equal 67
 
   it 'base type', ->
     parent = new Parent()
