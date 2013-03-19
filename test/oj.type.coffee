@@ -178,6 +178,19 @@ describe 'oj.type', ->
     expect(user.birthDate).to.equal birthDate
     expect(user.age()).to.equal 67
 
+  it 'simple type with default', ->
+
+    User = oj.type 'User',
+      constructor: (args) ->
+        @set args
+
+      # Types can define properties
+      properties:
+        nameWithDefault: 'Default'
+
+    user = User nameWithDefault: 'Joseph'
+    expect(user.nameWithDefault).to.equal 'Joseph'
+
   it 'base type', ->
     parent = new Parent()
     expect(parent.properties).to.deep.equal ["parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]

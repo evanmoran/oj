@@ -576,7 +576,7 @@ oj.addProperties = (obj, mapNameToInfo) ->
 
     # Wrap the value if propInfo is not already a property definition
     if not propInfo?.get? and not propInfo?.value?
-      propInfo = value: propInfo
+      propInfo = value: propInfo, writable:true
 
     oj.addProperty obj, propName, propInfo
 
@@ -1212,6 +1212,8 @@ oj.type = (name, args = {}) ->
   args.properties ?= {}
   args.constructor ?= ->
 
+  # When auto newing you need to delay construct the properties
+  # or they will be constructed twice.
   delay = '__DELAYED__'
   Out = new Function("""return function #{name}(){
     var _this = this;
@@ -1418,21 +1420,21 @@ oj.View = oj.type 'View',
 # oj.CollectionView
 # ------------------------------------------------------------------------------
 # Model view base class
-oj.CollectionView = oj.type 'CollectionView'
-  inherits: oj.View
+# oj.CollectionView = oj.type 'CollectionView'
+#   inherits: oj.View
 
-  properties:
-    models:
-      get: -> @_model
-      set: (v) -> @_model = v; return
+#   properties:
+#     models:
+#       get: -> @_model
+#       set: (v) -> @_model = v; return
 
-  methods:
-    m:->
+#   methods:
+#     m:->
 
 # oj.ModelView
 # ------------------------------------------------------------------------------
 # Model view base class
-oj.ModelView = oj.type 'ModelView'
+oj.ModelView = oj.type 'ModelView',
   inherits: oj.View
 
   properties:
@@ -1468,7 +1470,7 @@ oj.ModelView = oj.type 'ModelView'
 # oj.ModelKeyView
 # ------------------------------------------------------------------------------
 # Model key view base class
-oj.ModelKeyView = oj.type 'ModelKeyView'
+oj.ModelKeyView = oj.type 'ModelKeyView',
 
   # Inherit ModelView to handle model and bindings
   inherits: oj.ModelView
@@ -1501,7 +1503,7 @@ oj.ModelKeyView = oj.type 'ModelKeyView'
 # ------------------------------------------------------------------------------
 # TextBox control
 
-oj.TextBox = oj.type 'TextBox'
+oj.TextBox = oj.type 'TextBox',
   inherits: oj.ModelKeyView
 
   properties:
@@ -1517,7 +1519,7 @@ oj.TextBox = oj.type 'TextBox'
 # ------------------------------------------------------------------------------
 # CheckBox control
 
-oj.CheckBox = oj.type 'CheckBox'
+oj.CheckBox = oj.type 'CheckBox',
   inherits: oj.ModelKeyView
 
   properties:
@@ -1540,7 +1542,7 @@ oj.CheckBox = oj.type 'CheckBox'
 # ------------------------------------------------------------------------------
 # TextArea control
 
-oj.TextArea = oj.type 'TextArea'
+oj.TextArea = oj.type 'TextArea',
   inherits: oj.ModelKeyView
 
   properties:

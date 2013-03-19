@@ -55,6 +55,11 @@ describe 'oj.tag', ->
     (div {}).should.deep.equal ['div']
     (div {}, (->)).should.deep.equal ['div']
 
+  it 'name with object', ->
+    user = name:'Sam'
+    expect(div c:'cls', user.name).to.deep.equal ['div', c:'cls', 'Sam']
+    expect(div user.name, c:'cls').to.deep.equal ['div', c:'cls', 'Sam']
+
   it 'nested functions', ->
     (div (span str)).should.deep.equal ['div', ['span', 'str']]
 
