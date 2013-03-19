@@ -28,8 +28,8 @@ module.exports =
     body ->
 
       _editor """
-        CheckBox value:1, change: (control) ->
-          alert "The checkbox changed to: \#{control.value}"
+        CheckBox value:1, change: (e) ->
+          alert "The checkbox changed to: \#{e.target.checked}"
       """
       ###"""
         Sidebar = Backbone.Model.extend

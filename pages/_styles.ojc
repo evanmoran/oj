@@ -1,52 +1,150 @@
 module.exports = ->
 
+  # Constants
+  # ---------------------------------------------------------------------------
+
+  # Colors
+  h1Color = '#666'
+  textColor = '#444'
+  h2Color = textColor
+  codeColor = textColor
+  codeBackgroundColor = '#FEFAF3'
+  codeLineColor = '#FFD36B'
+  linkColor = '#E78B00'
+  methodLinkColor = '#C43900'
+  propertyLinkColor = '#CE7700'
+  typeLinkColor = linkColor
+
+  # Fonts
+  familyMonospace = 'Inconsolata, Consolas, Courier New, monospace'
+  familySanSarifLight = 'Helvetica, Arial, sans-serif'
+  familySanSarif = 'Lucida Grande, Tahoma'
+
+  # Styles
+  # ---------------------------------------------------------------------------
   css
     h1:
-      fontFamily: 'Lucida Grande, Tahoma'
+      fontFamily: familySanSarif
       fontSize: '25px'
       fontWeight: 'lighter'
       marginTop: '40px'
       marginBottom: '12px'
       paddingBottom: '6px'
-      color: '#666'
+      color: h1Color
       borderBottom:'2px solid #FFD36B'
 
     'h1:first-child':
       marginTop: '0px'
 
     h2:
-      fontFamily: 'Lucida Grande, Tahoma'
-      fontSize: '20px'
+      fontFamily: familySanSarif
+      fontSize: '18px'
+      fontWeight: 'lighter'
+      margin: '25px 0 10px 0'
+      color: h2Color
+      textDecoration: 'none'
+
+    h3:
+      fontFamily: familySanSarif
+      fontSize: '14px'
       fontWeight: 'lighter'
       marginTop: '10px'
-      marginBottom: '6px'
-      color: '#444'
+      marginBottom: '10px'
+      color: '#222'
 
     a:
-      color: '#E78B00'
+      color: linkColor
       textDecoration:'none'
+
+    'a.heading1, a.heading1:hover':
+      color: h1Color
+      textDecoration: 'none'
+
+    'a.heading2, a.heading2:hover':
+      color: h2Color
+      textDecoration: 'none'
+
+    'a.type':
+      color: typeLinkColor
+      fontFamily: familyMonospace
+
+    'a.function':
+      color: linkColor
+      fontFamily: familyMonospace
+
+    'a.method':
+      color: methodLinkColor
+      fontFamily: familyMonospace
+
+    'a.property':
+      color: propertyLinkColor
+      fontFamily: familyMonospace
 
     'a:hover':
       textDecoration:'underline'
 
     p:
-      color: '#444'
-      fontFamily: 'Lucida Grande, Tahoma'
+      color: textColor
+      fontFamily: familySanSarif
       fontSize: '14px'
       margin: '16px 0'
       lineHeight: '20px'
 
     li:
       marginLeft: '20px'
-      color: '#444'
-      fontFamily: 'Lucida Grande, Tahoma'
+      color: textColor
+      fontFamily: familySanSarif
       fontSize: '14px'
       lineHeight: '20px'
 
+    '.code-subheading':
+      fontFamily: familySanSarifLight
+      fontSize: '14px'
+      fontStyle: 'italic'
+      fontWeight: 'lighter'
+      color: textColor
+      display: 'block'
+      lineHeight: '20px'
+
+    '.code-items':
+      margin: '5px 0 10px 10px'
+
+    '.code-item':
+      display: 'block'
+      margin: '0 0 4px 0'
+
+    '.code-item-inhert':
+      fontFamily: familySanSarif
+      fontSize: '14px'
+      margin: '10px 0 10px 10px'
+      lineHeight: '20px'
+
+    '.code-item-name':
+      fontFamily: familySanSarif
+      fontSize: '14px'
+      margin: '0 0 0 20px'
+      lineHeight: '20px'
+      minWidth: '100px'
+      display: 'inline-block'
+
+    '.code-item-def':
+      fontFamily: familySanSarif
+      fontSize: '14px'
+      color: textColor
+      margin: '0 0 0 20px'
+      lineHeight: '20px'
+      display: 'inline-block'
+
+    '.code-item-def p':
+      margin:'0 0 0 0'
+
     pre:
-      border:'2px solid #FFD36B'
-      backgroundColor: '#FEFAF3'
+      border:"2px solid #{codeLineColor}"
+      backgroundColor: codeBackgroundColor
+      color: codeColor
       padding: '8px'
+      lineHeight: '18px'
+      fontSize: '14px'
 
     '.header-option':
       fontFamily: 'Helvetica, Arial, Tahoma'
@@ -61,18 +159,18 @@ module.exports = ->
       display:'block'
       color: 'white'
       textTransform: 'uppercase'
-      fontFamily: 'Lucida Grande, Tahoma'
-      fontSize: '13px'
+      fontFamily: familySanSarif
+      fontSize: '14px'
       margin: '0 0 15px 0'
-
-    # '.toc-section:hover':
-    #   backgroundColor: '#FFDC73'
 
     '.toc-item':
       display:'block'
       backgroundColor: '#FEFAF3'
-      fontSize: '18px'
+      fontSize: '14px'
       padding: '4px 0 4px 15px'
+
+    '.toc-items':
+      marginBottom: '10px'
 
     '.left':
       marginBottom: '10px'
@@ -81,7 +179,7 @@ module.exports = ->
       width:'100%'
       height:'100px'
       borderColor: '#f4f4f4'
-      fontFamily: 'Lucida Grande, Tahoma'
+      fontFamily: familySanSarif
       fontSize: '14px'
 
     '.snippet':

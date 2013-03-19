@@ -15,7 +15,8 @@ OJ Simplifies:
 oj.use require 'oj-markdown'
 
 _template = require './_template'
-_content = require './_content'
+{renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderInherits:inherits} = require './_content'
+
 # _snippet = require './_snippet'
 # _editor = require './_editor'
 
@@ -39,27 +40,20 @@ module.exports = ->
     ]
 
     left: ->
-      _content.renderTOC data
+      renderTOC data
 
     right: ->
-      _content.renderContent data
+      renderContent data
 
     body: ->
     head: ->
+
 data = [
-  {
-    section: 'Introduction'
-    anchor: 'intro'
-    content: ->
-      markdown """
-        This is the full documentation for OJ. The goal is to have all topics be explained clearly with examples. If you see anything missing or confusing please add an [issue](https://github.com/ojjs/oj/issues). If you are feeling particularly helpful send a [pull request](https://github.com/ojjs/oj)!
-      """
-  }
-  {
-    section: 'Installation'
-    anchor: 'install'
-    content: ->
-      markdown """
+    h: 'Introduction', id: 'intro', d: """
+      This is the full documentation for OJ. The goal is to have all topics be explained clearly with examples. If you see anything missing or confusing please add an [issue](https://github.com/ojjs/oj/issues). If you are feeling particularly helpful send a [pull request](https://github.com/ojjs/oj)!
+    """
+    items: [
+      h: 'Installation', id: 'install', d: """
         OJ can be run in a web browser without installation. Simply add the script `oj.js` and you are good to go.
 
         To use OJ on the server you will need to install the `oj` command built on top of [node.js](http://nodejs.org). For this you need to install node and its package manager `npm`. There are many ways to do this installation, but this will get you started:
@@ -76,22 +70,16 @@ data = [
 
             npm install -g oj
       """
-  }
-  {
-    section: 'File Types'
-    anchor: 'file-types'
-    content: ->
-      markdown """
-        OJ is a javascript library and works just fine in `.js`, or `.coffee` files. The only issue is one of namespace; It gets tiring writing `oj.Table`, `oj.div`, etc.
+    ,
+      h: 'File Types', id: 'file-types', d: """
+        The `oj.js` javascript library works perfectly fine inside of `.js`, or `.coffee` files. The only issue is that it gets tiring writing `oj.html`, `oj.Table`, everywhere.
 
         To solve this OJ supports two file types:
 
         * `.oj` is javascript
         * `.ojc` is coffee-script
 
-        The `oj` command uses node's extension system to allow node to understand these files using its standard `require` system. When they are required they will automatically give your code access to what is in oj.
-
-        The files then must use node's `module.exports` to set what that module should return to `require`.
+        These files have been fully integrated into node. This means you can include other files using `require`, and you must use `module.exports` to set the what the module should return. Here are some examples:
 
         .oj example (javascript):
 
@@ -113,15 +101,18 @@ data = [
                   div 'Hello world'
 
       """
-  }
-  {
-    section: 'Command Line'
-    anchor: 'command-line'
-    content: ->
-      markdown """
-        The `oj` command can build `.oj` and `.ojc` [file types])(file-types) into html files. Directories can be watched to automatically build entire websites. Specify the `--output` directory to redirect all output to a location such as `www`. When `--debug` is set files are not minified at all.
+    ,
+      h: 'Command Line', id: 'command-line', d: """
+        The `oj` command builds `.oj` and `.ojc` [file types](#file-types) into html files.
 
-        When building, `oj` recognizes files that start with `_` as a partial or a template. Since these are meant to be included with `require` instead of built standalone they are ignored. In addition `oj` skips files that start with `oj.`. These are assumed to be custom created oj types and functions that also will be required instead of built.
+        Major features:
+
+        * _Auto Minification:_ All javascript, css, html are minified unless `--debug` is set
+        * _Unified Templating:_ `.oj` and `.ojc` files turn into javacsript
+        * Files and Directories can be built, recursed upon, and watched
+        * Files can be included from other files using node's `require` syntax. These files will be automatically minified into the final html file.
+        * Node modules can be included as well. Simply `require` them, and they will also be brought into the system.
+        * Built in support for coffee-script with `.ojc` files. You don't even need to install it on the command line.
 
         Usage:
 
@@ -144,6 +135,11 @@ data = [
             --debug defaults to off
             --verbose defaults to 1
 
+        Ignored file prefixes:
+
+          * Partials and Templates (start with `_`)
+          * OJ Plugins (start with `oj.`)
+          * Hidden files (start with `.`)
 
         Examples
 
@@ -160,38 +156,155 @@ data = [
             oj -w -r -o www pages       # Recursively watch pages to www
 
       """
-  }
-  {
-    section: 'Creating Types'
-    anchor: 'creating-types'
-    content: ->
-      markdown """
-        This is what OJ is about. OJ includes its own way of creating new javascript types, with the `type` function. This function
-      """
-    items: [
-      {
-        name:'type'
-        anchor:'type-function'
-        content: ->
-          markdown """
-          """
-      }
-      {
-        name:'typeOf'
-        anchor:'typeOf-function'
-        content: ->
-          markdown """
-            The `typeOf` function exists too
-        """
-      }
     ]
-  }
+  ,
+    h: 'Creating Types', id: 'creating-types', d: """
+      The point of oj is creating types that better abstract the web. To do this oj includes a function called [type](#type).
+
+      Features:
+
+      * Creates 100% real javascript types
+      * Works seemlessly between javascript and coffee-script
+      * First class properties support:
+        * Properties by value
+        * Properties by get and set functions
+      * Supports Constructors and Methods
+      * Supports Inheritance
+        * `inherits` up to one Type
+        * Call super with `this.super.methodName()`
+      * `new` is optional
+
+    """
+    items: [
+      h:'type', id:'type', d: ->
+        markdown """
+          This method creates types
+
+          All types created with [type](#type) contain this interface:
+        """
+        properties [
+          h:'type', id:'Type-type', d:"""
+            The name of the type
+          """
+        ,
+          h:'properties', id:'Type-properties', d:"""
+            Array of all properties the type supports (readonly)
+          """
+        ,
+          h:'methods', id:'Type-methods', d:"""
+            Array of all methods the type supports (readonly)
+          """
+        ]
+        methods [
+          h:'toJSON', id:'Type-toJSON', d:"""
+            Convert properties to json
+          """
+        ]
+    ,
+      h:'typeOf', id:'typeOf', d: ->
+        markdown """
+          This function helps detect what type an object is. It is much smarter then the built in `typeof` keyword.
+
+              User = oj.type 'User',
+                properties:
+                  name: 'Joseph'
+              user = new User
+
+              typeOf user       # => 'User'
+              typeOf 'str'      # => 'string'
+              typeOf $('body')  # => 'jquery'
+
+        """
+
+
+    ]
+  ,
+    h: 'Creating Views', id: 'creating-views', d: """
+      For those of you who want to make your own rich oj views, there are a few inheritable types that will make your life easier.
+    """
+    items: [
+      h:'View', id:'View', d: ->
+        properties [
+          h:'el', id:'View-el', d:"""
+            Get the root element for the view.
+
+            This calls the make method
+          """
+         ,
+          h:'$el', id:'View-$el', d:"""
+            Get a jQuery enabled el
+          """
+         ,
+          h:'attributes', id:'View-attributes', d:"""
+            Accessor to root element attributes. jQuery events will be bound.
+          """
+
+        ]
+        methods [
+          h:'$(selector)', id:'View-$', d:"""
+            Find elements from root with jQuery.
+          """
+        ,
+          h:'toHTML()', id:'View-toHTML', d:"""
+            Convert view to html
+          """
+        ,
+          h:'toDOM()', id:'View-toDOM', d:"""
+            Convert view to dom
+          """
+        ,
+          h:'toString()', id:'View-toString', d:"""
+            Convert view to a string. By default this calls toHTML()
+          """
+        ,
+          h:'detach', id:'View-detach', d:"""
+            Not Yet Implemented
+
+            Detach the element from the dom leaving a placeholder
+            so that it can be reattached in the same place.
+          """
+        ,
+          h:'attach', id:'View-attach', d:"""
+            Not Yet Implemented
+
+            Attach the element from the dom leaving a placeholder
+            so that it can be reattached in the same place.
+          """
+
+        ]
+    ,
+      h:'ModelView', id:'ModelView', d: ->
+
+        inherits h:'View', id:'View'
+
+        properties [
+          h:'model', id:'ModelView-model', d:"""
+            Bind a model to this view
+          """
+        ,
+          h:'attributes', id:'View-attributes', d:"""
+            Accessor to root element attributes. jQuery events will be bound.
+          """
+        ]
+    ]
 ]
+
+
 
 
 ###
 
 
+          <dl class='row'>
+            <dt class='gg25'>make()</dt><dd class='gg75'>
+            Create the initial dom element with oj.<br>
+            <br>
+            Calling make should generate the same result if called
+            multiple times. Specifically if you generate an id you
+            should store it in `this.id` and reuse the same id
+            each time.
+            </dd>
+          </dl>
 Command Line
 
 
@@ -235,7 +348,7 @@ Form Libraries
     model: <Backbone>, auto watch for change events
     key:  <string>  stores key to change in model
     value: <bool>
-    formName: control name value when posting (maps to attr: name, defaults to key)
+    formh: control name value when posting (maps to attr: name, defaults to key)
     formValue: control value value when posting a form (maps to attr:value, defaults to value.toString())
 
     # Custom event triggered when the view OR the model changes

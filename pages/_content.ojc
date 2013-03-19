@@ -1,4 +1,3 @@
-
 # From content format, create
 module.exports =
   renderTOC: (data) ->
@@ -9,21 +8,57 @@ module.exports =
     for section,ix in data
       contentSection section, ix
 
+  renderProperties: (properties) ->
+    div 'properties:', c:'code-subheading property'
+    contentCodeItems properties, 'property'
+
+  renderMethods: (methods) ->
+    div 'methods:', c:'code-subheading method'
+    contentCodeItems methods, 'method'
+
+  renderInherits: (inherits) ->
+    div 'inherits:', c:'code-subheading inherit'
+    div c:'code-items', ->
+      a inherits.h, c:'type', href:'#' + inherits.id
+
 # Create table of contents
 tocSection = (section, ix) ->
-  a "#{section.section}", c:'toc-section', href:"\##{section.anchor}"
+  a "#{section.h}", c:'toc-section', href:"\##{section.id}"
   if section.items?
-    for item in section.items
-      a "#{item.name}", c:'toc-item', href:"\##{section.anchor}"
+    div c:'toc-items', ->
+      for item in section.items
+        a "#{item.h}", c:'toc-item', href:"\##{item.id}"
 
 # Create content of page
 contentSection = (section, ix) ->
-  h1 section.section, id: section.anchor
-  section?.content()
+  h1 id: section.id, ->
+    a section.h, c:'heading1', href:'#' + section.id
+  callOrMarkdown section.d
+
   if section.items?
     for item, ixItem in section.items
       contentItem item, ixItem
 
 contentItem = (item, ix) ->
-  h2 item.name, id:"#{item.anchor}"
-  item.content?()
+  h2 id:"#{item.id}", ->
+    a item.h, href:'#' + item.id, c:'heading2'
+  callOrMarkdown item.d
+
+contentCodeItems = (items, type) ->
+  if items? and items.length > 0
+    table c:"code-items #{type}", ->
+      tbody ->
+        for prop in items
+          tr c:"code-item #{type}", ->
+            td c:"code-item-name #{type}", id:prop.id, ->
+              a prop.h, c:type, href:'#' + prop.id
+            td c:"code-item-def #{type}", ->
+              callOrMarkdown prop.d
+
+callOrMarkdown = (v) ->
+  if v?
+    if oj.isFunction v
+      v()
+    else
+      markdown v
+  return

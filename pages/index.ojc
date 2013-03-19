@@ -46,10 +46,6 @@ module.exports = ->
       _content.renderContent data
 
 data = [
-  {
-    section: 'Introduction'
-    anchor: 'intro'
-    content: ->
-      p 'This is a great introduction. Indeed. This is the best one yet.'
-  }
+  h: 'Introduction', id: 'intro', d: ->
+    p 'This is a great introduction. Indeed. This is the best one yet.'
 ]

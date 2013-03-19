@@ -148,7 +148,10 @@ switchLanguageTabs = ->
   chooseExample()
   recompile()
 
+preventRecompile = false
 recompile = ->
+  return if preventRecompile
+
   $editorFrame = $ '.editor-iframe'
   $editorSource = $ '.editor-source'
   $editorHTML = $ '.editor-html'
@@ -157,6 +160,7 @@ recompile = ->
 
   if isCS()
     code = getEditor editor_cs_id
+    console.log "code: ", code
 
     try
       code = CoffeeScript.compile code, bare:true
@@ -244,6 +248,7 @@ clickToggleNext = ->
 setupEditor = (editor_id, language, onChange) ->
   editor = ace.edit editor_id
   editor.setTheme("ace/theme/orange")
+  editor.setBehavioursEnabled true    # Set quote and paren auto matching
   editor.getSession().setMode "ace/mode/#{language}"
   editor.getSession().setUseSoftTabs true
   editor.getSession().setUseWorker false
@@ -254,8 +259,9 @@ setupEditor = (editor_id, language, onChange) ->
   editor.renderer.setShowPrintMargin false
   editor.setReadOnly false
   editor.setFontSize 16
-  editor.getSession().doc.on 'change', onChange
-  return
+  # Debounce changes because the ace editor sometimes sends multiple events for paste
+  editor.getSession().doc.on 'change', _.debounce onChange, 50
+  editor
 
 setEditor = (editor_id, code) ->
   editor = ace.edit editor_id

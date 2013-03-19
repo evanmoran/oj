@@ -240,6 +240,78 @@ module.exports = [
       """
     }
     {
+      name: 'Use oj.type'
+      cs: """
+        User = type 'User',
+          # Types can define constructors like coffee-script
+          constructor: (args) ->
+            # Pass through arguments to properties
+            @set args
+
+          # Types can define properties
+          properties:
+            # Default to a string
+            name: 'Default Name'
+
+            # Default to null
+            birthDate: null
+
+          # Types can define methods
+          methods:
+            age: ->
+              # Calculate age from @birthDate
+              today = new Date()
+              age = today.getFullYear() - @birthDate.getFullYear()
+              m = today.getMonth() - @birthDate.getMonth()
+              if m < 0 or (m == 0 and today.getDate() < @birthDate.getDate())
+                age--
+              age
+
+        user = User name: 'Joseph', birthDate: new Date 1945, 6, 23
+
+        div user.name + " is " + user.age()
+      """
+      js: """
+
+      """
+    }
+    {
+      name: 'Create Template of Backbone'
+      cs: """
+        class UserModel extends Backbone.Model
+          # Helper backbone function to calculate age from birthdate
+          age: ->
+            today = new Date()
+            age = today.getFullYear() - @get('birthDate').getFullYear()
+            m = today.getMonth() - @get('birthDate').getMonth()
+            if m < 0 or (m == 0 and today.getDate() < @get('birthDate').getDate())
+              age--
+            age
+
+        user = new UserModel name: 'Joseph', birthDate: new Date(1945, 6, 23)
+        div user.get('name') + " is " + user.age()
+
+      """
+      js: """
+
+      """
+    }
+    {
+      name: 'Test - Bind a TextBox to a Model 2'
+      cs: """
+        Test = Backbone.Model.extend
+          initialize: ->
+            div 'Initialize called'
+          method:->
+            div 'Test.method called'
+
+        test = new Test prop:42
+
+        test.method()
+        div 'Test.prop = ', test.get('prop')
+      """
+    }
+    {
       name: 'Creating a Template'
       cs: """
         # Define a simple template with a title and a content function
@@ -258,29 +330,6 @@ module.exports = [
         myTemplate title:'My Title', header:'Creating a Template', content:->
           p 'Templates are just functions that call html, head and body. Presto, they just work!'
       """
-
-      # // Define a simple template with a title and a content function
-      # // Create a template that takes data as input and outputs the page
-      # myTemplate = function(data){
-      #   html(function(){
-      #     head(function(){
-      #       // Tempate the title
-      #       title(data.title);
-      #     });
-      #     body(function(){
-      #       h1(data.header);
-
-      #       // Template the content
-      #       data.content();
-      #     });
-      #   });
-      # };
-
-      # // Run the template
-      # myTemplate({ title:'My Title', header:'Creating a Template', content:function(){
-      #   p('Templates are just functions that call html, head and body. Presto, they just work!');
-      # }});
-
       js: """
         // Define a simple template with a title and a content function
         // Create a template that takes data as input and outputs the page

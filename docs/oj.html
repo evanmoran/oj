@@ -2,8 +2,8 @@
 
 <p>A unified templating framework for the people. Thirsty people.</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="oj-function">oj function</h2>
 
-<p>Convert ojml to dom</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj = module.exports = </span><span class="nf">(ojml) -&gt;</span>
-  <span class="nx">oj</span><span class="p">.</span><span class="nx">tag</span> <span class="s">&#39;oj&#39;</span><span class="p">,</span> <span class="nx">ojml</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Keep a reference to ourselves for templates to see</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.oj = </span><span class="nx">oj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojbegin">oj.begin</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.begin = </span><span class="nf">(page) -&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Defer dom manipulation until the page has loaded</p></div></div><div class="code"><div class="wrapper">  <span class="nx">_readyOrLoad</span> <span class="o">-&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Compile only the body and below</p></div></div><div class="code"><div class="wrapper">    <span class="nv">bodyOnly = </span><span class="nx">html</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">doctype</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">head</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">link</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">script</span><span class="o">:</span><span class="mi">1</span>
+<p>Convert ojml to dom</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj = module.exports = </span><span class="o">-&gt;</span>
+  <span class="nx">oj</span><span class="p">.</span><span class="nx">tag</span> <span class="s">&#39;oj&#39;</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">...</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Keep a reference to ourselves for templates to see</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.oj = </span><span class="nx">oj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojbegin">oj.begin</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.begin = </span><span class="nf">(page) -&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Defer dom manipulation until the page has loaded</p></div></div><div class="code"><div class="wrapper">  <span class="nx">_readyOrLoad</span> <span class="o">-&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Compile only the body and below</p></div></div><div class="code"><div class="wrapper">    <span class="nv">bodyOnly = </span><span class="nx">html</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">doctype</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">head</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">link</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">script</span><span class="o">:</span><span class="mi">1</span>
     <span class="p">{</span><span class="nx">dom</span><span class="p">}</span> <span class="o">=</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">compile</span> <span class="nx">dom</span><span class="o">:</span><span class="mi">1</span><span class="p">,</span> <span class="nx">html</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span> <span class="nx">css</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span> <span class="nx">ignore</span><span class="o">:</span><span class="nx">bodyOnly</span><span class="p">,</span> <span class="p">(</span><span class="nx">require</span> <span class="nx">page</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="o">not</span> <span class="nx">dom</span><span class="o">?</span>
@@ -401,14 +401,13 @@ Examples:
   age: 7    # defaults to {writable:true, enumerable:true}
   age: {value:7, writable:false, enumerable:false}
   age: {get:(-> 7), enumerable:false}</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Wrap the value if propInfo is not already a property definition</p></div></div><div class="code"><div class="wrapper">    <span class="k">if</span> <span class="o">not</span> <span class="nx">propInfo</span><span class="o">?</span><span class="p">.</span><span class="nx">get</span><span class="o">?</span> <span class="o">and</span> <span class="o">not</span> <span class="nx">propInfo</span><span class="o">?</span><span class="p">.</span><span class="nx">value</span><span class="o">?</span>
-      <span class="nv">propInfo = value: </span><span class="nx">propInfo</span>
+      <span class="nv">propInfo = value: </span><span class="nx">propInfo</span><span class="p">,</span> <span class="nx">writable</span><span class="o">:</span><span class="kc">true</span>
 
     <span class="nx">oj</span><span class="p">.</span><span class="nx">addProperty</span> <span class="nx">obj</span><span class="p">,</span> <span class="nx">propName</span><span class="p">,</span> <span class="nx">propInfo</span>
 
   <span class="k">return</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojaddproperty">oj.addProperty</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">oj.addProperty = </span><span class="nf">(obj, propName, propInfo) -&gt;</span>
   <span class="k">throw</span> <span class="s">&#39;oj.addProperty: string expected for second argument&#39;</span> <span class="nx">unless</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">isString</span> <span class="nx">propName</span>
   <span class="k">throw</span> <span class="s">&#39;oj.addProperty: object expected for third argument&#39;</span> <span class="nx">unless</span> <span class="p">(</span><span class="nx">oj</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">propInfo</span><span class="p">)</span>
-  <span class="k">throw</span> <span class="s">&#39;oj.addProperty: get or value key expected in third argument&#39;</span> <span class="nx">unless</span> <span class="p">(</span><span class="nx">propInfo</span><span class="p">.</span><span class="nx">get</span><span class="o">?</span> <span class="o">or</span> <span class="nx">propInfo</span><span class="p">.</span><span class="nx">value</span><span class="o">?</span><span class="p">)</span>
 
   <span class="nx">_</span><span class="p">.</span><span class="nx">defaults</span> <span class="nx">propInfo</span><span class="p">,</span>
     <span class="nv">enumerable: </span><span class="kc">true</span>
@@ -620,7 +619,11 @@ precicely what must be serialized with no adjustment.</p></div></div><div class=
       <span class="nx">options</span><span class="p">.</span><span class="nx">html</span><span class="o">?</span><span class="p">.</span><span class="nx">push</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">ojml</span><span class="si">}</span><span class="s">&quot;</span>
       <span class="nx">options</span><span class="p">.</span><span class="nx">dom</span><span class="o">?</span><span class="p">.</span><span class="nx">appendChild</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createTextNode</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">ojml</span><span class="si">}</span><span class="s">&quot;</span>
 
-    <span class="k">when</span> <span class="s">&#39;function&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Wrap function call to allow full oj generation within ojml</p></div></div><div class="code"><div class="wrapper">      <span class="nx">_compileAny</span> <span class="p">(</span><span class="nx">oj</span> <span class="nx">ojml</span><span class="p">),</span> <span class="nx">options</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Do nothing for 'null', 'undefined', 'object'</p></div></div><div class="code"><div class="wrapper">    <span class="k">when</span> <span class="s">&#39;null&#39;</span> <span class="k">then</span> <span class="k">break</span>
+    <span class="k">when</span> <span class="s">&#39;function&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Wrap function call to allow full oj generation within ojml</p></div></div><div class="code"><div class="wrapper">      <span class="nx">_compileAny</span> <span class="p">(</span><span class="nx">oj</span> <span class="nx">ojml</span><span class="p">),</span> <span class="nx">options</span>
+
+    <span class="k">when</span> <span class="s">&#39;date&#39;</span>
+      <span class="nx">options</span><span class="p">.</span><span class="nx">html</span><span class="o">?</span><span class="p">.</span><span class="nx">push</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">ojml</span><span class="p">.</span><span class="nx">toLocaleString</span><span class="p">()</span><span class="si">}</span><span class="s">&quot;</span>
+      <span class="nx">options</span><span class="p">.</span><span class="nx">dom</span><span class="o">?</span><span class="p">.</span><span class="nx">appendChild</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createTextNode</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">ojml</span><span class="p">.</span><span class="nx">toLocaleString</span><span class="p">()</span><span class="si">}</span><span class="s">&quot;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Do nothing for 'null', 'undefined', 'object'</p></div></div><div class="code"><div class="wrapper">    <span class="k">when</span> <span class="s">&#39;null&#39;</span> <span class="k">then</span> <span class="k">break</span>
     <span class="k">when</span> <span class="s">&#39;undefined&#39;</span> <span class="k">then</span> <span class="k">break</span>
     <span class="k">when</span> <span class="s">&#39;object&#39;</span> <span class="k">then</span> <span class="k">break</span>
 
@@ -724,9 +727,8 @@ Example: @super.methodName(arguments...)</p></div></div><div class="code"><div c
 
   <span class="nx">args</span><span class="p">.</span><span class="nx">methods</span> <span class="o">?=</span> <span class="p">{}</span>
   <span class="nx">args</span><span class="p">.</span><span class="nx">properties</span> <span class="o">?=</span> <span class="p">{}</span>
-  <span class="nx">args</span><span class="p">.</span><span class="nx">constructor</span> <span class="o">?=</span> <span class="o">-&gt;</span>
-
-  <span class="nv">delay = </span><span class="s">&#39;__DELAYED__&#39;</span>
+  <span class="nx">args</span><span class="p">.</span><span class="nx">constructor</span> <span class="o">?=</span> <span class="o">-&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>When auto newing you need to delay construct the properties
+or they will be constructed twice.</p></div></div><div class="code"><div class="wrapper">  <span class="nv">delay = </span><span class="s">&#39;__DELAYED__&#39;</span>
   <span class="nv">Out = </span><span class="k">new</span> <span class="nb">Function</span><span class="p">(</span><span class="s">&quot;&quot;&quot;return function </span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">(){</span>
 <span class="s">    var _this = this;</span>
 <span class="s">    if ( !(this instanceof </span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">) )</span>
@@ -810,7 +812,8 @@ Wrapped with push/pop to ensure we don't oj outside of ourselves</p></div></div>
 
         <span class="vi">@_el = </span><span class="nx">dom</span>
     <span class="nv">$el:</span>
-      <span class="nv">get: </span><span class="o">-&gt;</span> <span class="nx">$</span><span class="p">(</span><span class="nx">@el</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Read only generated oj-guid</p></div></div><div class="code"><div class="wrapper">    <span class="nv">id: get: </span><span class="o">-&gt;</span> <span class="nx">@_id</span>
+      <span class="nv">get: </span><span class="o">-&gt;</span> <span class="nx">$</span><span class="p">(</span><span class="nx">@el</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>TODO: D I need this?
+Read only generated oj-guid</p></div></div><div class="code"><div class="wrapper">    <span class="nv">id: get: </span><span class="o">-&gt;</span> <span class="nx">@_id</span>
 
     <span class="nv">attributes:</span>
       <span class="nv">get: </span><span class="o">-&gt;</span> <span class="nx">@$el</span><span class="p">.</span><span class="nx">attributes</span><span class="p">()</span>
@@ -824,18 +827,23 @@ Wrapped with push/pop to ensure we don't oj outside of ourselves</p></div></div>
 Override this to create your own structure</p></div></div><div class="code"><div class="wrapper">    <span class="nv">make: </span><span class="o">-&gt;</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">div</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Find sub elements via jquery selector</p></div></div><div class="code"><div class="wrapper">    <span class="nv">$: </span><span class="o">-&gt;</span> <span class="nx">@$el</span><span class="p">.</span><span class="nx">find</span><span class="p">.</span><span class="nx">apply</span> <span class="nx">@</span><span class="p">,</span> <span class="nx">arguments</span>
 
     <span class="nv">toHTML: </span><span class="nf">(options) -&gt;</span>
-      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;---- CALLING toHTML&quot;</span>
       <span class="nx">@el</span><span class="p">.</span><span class="nx">outerHTML</span> <span class="o">+</span> <span class="p">(</span><span class="k">if</span> <span class="nx">options</span><span class="p">.</span><span class="nx">debug</span> <span class="k">then</span> <span class="s">&#39;\n&#39;</span> <span class="k">else</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
 
     <span class="nv">toDOM: </span><span class="o">-&gt;</span>
-      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;---- CALLING toDOM&quot;</span>
       <span class="nx">@el</span>
 
     <span class="nv">toString: </span><span class="o">-&gt;</span>
-      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">&quot;---- CALLING toHTML&quot;</span>
-      <span class="nx">@toHTML</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Detach element from dom</p></div></div><div class="code"><div class="wrapper">    <span class="nv">detach: </span><span class="o">-&gt;</span> <span class="k">throw</span> <span class="s">&#39;detach nyi&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>The implementation is to set el manipulate it, and remember how to set it back</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Attach element to dom where it use to be</p></div></div><div class="code"><div class="wrapper">    <span class="nv">attach: </span><span class="o">-&gt;</span> <span class="k">throw</span> <span class="s">&#39;attach nyi&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>The implementation is to unset el from detach</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojmodelview">oj.ModelView</h2>
+      <span class="nx">@toHTML</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Detach element from dom</p></div></div><div class="code"><div class="wrapper">    <span class="nv">detach: </span><span class="o">-&gt;</span> <span class="k">throw</span> <span class="s">&#39;detach nyi&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>The implementation is to set el manipulate it, and remember how to set it back</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Attach element to dom where it use to be</p></div></div><div class="code"><div class="wrapper">    <span class="nv">attach: </span><span class="o">-&gt;</span> <span class="k">throw</span> <span class="s">&#39;attach nyi&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>The implementation is to unset el from detach</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojcollectionview">oj.CollectionView</h2>
 
-<p>Model view base class</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.ModelView = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;ModelView&#39;</span>
+<p>Model view base class
+oj.CollectionView = oj.type 'CollectionView'
+  inherits: oj.View</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>properties:
+    models:
+      get: -> @<em>model
+      set: (v) -> @</em>model = v; return</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>methods:
+    m:-></p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojmodelview">oj.ModelView</h2>
+
+<p>Model view base class</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.ModelView = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;ModelView&#39;</span><span class="p">,</span>
   <span class="nv">inherits: </span><span class="nx">oj</span><span class="p">.</span><span class="nx">View</span>
 
   <span class="nv">properties:</span>
@@ -848,42 +856,37 @@ Override this to create your own structure</p></div></div><div class="code"><div
         <span class="k">return</span>
 
   <span class="nv">methods:</span>
-    <span class="nv">modelChange: </span><span class="o">-&gt;</span> <span class="c1">#optional override to handle modelChange events</span>
-    <span class="nv">viewChange: </span><span class="o">-&gt;</span> <span class="c1">#optional override to handle viewChange events</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojformview">oj.FormView</h2>
+    <span class="nv">modelChange: </span><span class="o">-&gt;</span> <span class="c1">#optional override</span>
+    <span class="nv">viewChange: </span><span class="o">-&gt;</span> <span class="c1">#optional override</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="">#</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper">  <span class="nx">When</span> <span class="nx">a</span> <span class="nx">collection</span> <span class="nx">view</span> <span class="nx">changes</span> <span class="nx">it</span> <span class="nx">updates</span> <span class="k">for</span> <span class="nx">each</span>
+    <span class="p">(</span><span class="nx">automatic</span><span class="p">)</span>
+    <span class="nx">Table</span>
+    <span class="nx">List</span>
 
-<p>A base class for form elements that adds the notion of key/value.</p>
+  <span class="nx">When</span> <span class="nx">a</span> <span class="nx">model</span> <span class="nx">view</span> <span class="nx">changes</span> <span class="nx">it</span> <span class="nx">updates</span> <span class="nx">itself</span>
 
-<pre><code>key is the attribute to set on the model as things change
-value is an accessor to the dom
+  <span class="nx">When</span> <span class="nx">a</span> <span class="nx">key</span> <span class="nx">model</span> <span class="nx">collection</span> <span class="nx">view</span> <span class="nx">updates</span> <span class="nx">it</span> <span class="nx">sets</span> <span class="nx">the</span> <span class="nx">value</span> <span class="nx">from</span> <span class="nx">the</span> <span class="nx">model</span>
+    <span class="p">(</span><span class="nx">automatic</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="">#</h1></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojmodelkeyview">oj.ModelKeyView</h2>
 
-formValue is the value sent to the form on submit
-formName is the name sent to the form on submit
-</code></pre></div></div><div class="code"><div class="wrapper"><span class="nv">oj.FormView = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;FormView&#39;</span>
-  <span class="nv">inherits: </span><span class="nx">oj</span><span class="p">.</span><span class="nx">ModelView</span>
+<p>Model key view base class</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.ModelKeyView = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;ModelKeyView&#39;</span><span class="p">,</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Inherit ModelView to handle model and bindings</p></div></div><div class="code"><div class="wrapper">  <span class="nv">inherits: </span><span class="nx">oj</span><span class="p">.</span><span class="nx">ModelView</span>
 
   <span class="nv">properties:</span>
     <span class="nv">key:</span>
       <span class="nv">get: </span><span class="o">-&gt;</span> <span class="nx">@_key</span>
       <span class="nv">set: </span><span class="nf">(v) -&gt;</span> <span class="vi">@_key = </span><span class="nx">v</span><span class="p">;</span> <span class="k">return</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Value directly gets and sets to the dom
 when it changes it must trigger viewChange</p></div></div><div class="code"><div class="wrapper">    <span class="nv">value:</span>
-      <span class="nv">get: </span><span class="o">-&gt;</span> <span class="k">throw</span> <span class="s">&#39;value get needs override&#39;</span>
-      <span class="nv">set: </span><span class="nf">(v) -&gt;</span> <span class="k">throw</span> <span class="s">&#39;value set needs override&#39;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Change handler can be set to track changes manually</p></div></div><div class="code"><div class="wrapper">    <span class="nv">change:</span>
-      <span class="nv">get: </span><span class="o">-&gt;</span> <span class="nx">@_change</span>
-      <span class="nv">set: </span><span class="nf">(v) -&gt;</span> <span class="vi">@_change = </span><span class="nx">v</span><span class="p">;</span> <span class="k">return</span>
+      <span class="nv">get: </span><span class="o">-&gt;</span> <span class="k">throw</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">@type</span><span class="si">}</span><span class="s">.value get needs override&quot;</span>
+      <span class="nv">set: </span><span class="nf">(v) -&gt;</span> <span class="k">throw</span> <span class="s">&quot;</span><span class="si">#{</span><span class="nx">@type</span><span class="si">}</span><span class="s">.value set needs override&quot;</span>
 
-    <span class="nv">formValue:</span>
-      <span class="nv">get: </span><span class="o">-&gt;</span> <span class="nx">@$el</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s">&#39;value&#39;</span><span class="p">)</span>
-      <span class="nv">set: </span><span class="nf">(v) -&gt;</span> <span class="nx">@$el</span><span class="p">.</span><span class="nx">attr</span><span class="p">(</span><span class="s">&#39;value&#39;</span><span class="p">,</span> <span class="nx">v</span><span class="p">);</span> <span class="k">return</span>
-
-  <span class="nv">methods:</span>
-    <span class="nv">modelChange: </span><span class="o">-&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Update value from model</p></div></div><div class="code"><div class="wrapper">      <span class="k">if</span> <span class="nx">@model</span><span class="o">?</span> <span class="o">and</span> <span class="nx">@key</span><span class="o">?</span>
+  <span class="nv">methods:</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>When the model changes update the value</p></div></div><div class="code"><div class="wrapper">    <span class="nv">modelChange: </span><span class="o">-&gt;</span>
+      <span class="k">if</span> <span class="nx">@model</span><span class="o">?</span> <span class="o">and</span> <span class="nx">@key</span><span class="o">?</span>
         <span class="vi">@value = </span><span class="nx">@model</span><span class="p">[</span><span class="nx">@key</span><span class="p">]</span>
+      <span class="k">return</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>When the view changes update the model</p></div></div><div class="code"><div class="wrapper">    <span class="nv">viewChange: </span><span class="o">-&gt;</span>
+      <span class="k">if</span> <span class="nx">@model</span><span class="o">?</span> <span class="o">and</span> <span class="nx">@key</span><span class="o">?</span>
+        <span class="nx">@model</span><span class="p">[</span><span class="nx">@key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@value</span>
+      <span class="k">return</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojtextbox">oj.TextBox</h2>
 
-    <span class="nv">viewChange: </span><span class="o">-&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Update model</p></div></div><div class="code"><div class="wrapper">      <span class="k">if</span> <span class="nx">@model</span><span class="o">?</span> <span class="o">and</span> <span class="nx">@key</span><span class="o">?</span>
-        <span class="nx">@model</span><span class="p">[</span><span class="nx">@key</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@value</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Trigger change event</p></div></div><div class="code"><div class="wrapper">      <span class="nx">@change</span><span class="o">?</span><span class="p">(</span><span class="nx">@</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojtextbox">oj.TextBox</h2>
-
-<p>TextBox control</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.TextBox = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;TextBox&#39;</span>
-  <span class="nv">inherits: </span><span class="nx">oj</span><span class="p">.</span><span class="nx">FormView</span>
+<p>TextBox control</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.TextBox = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;TextBox&#39;</span><span class="p">,</span>
+  <span class="nv">inherits: </span><span class="nx">oj</span><span class="p">.</span><span class="nx">ModelKeyView</span>
 
   <span class="nv">properties:</span>
     <span class="nv">value:</span>
@@ -894,8 +897,8 @@ when it changes it must trigger viewChange</p></div></div><div class="code"><div
     <span class="nv">make: </span><span class="nf">(props) -&gt;</span>
       <span class="nx">oj</span><span class="p">.</span><span class="nx">input</span> <span class="nx">type</span><span class="o">:</span><span class="s">&#39;text&#39;</span><span class="p">,</span> <span class="nv">change: </span><span class="o">=&gt;</span> <span class="nx">@viewChange</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojcheckbox">oj.CheckBox</h2>
 
-<p>CheckBox control</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.CheckBox = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;CheckBox&#39;</span>
-  <span class="nv">inherits: </span><span class="nx">oj</span><span class="p">.</span><span class="nx">FormView</span>
+<p>CheckBox control</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.CheckBox = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;CheckBox&#39;</span><span class="p">,</span>
+  <span class="nv">inherits: </span><span class="nx">oj</span><span class="p">.</span><span class="nx">ModelKeyView</span>
 
   <span class="nv">properties:</span>
     <span class="nv">value:</span>
@@ -911,11 +914,10 @@ when it changes it must trigger viewChange</p></div></div><div class="code"><div
 
   <span class="nv">methods:</span>
     <span class="nv">make: </span><span class="nf">(props) -&gt;</span>
-      <span class="nx">oj</span><span class="p">.</span><span class="nx">input</span> <span class="nx">type</span><span class="o">:</span><span class="s">&#39;checkbox&#39;</span><span class="p">,</span> <span class="nv">change: </span><span class="o">=&gt;</span> <span class="nx">@viewChange</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>viewChange: ->
-  @super.viewChange.apply @, arguments</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojtextarea">oj.TextArea</h2>
+      <span class="nx">oj</span><span class="p">.</span><span class="nx">input</span> <span class="nx">type</span><span class="o">:</span><span class="s">&#39;checkbox&#39;</span><span class="p">,</span> <span class="nv">change: </span><span class="o">=&gt;</span> <span class="nx">@viewChange</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojtextarea">oj.TextArea</h2>
 
-<p>TextArea control</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.TextArea = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;TextArea&#39;</span>
-  <span class="nv">inherits: </span><span class="nx">oj</span><span class="p">.</span><span class="nx">FormView</span>
+<p>TextArea control</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.TextArea = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;TextArea&#39;</span><span class="p">,</span>
+  <span class="nv">inherits: </span><span class="nx">oj</span><span class="p">.</span><span class="nx">ModelKeyView</span>
 
   <span class="nv">properties:</span>
     <span class="nv">value:</span>
@@ -925,10 +927,34 @@ when it changes it must trigger viewChange</p></div></div><div class="code"><div
   <span class="nv">methods:</span>
     <span class="nv">make: </span><span class="nf">(props) -&gt;</span>
       <span class="nx">oj</span><span class="p">.</span><span class="nx">textarea</span> <span class="nv">change: </span><span class="o">=&gt;</span> <span class="nx">@viewChange</span><span class="p">()</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>viewChange: ->
-  @super.viewChange.apply @, arguments</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojlist">oj.List</h2>
+  @super.viewChange.apply @, arguments</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojtable">oj.Table</h2>
 
-<p>List control</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>oj.List = oj.type 'List',
-  constructor: -></p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>methods:</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojlink">oj.Link</h2>
+<p>oj.Table = oj.type 'Table',
+  inherits: oj.CollectionView</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>properties:
+    rows: (list) ->
+    rowCount: ->
+    cellCount: -></p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>methods:
+    row: (r) ->
+    cell: (r, c) -></p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>oj.Table.Row = oj.type 'Table.Row',
+  inherits: oj.ModelView
+  properties:
+    row:
+      get: ->
+      set: (list) ->
+  methods:
+    cell: -></p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojlist">oj.List</h2>
+
+<p>List control</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.List = </span><span class="nx">oj</span><span class="p">.</span><span class="nx">type</span> <span class="s">&#39;List&#39;</span><span class="p">,</span>
+  <span class="nv">inherits: </span><span class="nx">oj</span><span class="p">.</span><span class="nx">CollectionView</span>
+
+  <span class="nv">properties:</span>
+    <span class="nv">count:</span>
+      <span class="nv">get: </span><span class="o">-&gt;</span> <span class="nx">$</span><span class="p">(</span><span class="s">&#39;&gt; li&#39;</span><span class="p">).</span><span class="nx">length</span>
+
+  <span class="nv">methods:</span>
+    <span class="nv">make: </span><span class="o">-&gt;</span>
+      <span class="nx">ul</span> <span class="nx">c</span><span class="o">:</span><span class="s">&#39;foo&#39;</span><span class="p">,</span>
+    <span class="nv">model: </span><span class="o">-&gt;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojlink">oj.Link</h2>
 
 <p>oj.Link = class Link inherits Control</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="ojsandbox">oj.sandbox</h2>
 

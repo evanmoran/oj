@@ -31,11 +31,8 @@ module.exports = ->
     right: ->
       _content.renderContent data
 
+
 data = [
-  {
-    section: 'What is OJ'
-    anchor: 'what-is-oj'
-    content: ->
-      p 'What is oj?'
-  }
+  h: 'What is OJ?', id: 'what-is-oj', d: ->
+    p '...'
 ]
