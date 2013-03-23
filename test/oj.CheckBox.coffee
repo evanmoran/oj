@@ -15,11 +15,10 @@ describe 'oj.CheckBox', ->
     checkbox = oj.CheckBox()
     expect(oj.isOJ checkbox).to.equal true
     expect(oj.typeOf checkbox).to.equal 'CheckBox'
-    expect(checkbox.id).to.be.a 'string'
     expect(checkbox.value).to.equal false
 
   it 'construct with value:true', ->
-    checkbox = oj.CheckBox value: true
+    checkbox = oj.CheckBox value:true
     expect(oj.typeOf checkbox).to.equal 'CheckBox'
     expect(checkbox.value).to.equal true
 

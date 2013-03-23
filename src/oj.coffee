@@ -230,6 +230,7 @@ ObjP = Object.prototype
 
 slice = ArrayP.slice
 unshift = ArrayP.unshift
+concat = ArrayP.concat
 
 oj.__ = _ = {}
 _.isCapitalLetter = (c) -> !!(c.match /[A-Z]/)
@@ -334,6 +335,24 @@ _.clone = (obj) ->
   return obj unless oj.isObject obj
   if oj.isArray obj then obj.slice() else _.extend {}, obj
 
+_.contains = (obj, target) ->
+  if not obj?
+    return false
+  if ArrayP.indexOf and obj.indexOf == ArrayP.indexOf
+    return obj.indexOf(target) != -1
+  _.any obj, (value) -> value == target
+
+_.some = _.any = (obj, iterator, context) ->
+    iterator ?= _.identity
+    result = false
+    if not obj?
+      return result
+    if ArrayP.some and obj.some == ArrayP.some
+      return obj.some iterator, context
+    _.each obj, (value, index, list) ->
+      if result or (result = iterator.call(context, value, index, list))
+        return breaker
+    return !!result
 
 # Utility: Iteration
 # ------------------------------------------------------------------------
@@ -440,6 +459,14 @@ _.defaults = (obj) ->
         obj[prop] = source[prop]
   ))
   obj
+
+_.omit = (obj) ->
+  copy = {}
+  keys = concat.apply ArrayP, slice.call(arguments, 1)
+  for key of obj
+    if not _.contains keys, key
+      copy[key] = obj[key]
+  copy
 
 _.uniqueSort = (array, isSorted = false) ->
   if not isSorted
@@ -1017,20 +1044,7 @@ _compileTag = (ojml, options) ->
   # Compile to html if requested
   if not options.ignore[tag]
 
-    # Alias c to class
-    _attributeCMeansClass attributes
-
-    # style takes objects
-    _attributeStyleAllowsObject attributes
-
-    # class takes arrays
-    _attributeClassAllowsArrays attributes
-
-    events = _attributesFilterOutEvents attributes
-
-    # TODO: Consider jsoning anything that isn't a string
-    # any keys that aren't strings are jsoned
-    # _attributesJSONAllKeys attributes
+    events = _attributesProcessedForOJ attributes
 
     # Add dom element with attributes
     if options.dom and document?
@@ -1120,6 +1134,28 @@ _attributesFilterOutEvents = (attr) ->
         delete attr[k]
   out
 
+# All the OJ magic for attributes
+_attributesProcessedForOJ = (attr) ->
+
+  # Alias c to class
+  _attributeCMeansClass attr
+
+  # style takes objects
+  _attributeStyleAllowsObject attr
+
+  # class takes arrays
+  _attributeClassAllowsArrays attr
+
+  # TODO: Consider jsoning anything that isn't a string
+  # any keys that aren't strings are jsoned
+  # _attributesJSONAllKeys attributes
+
+  # Filter out jquery events
+  events = _attributesFilterOutEvents attr
+
+  # Returns bindable events
+  events
+
 # oj.toDOM
 # ------------------------------------------------------------------------------
 # Make oj directly in the DOM
@@ -1183,7 +1219,7 @@ oj.toCSS = (options, ojml) ->
 
 # _.inherit
 # ------------------------------------------------------------------------------
-# Based on, but sadly, incompatable with coffeescript inheritance
+# Based on, but sadly incompatable with, coffeescript inheritance
 _.inherit = (child, parent) ->
 
   # Copy class properties and methods
@@ -1194,9 +1230,9 @@ _.inherit = (child, parent) ->
   ctor:: = parent::
   child:: = new ctor()
 
-  # Provide easy access for super methods
-  # Example: @super.methodName(arguments...)
-  child::super = parent::
+  # Provide easy access for base class methods
+  # Example: Parent.base.methodName(arguments...)
+  child.base = parent::
 
   return
 
@@ -1204,13 +1240,11 @@ _.inherit = (child, parent) ->
 # ------------------------------------------------------------------------------
 
 oj.type = (name, args = {}) ->
-
   throw 'oj.type: string expected for first argument' unless oj.isString name
   throw 'oj.type: object expected for second argument' unless oj.isObject args
 
   args.methods ?= {}
   args.properties ?= {}
-  args.constructor ?= ->
 
   # When auto newing you need to delay construct the properties
   # or they will be constructed twice.
@@ -1228,45 +1262,37 @@ oj.type = (name, args = {}) ->
   """
   )();
 
+  # Default the constructor to call its base
+  if args.base? and ((not args.constructor?) or (not args.hasOwnProperty('constructor')))
+    args.constructor = ->
+      Out.base?.constructor.apply @, arguments
+
   # Inherit if necessary
-  if args.inherits?
-    _.inherit Out, args.inherits
+  if args.base?
+    _.inherit Out, args.base
 
-  # Add the constructor and wrap it to automatically call super.constructor
-  oj.addMethod Out::, 'constructor', ->
+  # Add the constructor as a method
+  oj.addMethod Out::, 'constructor', args.constructor
 
-    # Call your super's constructor
-    if args.inherits?
-      (args.inherits)::constructor.apply @, arguments
-
-    # Then call your own constructor
-    try
-      args.constructor.apply @, arguments
-    catch e
-      throw e
-    return @
-
-  # Mark new type and its instances with a non-enumerable _type and _oj properties
+  # Mark new type and its instances with a non-enumerable type and isOJ properties
   typeProps =
     type: {value:name, writable:false, enumerable:false}
     isOJ: {value:true, writable:false, enumerable:false}
   oj.addProperties Out, typeProps
   oj.addProperties Out::, typeProps
 
-  # Add properties helper to instance and type
+  # Add properties helper to instance
   propKeys = (_.keys args.properties).sort()
   if Out::properties?
     propKeys = _.uniqueSortedUnion Out::properties, propKeys
   properties = value:propKeys, writable:false, enumerable:false
-  oj.addProperty Out, 'properties', properties
   oj.addProperty Out::, 'properties', properties
 
-  # Add methods helper to instance and type
+  # Add methods helper to instance
   methodKeys = (_.keys args.methods).sort()
   if Out::methods?
     methodKeys = _.uniqueSortedUnion Out::methods, methodKeys
   methods = value:methodKeys, writable:false, enumerable:false
-  oj.addProperty Out, 'methods', methods
   oj.addProperty Out::, 'methods', methods
 
   # Add methods to the type
@@ -1297,11 +1323,11 @@ oj.type = (name, args = {}) ->
 
   Out
 
-# optionsUnion:
+# unionArguments:
 # Take arguments and tranform them into options and args.
 # options is a union of all items in `arguments` that are objects
 # args is a concat of all arguments that aren't objects in the same order
-_.optionsUnion = (argList) ->
+_.unionArguments = (argList) ->
   obj = {}
   list = []
   for v in argList
@@ -1327,18 +1353,22 @@ oj.enum = (name, args) ->
 
 oj.View = oj.type 'View',
 
+
+
   # Views are special objects map properties together. This is a union of arguments
   # With the remaining arguments becoming a list
 
   constructor: ->
-    # Simplify arguments to a single object of properties and a single list of arguments
-    optionsUnion = _.optionsUnion arguments
+    # console.log "View.constructor: ", arguments
 
-    {options, args} = optionsUnion
+    # Simplify arguments to a single object of properties and a single list of arguments
+    unionArguments = _.unionArguments arguments
+
+    {options, args} = unionArguments
 
     # Generate id if missing
-    options.id ?= oj.id()
-    @_id = options.id
+    # options.id ?= oj.id()
+    # @_id = options.id
 
     # Views act like tag methods and support the div -> syntax.
     # Append this to parent
@@ -1348,7 +1378,10 @@ oj.View = oj.type 'View',
     # arguments directly to properties
     @set options
 
-    optionsUnion
+    options = _.omit options, 'id'
+
+    # All remaining options are set as attributes on the element
+    # @addAttributes options
 
   properties:
     el:
@@ -1364,7 +1397,7 @@ oj.View = oj.type 'View',
           return @_el if oj.isDOMElement @_el
 
         # Step three: create it ourselves
-        # Wrapped with push/pop to ensure we don't oj outside of ourselves
+        # Wrapped with push/pop to ensure we don't emit outside of ourselves
         _.argumentsPush()
         ojml = @make()
         _.argumentsPop()
@@ -1380,17 +1413,8 @@ oj.View = oj.type 'View',
     $el:
       get: -> $(@el)
 
-    # TODO: D I need this?
     # Read only generated oj-guid
     id: get: -> @_id
-
-    attributes:
-      get: -> @$el.attributes()
-      set: -> @$el.attributes arguments...
-
-    hidden:
-      get: -> $el.css('display') == 'none'
-      set: (v) -> if v then $el.hide() else $el.show()
 
   methods:
     # make: Return ojml that creates initial dom state
@@ -1399,6 +1423,32 @@ oj.View = oj.type 'View',
 
     # Find sub elements via jquery selector
     $: -> @$el.find.apply @, arguments
+
+    # addAttribute: (name,value) ->
+    #   attr = {}
+    #   attr[name] = value
+    #   @addAttributes attr
+
+    # Add attributes and apply the oj magic with jquery binding
+    addAttributes: (attributes) ->
+      attr = _.clone attributes
+
+      # Add attributes as object
+      if oj.isObject attr
+        for k,v of attr
+          @$el.attr k, v
+      return
+
+    # removeAttribute: (name) ->
+    #   attr = {}
+    #   attr[name] = 1
+    #   @removeAttribute attr
+
+    removeAttributes: (attributes) ->
+      if oj.isObject attributes
+        for k of attributes
+          @$el.removeAttr k
+      return
 
     toHTML: (options) ->
       @el.outerHTML + (if options.debug then '\n' else '')
@@ -1421,7 +1471,10 @@ oj.View = oj.type 'View',
 # ------------------------------------------------------------------------------
 # Model view base class
 # oj.CollectionView = oj.type 'CollectionView'
-#   inherits: oj.View
+#   constructor: ->
+#     console.log "CollectionView constructor"
+
+#   base: oj.View
 
 #   properties:
 #     models:
@@ -1435,7 +1488,18 @@ oj.View = oj.type 'View',
 # ------------------------------------------------------------------------------
 # Model view base class
 oj.ModelView = oj.type 'ModelView',
-  inherits: oj.View
+  base: oj.View
+
+  constructor: (args = {}) ->
+    # console.log "ModelView.constructor: ", arguments
+
+    # @set args
+    @model = args.model if args.model?
+    @value = args.value if args.value?
+
+    args_ = _.omit args, 'model', 'value'
+
+    oj.ModelView.base.constructor.apply @, [args_]
 
   properties:
     model:
@@ -1471,9 +1535,25 @@ oj.ModelView = oj.type 'ModelView',
 # ------------------------------------------------------------------------------
 # Model key view base class
 oj.ModelKeyView = oj.type 'ModelKeyView',
-
   # Inherit ModelView to handle model and bindings
-  inherits: oj.ModelView
+  base: oj.ModelView
+
+  constructor: (args = {}) ->
+    # console.log "ModelKeyView.constructor: ", arguments
+
+    # Bind properties
+    @key = args.key if args.key?
+    @live = args.live if args.live?
+
+    # Remove handled properties
+    args_ = _.omit args, 'key', 'live'
+
+    # Call super to bind model and value
+    oj.ModelKeyView.base.constructor.apply @, [args_]
+
+    # Update value if key is set
+    if @model? and @key?
+      @value = @model.get @key
 
   properties:
     key:
@@ -1485,6 +1565,11 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
     value:
       get: -> throw "#{@type}.value get needs override"
       set: (v) -> throw "#{@type}.value set needs override"
+
+    # Live indicates change events should be fired as fast as possible
+    live:
+      get: -> @_live
+      set: (v) -> @_live = v; return
 
   methods:
     # When the model changes update the value
@@ -1504,7 +1589,7 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
 # TextBox control
 
 oj.TextBox = oj.type 'TextBox',
-  inherits: oj.ModelKeyView
+  base: oj.ModelKeyView
 
   properties:
     value:
@@ -1513,14 +1598,17 @@ oj.TextBox = oj.type 'TextBox',
 
   methods:
     make: (props) ->
-      oj.input type:'text', change: => @viewChange()
+      oj.input type:'text', change: (e) =>
+        console.log 'TextBox change', e
+        @viewChange()
 
 # oj.CheckBox
 # ------------------------------------------------------------------------------
 # CheckBox control
 
 oj.CheckBox = oj.type 'CheckBox',
-  inherits: oj.ModelKeyView
+
+  base: oj.ModelKeyView
 
   properties:
     value:
@@ -1536,14 +1624,16 @@ oj.CheckBox = oj.type 'CheckBox',
 
   methods:
     make: (props) ->
-      oj.input type:'checkbox', change: => @viewChange()
+      oj.input type:'checkbox', change: (e) =>
+        console.log "CheckBox changed", e
+        @viewChange()
 
 # oj.TextArea
 # ------------------------------------------------------------------------------
 # TextArea control
 
 oj.TextArea = oj.type 'TextArea',
-  inherits: oj.ModelKeyView
+  base: oj.ModelKeyView
 
   properties:
     value:
@@ -1560,7 +1650,7 @@ oj.TextArea = oj.type 'TextArea',
 # oj.Table
 # ------------------------------------------------------------------------------
 # oj.Table = oj.type 'Table',
-#   inherits: oj.CollectionView
+#   base: oj.CollectionView
 
 #   properties:
 #     rows: (list) ->
@@ -1572,7 +1662,7 @@ oj.TextArea = oj.type 'TextArea',
 #     cell: (r, c) ->
 
 # oj.Table.Row = oj.type 'Table.Row',
-#   inherits: oj.ModelView
+#   base: oj.ModelView
 #   properties:
 #     row:
 #       get: ->
@@ -1585,7 +1675,7 @@ oj.TextArea = oj.type 'TextArea',
 # List control
 
 oj.List = oj.type 'List',
-  inherits: oj.CollectionView
+  base: oj.CollectionView
 
   properties:
     count:

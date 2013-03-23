@@ -11,6 +11,7 @@ describe 'oj.type', ->
   _parentConstructor = null
   Parent = oj.type 'Parent',
     constructor: ->
+
       expect(typeof @).to.equal 'object'
       expect(typeof @set).to.equal 'function'
       _parentConstructor = arguments[0]
@@ -49,16 +50,19 @@ describe 'oj.type', ->
 
   _childConstructor = null
   Child = oj.type 'Child',
-    inherits: Parent
+    base: Parent
 
     constructor: ->
+
+      Child.base.constructor.apply @, arguments
+
       expect(typeof @).to.equal 'object'
       expect(typeof @set).to.equal 'function'
       _childConstructor = arguments[0]
 
     methods:
       method: -> 'Child.method'
-      superMethod: -> @super.superMethod() + '.Child.superMethod'
+      superMethod: -> Child.base.superMethod() + '.Child.superMethod'
       childMethod: -> 'Child.childMethod'
 
     properties:
@@ -90,14 +94,15 @@ describe 'oj.type', ->
 
   _grandChildConstructor = null
   GrandChild = oj.type 'GrandChild',
-    inherits: Child
+    base: Child
 
     constructor: ->
+      GrandChild.base.constructor.apply @, arguments
       _grandChildConstructor = arguments[0]
 
     methods:
       method: -> 'GrandChild.method'
-      superMethod: -> @super.superMethod() + '.GrandChild.superMethod'
+      superMethod: -> GrandChild.base.superMethod() + '.GrandChild.superMethod'
       grandChildMethod: -> 'GrandChild.grandChildMethod'
 
     properties:
@@ -414,17 +419,21 @@ describe 'oj.type', ->
   it 'deeply inherited type calls constructor minimally', ->
     _increment = 0
     P = oj.type 'P',
-      constructor: -> _increment++
+      constructor: ->
+        _increment++
 
     C = oj.type 'C',
-      inherits: P
-      constructor: -> _increment++
+      base: P
+      constructor: ->
+        C.base.constructor.apply @, arguments
+        _increment++
 
     GC = oj.type 'GC',
-      inherits: C
-      constructor: -> _increment++
+      base: C
+      constructor: ->
+        GC.base.constructor.apply @, arguments
+        _increment++
 
-    _increment = 0
     p = new P()
     expect(_increment).to.equal 1
 
@@ -436,20 +445,24 @@ describe 'oj.type', ->
     gc = new GC()
     expect(_increment).to.equal 3
 
-  it 'deeply inherited type calls constructor minimally (without new)', ->
+  it 'deeply inherited type calls constructor minimally without new', ->
     _increment = 0
     P = oj.type 'P',
-      constructor: -> _increment++
+      constructor: ->
+        _increment++
 
     C = oj.type 'C',
-      inherits: P
-      constructor: -> _increment++
+      base: P
+      constructor: ->
+        C.base.constructor.apply @, arguments
+        _increment++
 
     GC = oj.type 'GC',
-      inherits: C
-      constructor: -> _increment++
+      base: C
+      constructor: ->
+        GC.base.constructor.apply @, arguments
+        _increment++
 
-    _increment = 0
     p = P()
     expect(_increment).to.equal 1
 
@@ -460,3 +473,42 @@ describe 'oj.type', ->
     _increment = 0
     gc = GC()
     expect(_increment).to.equal 3
+
+
+  it 'inherited type automatically creates constructor calling base', ->
+    # P constructor
+    _increment = 0
+    P = oj.type 'P',
+      constructor: (v) ->
+        if v?
+          @prop = v
+        _increment += @prop
+      properties:
+        prop: 24
+
+    C = oj.type 'C',
+      base: P
+      # Purposely don't create a constructor because the default constructor
+      # should be automatically implemented to call base.constructor
+      properties:
+        prop: 42
+
+    _increment = 0
+    p = new P()
+    expect(p.prop).to.equal 24
+    expect(_increment).to.equal 24
+
+    _increment = 0
+    c = new C()
+    expect(c.prop).to.equal 42
+    expect(_increment).to.equal 42
+
+    _increment = 0
+    p = P(84)
+    expect(p.prop).to.equal 84
+    expect(_increment).to.equal 84
+
+    _increment = 0
+    c = C(84)
+    expect(c.prop).to.equal 84
+    expect(_increment).to.equal 84
