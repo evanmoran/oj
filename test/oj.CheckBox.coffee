@@ -22,6 +22,12 @@ describe 'oj.CheckBox', ->
     expect(oj.typeOf checkbox).to.equal 'CheckBox'
     expect(checkbox.value).to.equal true
 
+  it 'construct with name', ->
+    name = 'CheckBoxName'
+    checkbox = oj.CheckBox name:'CheckBoxName'
+    expect(checkbox.name).to.not.exist
+    expect(checkbox.attributes.name).to.equal name
+
   it 'compile html', ->
     checkbox = oj.CheckBox(value:true)
     results = oj.compile html:true, dom:true, checkbox

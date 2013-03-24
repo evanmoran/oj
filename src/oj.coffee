@@ -1065,14 +1065,7 @@ _compileTag = (ojml, options) ->
           el.setAttribute attrName, attrValue
 
       # Bind events
-      for ek,ev of events
-        if $?
-          if oj.isArray ev
-            $(el)[ek].apply @, ev
-          else
-            $(el)[ek](ev);
-        else
-          console.error "oj: jquery is missing when binding a '#{ek}' event"
+      _attributesBindEventsToDOM events, el
 
     # Add tag with attributes
     if options.html
@@ -1125,7 +1118,7 @@ _attributeClassAllowsArrays = (attr) ->
 # Filter out jquery events
 _attributesFilterOutEvents = (attr) ->
   out = {}
-  if attr
+  if oj.isObject attr
     # Filter out attributes that are jqueryEvents
     for k,v of attr
       # If this attribute (k) is an event
@@ -1155,6 +1148,17 @@ _attributesProcessedForOJ = (attr) ->
 
   # Returns bindable events
   events
+
+# Bind events to dom
+_attributesBindEventsToDOM = (events, el) ->
+  for ek, ev of events
+    if $?
+      if oj.isArray ev
+        $(el)[ek].apply @, ev
+      else
+        $(el)[ek](ev);
+    else
+      console.error "oj: jquery is missing when binding a '#{ek}' event"
 
 # oj.toDOM
 # ------------------------------------------------------------------------------
@@ -1286,6 +1290,7 @@ oj.type = (name, args = {}) ->
   if Out::properties?
     propKeys = _.uniqueSortedUnion Out::properties, propKeys
   properties = value:propKeys, writable:false, enumerable:false
+  # propKeys.has = _.reduce propKeys, ((o,item) -> o[item.key] = true; o), {}
   oj.addProperty Out::, 'properties', properties
 
   # Add methods helper to instance
@@ -1293,6 +1298,7 @@ oj.type = (name, args = {}) ->
   if Out::methods?
     methodKeys = _.uniqueSortedUnion Out::methods, methodKeys
   methods = value:methodKeys, writable:false, enumerable:false
+  # methodKeys.has = _.reduce methodKeys, ((o,item) -> o[item.key] = true; o), {}
   oj.addProperty Out::, 'methods', methods
 
   # Add methods to the type
@@ -1301,12 +1307,26 @@ oj.type = (name, args = {}) ->
     # set: Set all properties on the object at once
     set: (k,v) ->
       obj = k
+      # Optionally take key, value instead of object
       if not oj.isObject k
         obj = {}
         obj[k] = v;
+
+      # Set all keys that are valid properties
       for key,value of obj
-        @[key] = value
+        if @has key
+          @[key] = value
       return
+
+    # has: Determine if property exists
+    # TODO: Make this O(1)
+    has: (k) ->
+      _.some @properties, (v) -> v == k
+
+    # can: Determine if method exists
+    # TODO: Make this O(1)
+    can: (k) ->
+      _.some @methods, (v) -> v == k
 
     # toJSON: Use properties to generate json
     toJSON: ->
@@ -1353,13 +1373,15 @@ oj.enum = (name, args) ->
 
 oj.View = oj.type 'View',
 
-
-
   # Views are special objects map properties together. This is a union of arguments
   # With the remaining arguments becoming a list
 
   constructor: ->
-    # console.log "View.constructor: ", arguments
+    console.log "View.constructor: ", arguments
+
+    # Views act like tag methods and support the div -> syntax.
+    # Append this to parent
+    _.argumentsAppend @
 
     # Simplify arguments to a single object of properties and a single list of arguments
     unionArguments = _.unionArguments arguments
@@ -1367,36 +1389,26 @@ oj.View = oj.type 'View',
     {options, args} = unionArguments
 
     # Generate id if missing
-    # options.id ?= oj.id()
-    # @_id = options.id
+    options.id ?= oj.id()
 
-    # Views act like tag methods and support the div -> syntax.
-    # Append this to parent
-    _.argumentsAppend @
-
-    # Views are smart and automatically apply constructor
+    # Views automatically set all options to their properties
     # arguments directly to properties
     @set options
 
-    options = _.omit options, 'id'
+    # Remove options that were set
+    options = _.omit options, @properties...
 
-    # All remaining options are set as attributes on the element
-    # @addAttributes options
+    # Views pass through remaining options to be attributes on the root element
+    # This can include jquery events and interpreted arguments
+    @attributes = options
 
   properties:
     el:
-      # Getting an element is the key to OJ. It takes a few steps:
       get: ->
-        # Step one: use the cached version if possible
+        # Use the cached version if possible
         return @_el if oj.isDOMElement @_el
 
-        # Step two: search for the element in the dom
-        # This will "awaken" this object to allow live editing
-        if $?
-          @_el = $('#' + @_id).get(0)
-          return @_el if oj.isDOMElement @_el
-
-        # Step three: create it ourselves
+        # Otherwise create it with @make
         # Wrapped with push/pop to ensure we don't emit outside of ourselves
         _.argumentsPush()
         ojml = @make()
@@ -1413,36 +1425,48 @@ oj.View = oj.type 'View',
     $el:
       get: -> $(@el)
 
-    # Read only generated oj-guid
-    id: get: -> @_id
+    attributes:
+      get: ->
+        out = {}
+        $.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
+        out
+      set: (v) -> @addAttributes v; return
 
   methods:
     # make: Return ojml that creates initial dom state
     # Override this to create your own structure
-    make: -> oj.div()
+    make: -> oj.div c:@type, id:@id ? oj.id()
 
     # Find sub elements via jquery selector
     $: -> @$el.find.apply @, arguments
 
-    # addAttribute: (name,value) ->
-    #   attr = {}
-    #   attr[name] = value
-    #   @addAttributes attr
+    addAttribute: (name,value) ->
+      attr = {}
+      attr[name] = value
+      @addAttributes attr
 
     # Add attributes and apply the oj magic with jquery binding
     addAttributes: (attributes) ->
+
       attr = _.clone attributes
+
+      events = _attributesProcessedForOJ attr
 
       # Add attributes as object
       if oj.isObject attr
         for k,v of attr
           @$el.attr k, v
+
+      # Bind events
+      if events?
+        _attributesBindEventsToDOM events, @el
+
       return
 
-    # removeAttribute: (name) ->
-    #   attr = {}
-    #   attr[name] = 1
-    #   @removeAttribute attr
+    removeAttribute: (name) ->
+      attr = {}
+      attr[name] = 1
+      @removeAttribute attr
 
     removeAttributes: (attributes) ->
       if oj.isObject attributes
@@ -1473,6 +1497,7 @@ oj.View = oj.type 'View',
 # oj.CollectionView = oj.type 'CollectionView'
 #   constructor: ->
 #     console.log "CollectionView constructor"
+#     oj.CollectionView.base.constructor.apply @, arguments
 
 #   base: oj.View
 
@@ -1491,7 +1516,7 @@ oj.ModelView = oj.type 'ModelView',
   base: oj.View
 
   constructor: (args = {}) ->
-    # console.log "ModelView.constructor: ", arguments
+    console.log "ModelView.constructor: ", arguments
 
     # @set args
     @model = args.model if args.model?
@@ -1539,7 +1564,7 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
   base: oj.ModelView
 
   constructor: (args = {}) ->
-    # console.log "ModelKeyView.constructor: ", arguments
+    console.log "ModelKeyView.constructor: ", arguments
 
     # Bind properties
     @key = args.key if args.key?
