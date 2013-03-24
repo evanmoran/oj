@@ -140,14 +140,16 @@ describe 'oj.type', ->
   it 'empty type', ->
     Empty = oj.type 'Empty', {}
     empty = new Empty()
-    expect(empty.type).to.equal 'Empty'
+    expect(empty.type).to.equal Empty
+    expect(empty.typeName).to.equal 'Empty'
     expect(empty.properties).to.deep.equal []
     expect(empty.methods).to.deep.equal []
 
   it 'empty type without new', ->
     Empty = oj.type 'Empty', {}
     empty = Empty()
-    expect(empty.type).to.equal 'Empty'
+    expect(empty.type).to.equal Empty
+    expect(empty.typeName).to.equal 'Empty'
     expect(empty.properties).to.deep.equal []
     expect(empty.methods).to.deep.equal []
 
@@ -196,6 +198,49 @@ describe 'oj.type', ->
     user = User nameWithDefault: 'Joseph'
     expect(user.nameWithDefault).to.equal 'Joseph'
 
+  it 'simple types have get and set', ->
+    T = oj.type 'T',
+      constructor: (args) ->
+        @set args
+      properties:
+        prop1: 42
+        prop2:
+          get: (v) -> @_prop2
+          set: (v) -> @_prop2 = v; return
+
+    t = new T(prop1: 1, prop2: 2)
+
+    # Get one at a time
+    expect(t.get('prop0')).to.not.exist
+    expect(t.get('prop1')).to.equal 1
+    expect(t.get('prop2')).to.equal 2
+
+    # Get all
+    getAll = t.get()
+    expect(getAll.prop1).to.equal 1
+    expect(getAll.prop2).to.equal 2
+
+    # Set one
+    t.set 'prop1', 11
+    expect(t.get 'prop1').to.equal 11
+    expect(t.get 'prop2').to.equal 2
+    expect(t.get().prop1).to.equal 11
+
+    # Set one that isn't a property
+    t.set 'prop0', 0
+    expect(t.get 'prop0').to.not.exist
+    expect(t.get().prop0).to.not.exist
+
+    # Set all
+    t.set prop0:'zero', prop1: 111, prop2: 222
+    expect(t.get('prop0')).to.not.exist
+    expect(t.get('prop1')).to.equal 111
+    expect(t.get('prop2')).to.equal 222
+    getAll = t.get()
+    expect(getAll.prop0).to.not.exist
+    expect(getAll.prop1).to.equal 111
+    expect(getAll.prop2).to.equal 222
+
   it 'base type', ->
     parent = new Parent()
     expect(parent.properties).to.deep.equal ["parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]
@@ -203,7 +248,7 @@ describe 'oj.type', ->
 
   it 'base type without new', ->
     parent = Parent()
-    expect(parent.type).to.equal 'Parent'
+    expect(parent.typeName).to.equal 'Parent'
     expect(parent.value).to.equal 'Parent.value'
     expect(parent.method()).to.equal 'Parent.method'
 
@@ -265,7 +310,8 @@ describe 'oj.type', ->
 
   it 'inherited type without new', ->
     child = Child()
-    expect(child.type).to.equal 'Child'
+    expect(child.type).to.equal Child
+    expect(child.typeName).to.equal 'Child'
     expect(child.childValue).to.equal 'Child.childValue'
     expect(child.value).to.equal 'Child.value'
     expect(child.method()).to.equal 'Child.method'
@@ -277,7 +323,8 @@ describe 'oj.type', ->
 
   it 'inherited type value property', ->
     child = new Child()
-    expect(child.type).to.equal 'Child'
+    expect(child.type).to.equal Child
+    expect(child.typeName).to.equal 'Child'
     expect(child.value).to.equal 'Child.value'
     expect(child.childValue).to.equal 'Child.childValue'
     expect(child.parentValue).to.equal 'Parent.parentValue'
@@ -348,7 +395,8 @@ describe 'oj.type', ->
 
   it 'deeply inherited type without new', ->
     grandChild = GrandChild()
-    expect(grandChild.type).to.equal 'GrandChild'
+    expect(grandChild.type).to.equal GrandChild
+    expect(grandChild.typeName).to.equal 'GrandChild'
     expect(grandChild.value).to.equal 'GrandChild.value'
     expect(grandChild.grandChildValue).to.equal 'GrandChild.grandChildValue'
     expect(grandChild.childValue).to.equal 'Child.childValue'
@@ -362,7 +410,8 @@ describe 'oj.type', ->
 
   it 'deeply inherited type value property', ->
     grandChild = new GrandChild()
-    expect(grandChild.type).to.equal 'GrandChild'
+    expect(grandChild.type).to.equal GrandChild
+    expect(grandChild.typeName).to.equal 'GrandChild'
     expect(grandChild.value).to.equal 'GrandChild.value'
     expect(grandChild.grandChildValue).to.equal 'GrandChild.grandChildValue'
     expect(grandChild.parentValue).to.equal 'Parent.parentValue'

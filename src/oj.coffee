@@ -206,7 +206,7 @@ oj.typeOf = (any) ->
   t = typeof any
   if t == 'object'
     if oj.isArray any               then t = 'array'
-    else if oj.isOJ any             then t = any.type
+    else if oj.isOJ any             then t = any.typeName
     else if oj.isRegEx any          then t = 'regexp'
     else if oj.isDate any            then t = 'date'
     else if oj.isDOMElement any     then t = 'element'
@@ -749,7 +749,7 @@ oj.tag.isClosed = (tag) ->
 for t in oj.tag.elements.all
   do (t) ->
     oj[t] = -> oj.tag t, arguments...
-    oj[t].type = t
+    oj[t].typeName = t
 
 # Customize a few tags
 
@@ -1015,7 +1015,7 @@ _compileTag = (ojml, options) ->
   tagType = typeof tag
 
   # Allow ojml's tag parameter to be 'table' or table or Table
-  tag = if (tagType == 'function' or tagType == 'object') and tag.type? then tag.type else tag
+  tag = if (tagType == 'function' or tagType == 'object') and tag.typeName? then tag.typeName else tag
 
   # Fail if we couldn't find a string by now
   throw new Error('oj.compile: tag is missing in array') unless oj.isString(tag) and tag.length > 0
@@ -1156,7 +1156,7 @@ _attributesBindEventsToDOM = (events, el) ->
       if oj.isArray ev
         $(el)[ek].apply @, ev
       else
-        $(el)[ek](ev);
+        $(el)[ek](ev)
     else
       console.error "oj: jquery is missing when binding a '#{ek}' event"
 
@@ -1280,7 +1280,8 @@ oj.type = (name, args = {}) ->
 
   # Mark new type and its instances with a non-enumerable type and isOJ properties
   typeProps =
-    type: {value:name, writable:false, enumerable:false}
+    type: {value:Out, writable:false, enumerable:false}
+    typeName: {value:name, writable:false, enumerable:false}
     isOJ: {value:true, writable:false, enumerable:false}
   oj.addProperties Out, typeProps
   oj.addProperties Out::, typeProps
@@ -1303,6 +1304,19 @@ oj.type = (name, args = {}) ->
 
   # Add methods to the type
   _.extend args.methods,
+
+    # get: Get all properties, or get a single property
+    get: (k) ->
+      if oj.isString k
+        if @has k
+          return @[k]
+        else
+          return undefined
+      else
+        out = {}
+        for p in @properties
+          out[p] = @[p]
+        out
 
     # set: Set all properties on the object at once
     set: (k,v) ->
@@ -1377,7 +1391,7 @@ oj.View = oj.type 'View',
   # With the remaining arguments becoming a list
 
   constructor: ->
-    console.log "View.constructor: ", arguments
+    # console.log "View.constructor: ", JSON.stringify arguments
 
     # Views act like tag methods and support the div -> syntax.
     # Append this to parent
@@ -1415,11 +1429,14 @@ oj.View = oj.type 'View',
         _.argumentsPop()
         dom = (oj.compile dom:true, html:false, css:false, ojml).dom
 
+        # Add reference to original oj object on dom
+        dom.oj = @
+
         # Add id and type if necessary
         $dom = $(dom)
         if not $dom.attr 'id'
           $dom.attr id:oj.id()
-        $dom.addClass @type
+        $dom.addClass @typeName
 
         @_el = dom
     $el:
@@ -1435,7 +1452,7 @@ oj.View = oj.type 'View',
   methods:
     # make: Return ojml that creates initial dom state
     # Override this to create your own structure
-    make: -> oj.div c:@type, id:@id ? oj.id()
+    make: -> oj.div c:@typeName, id:@id ? oj.id()
 
     # Find sub elements via jquery selector
     $: -> @$el.find.apply @, arguments
@@ -1496,7 +1513,7 @@ oj.View = oj.type 'View',
 # Model view base class
 # oj.CollectionView = oj.type 'CollectionView'
 #   constructor: ->
-#     console.log "CollectionView constructor"
+#     console.log "CollectionView constructor: ", arguments
 #     oj.CollectionView.base.constructor.apply @, arguments
 
 #   base: oj.View
@@ -1516,9 +1533,9 @@ oj.ModelView = oj.type 'ModelView',
   base: oj.View
 
   constructor: (args = {}) ->
-    console.log "ModelView.constructor: ", arguments
 
-    # @set args
+    # console.log "ModelView.constructor: ", JSON.stringify arguments
+
     @model = args.model if args.model?
     @value = args.value if args.value?
 
@@ -1530,31 +1547,20 @@ oj.ModelView = oj.type 'ModelView',
     model:
       get: -> @_model
       set: (v) ->
+        console.log "ModelView.model.set called"
         # Remove events on the old model
         if oj.isBackbone @_model
-          @_model.off 'change', @modelChange
+          @_model.off 'change', => @modelChange()
 
         # Add event hooks on the new model
         @_model = v;
         if oj.isBackbone @_model
-          @_model.on 'change', @modelChange
+          @_model.on 'change', => @modelChange()
         return
 
   methods:
     modelChange: -> #optional override
     viewChange: -> #optional override
-
-###
-  When a collection view changes it updates for each
-    (automatic)
-    Table
-    List
-
-  When a model view changes it updates itself
-
-  When a key model collection view updates it sets the value from the model
-    (automatic)
-###
 
 # oj.ModelKeyView
 # ------------------------------------------------------------------------------
@@ -1564,17 +1570,18 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
   base: oj.ModelView
 
   constructor: (args = {}) ->
-    console.log "ModelKeyView.constructor: ", arguments
+
+    # console.log "ModelKeyView.constructor: ", JSON.stringify arguments
 
     # Bind properties
     @key = args.key if args.key?
     @live = args.live if args.live?
 
     # Remove handled properties
-    args_ = _.omit args, 'key', 'live'
+    args = _.omit args, 'key', 'live'
 
     # Call super to bind model and value
-    oj.ModelKeyView.base.constructor.apply @, [args_]
+    oj.ModelKeyView.base.constructor.apply @, [args]
 
     # Update value if key is set
     if @model? and @key?
@@ -1585,28 +1592,31 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
       get: -> @_key
       set: (v) -> @_key = v; return
 
-    # Value directly gets and sets to the dom
-    # when it changes it must trigger viewChange
-    value:
-      get: -> throw "#{@type}.value get needs override"
-      set: (v) -> throw "#{@type}.value set needs override"
-
-    # Live indicates change events should be fired as fast as possible
     live:
       get: -> @_live
       set: (v) -> @_live = v; return
+
+    # Value directly gets and sets to the dom
+    # when it changes it must trigger viewChange
+    value:
+      get: -> throw "#{@typeName}.value get needs override"
+      set: (v) -> throw "#{@typeName}.value set needs override"
 
   methods:
     # When the model changes update the value
     modelChange: ->
       if @model? and @key?
-        @value = @model[@key]
+        @value = @model.get @key
       return
 
     # When the view changes update the model
     viewChange: ->
-      if @model? and @key?
-        @model[@key] = @value
+      # Delay view changes because many of them hook before controls update
+      setTimeout (=>
+        if @model? and @key?
+          @model.set @key, @value
+        return
+        ), 10
       return
 
 # oj.TextBox
@@ -1614,6 +1624,7 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
 # TextBox control
 
 oj.TextBox = oj.type 'TextBox',
+
   base: oj.ModelKeyView
 
   properties:
@@ -1623,9 +1634,10 @@ oj.TextBox = oj.type 'TextBox',
 
   methods:
     make: (props) ->
-      oj.input type:'text', change: (e) =>
-        console.log 'TextBox change', e
-        @viewChange()
+      oj.input type:'text',
+        keydown: => if @live then @viewChange(); return
+        keyup: => if @live then @viewChange(); return
+        change: => @viewChange(); return
 
 # oj.CheckBox
 # ------------------------------------------------------------------------------
@@ -1649,9 +1661,8 @@ oj.CheckBox = oj.type 'CheckBox',
 
   methods:
     make: (props) ->
-      oj.input type:'checkbox', change: (e) =>
-        console.log "CheckBox changed", e
-        @viewChange()
+      oj.input type:'checkbox',
+        change: => @viewChange(); return
 
 # oj.TextArea
 # ------------------------------------------------------------------------------
@@ -1667,10 +1678,11 @@ oj.TextArea = oj.type 'TextArea',
 
   methods:
     make: (props) ->
-      oj.textarea change: => @viewChange()
-
-    # viewChange: ->
-    #   @super.viewChange.apply @, arguments
+      oj.textarea
+        keydown: => if @live then @viewChange(); return
+        keyup: => if @live then @viewChange(); return
+        change: => @viewChange(); return
+      return
 
 # oj.Table
 # ------------------------------------------------------------------------------
