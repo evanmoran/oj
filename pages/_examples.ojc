@@ -1,496 +1,505 @@
 module.exports = [
-    {
-      name: ''
-      cs: """
-      """
-      js: """
-      """
-    }
-    {
-      name: 'Headers and Paragraphs'
-      cs: """
-        h1 'Headers and Paragraphs'
-        p 'Paragraphs and headers can be made by simply using tag functions.'
-        p 'Live change this text to see how it works!'
-      """
-      js: """
-        h1('Headers and Paragraphs');
-        p('Paragraphs and headers can be made by simply using tag functions.');
-        p(' Live change this text to see how it works!');
-      """
-    }
-    {
-      name: 'Markdown'
-      cs: """
-        # Use the markdown plugin
-        use require 'oj-markdown'
+  name: ''
+  cs: """
+  """
+  js: """
+  """
+,
+  name: 'Headers and Paragraphs'
+  cs: """
+    h1 'Headers and Paragraphs'
+    p 'Paragraphs and headers can be made by using tag functions.'
+    p 'Live change this text to see how it works!'
 
-        # The plugin enables this function:
-        markdown \"\"\"
-          # Markdown
+    h2 'Using the Editor'
+    p 'Toggle between CS/JS to switch between CoffeeScript and Javascript'
+    p 'Use the listbox on the right to switch between examples.'
+  """
+  js: """
+    h1('Headers and Paragraphs');
+    p('Paragraphs and headers can be made by using tag functions.');
+    p('Live change this text to see how it works!');
 
-          It is _so easy_ to use markdown with oj:
+    h2('Using the Editor');
+    p('Toggle between CS/JS to switch between CoffeeScript and Javascript');
+    p('Use the listbox on the right to switch between examples.');
+  """
+,
+  name: 'ID and Class'
+  cs: """
+    # Define id with 'id'
+    div id:'my-id', 'This div has id "my-id".'
 
-          1. Just `use` the plugin
-          2. Then call the `markdown` function!
+    # Define class with 'c' or 'class'
+    div c:'my-class', 'This div has class "my-class"'
+  """
+  js: """
+    // Define id with 'id'
+    div({id:'my-id'}, 'This div has id "my-id".');
+
+    // Define class with 'c' or 'class'
+    div({c:'my-class'}, 'This div has class "my-class"');
+  """
+,
+  name: 'Inline Styles'
+  cs: """
+    div 'This div has inline styles',
+
+      # Inline styles are defined with an object
+      style:
+
+        border:'1px solid lightgrey'
+        padding: '15px'
+
+        # camalCase is automatically seperated-by-dashes
+        borderRadius: '5px'
+  """
+  js: """
+    div('This div has inline styles', {
+
+      // Inline styles are defined with an object
+      style: {
+
+        border:'1px solid lightgrey',
+        padding: '15px',
+
+        // camalCase is automatically seperated-by-dashes
+        borderRadius: '5px'
+      }
+    });
+  """
+,
+  name: 'CSS Styles'
+  cs: """
+    div id:'my-id', 'This div has an id'
+    div c:'my-class', 'This div has a class'
+    div 'This div has neither'
+
+    css
+
+      '#my-id':
+        color: 'green'
+
+      '.my-class':
+          color: 'blue'
+
+      div:
+        color: 'red'
+  """
+  js: """
+    div({id:'my-id'}, 'This div has an id');
+    div({c:'my-class'}, 'This div has a class');
+    div('This div has neither');
+
+    css({
+
+      '#my-id':
+        {color: 'green'},
+
+      '.my-class':
+          {color: 'blue'},
+
+      div:
+        {color: 'red'}
+    });
+  """
+,
+  name: 'Tags with Click Events'
+  cs: """
+    div c:'button', 'Click Me',
+      # Click event binds automatically through jquery!
+      click: ->
+        alert 'Click works!'
+
+    # Make it look like a button
+    css
+      '.button':
+        border:'1px solid black'
+        width: 100
+        borderRadius: 5
+        padding: 5
+        boxShadow: '3px 3px 5px #999'
+        cursor:'pointer'
+  """
+  js: """
+    div({c:'button'}, 'Click Me', {
+      // Click event binds automatically through jquery!
+      click: function(){
+        alert('Click works!');
+      }
+    });
+
+    // Make it look like a button
+    css ({
+      '.button': {
+        border:'1px solid black',
+        width: 100,
+        borderRadius: 5,
+        padding: 5,
+        boxShadow: '3px 3px 5px #999',
+        cursor:'pointer'
+      }
+    });
+  """
+,
+  name: 'Tags with Several Attributes'
+  cs: """
+    div c:'my-class', id: 'my-id',
+      'This div has three attributes (click me to see)',
+
+      # Attributes can be defined before or after the content
+      'data-id': '1234'
+
+      click: (e) ->
+        $target = $(e.target)
+        alert \"\"\"
+          data-id: #\{$target.attr('data-id')\}
+          class:   #\{$target.attr('class')\}
+          id:      #\{$target.attr('id')\}
         \"\"\"
-      """
-      js: """
-        // Use the markdown plugin
-        use(require('oj-markdown'));
+  """
+  js: """
+    div({c:'my-class', id: 'my-id'},
+      'This div has three attributes (click me to see)', {
+      // Attributes can be defined before or after the content
+      'data-id': '1234',
 
-        // The plugin enables this function:
-        markdown(
-          "# Markdown                                  \\n" +
-          "                                            \\n" +
-          "It is _so easy_ to use markdown with oj:    \\n" +
-          "                                            \\n" +
-          "1. Just `use` the plugin                    \\n" +
-          "2. Then call the `markdown` function!       \\n"
-        );
-      """
-    }
-    {
-      name: 'Mustache'
-      cs: """
-        json =
-          name:'Evan'
-          twitter:'evanmoran'
+      click: function(e) {
+        $target = $(e.target)
+        alert( "data-id: " + $target.attr('data-id') + "\\n" +
+               "class: "   + $target.attr('class')   + "\\n" +
+               "id: "      + $target.attr('id') );
+      }
+    });
+  """
+,
+  name: 'Create a Type'
+  cs: """
+    User = type 'User',
+      # Types can define constructors
+      constructor: (args) ->
+        # set is built into all types to bulk set properties
+        @set args
 
-        template = \"\"\"
-          <a href='http://twitter.com/{{twitter}}'>Follow {{name}} on Twitter</a>
-        \"\"\"
+      # Types can define properties
+      properties:
+        name: 'Default Name'
+        birthDate: null
 
-        mustache template, json
-      """
-      js: """
-        // Use the mustache plugin
-        use(require('oj-mustache'));
+      # Types can define methods
+      methods:
+        age: ->
+          # Calculate age from @birthDate
+          today = new Date()
+          age = today.getFullYear() - @birthDate.getFullYear()
+          m = today.getMonth() - @birthDate.getMonth()
+          if m < 0 or (m == 0 and today.getDate() < @birthDate.getDate())
+            age--
+          age
 
-        var json = {
-          name:'Evan',
-          twitter:'evanmoran'
-        };
+    user = User name: 'Joseph', birthDate: new Date 1945, 6, 23
 
-        var template = "<a href='http://twitter.com/{{twitter}}'>Follow {{name}} on Twitter</a>";
+    div user.name + " is " + user.age()
+  """
+  js: """
 
-        mustache(template, json);
-      """
-    }
-    {
-      name: 'Defining ID and Class'
-      cs: """
-        # Define id with 'id'
-        div id:'my-id', 'This div has id "my-id".'
+  """
+,
+  name: 'Create a Checkbox'
+  cs: """
+    CheckBox value:true, change: (control) ->
+      alert "The checkbox changed to: \#{control.value}"
+  """
+  js: """
+    CheckBox({value:true, change: function(control){
+      alert("The checkbox changed to: " + control.value);
+    }});
+  """
+,
+  name: 'Create a TextBox'
+  cs: """
+    TextBox value:'The text goes here', change: (control) ->
+      alert "The textbox changed to: \#{control.value}"
+  """
+  js: """
+    TextBox({value:'The text goes here', change: function(control){
+      alert("The textbox changed to: " + control.value);
+    }});
+  """
+,
+  name: 'Create a TextArea'
+  cs: """
+    TextArea value:'The text goes here', change: (control) ->
+      alert "The textarea changed to: \#{control.value}"
+  """
+  js: """
+    TextArea({value:'The text goes here', change: function(control){
+      alert("The textarea changed to: " + control.value);
+    }});
+  """
 
-        # Define class with 'c' or 'class'
-        div c:'my-class', 'This div has class "my-class"',
+,
+  name: 'Markdown'
+  cs: """
+    # Use the markdown plugin
+    use require 'oj-markdown'
 
-        css
-          '#my-id': color: 'purple'
-          '.my-class': color: 'blue'
-      """
-      js: """
-        // Define id with 'id'
-        div({id:'my-id'}, 'This div has id "my-id".');
+    # The plugin enables this function:
+    markdown \"\"\"
+      # Markdown
 
-        // Define class with 'c' or 'class'
-        div({c:'my-class'}, 'This div has class "my-class"');
+      It is _so easy_ to use markdown with oj:
 
-        css({
-          '#my-id': {color: 'purple'},
-          '.my-class': {color: 'blue'}
-        });
-      """
-    }
-    {
-      name: 'Tags with Inline Styles'
-      cs: """
-        div 'This div has an inline styles',
+      1. Just `use` the plugin
+      2. Then call the `markdown` function!
+    \"\"\"
+  """
+  js: """
+    // Use the markdown plugin
+    use(require('oj-markdown'));
 
-          # Inline styles are defined with and object
-          style:
+    // The plugin enables this function:
+    markdown(
+      "# Markdown                                  \\n" +
+      "                                            \\n" +
+      "It is _so easy_ to use markdown with oj:    \\n" +
+      "                                            \\n" +
+      "1. Just `use` the plugin                    \\n" +
+      "2. Then call the `markdown` function!       \\n"
+    );
+  """
+,
+  name: 'Mustache'
+  cs: """
+    json =
+      name:'Evan'
+      twitter:'evanmoran'
 
-            border:'1px solid lightgrey'
-            padding: '15px'
+    template = \"\"\"
+      <a href='http://twitter.com/{{twitter}}'>Follow {{name}} on Twitter</a>
+    \"\"\"
 
-            # camalCase is automatically seperated-by-dashes
-            borderRadius: '5px'
-      """
-      js: """
-        div('This div has an inline styles', {
+    mustache template, json
+  """
+  js: """
+    // Use the mustache plugin
+    use(require('oj-mustache'));
 
-          // Inline styles are defined with and object
-          style: {
+    var json = {
+      name:'Evan',
+      twitter:'evanmoran'
+    };
 
-            border:'1px solid lightgrey',
-            padding: '15px',
+    var template = "<a href='http://twitter.com/{{twitter}}'>Follow {{name}} on Twitter</a>";
 
-            // camalCase is automatically seperated-by-dashes
-            borderRadius: '5px'
-          }
-        });
-      """
-    }
-    {
-      name: 'Tags with Click Events'
-      cs: """
-        div c:'button', 'Click Me',
-          # Click event binds automatically through jquery!
-          click: ->
-            alert 'Click works!'
+    mustache(template, json);
+  """
+,
+  name: 'Creating a Template'
+  cs: """
+    # Define a simple template with a title and a content function
+    # Create a template that takes data as input and outputs the page
+    myTemplate = (data) ->
+      html ->
+        head ->
+          # Template the title
+          title data.title
+        body ->
+          h1 data.header
+          # Template the content
+          data.content()
 
-        # Make it look like a button
-        css
-          '.button':
-            border:'1px solid black'
-            width: 100
-            borderRadius: 5
-            padding: 5
-            boxShadow: '3px 3px 5px #999'
-            cursor:'pointer'
-      """
-      js: """
-        div({c:'button'}, 'Click Me', {
-          // Click event binds automatically through jquery!
-          click: function(){
-            alert('Click works!');
-          }
-        });
-
-        // Make it look like a button
-        css ({
-          '.button': {
-            border:'1px solid black',
-            width: 100,
-            borderRadius: 5,
-            padding: 5,
-            boxShadow: '3px 3px 5px #999',
-            cursor:'pointer'
-          }
-        });
-      """
-    }
-    {
-      name: 'Tags with Several Attributes'
-      cs: """
-        div c:'my-class', id: 'my-id',
-          'This div has three attributes (click me to see)',
-
-          # Attributes can be defined before or after the content
-          'data-id': '1234'
-
-          click: (e) ->
-            $target = $(e.target)
-            alert \"\"\"
-              data-id: #\{$target.attr('data-id')\}
-              class:   #\{$target.attr('class')\}
-              id:      #\{$target.attr('id')\}
-            \"\"\"
-      """
-      js: """
-        div({c:'my-class', id: 'my-id'},
-          'This div has three attributes (click me to see)', {
-          // Attributes can be defined before or after the content
-          'data-id': '1234',
-
-          click: function(e) {
-            $target = $(e.target)
-            alert( "data-id: " + $target.attr('data-id') + "\\n" +
-                   "class: "   + $target.attr('class')   + "\\n" +
-                   "id: "      + $target.attr('id') );
-          }
-        });
-      """
-    }
-    {
-      name: 'Create a Checkbox'
-      cs: """
-        CheckBox value:true, change: (control) ->
-          alert "The checkbox changed to: \#{control.value}"
-      """
-      js: """
-        CheckBox({value:true, change: function(control){
-          alert("The checkbox changed to: " + control.value);
-        }});
-      """
-    }
-    {
-      name: 'Create a TextBox'
-      cs: """
-        TextBox value:'The text goes here', change: (control) ->
-          alert "The textbox changed to: \#{control.value}"
-      """
-      js: """
-        TextBox({value:'The text goes here', change: function(control){
-          alert("The textbox changed to: " + control.value);
-        }});
-      """
-    }
-    {
-      name: 'Create a TextArea'
-      cs: """
-        TextArea value:'The text goes here', change: (control) ->
-          alert "The textarea changed to: \#{control.value}"
-      """
-      js: """
-        TextArea({value:'The text goes here', change: function(control){
-          alert("The textarea changed to: " + control.value);
-        }});
-      """
-    }
-    {
-      name: 'Use oj.type'
-      cs: """
-        User = type 'User',
-          # Types can define constructors like coffee-script
-          constructor: (args) ->
-            # Pass through arguments to properties
-            @set args
-
-          # Types can define properties
-          properties:
-            # Default to a string
-            name: 'Default Name'
-
-            # Default to null
-            birthDate: null
-
-          # Types can define methods
-          methods:
-            age: ->
-              # Calculate age from @birthDate
-              today = new Date()
-              age = today.getFullYear() - @birthDate.getFullYear()
-              m = today.getMonth() - @birthDate.getMonth()
-              if m < 0 or (m == 0 and today.getDate() < @birthDate.getDate())
-                age--
-              age
-
-        user = User name: 'Joseph', birthDate: new Date 1945, 6, 23
-
-        div user.name + " is " + user.age()
-      """
-      js: """
-
-      """
-    }
-    {
-      name: 'Create Template of Backbone'
-      cs: """
-        class UserModel extends Backbone.Model
-          # Helper backbone function to calculate age from birthdate
-          age: ->
-            today = new Date()
-            age = today.getFullYear() - @get('birthDate').getFullYear()
-            m = today.getMonth() - @get('birthDate').getMonth()
-            if m < 0 or (m == 0 and today.getDate() < @get('birthDate').getDate())
-              age--
-            age
-
-        user = new UserModel name: 'Joseph', birthDate: new Date(1945, 6, 23)
-        div user.get('name') + " is " + user.age()
-
-      """
-      js: """
-
-      """
-    }
-    {
-      name: 'Test - Bind a TextBox to a Model 2'
-      cs: """
-        Test = Backbone.Model.extend
-          initialize: ->
-            div 'Initialize called'
-          method:->
-            div 'Test.method called'
-
-        test = new Test prop:42
-
-        test.method()
-        div 'Test.prop = ', test.get('prop')
-      """
-    }
-    {
-      name: 'Creating a Template'
-      cs: """
-        # Define a simple template with a title and a content function
-        # Create a template that takes data as input and outputs the page
-        myTemplate = (data) ->
-          html ->
-            head ->
-              # Template the title
-              title data.title
-            body ->
-              h1 data.header
-              # Template the content
-              data.content()
-
-        # Run the template
-        myTemplate title:'My Title', header:'Creating a Template', content:->
-          p 'Templates are just functions that call html, head and body. Presto, they just work!'
-      """
-      js: """
-        // Define a simple template with a title and a content function
-        // Create a template that takes data as input and outputs the page
-        myTemplate = function(data){ return [
-          html,
-            [head,
-              [title, data.title]
-            ],
-            [body,
-              [h1, data.header],
-              // Template the content
-              data.content
-            ]
-          ];
-        }
-        // Run the template
-        myTemplate({ title:'My Title', header:'Creating a Template', content:function(){
-          p('Templates are just functions that call html, head and body. Presto, they just work!');
-        }});
-      """
-    }
-    {
-      name: 'Create a Partial'
-      cs: """
-        # Define a partial that creates a twitter link for a user
-        _userTwitterLink = (user) ->
-          a "Follow \#{user.name} on Twitter",
-            href: "http://twitter.com/\#{user.twitter}"
-
-        # Define some users
-        users = [
-          {name:'Evan', twitter:'evanmoran'}
-          {name:'James', twitter:'iamthelawton'}
-          {name:'Laura', twitter:'savinola'}
+    # Run the template
+    myTemplate title:'My Title', header:'Creating a Template', content:->
+      p 'Templates are just functions that call html, head and body. Presto, they just work!'
+  """
+  js: """
+    // Define a simple template with a title and a content function
+    // Create a template that takes data as input and outputs the page
+    myTemplate = function(data){ return [
+      html,
+        [head,
+          [title, data.title]
+        ],
+        [body,
+          [h1, data.header],
+          // Template the content
+          data.content
         ]
-
-        p 'Partials are just functions. This function turns a user into a Twitter link:'
-
-        for user in users
-          # Use the partial!
-          p _userTwitterLink user
-      """
-      js: """
-        // Define a partial that creates a twitter link for a user
-        _userTwitterLink = function(user){
-          a("Follow " + user.name + " on Twitter", {
-            href: "http://twitter.com/" + user.twitter});
-        };
-        // Define some users
-        users = [
-          {name:'Evan', twitter:'evanmoran'},
-          {name:'James', twitter:'iamthelawton'},
-          {name:'Laura', twitter:'savinola'}
-        ];
-
-        p('Partials are just functions. This function turns a user into a Twitter link:');
-
-        var user;
-        for(var ix = 0; ix < users.length; ix++){
-          user = users[ix];
-          // Use the partial!
-          p(_userTwitterLink(user));
-        }
-      """
+      ];
     }
-    {
-      name: 'Create a Table'
-      cs: """
-        table ->
-          tbody ->
-            tr ->
-              td 'A1'
-              td 'A2'
-              td 'A3'
-              td 'A4'
-            tr ->
-              # Loops work as you would hope!
-              for cell in ['B1','B2','B3','B4']
-                td cell
+    // Run the template
+    myTemplate({ title:'My Title', header:'Creating a Template', content:function(){
+      p('Templates are just functions that call html, head and body. Presto, they just work!');
+    }});
+  """
+,
+  name: 'Create a Partial'
+  cs: """
+    # Define a partial that creates a twitter link for a user
+    _userTwitterLink = (user) ->
+      a "Follow \#{user.name} on Twitter",
+        href: "http://twitter.com/\#{user.twitter}"
 
-          css
-            td:
-              border: '1px solid darkorange'
-              padding: 10
-      """
-      js: """
-        table(
-          [tbody,
-            [tr,
-              [td, 'A1'],
-              [td, 'A2'],
-              [td, 'A3'],
-              [td, 'A4']
-            ],
-            function(){
-              var cells = ['B1','B2','B3','B4'];
-              for(var ix = 0; ix < cells.length; ix++) {
-                td(cells[ix]);
-              }
-            }
-          ]
-        );
-        css({
-          td:{
-            border: '1px solid darkorange',
-            padding: 10
+    # Define some users
+    users = [
+      {name:'Evan', twitter:'evanmoran'}
+      {name:'James', twitter:'iamthelawton'}
+      {name:'Laura', twitter:'savinola'}
+    ]
+
+    p 'Partials are just functions. This function turns a user into a Twitter link:'
+
+    for user in users
+      # Use the partial!
+      _userTwitterLink user
+      br()
+  """
+  js: """
+    // Define a partial that creates a twitter link for a user
+    _userTwitterLink = function(user){
+      a("Follow " + user.name + " on Twitter", {
+        href: "http://twitter.com/" + user.twitter});
+    };
+    // Define some users
+    users = [
+      {name:'Evan', twitter:'evanmoran'},
+      {name:'James', twitter:'iamthelawton'},
+      {name:'Laura', twitter:'savinola'}
+    ];
+
+    p('Partials are just functions. This function turns a user into a Twitter link:');
+
+    var user;
+    for(var ix = 0; ix < users.length; ix++){
+      user = users[ix];
+      // Use the partial!
+      _userTwitterLink(user);
+      br();
+    }
+  """
+,
+  name: 'Create Template from Backbone'
+  cs: """
+    # Create a UserModel with name, birthDate, and age
+    class UserModel extends Backbone.Model
+      age: ->
+        today = new Date()
+        age = today.getFullYear() - @get('birthDate').getFullYear()
+        m = today.getMonth() - @get('birthDate').getMonth()
+        if m < 0 or (m == 0 and today.getDate() < @get('birthDate').getDate())
+          age--
+        age
+
+    # Create a user template
+    _userTemplate = (user) ->
+      div "\#{user.get('name')} was born in \#{user.get('birthDate').getFullYear()} and is \#{user.age()}"
+
+    # Create the user
+    user = new UserModel name: 'Joseph', birthDate: new Date(1945, 6, 23)
+
+    # Template the user
+    _userTemplate user
+  """
+  js: """
+
+  """
+,
+  name: 'Bind Model to TextBox'
+  cs: """
+    class UserModel extends Backbone.Model
+    user = new UserModel name:'Sid', isApproved:false
+
+    div "user: \#{JSON.stringify(user.attributes)}"
+
+    p 'Adjust the model:'
+
+    TextBox model:user, key:'name', live:true
+    CheckBox model:user, key:'isApproved'
+
+    p 'Everything is synchronized:'
+
+    TextBox model:user, key:'name', live:true
+    CheckBox model:user, key:'isApproved'
+  """
+,
+  name: 'Create a Table'
+  cs: """
+    table ->
+      tbody ->
+        tr ->
+          td 'A1'
+          td 'A2'
+          td 'A3'
+          td 'A4'
+        tr ->
+          # Loops work as you would hope!
+          for cell in ['B1','B2','B3','B4']
+            td cell
+
+      css
+        td:
+          border: '1px solid darkorange'
+          padding: 10
+  """
+  js: """
+    table(
+      [tbody,
+        [tr,
+          [td, 'A1'],
+          [td, 'A2'],
+          [td, 'A3'],
+          [td, 'A4']
+        ],
+        function(){
+          var cells = ['B1','B2','B3','B4'];
+          for(var ix = 0; ix < cells.length; ix++) {
+            td(cells[ix]);
           }
-        });
-      """
-    }
-    {
-      name: 'Create a Table Partial'
-      cs: """
-        # Create a partial that creates a table from its
-        # header (a list of strings) and its rows (a list of lists)
-        makeTable = (header, rows) ->
+        }
+      ]
+    );
+    css({
+      td:{
+        border: '1px solid darkorange',
+        padding: 10
+      }
+    });
+  """
+,
+  name: 'Create a Table Partial'
+  cs: """
+    # Create a partial that creates a table from its
+    # header (a list of strings) and its rows (a list of lists)
+    makeTable = (header, rows) ->
 
-          table ->
-            # Define headers
-            thead ->
-              tr ->
-                for h in header
-                  th h
+      table ->
+        # Define headers
+        thead ->
+          tr ->
+            for h in header
+              th h
 
-            # Define rows
-            tbody ->
-              for row in rows
-                tr ->
-                  for column in row
-                    td column
+        # Define rows
+        tbody ->
+          for row in rows
+            tr ->
+              for column in row
+                td column
 
-        # Make it by calling the function!
-        div ->
-          makeTable ['H1', 'H2', 'H3', 'H4'], [
-            ['A1','A2','A3','A4']
-            ['B1','B2','B3','B4']
-            ['C1','C2','C3','C4']
-          ]
-          css
-            th:
-              color: 'darkorange'
-            td:
-              backgroundColor: 'orange'
-              padding:'50px'
-      """
-    }
-    {
-      name: 'Example: type'
-      cs: """
-        Person = type "Person",
-          constructor: (args) ->
-            @set args
-          properties:
-            name: null
-            birthdate: null
-            age:
-              get: ->
-                @birthdate - (new Date)
+    # Make it by calling the function!
+    div ->
+      makeTable ['H1', 'H2', 'H3', 'H4'], [
+        ['A1','A2','A3','A4']
+        ['B1','B2','B3','B4']
+        ['C1','C2','C3','C4']
+      ]
+      css
+        th:
+          color: 'darkorange'
+        td:
+          backgroundColor: 'orange'
+          padding:'50px'
+  """
 
-      """
-      js: """
-      """
-    }
-  ]
+]

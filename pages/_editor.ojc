@@ -92,7 +92,6 @@ module.exports = (default_code) ->
         float:'right'
         height: '100%'
         zIndex: 10
-        fontSize: '20px'
         marginLeft:'8px'
 
       '.editor-language-tab':
@@ -160,7 +159,6 @@ recompile = ->
 
   if isCS()
     code = getEditor editor_cs_id
-    console.log "code: ", code
 
     try
       code = CoffeeScript.compile code, bare:true

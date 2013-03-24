@@ -176,27 +176,121 @@ data = [
 
     """
     items: [
-      h:'type', id:'type', d: ->
+      h:'oj.type', id:'type', d: ->
         markdown """
           This method creates types
 
-          All types created with [type](#type) contain this interface:
+          Example: Create a User Type
+
+              # Define type user
+              User = oj.type 'User',
+                properties:
+                  name: null
+                  birthDate: null
+                methods:
+                  # Calculate age from @birthDate
+                  age: ->
+                    today = new Date()
+                    age = today.getFullYear() - @birthDate.getFullYear()
+                    m = today.getMonth() - @birthDate.getMonth()
+                    if m < 0 or (m == 0 and today.getDate() < @birthDate.getDate())
+                      age--
+                    age
+
+              # Create a user
+              user = new User name:'Kelly', birthDate: new Date(1969, 0, 1)
+
+              # Manipulate the user
+              user.type               # => User
+              user.typeName           # => 'User'
+
+              user.name               # => 'Kelly'
+              user.birthDate          # => Date(1969, 0, 1)
+
+              user.get('name')        # => 'Kelly'
+              user.get()              # => {name:'Kelly', birthDate: Date(1969,0,1)}
+
+              user.properties         # => ['name', 'birthDate']
+              user.has('birthDate')   # => true
+              user.has('fakeProp')    # => false
+
+              user.methods            # => ['age']
+              user.can('age')         # => true
+              user.can('fakeMethod')  # => false
+
+              user.name = 'Ted'       # => name is set to 'Ted'
+              user.set('name', 'Jim') # => name is set to Jim
+
+        """
+    ,
+      h:'Type', id:'Type', d: ->
+        markdown """
+          All types created using [oj.type](#type) contain this interface:
         """
         properties [
           h:'type', id:'Type-type', d:"""
-            The name of the type
+            The type that made this instance
+
+                user.type
+
+                # => User
+          """
+        ,
+          h:'typeName', id:'Type-typeName', d:"""
+            The name of type that made this instance
+
+                user.typeName
+
+                # => "User"
           """
         ,
           h:'properties', id:'Type-properties', d:"""
             Array of all properties the type supports (readonly)
+
+                user.properties
+
+                # => ['name', 'birthDate']
+
           """
         ,
           h:'methods', id:'Type-methods', d:"""
             Array of all methods the type supports (readonly)
+
+                user.methods
+
+                # => ['age']
           """
         ]
         methods [
-          h:'toJSON', id:'Type-toJSON', d:"""
+          h:'get()', id:'Type-get', d:"""
+            Get all properties as an object
+
+                user.get()
+
+                # => {name:'Kelly', birthDate:Date(1969,0,1)}
+          """
+        ,
+          h:'get(prop)', id:'Type-get', d:"""
+            Get the value of property `prop`. `undefined` is returned if `prop` is not a valid property
+          """
+        ,
+          h:'set(prop,val)', id:'Type-set', d:"""
+            Set property `prop` to value `val`
+          """
+        ,
+          h:'set(props)', id:'Type-set', d:"""
+            Set all properties at once. `props` is an object mapping key to value. Invalid keys defined in `props` are ignored.
+          """
+        ,
+          h:'has(prop)', id:'Type-has', d:"""
+            Determine if string `prop` is a property of this instance
+          """
+        ,
+          h:'can(method)', id:'Type-has', d:"""
+            Determine if string `method` is a method of this instance
+          """
+        ,
+          h:'toJSON()', id:'Type-toJSON', d:"""
             Convert properties to json
           """
         ]

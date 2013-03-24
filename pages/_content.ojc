@@ -17,7 +17,7 @@ module.exports =
     contentCodeItems methods, 'method'
 
   renderInherits: (inherits) ->
-    div 'inherits:', c:'code-subheading inherit'
+    div 'base:', c:'code-subheading inherit'
     div c:'code-items', ->
       a inherits.h, c:'type', href:'#' + inherits.id
 
@@ -46,6 +46,7 @@ contentItem = (item, ix) ->
 
 contentCodeItems = (items, type) ->
   if items? and items.length > 0
+
     table c:"code-items #{type}", ->
       tbody ->
         for prop in items

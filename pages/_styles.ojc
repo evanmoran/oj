@@ -7,13 +7,15 @@ module.exports = ->
   h1Color = '#666'
   textColor = '#444'
   h2Color = textColor
-  codeColor = textColor
+  backgroundColor = '#fff'
+  codeColor = '#444'
   codeBackgroundColor = '#FEFAF3'
   codeLineColor = '#FFD36B'
   linkColor = '#E78B00'
-  methodLinkColor = '#C43900'
-  propertyLinkColor = '#CE7700'
   typeLinkColor = linkColor
+  functionLinkColor = linkColor
+  methodLinkColor = '#a64d09'
+  propertyLinkColor = '#b3820a'
 
   # Fonts
   familyMonospace = 'Inconsolata, Consolas, Courier New, monospace'
@@ -69,7 +71,7 @@ module.exports = ->
       fontFamily: familyMonospace
 
     'a.function':
-      color: linkColor
+      color: functionLinkColor
       fontFamily: familyMonospace
 
     'a.method':
@@ -108,12 +110,16 @@ module.exports = ->
 
     '.code-items':
       margin: '5px 0 10px 10px'
+      width: '100%'
+
+    '.code-items tr':
+      width: '100%'
 
     '.code-item':
       display: 'block'
       margin: '0 0 4px 0'
 
-    '.code-item-inhert':
+    '.code-item-base':
       fontFamily: familySanSarif
       fontSize: '14px'
       margin: '10px 0 10px 10px'
@@ -134,9 +140,17 @@ module.exports = ->
       margin: '0 0 0 20px'
       lineHeight: '20px'
       display: 'inline-block'
+      width: '100%'
 
     '.code-item-def p':
-      margin:'0 0 0 0'
+      margin:'0 0 10px 0'
+
+    '.code-item-def pre':
+      margin:'0 0 10px 0'
+      border:'0' # override
+      # borderLeft:"2px solid #{codeLineColor}"
+      # backgroundColor: backgroundColor # override
+      color: codeColor
 
     pre:
       border:"2px solid #{codeLineColor}"
