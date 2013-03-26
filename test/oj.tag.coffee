@@ -108,3 +108,18 @@ describe 'oj.tag', ->
       div 1
       div 2
     ).should.deep.equal ['oj', ['div',1],['div',2]]
+
+
+  it 'oj function stops global propagation', ->
+    ojml2 = null
+    ojml = div ->
+      div 1
+      ojml2 = oj ->
+        div 2
+        div 3
+
+    # oj stops propagation
+    ojml.should.deep.equal ['div', ['div', 1]]
+
+    # but correctly returns its children
+    ojml2.should.deep.equal ['oj', ['div', 2], ['div', 3] ]
