@@ -8,7 +8,10 @@
 # ------------------------------------------------------------------------------
 # Convert ojml to dom
 oj = module.exports = ->
-  oj.tag 'oj', arguments...
+  _.argumentsPush()
+  ojml = oj.tag 'oj', arguments...
+  _.argumentsPop()
+  ojml
 
 # Keep a reference to ourselves for templates to see
 oj.oj = oj
