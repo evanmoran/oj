@@ -29,35 +29,5 @@ module.exports =
 
       _editor """
         page ->
-          class UserModel extends Backbone.Model
-
-          `user = new UserModel({name:'Sid', isApproved:false});`
-
-          div "user: \#{JSON.stringify(user.attributes)}"
-
-          p 'Adjust the model:'
-
-          TextBox model:user, key:'name', live:true
-          CheckBox model:user, key:'isApproved'
-
-          p 'Everything is syncronized:'
-
-          TextBox model:user, key:'name', live:true
-          CheckBox model:user, key:'isApproved'
+          ListBox value:'Blond', options:['Blond', 'Brown','Red','Black']
       """
-
-      # """
-      #   CheckBox value:1, change: (e) ->
-      #     alert "The checkbox changed to: \#{e.target.checked}"
-      # """
-      # """
-      #   Sidebar = Backbone.Model.extend
-      #     promptColor: ->
-      #       cssColor = prompt("Please enter a CSS color:")
-      #       @set({color: cssColor})
-      # """
-      # """
-      #   h1 'OJ: Live Editor'
-      #   p 'Step 1: Learn about OJ using the pulldown to change examples'
-      #   p 'Step 2: Type in the box to live edit OJ'
-      # """

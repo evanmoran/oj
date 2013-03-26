@@ -1240,6 +1240,16 @@ _.inherit = (child, parent) ->
 
   return
 
+# oj.argumentShift
+# ------------------------------------------------------------------------------
+# Helper to make argument handling easier
+
+oj.argumentShift = (args, key) ->
+  if (oj.isObject args) and key? and args[key]?
+    value = args[key]
+    delete args[key]
+  value
+
 # oj.type
 # ------------------------------------------------------------------------------
 
@@ -1429,9 +1439,6 @@ oj.View = oj.type 'View',
         _.argumentsPop()
         dom = (oj.compile dom:true, html:false, css:false, ojml).dom
 
-        # Add reference to original oj object on dom
-        dom.oj = @
-
         # Add id and type if necessary
         $dom = $(dom)
         if not $dom.attr 'id'
@@ -1532,22 +1539,19 @@ oj.View = oj.type 'View',
 oj.ModelView = oj.type 'ModelView',
   base: oj.View
 
-  constructor: (args = {}) ->
+  constructor: (args) ->
 
     # console.log "ModelView.constructor: ", JSON.stringify arguments
 
-    @model = args.model if args.model?
-    @value = args.value if args.value?
+    @model = oj.argumentShift args, 'model'
+    @value = oj.argumentShift args, 'value'
 
-    args_ = _.omit args, 'model', 'value'
-
-    oj.ModelView.base.constructor.apply @, [args_]
+    oj.ModelView.base.constructor.apply @, arguments
 
   properties:
     model:
       get: -> @_model
       set: (v) ->
-        console.log "ModelView.model.set called"
         # Remove events on the old model
         if oj.isBackbone @_model
           @_model.off 'change', => @modelChange()
@@ -1569,19 +1573,15 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
   # Inherit ModelView to handle model and bindings
   base: oj.ModelView
 
-  constructor: (args = {}) ->
+  constructor: (args) ->
 
     # console.log "ModelKeyView.constructor: ", JSON.stringify arguments
-
-    # Bind properties
-    @key = args.key if args.key?
-    @live = args.live if args.live?
-
-    # Remove handled properties
-    args = _.omit args, 'key', 'live'
+    @key = oj.argumentShift args, 'key'
+    # Default to true
+    @live = if not (args?.live?) then true else oj.argumentShift args, 'live'
 
     # Call super to bind model and value
-    oj.ModelKeyView.base.constructor.apply @, [args]
+    oj.ModelKeyView.base.constructor.apply @, arguments
 
     # Update value if key is set
     if @model? and @key?
@@ -1660,7 +1660,7 @@ oj.CheckBox = oj.type 'CheckBox',
         return
 
   methods:
-    make: (props) ->
+    make: ->
       oj.input type:'checkbox',
         change: => @viewChange(); return
 
@@ -1677,12 +1677,41 @@ oj.TextArea = oj.type 'TextArea',
       set: (v) -> @el.value = v; return
 
   methods:
-    make: (props) ->
+    make: ->
       oj.textarea
         keydown: => if @live then @viewChange(); return
         keyup: => if @live then @viewChange(); return
         change: => @viewChange(); return
-      return
+
+# oj.ListBox
+# ------------------------------------------------------------------------------
+# ListBox control
+
+oj.ListBox = oj.type 'ListBox',
+  constructor: (args) ->
+    @options = oj.argumentShift args, 'options'
+    oj.ListBox.base.constructor.apply @, arguments
+
+  base: oj.ModelKeyView
+
+  properties:
+    value:
+      get: -> @$el.val()
+      set: (v) -> @$el.val(v); return
+
+    options:
+      get: -> @_options
+      set: (v) ->
+        throw new Error('oj.ListBox::options is not an array') unless oj.isArray v
+        @_options = v
+        @$el.oj ->
+          for op in v
+            oj.option op
+          return
+        return
+
+  methods:
+    make: -> oj.select change: => @viewChange(); return
 
 # oj.Table
 # ------------------------------------------------------------------------------
@@ -1711,17 +1740,17 @@ oj.TextArea = oj.type 'TextArea',
 # ------------------------------------------------------------------------------
 # List control
 
-oj.List = oj.type 'List',
-  base: oj.CollectionView
+# oj.List = oj.type 'List',
+#   base: oj.CollectionView
 
-  properties:
-    count:
-      get: -> $('> li').length
+#   properties:
+#     count:
+#       get: -> $('> li').length
 
-  methods:
-    make: ->
-      ul c:'foo',
-    model: ->
+#   methods:
+#     make: ->
+#       ul c:'foo',
+#     model: ->
 
 # oj.Link
 # ------------------------------------------------------------------------------
@@ -1753,6 +1782,61 @@ oj.use = (plugin, settings = {}) ->
     oj.addProperty oj.sandbox, name, value:value, writable: false
 
 
+# jqueryExtendEachMap(fn)
+# -----------------------------------------------------------------------------
+#
+#     $.fn.myExtension = jqueryExtendEachMap (($el,args) ->
+#       $el     # => The jquery matched element
+#       args    # => Array of arguments
+#       return a non-null value to stop iteration and return value to caller
+#      ), (($el) ->
+#      ), isMap
+jqueryExtendEachMap = (cbEach, cbMap, isMap = 0) ->
+
+  ->
+    args = _.toArray arguments
+    $el = $(@)
+    # Map over jquery selection if no arguments
+    if isMap and cbMap and args.length == 0
+      arr = []
+      for i in [0...($el.length-1)]
+        out = cbMap $($el[i])
+        if out?
+          arr.push out
+      if arr.length == 1
+        return arr[0]
+      arr
+    else
+      # By default return this for chaining
+      out = $el
+      for i in [0...$el.length]
+        rvalue = cbEach $($el[i]), args
+        # Return first returned rvalue if one is returned
+        if rvalue?
+          return rvalue
+      $el
+
+# jQuery Extension: $.fn.oj
+# -----------------------------------------------------------------------------
+$.fn.oj = jqueryExtendEachMap (($el, args) ->
+
+  # No arguments return the first instance
+  if args.length == 0
+    return $el[0].oj
+
+  # Compile ojml
+  ojml = oj.apply null, args
+  dom = oj.toDOM ojml
+
+  # Reset content and append to dom
+  $el.html ''
+  dom = [dom] unless oj.isArray dom
+  for d in dom
+    $el.append d
+
+  return
+  ),
+  (($el) -> $el[0].oj), 1
 
 
 

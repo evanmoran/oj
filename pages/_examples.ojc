@@ -106,38 +106,16 @@ module.exports = [
 ,
   name: 'Tags with Click Events'
   cs: """
-    div c:'button', 'Click Me',
-      # Click event binds automatically through jquery!
+    # Events bind automatically through jQuery
+    div 'Click Me',
       click: ->
         alert 'Click works!'
-
-    # Make it look like a button
-    css
-      '.button':
-        border:'1px solid black'
-        width: 100
-        borderRadius: 5
-        padding: 5
-        boxShadow: '3px 3px 5px #999'
-        cursor:'pointer'
   """
   js: """
-    div({c:'button'}, 'Click Me', {
-      // Click event binds automatically through jquery!
+    // Events bind automatically through jQuery
+    div('Click Me', {
       click: function(){
         alert('Click works!');
-      }
-    });
-
-    // Make it look like a button
-    css ({
-      '.button': {
-        border:'1px solid black',
-        width: 100,
-        borderRadius: 5,
-        padding: 5,
-        boxShadow: '3px 3px 5px #999',
-        cursor:'pointer'
       }
     });
   """
@@ -229,15 +207,35 @@ module.exports = [
 ,
   name: 'Create a TextArea'
   cs: """
-    TextArea value:'The text goes here', change: (control) ->
-      alert "The textarea changed to: \#{control.value}"
+    TextArea value:'The text goes here'
   """
   js: """
-    TextArea({value:'The text goes here', change: function(control){
-      alert("The textarea changed to: " + control.value);
-    }});
+    TextArea({value:'The text goes here'});
   """
+,
+  name: 'Create a ListBox'
+  cs: """
+    ListBox value:'Red', options:['', 'Blond', 'Brown', 'Red', 'Black']
+  """
+  js: """
+    ListBox({value:'Red', options:['', 'Blond', 'Brown', 'Red', 'Black']});
+  """
+,
+  name: 'Bind a ListBox '
+  cs: """
+    class UserModel extends Backbone.Model
+    user = new UserModel hairColor: 'Red'
 
+    ListBox model:user, key:'hairColor', options:['', 'Blond', 'Brown', 'Red', 'Black']
+    TextBox model:user, key:'hairColor'
+  """
+  js: """
+    var UserModel = Backbone.Model.extend();
+    user = new UserModel({hairColor: 'Red'});
+
+    ListBox({model:user, key:'hairColor', options:['', 'Blond', 'Brown', 'Red', 'Black']});
+    TextBox({model:user, key:'hairColor'});
+  """
 ,
   name: 'Markdown'
   cs: """
@@ -405,22 +403,40 @@ module.exports = [
 
   """
 ,
-  name: 'Bind Model to TextBox'
+  name: 'Bind Model to Form Elements'
   cs: """
+    # Define backbone UserModel
     class UserModel extends Backbone.Model
+
+    # Instance user
     user = new UserModel name:'Sid', isApproved:false
 
-    div "user: \#{JSON.stringify(user.attributes)}"
+    p 'Controls are bound to a model and key:'
 
-    p 'Adjust the model:'
-
-    TextBox model:user, key:'name', live:true
+    TextBox model:user, key:'name'
     CheckBox model:user, key:'isApproved'
 
-    p 'Everything is synchronized:'
+    p 'Everything is syncronized:'
 
-    TextBox model:user, key:'name', live:true
+    TextArea model:user, key:'name'
     CheckBox model:user, key:'isApproved'
+  """
+  js: """
+    // Define backbone UserModel
+    var UserModel = Backbone.Model.extend();
+
+    // Instance user
+    user = new UserModel({name:'Sid', isApproved:false});
+
+    p('Controls are bound to a model and key:');
+
+    TextBox({model:user, key:'name'});
+    CheckBox({model:user, key:'isApproved'});
+
+    p('Everything is syncronized:');
+
+    TextArea({model:user, key:'name'});
+    CheckBox({model:user, key:'isApproved'});
   """
 ,
   name: 'Create a Table'
