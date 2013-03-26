@@ -3,11 +3,11 @@
 # ==============================================================================
 # A unified templating framework for the people. Thirsty people.
 
-
 # oj function
 # ------------------------------------------------------------------------------
 # Convert ojml to dom
 oj = module.exports = ->
+  # Prevent oj method from propagating
   _.argumentsPush()
   ojml = oj.tag 'oj', arguments...
   _.argumentsPop()
@@ -820,6 +820,7 @@ oj.compile = (options, ojml) ->
   if not ojml?
     ojml = options
     options = {}
+
   # Default options to compile everything
   options = _.defaults {}, options,
     html: true
@@ -1168,6 +1169,7 @@ _attributesBindEventsToDOM = (events, el) ->
 # Make oj directly in the DOM
 
 oj.toDOM = (options, ojml) ->
+
   # Options is optional
   if not oj.isObject options
     ojml = options
@@ -1391,82 +1393,59 @@ oj.enum = (name, args) ->
 
 # oj.View
 # ------------------------------------------------------------------------------
-# Properties
-#   $el           Reference el
-#   attributes    Initialize from element, $(selector), or ojml
-
-# Methods
-#   css
 
 oj.View = oj.type 'View',
 
   # Views are special objects map properties together. This is a union of arguments
   # With the remaining arguments becoming a list
 
-  constructor: ->
+  constructor: (args = {}) ->
     # console.log "View.constructor: ", JSON.stringify arguments
+
+    throw new Error("oj.#{@typeName}: constructor did not set this.el") unless oj.isDOM @el
 
     # Views act like tag methods and support the div -> syntax.
     # Append this to parent
     _.argumentsAppend @
 
-    # Simplify arguments to a single object of properties and a single list of arguments
-    unionArguments = _.unionArguments arguments
-
-    {options, args} = unionArguments
-
     # Generate id if missing
-    options.id ?= oj.id()
+    args.id ?= oj.id()
+
+    # Add typeName class
+    @$el.addClass @typeName
 
     # Views automatically set all options to their properties
     # arguments directly to properties
-    @set options
+    @set args
 
     # Remove options that were set
-    options = _.omit options, @properties...
+    args = _.omit args, @properties...
 
     # Views pass through remaining options to be attributes on the root element
     # This can include jquery events and interpreted arguments
-    @attributes = options
+    @addAttributes args
 
   properties:
-    el:
-      get: ->
-        # Use the cached version if possible
-        return @_el if oj.isDOMElement @_el
+    # Get element
+    el: null
 
-        # Otherwise create it with @make
-        # Wrapped with push/pop to ensure we don't emit outside of ourselves
-        _.argumentsPush()
-        ojml = @make()
-        _.argumentsPop()
-        dom = (oj.compile dom:true, html:false, css:false, ojml).dom
-
-        # Add id and type if necessary
-        $dom = $(dom)
-        if not $dom.attr 'id'
-          $dom.attr id:oj.id()
-        $dom.addClass @typeName
-
-        @_el = dom
+    # Get jquery-enabled element (readonly)
     $el:
       get: -> $(@el)
 
+    # Get all attributes (readonly)
     attributes:
       get: ->
         out = {}
         $.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
         out
-      set: (v) -> @addAttributes v; return
 
   methods:
-    # make: Return ojml that creates initial dom state
-    # Override this to create your own structure
-    make: -> oj.div c:@typeName, id:@id ? oj.id()
 
-    # Find sub elements via jquery selector
+    # Mirror backbone find sub elements via jquery selector
     $: -> @$el.find.apply @, arguments
 
+    # Add a single attribute
     addAttribute: (name,value) ->
       attr = {}
       attr[name] = value
@@ -1474,7 +1453,6 @@ oj.View = oj.type 'View',
 
     # Add attributes and apply the oj magic with jquery binding
     addAttributes: (attributes) ->
-
       attr = _.clone attributes
 
       events = _attributesProcessedForOJ attr
@@ -1487,28 +1465,33 @@ oj.View = oj.type 'View',
       # Bind events
       if events?
         _attributesBindEventsToDOM events, @el
-
       return
 
+    # Remove a single attribute
     removeAttribute: (name) ->
       attr = {}
       attr[name] = 1
       @removeAttribute attr
 
+    # Remove multiple attributes
     removeAttributes: (attributes) ->
       if oj.isObject attributes
         for k of attributes
           @$el.removeAttr k
+      else if oj.isArray attributes
+        for k in attributes
+          @$el.removeAttr k
       return
 
+    # Convert View to html
     toHTML: (options) ->
       @el.outerHTML + (if options.debug then '\n' else '')
 
-    toDOM: ->
-      @el
+    # Convert View to dom
+    toDOM: -> @el
 
-    toString: ->
-      @toHTML()
+    # Convert View to string (for debugging)
+    toString: -> @toHTML()
 
     # Detach element from dom
     detach: -> throw 'detach nyi'
@@ -1577,11 +1560,11 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
   base: oj.ModelView
 
   constructor: (args) ->
-
     # console.log "ModelKeyView.constructor: ", JSON.stringify arguments
     @key = oj.argumentShift args, 'key'
-    # Default to true
-    @live = if not (args?.live?) then true else oj.argumentShift args, 'live'
+
+    # Set live if it exists
+    @live = oj.argumentShift args, 'live' if args?.live?
 
     # Call super to bind model and value
     oj.ModelKeyView.base.constructor.apply @, arguments
@@ -1591,19 +1574,17 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
       @value = @model.get @key
 
   properties:
-    key:
-      get: -> @_key
-      set: (v) -> @_key = v; return
+    # Key used to access model
+    key: null
 
-    live:
-      get: -> @_live
-      set: (v) -> @_live = v; return
+    # Live update model as text changes
+    live: true
 
     # Value directly gets and sets to the dom
     # when it changes it must trigger viewChange
     value:
-      get: -> throw "#{@typeName}.value get needs override"
-      set: (v) -> throw "#{@typeName}.value set needs override"
+      get: -> throw "#{@typeName} value getter needs override"
+      set: (v) -> throw "#{@typeName} value setter needs override"
 
   methods:
     # When the model changes update the value
@@ -1630,25 +1611,36 @@ oj.TextBox = oj.type 'TextBox',
 
   base: oj.ModelKeyView
 
-  properties:
-    value:
-      get: -> @el.value
-      set: (v) -> @el.value = v; return
-
-  methods:
-    make: (props) ->
+  constructor: (args) ->
+    @el = oj.argumentShift(args, 'el') || oj.toDOM ->
       oj.input type:'text',
         keydown: => if @live then @viewChange(); return
         keyup: => if @live then @viewChange(); return
         change: => @viewChange(); return
+
+    oj.TextBox.base.constructor.apply @, arguments
+
+  properties:
+    value:
+      get: ->
+        v = @el.value
+        v = '' if not v? or v == 'undefined'
+        v
+      set: (v) -> @el.value = v; return
 
 # oj.CheckBox
 # ------------------------------------------------------------------------------
 # CheckBox control
 
 oj.CheckBox = oj.type 'CheckBox',
-
   base: oj.ModelKeyView
+
+  constructor: (args) ->
+    @el = oj.argumentShift(args, 'el') || oj.toDOM ->
+      oj.input type:'checkbox',
+        change: => @viewChange(); return
+
+    oj.CheckBox.base.constructor.apply @, arguments
 
   properties:
     value:
@@ -1662,11 +1654,6 @@ oj.CheckBox = oj.type 'CheckBox',
           @$el.removeAttr 'checked'
         return
 
-  methods:
-    make: ->
-      oj.input type:'checkbox',
-        change: => @viewChange(); return
-
 # oj.TextArea
 # ------------------------------------------------------------------------------
 # TextArea control
@@ -1674,28 +1661,34 @@ oj.CheckBox = oj.type 'CheckBox',
 oj.TextArea = oj.type 'TextArea',
   base: oj.ModelKeyView
 
-  properties:
-    value:
-      get: -> @el.value
-      set: (v) -> @el.value = v; return
-
-  methods:
-    make: ->
+  constructor: (args) ->
+    @el = oj.argumentShift(args, 'el') || oj.toDOM ->
       oj.textarea
         keydown: => if @live then @viewChange(); return
         keyup: => if @live then @viewChange(); return
         change: => @viewChange(); return
+
+    oj.TextArea.base.constructor.apply @, arguments
+
+  properties:
+    value:
+      get: -> @el.value
+      set: (v) -> @el.value = v; return
 
 # oj.ListBox
 # ------------------------------------------------------------------------------
 # ListBox control
 
 oj.ListBox = oj.type 'ListBox',
-  constructor: (args) ->
-    @options = oj.argumentShift args, 'options'
-    oj.ListBox.base.constructor.apply @, arguments
-
   base: oj.ModelKeyView
+
+  constructor: (args) ->
+    @el = oj.argumentShift(args, 'el') || oj.toDOM ->
+      oj.select change: => @viewChange(); return
+
+    @options = oj.argumentShift args, 'options'
+
+    oj.ListBox.base.constructor.apply @, arguments
 
   properties:
     value:
@@ -1712,9 +1705,6 @@ oj.ListBox = oj.type 'ListBox',
             oj.option op
           return
         return
-
-  methods:
-    make: -> oj.select change: => @viewChange(); return
 
 # oj.Table
 # ------------------------------------------------------------------------------
