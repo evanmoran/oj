@@ -8,8 +8,7 @@ oj.extend this
 
 describe 'oj.TextBox', ->
   it 'exists', ->
-    assert oj.TextBox != null, 'oj.TextBox is null'
-    oj.TextBox.should.be.a 'function'
+    expect(oj.TextBox).to.be.a 'function'
 
   it 'construct default', ->
     control = oj.TextBox()

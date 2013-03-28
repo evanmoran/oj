@@ -8,8 +8,7 @@ oj.extend this
 
 describe 'oj.TextArea', ->
   it 'exists', ->
-    assert oj.TextArea != null, 'oj.TextArea is null'
-    oj.TextArea.should.be.a 'function'
+    expect(oj.TextArea).to.be.a 'function'
 
   it 'construct default', ->
     control = oj.TextArea()
