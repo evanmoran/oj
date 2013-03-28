@@ -9,9 +9,13 @@
 oj = module.exports = ->
   # Prevent oj method from propagating
   _.argumentsPush()
-  ojml = oj.tag 'oj', arguments...
+  ojml = oj.emit.apply @, arguments
   _.argumentsPop()
   ojml
+
+# Emit arguments as if it was an oj tag function
+oj.emit = ->
+  ojml = oj.tag 'oj', arguments...
 
 # Keep a reference to ourselves for templates to see
 oj.oj = oj
@@ -1372,11 +1376,11 @@ oj.type = (name, args = {}) ->
 
   Out
 
-# unionArguments:
+# argumentsUnion:
 # Take arguments and tranform them into options and args.
 # options is a union of all items in `arguments` that are objects
 # args is a concat of all arguments that aren't objects in the same order
-_.unionArguments = (argList) ->
+oj.argumentsUnion = (argList) ->
   obj = {}
   list = []
   for v in argList
@@ -1402,7 +1406,7 @@ oj.View = oj.type 'View',
   constructor: (args = {}) ->
     # console.log "View.constructor: ", JSON.stringify arguments
 
-    throw new Error("oj.#{@typeName}: constructor did not set this.el") unless oj.isDOM @el
+    throw new Error("oj.#{@typeName}: constructor failed to set this.el") unless oj.isDOM @el
 
     # Views act like tag methods and support the div -> syntax.
     # Append this to parent
@@ -1439,6 +1443,11 @@ oj.View = oj.type 'View',
         out = {}
         $.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
         out
+
+    # Get id off of attribute
+    id:
+      get: -> @$el.attr 'id'
+      set: (v) -> @$el.attr 'id', v
 
   methods:
 
@@ -1501,23 +1510,167 @@ oj.View = oj.type 'View',
     attach: -> throw 'attach nyi'
       # The implementation is to unset el from detach
 
-# oj.CollectionView
+# oj.ModelsView
 # ------------------------------------------------------------------------------
-# Model view base class
-# oj.CollectionView = oj.type 'CollectionView'
-#   constructor: ->
-#     console.log "CollectionView constructor: ", arguments
-#     oj.CollectionView.base.constructor.apply @, arguments
+oj.ModelsView = oj.type 'ModelsView',
+  base: oj.View
 
-#   base: oj.View
+  constructor: (args) ->
+    console.log "ModelsView constructor: ", arguments
+
+    @each = oj.argumentShift args, 'each'
+    @models = oj.argumentShift args, 'models'
+
+    oj.ModelsView.base.constructor.apply @, arguments
+
+  properties:
+
+    each:
+      get: -> @_each
+      set: (v) ->
+        console.log "setting each"
+        @_each = v;
+        @modelsChange()
+        return
+
+    eachTag: oj.div
+
+    models:
+      get: -> @_models
+      set: (v) ->
+        console.log "setting models"
+
+        # Unbind events if @_models was a collection
+        if oj.isBackbone @_models
+          @_models.off 'add remove change sync', null, @
+
+        @_models = v
+
+        # Bind events if @_models is a collection
+        if oj.isBackbone @_models
+          @_models.on 'add', @modelAdd, @
+          @_models.on 'remove', @modelRemove, @
+          @_models.on 'change', @modelChange, @
+          @_models.on 'sync', @modelSync, @
+
+        # Set complete. Remake everything.
+        @modelsChange()
+        return
+
+  methods:
+    # Override make to make shit work
+    make: ->
+      throw "oj.#{typeName}: make not implemented"
+
+    modelsChange: -> #optional override
+      @make @models
+
+    modelAdd: (model, collection, options) ->
+      console.log "ModelsView.modelAdd: ", arguments
+      @add model, options.index
+
+    modelRemove: (model, collection, options) ->
+      console.log "ModelsView.modelRemove: ", arguments
+      @remove model, options.index
+
+    modelChange: (model, collection, options) ->
+      console.log "ModelsView.modelChange: ", arguments
+      # Do nothing? Seems the job of ModelViews..
+
+    modelSync: (model, collection, options) ->
+      console.log "ModelsView.modelSync: ", arguments
+      @make @models
+
+
+# oj.List
+# ------------------------------------------------------------------------------
+
+oj.List = oj.type 'List',
+  base: oj.ModelsView
+
+  constructor: ->
+    console.log "List constructor: ", arguments
+    {options, args} = oj.argumentsUnion arguments
+
+    console.log "options: ", options
+    console.log "args: ", args
+
+    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
+      oj.ul()
+
+    options.each ?= (model, el) ->
+      console.log "List.each default"
+      console.log "model in each: ", model
+      # id = if model?.id? then id: model.id else null
+      el model
+
+    # Take items from options then args
+    # @items = items = (oj.argumentShift options, 'items') if options.items?
+    # if not items? and args.length > 0
+    #   @items = args
+
+    # Args have been handled so don't pass them on
+    oj.List.base.constructor.apply @, [options]
+
+  properties:
+
+    items: null
+
+    count:
+      get: -> $('> li').length
+
+  methods:
+
+    make: (models) ->
+      return if not (@_models? and @_each?)
+      console.log "List.make"
+
+      models = if oj.isBackbone @_models then @_models.models else @_models
+      console.log "models: ", models
+      @$el.oj =>
+        # Apply each to models
+        for model in models
+          @each model, oj.li
+
+    # update: (models, changed) ->
+
+
+    item: (ix) ->
+      @$('> li').get(ix)
+
+    $item: (ix) ->
+      $(@$('> li').get(ix))
+
+    addItem: (ix = @count-1, ojml) ->
+
+    removeItem: (ix = @count-1, ojml) ->
+
+    moveItem: (ixFrom, ixTo) ->
+      ojml = @removeItem ixFrom
+      @addItem ixTo, ojml
+
+# oj.Table
+# ------------------------------------------------------------------------------
+# oj.Table = oj.type 'Table',
+#   base: oj.ModelsView
 
 #   properties:
-#     models:
-#       get: -> @_model
-#       set: (v) -> @_model = v; return
+#     rows: (list) ->
+#     rowCount: ->
+#     cellCount: ->
 
 #   methods:
-#     m:->
+#     row: (r) ->
+#     cell: (r, c) ->
+
+# oj.Table.Row = oj.type 'Table.Row',
+#   base: oj.ModelView
+#   properties:
+#     row:
+#       get: ->
+#       set: (list) ->
+#   methods:
+#     cell: ->
 
 # oj.ModelView
 # ------------------------------------------------------------------------------
@@ -1529,8 +1682,8 @@ oj.ModelView = oj.type 'ModelView',
 
     # console.log "ModelView.constructor: ", JSON.stringify arguments
 
-    @model = oj.argumentShift args, 'model'
     @value = oj.argumentShift args, 'value'
+    @model = oj.argumentShift args, 'model'
 
     oj.ModelView.base.constructor.apply @, arguments
 
@@ -1538,19 +1691,28 @@ oj.ModelView = oj.type 'ModelView',
     model:
       get: -> @_model
       set: (v) ->
-        # Remove events on the old model
+        # Unbind events on the old model
         if oj.isBackbone @_model
-          @_model.off 'change', => @modelChange()
+          @_model.off 'change', null, @
 
-        # Add event hooks on the new model
         @_model = v;
+
+        # Bind events on the new model
         if oj.isBackbone @_model
-          @_model.on 'change', => @modelChange()
+          @_model.on 'change', @modelChange, @
+
+        # Trigger change manually when settings new model
+        @modelChange()
         return
 
   methods:
-    modelChange: -> #optional override
-    viewChange: -> #optional override
+
+    # Override modelChange if you don't want a full remake
+    modelChange: ->
+      @$el.oj =>
+        @make @mode
+
+    make: (model) -> throw "oj.#{typeName}: make not implemented"
 
 # oj.ModelKeyView
 # ------------------------------------------------------------------------------
@@ -1569,10 +1731,6 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
     # Call super to bind model and value
     oj.ModelKeyView.base.constructor.apply @, arguments
 
-    # Update value if key is set
-    if @model? and @key?
-      @value = @model.get @key
-
   properties:
     # Key used to access model
     key: null
@@ -1581,10 +1739,10 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
     live: true
 
     # Value directly gets and sets to the dom
-    # when it changes it must trigger viewChange
+    # when it changes it must trigger viewChanged
     value:
-      get: -> throw "#{@typeName} value getter needs override"
-      set: (v) -> throw "#{@typeName} value setter needs override"
+      get: -> throw "#{@typeName} value getter not implemented"
+      set: (v) -> throw "#{@typeName} value setter not implemented"
 
   methods:
     # When the model changes update the value
@@ -1594,7 +1752,7 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
       return
 
     # When the view changes update the model
-    viewChange: ->
+    viewChanged: ->
       # Delay view changes because many of them hook before controls update
       setTimeout (=>
         if @model? and @key?
@@ -1612,11 +1770,11 @@ oj.TextBox = oj.type 'TextBox',
   base: oj.ModelKeyView
 
   constructor: (args) ->
-    @el = oj.argumentShift(args, 'el') || oj.toDOM ->
+    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
       oj.input type:'text',
-        keydown: => if @live then @viewChange(); return
-        keyup: => if @live then @viewChange(); return
-        change: => @viewChange(); return
+        keydown: => if @live then @viewChanged(); return
+        keyup: => if @live then @viewChanged(); return
+        change: => @viewChanged(); return
 
     oj.TextBox.base.constructor.apply @, arguments
 
@@ -1636,9 +1794,9 @@ oj.CheckBox = oj.type 'CheckBox',
   base: oj.ModelKeyView
 
   constructor: (args) ->
-    @el = oj.argumentShift(args, 'el') || oj.toDOM ->
+    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
       oj.input type:'checkbox',
-        change: => @viewChange(); return
+        change: => @viewChanged(); return
 
     oj.CheckBox.base.constructor.apply @, arguments
 
@@ -1662,11 +1820,11 @@ oj.TextArea = oj.type 'TextArea',
   base: oj.ModelKeyView
 
   constructor: (args) ->
-    @el = oj.argumentShift(args, 'el') || oj.toDOM ->
+    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
       oj.textarea
-        keydown: => if @live then @viewChange(); return
-        keyup: => if @live then @viewChange(); return
-        change: => @viewChange(); return
+        keydown: => if @live then @viewChanged(); return
+        keyup: => if @live then @viewChanged(); return
+        change: => @viewChanged(); return
 
     oj.TextArea.base.constructor.apply @, arguments
 
@@ -1683,8 +1841,8 @@ oj.ListBox = oj.type 'ListBox',
   base: oj.ModelKeyView
 
   constructor: (args) ->
-    @el = oj.argumentShift(args, 'el') || oj.toDOM ->
-      oj.select change: => @viewChange(); return
+    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
+      oj.select change: => @viewChanged(); return
 
     @options = oj.argumentShift args, 'options'
 
@@ -1705,45 +1863,6 @@ oj.ListBox = oj.type 'ListBox',
             oj.option op
           return
         return
-
-# oj.Table
-# ------------------------------------------------------------------------------
-# oj.Table = oj.type 'Table',
-#   base: oj.CollectionView
-
-#   properties:
-#     rows: (list) ->
-#     rowCount: ->
-#     cellCount: ->
-
-#   methods:
-#     row: (r) ->
-#     cell: (r, c) ->
-
-# oj.Table.Row = oj.type 'Table.Row',
-#   base: oj.ModelView
-#   properties:
-#     row:
-#       get: ->
-#       set: (list) ->
-#   methods:
-#     cell: ->
-
-# oj.List
-# ------------------------------------------------------------------------------
-# List control
-
-# oj.List = oj.type 'List',
-#   base: oj.CollectionView
-
-#   properties:
-#     count:
-#       get: -> $('> li').length
-
-#   methods:
-#     make: ->
-#       ul c:'foo',
-#     model: ->
 
 # oj.Link
 # ------------------------------------------------------------------------------
