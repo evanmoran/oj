@@ -1,7 +1,7 @@
 _ = require 'underscore'
 
-oj.use require 'oj-markdown'
-oj.use require 'oj-mustache'
+oj.use require 'oj.markdown'
+oj.use require 'oj.mustache'
 
 _styles = require './_styles'
 _snippet = require './_snippet'
@@ -29,5 +29,22 @@ module.exports =
 
       _editor """
         page ->
-          ListBox value:'Blond', options:['Blond', 'Brown','Red','Black']
+
+          class User extends Backbone.Model
+          user1 = new User name:'Evan', age:'20'
+          user2 = new User name:'Sarah', age:'30'
+          `user3 = new User({name:'Alice', age:'40'})`
+          `User = User`
+
+          `users = new Backbone.Collection([user1,user2])`
+
+          list = List
+            models:users
+            each:(model,item) ->
+              console.log "model.name: ", model.name
+              console.log "item: ", item
+              item model.get 'name'
+
+
+
       """

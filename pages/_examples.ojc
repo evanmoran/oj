@@ -240,7 +240,7 @@ module.exports = [
   name: 'Markdown'
   cs: """
     # Use the markdown plugin
-    use require 'oj-markdown'
+    use require 'oj.markdown'
 
     # The plugin enables this function:
     markdown \"\"\"
@@ -254,7 +254,7 @@ module.exports = [
   """
   js: """
     // Use the markdown plugin
-    use(require('oj-markdown'));
+    use(require('oj.markdown'));
 
     // The plugin enables this function:
     markdown(
@@ -269,27 +269,36 @@ module.exports = [
 ,
   name: 'Mustache'
   cs: """
+    # Use the mustache plugin
+    use require 'oj.mustache'
+
+    # Define data
     json =
       name:'Evan'
       twitter:'evanmoran'
 
+    # Define a template using that data
     template = \"\"\"
       <a href='http://twitter.com/{{twitter}}'>Follow {{name}} on Twitter</a>
     \"\"\"
 
+    # Use mustache
     mustache template, json
   """
   js: """
     // Use the mustache plugin
-    use(require('oj-mustache'));
+    use(require('oj.mustache'));
 
+    // Define data
     var json = {
       name:'Evan',
       twitter:'evanmoran'
     };
 
+    // Define a template using that data
     var template = "<a href='http://twitter.com/{{twitter}}'>Follow {{name}} on Twitter</a>";
 
+    // Use mustache
     mustache(template, json);
   """
 ,

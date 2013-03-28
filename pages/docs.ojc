@@ -12,7 +12,7 @@ OJ Simplifies:
 
 ###
 
-oj.use require 'oj-markdown'
+oj.use require 'oj.markdown'
 
 _template = require './_template'
 {renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderInherits:inherits} = require './_content'

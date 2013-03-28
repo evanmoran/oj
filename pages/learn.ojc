@@ -1,5 +1,5 @@
 
-oj.use require 'oj-markdown'
+oj.use require 'oj.markdown'
 
 _template = require './_template'
 _content = require './_content'
