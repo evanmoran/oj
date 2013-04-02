@@ -215,7 +215,7 @@ oj.typeOf = (any) ->
     if oj.isArray any               then t = 'array'
     else if oj.isOJ any             then t = any.typeName
     else if oj.isRegEx any          then t = 'regexp'
-    else if oj.isDate any            then t = 'date'
+    else if oj.isDate any           then t = 'date'
     else if oj.isDOMElement any     then t = 'element'
     else if oj.isDOMText any        then t = 'text'
     else if oj.isDOMAttribute any   then t = 'attribute'
@@ -223,6 +223,20 @@ oj.typeOf = (any) ->
     else if oj.isjQuery any         then t = 'jquery'
     else                            t = 'object'
   t
+
+oj.parse = (str) ->
+  if str == 'undefined'
+    undefined
+  else if str == 'null'
+    null
+  else if str == 'true'
+    true
+  else if str == 'false'
+    false
+  else if !(isNaN(number = parseFloat str))
+    number
+  else
+    str
 
 # Determine if obj is a vanilla object
 oj.isObject = (obj) -> (oj.typeOf obj) == 'object'
@@ -752,11 +766,34 @@ oj.tag.elements.all = (oj.tag.elements.closed.concat oj.tag.elements.open).sort(
 oj.tag.isClosed = (tag) ->
   (_.indexOf oj.tag.elements.open, tag, true) == -1
 
+# Helper to set tag name on a tag
+_setTagName = (tag, name) ->
+  if tag?
+    tag.name = name
+  return
+
+# Helper to get tag name on a tag
+_getTagName = (tag) ->
+  tag.name
+
+# Helper to get instance on element
+_getInstanceOnElement = (el) ->
+  if el?.ojInstance?
+    el.ojInstance
+  else
+    null
+
+# Helper to set instance on element
+_setInstanceOnElement = (el, inst) ->
+  el?.ojInstance = inst
+  return
+
 # Create tag methods
 for t in oj.tag.elements.all
   do (t) ->
     oj[t] = -> oj.tag t, arguments...
-    oj[t].typeName = t
+    # Remember the tag name
+    _setTagName oj[t], t
 
 # Customize a few tags
 
@@ -1018,15 +1055,18 @@ jqueryEvents = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:
 # Compile ojml tag (an array)
 _compileTag = (ojml, options) ->
 
+  # Empty list compiles to nothing
+  return if ojml.length == 0
+
   # Get tag
   tag = ojml[0]
   tagType = typeof tag
 
   # Allow ojml's tag parameter to be 'table' or table or Table
-  tag = if (tagType == 'function' or tagType == 'object') and tag.typeName? then tag.typeName else tag
+  tag = if (tagType == 'function' or tagType == 'object') and _getTagName(tag)? then _getTagName(tag) else tag
 
   # Fail if we couldn't find a string by now
-  throw new Error('oj.compile: tag is missing in array') unless oj.isString(tag) and tag.length > 0
+  throw new Error('oj.compile: tag name is missing') unless oj.isString(tag) and tag.length > 0
 
   # Create oj object if tag is capitalized
   if _.isCapitalLetter tag[0]
@@ -1408,6 +1448,9 @@ oj.View = oj.type 'View',
 
     throw new Error("oj.#{@typeName}: constructor failed to set this.el") unless oj.isDOM @el
 
+    # Set instance on @el
+    _setInstanceOnElement @el, @
+
     # Views act like tag methods and support the div -> syntax.
     # Append this to parent
     _.argumentsAppend @
@@ -1431,28 +1474,32 @@ oj.View = oj.type 'View',
 
   properties:
     # Get element
-    el: null
+    el:
+      get: -> @_el
+      set: (v) ->
+        @_el = v
+        # clear cache of $el
+        @_$el = null
+        return
 
-    # Get jquery-enabled element (readonly)
-    $el:
-      get: -> $(@el)
+    # Get and cache jquery-enabled element (readonly)
+    $el: get: -> @_$el || (@_$el = $ @el)
 
     # Get all attributes (readonly)
-    attributes:
-      get: ->
-        out = {}
-        $.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
-        out
+    attributes: get: ->
+      out = {}
+      $.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
+      out
 
-    # Get id off of attribute
+    # Get and set id of view from attribute
     id:
       get: -> @$el.attr 'id'
       set: (v) -> @$el.attr 'id', v
 
   methods:
 
-    # Mirror backbone find sub elements via jquery selector
-    $: -> @$el.find.apply @, arguments
+    # Mirror backbone view's find by selector
+    $: -> @$el.find arguments...
 
     # Add a single attribute
     addAttribute: (name,value) ->
@@ -1494,9 +1541,9 @@ oj.View = oj.type 'View',
 
     # Convert View to html
     toHTML: (options) ->
-      @el.outerHTML + (if options.debug then '\n' else '')
+      @el.outerHTML + (if options?.debug then '\n' else '')
 
-    # Convert View to dom
+    # Convert View to dom (for compiling)
     toDOM: -> @el
 
     # Convert View to string (for debugging)
@@ -1516,7 +1563,7 @@ oj.ModelsView = oj.type 'ModelsView',
   base: oj.View
 
   constructor: (args) ->
-    console.log "ModelsView constructor: ", arguments
+    # console.log "ModelsView constructor: ", arguments
 
     @each = oj.argumentShift args, 'each'
     @models = oj.argumentShift args, 'models'
@@ -1528,17 +1575,13 @@ oj.ModelsView = oj.type 'ModelsView',
     each:
       get: -> @_each
       set: (v) ->
-        console.log "setting each"
         @_each = v;
-        @modelsChange()
+        @make()
         return
-
-    eachTag: oj.div
 
     models:
       get: -> @_models
       set: (v) ->
-        console.log "setting models"
 
         # Unbind events if @_models was a collection
         if oj.isBackbone @_models
@@ -1548,13 +1591,12 @@ oj.ModelsView = oj.type 'ModelsView',
 
         # Bind events if @_models is a collection
         if oj.isBackbone @_models
-          @_models.on 'add', @modelAdd, @
-          @_models.on 'remove', @modelRemove, @
-          @_models.on 'change', @modelChange, @
-          @_models.on 'sync', @modelSync, @
+          @_models.on 'add', @modelAdded, @
+          @_models.on 'remove', @modelRemoved, @
+          @_models.on 'change', @modelChanged, @
+          @_models.on 'sync', @modelSynced, @
 
-        # Set complete. Remake everything.
-        @modelsChange()
+        @make()
         return
 
   methods:
@@ -1562,25 +1604,26 @@ oj.ModelsView = oj.type 'ModelsView',
     make: ->
       throw "oj.#{typeName}: make not implemented"
 
-    modelsChange: -> #optional override
-      @make @models
+    modelsChanged: ->
+      @make()
 
-    modelAdd: (model, collection, options) ->
-      console.log "ModelsView.modelAdd: ", arguments
-      @add model, options.index
+    modelSynced: (model, collection, options) ->
+      console.log "ModelsView.modelSynced: ", arguments
+      @make()
 
-    modelRemove: (model, collection, options) ->
-      console.log "ModelsView.modelRemove: ", arguments
-      @remove model, options.index
+    modelAdded: (model, collection, options) ->
+      console.log "ModelsView.modelAdded: ", arguments
+      # TODO: Minimally update
+      @make()
 
-    modelChange: (model, collection, options) ->
-      console.log "ModelsView.modelChange: ", arguments
+    modelRemoved: (model, collection, options) ->
+      console.log "ModelsView.modelRemoved: ", arguments
+      # TODO: Minimally update
+      @make()
+
+    modelChanged: (model, collection, options) ->
+      console.log "ModelsView.modelChanged: ", arguments
       # Do nothing? Seems the job of ModelViews..
-
-    modelSync: (model, collection, options) ->
-      console.log "ModelsView.modelSync: ", arguments
-      @make @models
-
 
 # oj.List
 # ------------------------------------------------------------------------------
@@ -1589,65 +1632,134 @@ oj.List = oj.type 'List',
   base: oj.ModelsView
 
   constructor: ->
-    console.log "List constructor: ", arguments
+    # console.log "List constructor: ", arguments
     {options, args} = oj.argumentsUnion arguments
 
-    console.log "options: ", options
-    console.log "args: ", args
+    # Determine tags for root and items
+    # @ordered is write once at construction
+    @_ordered = oj.argumentShift(args, 'ordered')
 
-    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
-      oj.ul()
+    # @tag is write once at construction
+    tag = oj.argumentShift(args, 'tagName')
+    @_tagName = if (oj.isObject tag) then _getTagName(tag) else tag
+    @itemTagName = oj.argumentShift(args, 'itemTagName')
 
+    # Accept or parse el
+    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
+      oj[@tagName]()
+
+    # Default each function to pass through values
     options.each ?= (model, el) ->
-      console.log "List.each default"
-      console.log "model in each: ", model
-      # id = if model?.id? then id: model.id else null
-      el model
+      # Mark row with id if possible
+      id = if model?.id? then id: model.id else null
 
-    # Take items from options then args
-    # @items = items = (oj.argumentShift options, 'items') if options.items?
-    # if not items? and args.length > 0
-    #   @items = args
+      # Convert model to value
+      if model?.toJSON? or oj.isObject model
+        # Display objects as their JSON equivalent
+        v = JSON.stringify model.toJSON()
+      else
+        v = model
+
+      # Emit tag
+      el v, id
+      return
+
+    # Set @items to args if they exist
+    @items = items = (oj.argumentShift options, 'items') if options.items?
+
+    # Use args as items if they haven't already been set
+    if @items.length == 0 and args.length > 0
+      @items = args
 
     # Args have been handled so don't pass them on
     oj.List.base.constructor.apply @, [options]
 
   properties:
 
-    items: null
+    # ordered: set ordered list or non-ordered (readonly, write on new)
+    ordered: get: -> @_ordered || @tagName == 'ol'
 
-    count:
-      get: -> $('> li').length
+    # tag: set tag (readonly, writeable on new)
+    tagName: get: ->
+      return @_tagName if @_tagName?
+      @_tagName = 'ul'
+      if @$el?
+        name = @$el.prop 'tagName'
+        if oj.isString name
+          @_tagName = name.toLowerCase()
+      @_tagName
+
+    # $itemsEl: get list of $(elements)
+    $itemsEl: get: -> @$ "> #{@itemTagName}"
+
+    # itemsEl: get list of elements
+    itemsEl: get: -> @$itemsEl.get()
+
+    # items: get or set all items at once (readwrite)
+    items:
+      # Used cached items or items as interpreted by ojValue plugin
+      # This will parse the contents of the li tag
+      get: ->
+        # Use cache if possible
+        return @_items if @_items?
+        @_items = @$itemsEl.ojValue()
+
+      set: (v) -> @_items = v; @make(); return
+
+    # count: the number of items
+    count: get: -> @$itemsEl.length
+
+    # itemTagName: set or get the itemTagName
+    itemTagName:
+      get: -> @_itemTagName || 'li'
+      set: (v) ->
+        @_itemTagName = if (oj.isObject v) then _getTagName(v) else v
+        @make()
+        return
 
   methods:
+    # Get item element at index
+    itemEl: (ix) -> @$itemsEl[ix]
 
-    make: (models) ->
-      return if not (@_models? and @_each?)
-      console.log "List.make"
+    # Get item $(element) at index
+    $itemEl: (ix) -> $ @itemEl(ix)
 
-      models = if oj.isBackbone @_models then @_models.models else @_models
-      console.log "models: ", models
-      @$el.oj =>
-        # Apply each to models
-        for model in models
-          @each model, oj.li
+    # Get item value at index
+    item: (ix) -> @$itemEl(ix).ojValue()
+
+    # Remake everything
+    make: ->
+      return unless @el?
+      if @models? and @each?
+        console.log "\nList.make models"
+
+        models = if oj.isBackbone @_models then @_models.models else @_models
+        console.log "models: ", models
+        @$el.oj =>
+          # Apply each to models
+          for model in models
+            @each model, oj[@itemTagName]
+
+      # Items are already views so just render them
+      else if @items?
+        @$el.oj =>
+          # Apply each to models
+          for item in @items
+            oj[@itemTagName] item
 
     # update: (models, changed) ->
 
+    add: (ix = @count-1, ojml) ->
 
-    item: (ix) ->
-      @$('> li').get(ix)
+    remove: (ix = @count-1, ojml) ->
 
-    $item: (ix) ->
-      $(@$('> li').get(ix))
-
-    addItem: (ix = @count-1, ojml) ->
-
-    removeItem: (ix = @count-1, ojml) ->
-
-    moveItem: (ixFrom, ixTo) ->
-      ojml = @removeItem ixFrom
+    move: (ixFrom, ixTo) ->
+      ojml = @remove ixFrom
       @addItem ixTo, ojml
+
+    clear: ->
+      for ix in [@items.length-1...0] by -1
+        @removeItem ix
 
 # oj.Table
 # ------------------------------------------------------------------------------
@@ -1699,16 +1811,16 @@ oj.ModelView = oj.type 'ModelView',
 
         # Bind events on the new model
         if oj.isBackbone @_model
-          @_model.on 'change', @modelChange, @
+          @_model.on 'change', @modelChanged, @
 
         # Trigger change manually when settings new model
-        @modelChange()
+        @modelChanged()
         return
 
   methods:
 
-    # Override modelChange if you don't want a full remake
-    modelChange: ->
+    # Override modelChanged if you don't want a full remake
+    modelChanged: ->
       @$el.oj =>
         @make @mode
 
@@ -1746,7 +1858,7 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
 
   methods:
     # When the model changes update the value
-    modelChange: ->
+    modelChanged: ->
       if @model? and @key?
         @value = @model.get @key
       return
@@ -1894,61 +2006,110 @@ oj.use = (plugin, settings = {}) ->
     oj.addProperty oj.sandbox, name, value:value, writable: false
 
 
-# jqueryExtendEachMap(fn)
+# jqueryExtend(fn)
 # -----------------------------------------------------------------------------
 #
-#     $.fn.myExtension = jqueryExtendEachMap (($el,args) ->
+#     $.fn.myExtension = jqueryExtend (($el,args) ->
 #       $el     # => The jquery matched element
 #       args    # => Array of arguments
 #       return a non-null value to stop iteration and return value to caller
 #      ), (($el) ->
 #      ), isMap
-jqueryExtendEachMap = (cbEach, cbMap, isMap = 0) ->
-
+jqueryExtend = (options = {}) ->
+  _.defaults options, get:_.identity, set:_.identity
   ->
     args = _.toArray arguments
-    $el = $(@)
+    $els = $(@)
     # Map over jquery selection if no arguments
-    if isMap and cbMap and args.length == 0
-      arr = []
-      for i in [0...($el.length-1)]
-        out = cbMap $($el[i])
-        if out?
-          arr.push out
-      if arr.length == 1
-        return arr[0]
-      arr
-    else
+    if (oj.isFunction options.get) and args.length == 0
+      out = []
+      for el in $els
+        out.push options.get $(el)
+      # Unwrap arrays of length one
+      if out.length == 1
+        return out[0]
+      out
+
+    else if (oj.isFunction options.set)
       # By default return this for chaining
-      out = $el
-      for i in [0...$el.length]
-        rvalue = cbEach $($el[i]), args
-        # Return first returned rvalue if one is returned
-        if rvalue?
-          return rvalue
-      $el
+      out = $els
+      for el in $els
+        r = options.set $(el), args
+        # Short circuit if anything is returned
+        return r if r?
 
-# jQuery Extension: $.fn.oj
+      $els
+
+# jquery.oj
 # -----------------------------------------------------------------------------
-$.fn.oj = jqueryExtendEachMap (($el, args) ->
+$.fn.oj = jqueryExtend
+  set:($el, args) ->
 
-  # No arguments return the first instance
-  if args.length == 0
-    return $el[0].oj
+    # No arguments return the first instance
+    if args.length == 0
+      return $el[0].oj
 
-  # Compile ojml
-  ojml = oj.apply null, args
-  dom = oj.toDOM ojml
+    # Compile ojml
+    dom = oj.toDOM args...
 
-  # Reset content and append to dom
-  $el.html ''
-  dom = [dom] unless oj.isArray dom
-  for d in dom
-    $el.append d
+    # Reset content and append to dom
+    $el.html ''
+    dom = [dom] unless oj.isArray dom
+    for d in dom
+      $el.append d
 
-  return
-  ),
-  (($el) -> $el[0].oj), 1
+    return
+
+  get: ($el) ->
+    $el[0].oj
+
+# jquery.ojValue
+# -----------------------------------------------------------------------------
+# Get the value of the selected element's contents
+$.fn.ojValue = jqueryExtend
+  set: null
+  get: ($el, args) ->
+
+    el = $el[0]
+    child = el.firstChild
+
+    switch oj.typeOf child
+      # Parse the text to turn it into bool, number, or string
+      when 'text'
+        text = child.nodeValue
+        oj.parse text
+      # Get elements as oj instances or elements
+      when 'element'
+        if (inst = _getInstanceOnElement child)?
+          inst
+        else
+          child
+
+# jquery.ojAfter, jquery.ojBefore, ...
+# -----------------------------------------------------------------------------
+
+plugins =
+  ojAfter: 'after'
+  ojBefore: 'before'
+  ojAppend: 'append'
+  ojPrepend: 'prepend'
+  ojReplaceWith: 'replaceWith'
+  ojWrap: 'wrap'
+  ojWrapInner: 'wrapInner'
+
+for ojName,jqName of plugins
+  do (ojName, jqName) ->
+    $.fn[ojName] = jqueryExtend
+      set: ($el, args) ->
+
+        # Compile ojml for each one to separate references
+        dom = oj.toDOM args...
+
+        # Append to the dom
+        $el[jqName] dom
+        return
+      get:null
+
 
 
 

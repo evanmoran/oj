@@ -37,8 +37,11 @@ compileDOMText = (ojml, text, options) ->
     debug:false
   r = oj.compile options, ojml
   if options.dom
-    expect(oj.typeOf(r.dom)).to.equal 'text'
-    expect(r.dom.data).to.equal text
+    if r.dom?
+      expect(oj.typeOf(r.dom)).to.equal 'text'
+      expect(r.dom.data).to.equal text
+    else
+      expect(text).to.not.exist
   else
     expect(r.dom).to.not.exist
 
@@ -75,7 +78,10 @@ describe 'oj.compile.dom', ->
     compileDOMText 42, '42'
     compileDOMText true, 'true'
     compileDOMText false, 'false'
-    compileDOMException [], 'oj.compile: tag is missing'
+    compileDOMText [], null
+    compileDOMText null, null
+    compileDOMText undefined, undefined
+
     r = oj.compile dom:true,html:false, ->
     expect(r.dom).to.equal null
 
@@ -84,8 +90,8 @@ describe 'oj.compile.dom', ->
     compileDOMText (-> false), 'false'
     compileDOMText (-> 42), '42'
     compileDOMText (-> 'test'), 'test'
-    # compileDOMText (-> undefined), ''
-    # compileDOMText (-> null), ''
+    compileDOMText (-> undefined), undefined
+    compileDOMText (-> null), null
 
   it 'span', ->
     ojml = oj.span 'test'

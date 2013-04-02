@@ -132,7 +132,6 @@ describe 'oj._', ->
     (oj.isString 1).should.equal false
     (oj.isString "string").should.equal true
 
-
   it 'isDate', ->
     (oj.isDate new Date()).should.equal true
     (oj.isDate new Date("2012-2-1")).should.equal true

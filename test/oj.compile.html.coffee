@@ -63,8 +63,10 @@ describe 'oj.compile.html', ->
     compileTest 42, 0, '42'
     compileTest true, 0, 'true'
     compileTest false, 0, 'false'
-    compileTestException [], 'oj.compile: tag is missing'
+    compileTest [], 0, ''
     compileTest (->), 0, ''
+    compileTest null, 0, ''
+    compileTest undefined, 0, ''
 
   it 'function returning value', ->
     compileTest (-> true), 0, 'true'

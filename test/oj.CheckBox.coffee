@@ -25,7 +25,7 @@ describe 'oj.CheckBox', ->
   it 'construct with id', ->
     id = 'my-id'
     control = oj.CheckBox id:id
-    expect(control.id).to.not.exist
+    expect(control.id).to.equal id
     expect(control.attributes.id).to.equal id
 
   it 'construct with name', ->

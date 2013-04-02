@@ -380,7 +380,6 @@ watchDir = (dir, includeDir, options) ->
 
   verbose 2, "watching directory #{dir}/", 'yellow'
   watcher = fs.watch dir, (err) ->
-    console.log "onWatchDir: ", dir
     verbose 2, "updating directory #{dir}/", 'yellow'
 
     # Unwatch missing directories
