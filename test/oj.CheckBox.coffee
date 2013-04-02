@@ -34,6 +34,7 @@ describe 'oj.CheckBox', ->
     expect(control.name).to.not.exist
     expect(control.attributes.name).to.equal name
 
+
   it 'compile html', ->
     control = oj.CheckBox(value:true)
     results = oj.compile html:true, dom:true, control
@@ -41,3 +42,21 @@ describe 'oj.CheckBox', ->
     expect(results.html).to.contain 'id="oj'
     expect(results.html).to.contain 'class="CheckBox"'
     expect(results.html).to.contain 'checked="checked"'
+
+  it 'compile emit:false', ->
+    control = null
+
+    htmlDiv = oj.toHTML ->
+      oj.div c:'test', ->
+        control = oj.CheckBox value:true, emit:false
+        return
+
+    expect(control.typeName).to.equal 'CheckBox'
+    expect(control.value).to.equal true
+    expect(htmlDiv).to.equal '<div class="test"></div>'
+
+    htmlDiv2 = oj.toHTML ->
+      oj.div c:'test2', ->
+        control.emit()
+
+    expect(htmlDiv2).to.equal """<div class="test2"><input type="checkbox" checked="checked" class="#{control.attributes.class}" id="#{control.id}" /></div>"""

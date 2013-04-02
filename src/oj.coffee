@@ -1451,9 +1451,9 @@ oj.View = oj.type 'View',
     # Set instance on @el
     _setInstanceOnElement @el, @
 
-    # Views act like tag methods and support the div -> syntax.
-    # Append this to parent
-    _.argumentsAppend @
+    # Emit as a tag would do if emit is truthy or unset
+    emit = oj.argumentShift(args, 'emit') ? true
+    @emit() if emit
 
     # Generate id if missing
     args.id ?= oj.id()
@@ -1556,6 +1556,9 @@ oj.View = oj.type 'View',
     # Attach element to dom where it use to be
     attach: -> throw 'attach nyi'
       # The implementation is to unset el from detach
+
+    # emit: Emit instance as a tag function would do
+    emit: -> _.argumentsAppend @; return
 
 # oj.ModelsView
 # ------------------------------------------------------------------------------
@@ -1747,8 +1750,6 @@ oj.List = oj.type 'List',
           for item in @items
             oj[@itemTagName] item
 
-    # update: (models, changed) ->
-
     add: (ix = @count-1, ojml) ->
 
     remove: (ix = @count-1, ojml) ->
@@ -1759,7 +1760,7 @@ oj.List = oj.type 'List',
 
     clear: ->
       for ix in [@items.length-1...0] by -1
-        @removeItem ix
+        @remove ix
 
 # oj.Table
 # ------------------------------------------------------------------------------
