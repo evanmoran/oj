@@ -5,7 +5,6 @@
   "main": "./",
   "author": "Evan Moran <evan@evanmoran.com>",
   "dependencies": {
-    "oj":"latest",
     "oj.markdown":"latest",
     "oj.mustache":"latest",
     "underscore": "latest"

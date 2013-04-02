@@ -132,6 +132,56 @@ nodeModulePaths = (from) ->
     paths.push(dir)
   paths
 
+# # nodeModulePackageMain: Look in moduleDir for packages.json
+# # Load it and read the 'main' key to get the file.
+# # Return this file unioned with the original moduleDir
+# # Return null if package.json doesn't eixst or dir doesn't exist
+# nodeModulePackageMain = (moduleDir) ->
+#   console.log "nodeModulePackageMain called"
+#   # moduleDir = '/full/path/node_modules/module-name'
+#   console.log "moduleDir: ", moduleDir
+#   # moduleName = 'module-name'
+#   moduleName = path.basename moduleDir
+#   console.log "moduleName: ", moduleName
+
+#   # packageFile = '/full/path/node_modules/module-name/packages.json'
+#   packageFile = path.join moduleDir, 'packages.json'
+#   console.log "packageFile: ", packageFile
+#   try
+#     file = readFileSync packageFile
+#     if _.isString file
+#       obj = JSON.parse file
+#       if obj?
+#         main = obj.main
+#         console.log "main: ", main
+#         return main
+#   catch e
+#   null
+
+# Recursively get final link path
+resolveLink = (linkPath, out) ->
+  try
+    newPath = fs.readlinkSync linkPath
+    return (resolveLink newPath, newPath)
+  catch e
+  out
+
+# Get module mapping from link dest to link source
+# /some/path/linked-module  -> /another/path/node_modules/linked-module
+nodeModulesLinkMap = (fileDir) ->
+  dirs = nodeModulePaths fileDir
+  out = {}
+  for dir in dirs
+    try
+      modules = fs.readdirSync dir
+      for moduleName in modules
+        modulePath = path.join dir, moduleName
+        linkPath = resolveLink modulePath
+        if linkPath?
+          out[linkPath] = modulePath
+    catch e
+  out
+
 # basenameForExtensions: Get basename for multiple extensions
 basenameForExtensions = (p, arrayOfExt = []) ->
   out = path.basename p
@@ -145,6 +195,7 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Time this method
   startTime = process.hrtime()
 
+  console.log "filePath: ", filePath
   # Clear underscore as modules might need it
   _clearRequireCacheRecord 'underscore'
 
@@ -165,11 +216,14 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Figure out some paths
   #    /input/dir/file.oj
 
+  #    /input/dir
+  fileDir = path.dirname filePath
+
   #    /output
   outputDir = options.output || process.cwd()
 
   #    /dir
-  subDir = path.relative includeDir, path.dirname filePath
+  subDir = path.relative includeDir, fileDir
 
   #    /output/dir/file.html
   fileBaseName = basenameForExtensions filePath, ['.oj', '.ojc', 'ojlc']
@@ -180,12 +234,15 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Cache of modules, files, and native modules
   cache = modules:{}, files:{}, native:{}
 
+  # Determine global modules with soft linking
+  moduleLinkMap = nodeModulesLinkMap fileDir
+
   # Hook require to intercept requires in oj files
   modules = {}
   moduleParents = {}  # map file name to parent list
   hookCache = {}
   hookOriginalCache = {}
-  _hookRequire modules, hookCache, hookOriginalCache
+  _hookRequire modules, moduleLinkMap, hookCache, hookOriginalCache
 
   # Save require cache to restore it later
   _saveRequireCache()
@@ -298,7 +355,6 @@ watchParents = {}
 # ------------------------------------------------------------------------------
 # Based in part on coffee-script's watch implementation
 # github.com/jashkenas/coffee-script/
-
 
 watchFile = (filePath, includeDir, options = {}) ->
   # Do nothing if this file is already watched
@@ -681,11 +737,11 @@ minifyCSSUnless = (isDebug, filename, css, structureOff) ->
 # ------------------------------------------------------------------------------
 
 # Hooking into require inspired by [node-dev](http://github.com/fgnass/node-dev)
-_hookRequire = (modules, hookCache={}, hookOriginalCache={}) ->
+_hookRequire = (modules, moduleLinkMap, hookCache={}, hookOriginalCache={}) ->
   handlers = require.extensions
   for ext of handlers
     # Get or create the hook for the extension
-    hook = hookCache[ext] or (hookCache[ext] = _createHook(ext, modules, hookCache, hookOriginalCache))
+    hook = hookCache[ext] or (hookCache[ext] = _createHook(ext, modules, moduleLinkMap, hookCache, hookOriginalCache))
     if handlers[ext] != hook
       # Save a reference to the original handler
       hookOriginalCache[ext] = handlers[ext]
@@ -694,8 +750,19 @@ _hookRequire = (modules, hookCache={}, hookOriginalCache={}) ->
   return
 
 # Hook into one extension
-_createHook = (ext, modules, hookCache, hookOriginalCache) ->
+_createHook = (ext, modules, moduleLinkMap, hookCache, hookOriginalCache) ->
   (module, filename) ->
+
+    # Unfortunately require resolves `filename` through soft links
+    # For our module detection to work we need to unresolve these back
+    # Use the moduleLinkMap to unresolve paths starting with `linkPath`
+    # to start with `modulePath` instead.
+    for linkPath, modulePath of moduleLinkMap
+      # Prefix found then replace
+      if 0 == filename.indexOf linkPath
+        rest = filename.slice linkPath.length
+        filename = modulePath + rest
+        # break
 
     # Override compile to intercept file
     if !module.loaded
@@ -712,7 +779,7 @@ _createHook = (ext, modules, hookCache, hookOriginalCache) ->
     hookOriginalCache[ext](module, filename)
 
     # Make sure the module did not hijack the handler
-    _hookRequire modules, hookCache, hookOriginalCache
+    _hookRequire modules, moduleLinkMap, hookCache, hookOriginalCache
 
 _unhookRequire = (modules, hookCache, hookOriginalCache) ->
   handlers = require.extensions
