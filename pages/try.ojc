@@ -12,7 +12,7 @@ _editor = require './_editor'
 module.exports =
 
   html lang:'en', ->
-    # _styles()
+    _styles()
 
     head ->
       title 'Try OJ -- Unified Templating'
@@ -28,31 +28,27 @@ module.exports =
       meta 'http-equiv':"X-UA-Compatible", content:'IE=edge,chrome=1'
 
     body ->
-      oj.TryEditor()
+      # oj.TryEditor()
 
-      # _editor """
-      #   page ->
-      #     div 'asdf'
-      #     # oj.AceEditor \"\"\"
-      #     #   function test(){
+      _editor """
+        h1 'This is OJ'
+        p 'Type in the editor to change the page live.'
+        p 'Use the ListBox to see other examples.'
 
-      #     #   }
-      #     # \"\"\"
-      # """
+      """
 
+###
+page ->
+  class UserMode extends Backbone.Model
+  user1 = new UserMode name:'Evan', age:'20'
+  user2 = new UserMode name:'Sarah', age:'30'
+  user3 = new UserMode({name:'Alice', age:'40'})
+  users = new Backbone.Collection([user1,user2,user3])
 
-          # class User extends Backbone.Model
-          # user1 = new User name:'Evan', age:'20'
-          # user2 = new User name:'Sarah', age:'30'
-          # `user3 = new User({name:'Alice', age:'40'})`
-          # `User = User`
+  list = List
+    models:users
+    each:(model,item) ->
+      item model.get 'name'
+###
 
-          # `users = new Backbone.Collection([user1,user2])`
-
-          # list = List
-          #   models:users
-          #   each:(model,item) ->
-          #     console.log "model.name: ", model.name
-          #     console.log "item: ", item
-          #     item model.get 'name'
 
