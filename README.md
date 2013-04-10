@@ -30,7 +30,7 @@ A function for every tag:
 Documentation
 ================================================================================
 
-
+The newest documentation can be found at [ojjs.org](http://ojjs.org).
 
 Functions
 --------------------------------------------------------------------------------

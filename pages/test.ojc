@@ -1,0 +1,45 @@
+_ = require 'underscore'
+
+oj.use require 'oj.AceEditor'
+
+module.exports =
+
+  html lang:'en', ->
+    head ->
+      title 'Test'
+
+      link url:'styles/reset.css'
+      script url: 'scripts/jquery.js'
+      script url: 'scripts/underscore.js'
+      script url: 'scripts/backbone.js'
+      script url: 'scripts/ace/ace.js'
+
+      meta charset:'UTF-8'
+      meta 'http-equiv':"X-UA-Compatible", content:'IE=edge,chrome=1'
+
+    body ->
+      if oj.isClient
+        CodeModel = Backbone.Model.extend()
+        code = new CodeModel({code: 'function test(){\n}\nvar foo = 5;'});
+
+      ae = AceEditor
+        model: code
+        key: 'code'
+        wrapLimit: 'auto'
+        mode: 'javascript'
+        theme: 'solarized_light'
+
+      ae2 = AceEditor
+        model: code
+        key: 'code'
+        wrapLimit: 30
+        mode: 'javascript'
+        theme: 'solarized_dark'
+
+      tb = TextArea value:'value default', model: code, key:'code', style:
+        width: 200
+        height: 200
+        fontSize: 14
+
+      `window.ae = ae;`
+      `window.ae2 = ae2;`

@@ -1,0 +1,172 @@
+# oj.use require 'oj.AceEditor'
+
+makeCSS = null
+module.exports = (oj, settings) ->
+  TryEditor = type 'TryEditor',
+    base: ModelKeyView
+    constructor: ->
+      {options, args} = oj.argumentsUnion arguments
+
+      # Create editor (readonly)
+      @_editor = AceEditor
+        emit: false
+        theme: 'orange'
+        mode:'ojc'
+        fontSize: 16
+        tabSize: 2
+        behaviorsEnabled: true
+        useSoftTabs: true
+        showGutter: false
+        highlightActiveLine: false
+        showPrintMargin: false
+        readOnly: false
+        showIndentGuides: false
+
+      @state = oj.argumentShift(options, 'state') ? 'js'
+
+      # Create element
+      @el = oj.toDOM =>
+        makeCSS()
+        div =>
+          @editor.emit()
+          div c:'TryEditor-result', ->
+            iframe c:'TryEditor-output'
+            div c:'TryEditor-output2'
+
+    properties:
+      editor:
+        get: -> @_editor
+
+      value:
+        get: -> @editor.value
+        set: (v) -> @editor.value = v
+
+      valueJS:
+        get: -> @_valueJS
+        set: (v) -> @_valueJS = v
+
+      valueCS:
+        get: -> @_valueCS
+        set: (v) -> @_valueCS = v
+
+      state:
+        get: -> @_state
+        set: (v) ->
+          @_state = v
+          if v == 'js'
+            @mode = 'oj'
+            @value = @_valueJS
+            @viewChanged()
+          else
+            @mode = 'ojc'
+            @value = @_valueCS
+            @viewChanged()
+
+      mode:
+        get: -> @editor.mode
+        set: (v) -> @editor.mode = v
+
+    methods:
+      toggleState: ->
+        @state = if @state == 'js' then 'cs' else 'js'
+
+  return TryEditor: TryEditor
+
+
+makeCSS = ->
+
+  css
+    '.editor-source':
+      position: 'relative'
+      width: '100%'
+      height: '30%'
+      border: '2px solid #fbcb7c'
+      padding: '10px'
+      display: 'block'
+      backgroundColor: '#fefaf3'
+      boxShadow: '2px 2px 4px RGBA(0,0,0,0.15)'
+
+    '.editor-source-cs':
+      display: 'block'
+      width: '100%'
+      height: '100%'
+
+    '.editor-source-cs.hidden':
+      display: 'none'
+
+    '.editor-source-js':
+      display: 'block'
+      width: '100%'
+      height: '100%'
+
+    '.editor-source-js.hidden':
+      display: 'none'
+
+    '.editor-source-css':
+      display: 'block'
+      width: '100%'
+      height: '100%'
+
+    '.editor-source-html':
+      display: 'block'
+      width: '100%'
+      height: '100%'
+
+    '.editor-frame':
+      display: 'block'
+      position: 'relative'
+      width: '100%'
+      height: '65%'
+
+    '.editor-iframe':
+      display: 'block'
+      width: '100%'
+      height: '100%'
+
+    '.editor-console':
+      position: 'absolute'
+      top: 0
+      left: 0
+      color:'darkorange'
+      backgroundColor: 'RGBA(255,255,255,0.9)'
+      textAlign: 'center'
+      fontSize: '18px'
+      padding: '14px 4px'
+      margin: '0px 0px 10px 0px'
+      width: '100%'
+      height: '100%'
+
+    '.editor-resizer':
+      width: '100%'
+      height: '10px'
+      backgroundColor: '#FFBA4D'
+      zIndex: 10
+
+    '.editor-bar':
+      position:'absolute'
+      top: '0px'
+      right: '0px'
+      margin: '8px 8px 0 0'
+      height: '21px'
+      zIndex: 5
+
+    '.editor-example-chooser':
+      position:'relative'
+      float:'right'
+      height: '100%'
+      zIndex: 10
+      marginLeft:'8px'
+
+    '.editor-language-tab':
+      display:'inline-block'
+      width: '30px'
+      height: '100%'
+      float: 'right'
+      marginLeft: '0px'
+      zIndex: 10
+      backgroundColor:'white'
+      border:'1px solid gray'
+      borderRadius:'3px'
+
+    '.editor-language-tab.selected':
+      backgroundColor: '#FECD78'

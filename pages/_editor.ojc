@@ -214,11 +214,9 @@ recompile = ->
     # return
 
   # Update html
-  # setEditor editor_html_id, results.html
   $editorHTML.val results.html
 
   # Update css
-  # setEditor editor_css_id, results.html
   $editorCSS.val results.css
 
   # Append html to iframe
@@ -226,7 +224,6 @@ recompile = ->
 
   # Append style to iframe
   $editorFrame.contents().find('head').append("<style>#{results.css}</style>")
-
   success()
 
 error = (message) ->
