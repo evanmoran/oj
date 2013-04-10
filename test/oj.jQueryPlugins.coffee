@@ -119,7 +119,7 @@ describe 'oj.jQueryPlugins', ->
     $('body').html """
       <div class="test">42</div>
     """
-    expect($('.test').ojValue()).to.equal 42
+    expect($('.test').ojValue()).to.equal '42'
 
   it "jquery.oj get string", ->
     $('body').html """

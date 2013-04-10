@@ -3,6 +3,7 @@
 
 path = require 'path'
 fs = require 'fs'
+Backbone = require 'backbone'
 oj = require '../src/oj.coffee'
 oj.extend this
 
@@ -80,18 +81,26 @@ describe 'oj.List', ->
     expect(control.count).to.equal 3
 
     expect(control.item(0)).to.equal 'one'
-    expect(control.item(1)).to.equal 2
+    expect(control.item(1)).to.equal '2'
     expect(control.item(2)).to.not.exist
 
-    expect(control.items).to.deep.equal ['one', 2, undefined]
+    expect(control.items).to.deep.equal ['one', '2', undefined]
 
-  # it 'construct with one model argument', ->
-  #   control = oj.List models:[1]
-  #   expect(control.count).to.equal 1
-  #   expect(oj.typeOf control).to.equal 'List'
-  #   expect(control.items).to.deep.equal [1]
 
-  #   html = oj.toHTML control
-  #   expect(html).to.contain '<ul'
-  #   expect(html).to.contain '<li>1</li>'
-  #   expect(html).to.contain '</ul>'
+  it 'construct with one model argument default each'
+
+    # control = oj.List models:[1]
+    # expect(control.count).to.equal 1
+    # expect(oj.typeOf control).to.equal 'List'
+    # expect(control.items).to.deep.equal ['1']
+
+    # html = oj.toHTML control
+    # expect(html).to.contain '<ul'
+    # expect(html).to.contain '<li>1</li>'
+    # expect(html).to.contain '</ul>'
+    # expect(html).to.contain 'class=oj-List'
+
+  it 'construct with one model argument'
+
+  it 'construct with many model arguments default each'
+  it 'construct with many model arguments'

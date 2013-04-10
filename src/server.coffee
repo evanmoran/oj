@@ -195,7 +195,6 @@ compileFile = (filePath, includeDir, options = {}) ->
   # Time this method
   startTime = process.hrtime()
 
-  console.log "filePath: ", filePath
   # Clear underscore as modules might need it
   _clearRequireCacheRecord 'underscore'
 

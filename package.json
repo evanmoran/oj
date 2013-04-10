@@ -31,7 +31,8 @@
     "mocha": "~1.1.0",
     "chai": "~1.0.3",
     "async": "~0.1.22",
-    "jquery": "~1.8.2"
+    "jquery": "~1.8.2",
+    "backbone": "latest"
   },
   "repository": {
     "type": "git",

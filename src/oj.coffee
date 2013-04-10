@@ -77,9 +77,9 @@ _readyOrLoad = (fn) ->
 # oj.ready
 # -----------------------------------------------------------------------------
 _readyQueue = queue:[], loaded:false
-oj.ready = (fn) ->
+oj.ready = (f) ->
   # Call everything if no arguments
-  if oj.isUndefined fn
+  if oj.isUndefined f
     _readyQueue.loaded = true
     while (f = _readyQueue.queue.shift())
       f()
@@ -88,7 +88,7 @@ oj.ready = (fn) ->
     f()
   # Queue function for later
   else
-    _readyQueue.queue.push fn
+    _readyQueue.queue.push f
   return
 
 # ## oj.id
@@ -1459,7 +1459,7 @@ oj.View = oj.type 'View',
     args.id ?= oj.id()
 
     # Add typeName class
-    @$el.addClass @typeName
+    @$el.addClass "oj-#{@typeName}"
 
     # Views automatically set all options to their properties
     # arguments directly to properties
@@ -1516,7 +1516,10 @@ oj.View = oj.type 'View',
       # Add attributes as object
       if oj.isObject attr
         for k,v of attr
-          @$el.attr k, v
+          if k == 'class'
+            @$el.addClass v
+          else
+            @$el.attr k, v
 
       # Bind events
       if events?
@@ -1734,14 +1737,12 @@ oj.List = oj.type 'List',
     make: ->
       return unless @el?
       if @models? and @each?
-        console.log "\nList.make models"
-
         models = if oj.isBackbone @_models then @_models.models else @_models
-        console.log "models: ", models
         @$el.oj =>
           # Apply each to models
           for model in models
-            @each model, oj[@itemTagName]
+            oj[@itemTagName] =>
+              oj.emit @each model
 
       # Items are already views so just render them
       else if @items?
@@ -1825,7 +1826,7 @@ oj.ModelView = oj.type 'ModelView',
       @$el.oj =>
         @make @mode
 
-    make: (model) -> throw "oj.#{typeName}: make not implemented"
+    make: (model) -> throw "oj.#{@typeName}: make not implemented"
 
 # oj.ModelKeyView
 # ------------------------------------------------------------------------------
@@ -1861,7 +1862,9 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
     # When the model changes update the value
     modelChanged: ->
       if @model? and @key?
-        @value = @model.get @key
+        # Update the view if necessary
+        if not @_viewUpdatedModel
+          @value = @model.get @key
       return
 
     # When the view changes update the model
@@ -1869,7 +1872,10 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
       # Delay view changes because many of them hook before controls update
       setTimeout (=>
         if @model? and @key?
+          # Ensure view changes aren't triggered twice
+          @_viewUpdatedModel = true
           @model.set @key, @value
+          @_viewUpdatedModel = false
         return
         ), 10
       return
@@ -1977,6 +1983,23 @@ oj.ListBox = oj.type 'ListBox',
           return
         return
 
+# oj.Button
+# ------------------------------------------------------------------------------
+# Button control
+
+oj.Button = oj.type 'Button',
+  base: oj.View
+
+  constructor: (args) ->
+    {options, args} = oj.argumentsUnion arguments
+
+    options.label ?= if args.length > 0 then args[0] else ''
+
+    @el = oj.argumentShift(args, 'el') || oj =>
+      oj.button options.label
+
+    oj.Button.base.constructor.apply @, [options]
+
 # oj.Link
 # ------------------------------------------------------------------------------
 # oj.Link = class Link inherits Control
@@ -2078,7 +2101,6 @@ $.fn.ojValue = jqueryExtend
       # Parse the text to turn it into bool, number, or string
       when 'text'
         text = child.nodeValue
-        oj.parse text
       # Get elements as oj instances or elements
       when 'element'
         if (inst = _getInstanceOnElement child)?

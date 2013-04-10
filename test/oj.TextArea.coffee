@@ -39,6 +39,6 @@ describe 'oj.TextArea', ->
     control = oj.TextArea(value:'test')
     results = oj.compile html:true, dom:true, control
     expect(results.html).to.contain '<textarea'
-    expect(results.html).to.contain 'class="TextArea"'
+    expect(results.html).to.contain 'class="oj-TextArea"'
     expect(results.html).to.contain 'id="oj'
     expect(results.html).to.contain 'test</textarea>'

@@ -40,7 +40,7 @@ describe 'oj.CheckBox', ->
     results = oj.compile html:true, dom:true, control
     expect(results.html).to.contain '<input'
     expect(results.html).to.contain 'id="oj'
-    expect(results.html).to.contain 'class="CheckBox"'
+    expect(results.html).to.contain 'class="oj-CheckBox"'
     expect(results.html).to.contain 'checked="checked"'
 
   it 'compile emit:false', ->
