@@ -1089,3 +1089,10 @@ oj.begin('#{clientFile}');
 
 </script>
 """
+
+# Express
+# ==============================================================================
+# app.engine
+# app.use('view engine', 'ojc')
+oj.express = ->
+  console.log "express called"
