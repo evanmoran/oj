@@ -1443,7 +1443,7 @@ oj.View = oj.type 'View',
   # Views are special objects map properties together. This is a union of arguments
   # With the remaining arguments becoming a list
 
-  constructor: (args = {}) ->
+  constructor: (options = {}) ->
     # console.log "View.constructor: ", JSON.stringify arguments
 
     throw new Error("oj.#{@typeName}: constructor failed to set this.el") unless oj.isDOM @el
@@ -1452,25 +1452,25 @@ oj.View = oj.type 'View',
     _setInstanceOnElement @el, @
 
     # Emit as a tag would do if emit is truthy or unset
-    emit = oj.argumentShift(args, 'emit') ? true
+    emit = oj.argumentShift(options, 'emit') ? true
     @emit() if emit
 
     # Generate id if missing
-    args.id ?= oj.id()
+    options.id ?= oj.id()
 
-    # Add typeName class
+    # Add class oj-typeName
     @$el.addClass "oj-#{@typeName}"
 
     # Views automatically set all options to their properties
     # arguments directly to properties
-    @set args
+    @set options
 
     # Remove options that were set
-    args = _.omit args, @properties...
+    options = _.omit options, @properties...
 
     # Views pass through remaining options to be attributes on the root element
     # This can include jquery events and interpreted arguments
-    @addAttributes args
+    @addAttributes options
 
   properties:
     # Get element
@@ -1568,11 +1568,11 @@ oj.View = oj.type 'View',
 oj.ModelsView = oj.type 'ModelsView',
   base: oj.View
 
-  constructor: (args) ->
+  constructor: (options) ->
     # console.log "ModelsView constructor: ", arguments
 
-    @each = oj.argumentShift args, 'each'
-    @models = oj.argumentShift args, 'models'
+    @each = oj.argumentShift options, 'each'
+    @models = oj.argumentShift options, 'models'
 
     oj.ModelsView.base.constructor.apply @, arguments
 
@@ -1631,173 +1631,18 @@ oj.ModelsView = oj.type 'ModelsView',
       console.log "ModelsView.modelChanged: ", arguments
       # Do nothing? Seems the job of ModelViews..
 
-# oj.List
-# ------------------------------------------------------------------------------
-
-oj.List = oj.type 'List',
-  base: oj.ModelsView
-
-  constructor: ->
-    # console.log "List constructor: ", arguments
-    {options, args} = oj.argumentsUnion arguments
-
-    # Determine tags for root and items
-    # @ordered is write once at construction
-    @_ordered = oj.argumentShift(args, 'ordered')
-
-    # @tag is write once at construction
-    tag = oj.argumentShift(args, 'tagName')
-    @_tagName = if (oj.isObject tag) then _getTagName(tag) else tag
-    @itemTagName = oj.argumentShift(args, 'itemTagName')
-
-    # Accept or parse el
-    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
-      oj[@tagName]()
-
-    # Default each function to pass through values
-    options.each ?= (model, el) ->
-      # Mark row with id if possible
-      id = if model?.id? then id: model.id else null
-
-      # Convert model to value
-      if model?.toJSON? or oj.isObject model
-        # Display objects as their JSON equivalent
-        v = JSON.stringify model.toJSON()
-      else
-        v = model
-
-      # Emit tag
-      el v, id
-      return
-
-    # Set @items to args if they exist
-    @items = items = (oj.argumentShift options, 'items') if options.items?
-
-    # Use args as items if they haven't already been set
-    if @items.length == 0 and args.length > 0
-      @items = args
-
-    # Args have been handled so don't pass them on
-    oj.List.base.constructor.apply @, [options]
-
-  properties:
-
-    # ordered: set ordered list or non-ordered (readonly, write on new)
-    ordered: get: -> @_ordered || @tagName == 'ol'
-
-    # tag: set tag (readonly, writeable on new)
-    tagName: get: ->
-      return @_tagName if @_tagName?
-      @_tagName = 'ul'
-      if @$el?
-        name = @$el.prop 'tagName'
-        if oj.isString name
-          @_tagName = name.toLowerCase()
-      @_tagName
-
-    # $itemsEl: get list of $(elements)
-    $itemsEl: get: -> @$ "> #{@itemTagName}"
-
-    # itemsEl: get list of elements
-    itemsEl: get: -> @$itemsEl.get()
-
-    # items: get or set all items at once (readwrite)
-    items:
-      # Used cached items or items as interpreted by ojValue plugin
-      # This will parse the contents of the li tag
-      get: ->
-        # Use cache if possible
-        return @_items if @_items?
-        @_items = @$itemsEl.ojValue()
-
-      set: (v) -> @_items = v; @make(); return
-
-    # count: the number of items
-    count: get: -> @$itemsEl.length
-
-    # itemTagName: set or get the itemTagName
-    itemTagName:
-      get: -> @_itemTagName || 'li'
-      set: (v) ->
-        @_itemTagName = if (oj.isObject v) then _getTagName(v) else v
-        @make()
-        return
-
-  methods:
-    # Get item element at index
-    itemEl: (ix) -> @$itemsEl[ix]
-
-    # Get item $(element) at index
-    $itemEl: (ix) -> $ @itemEl(ix)
-
-    # Get item value at index
-    item: (ix) -> @$itemEl(ix).ojValue()
-
-    # Remake everything
-    make: ->
-      return unless @el?
-      if @models? and @each?
-        models = if oj.isBackbone @_models then @_models.models else @_models
-        @$el.oj =>
-          # Apply each to models
-          for model in models
-            oj[@itemTagName] =>
-              oj.emit @each model
-
-      # Items are already views so just render them
-      else if @items?
-        @$el.oj =>
-          # Apply each to models
-          for item in @items
-            oj[@itemTagName] item
-
-    add: (ix = @count-1, ojml) ->
-
-    remove: (ix = @count-1, ojml) ->
-
-    move: (ixFrom, ixTo) ->
-      ojml = @remove ixFrom
-      @addItem ixTo, ojml
-
-    clear: ->
-      for ix in [@items.length-1...0] by -1
-        @remove ix
-
-# oj.Table
-# ------------------------------------------------------------------------------
-# oj.Table = oj.type 'Table',
-#   base: oj.ModelsView
-
-#   properties:
-#     rows: (list) ->
-#     rowCount: ->
-#     cellCount: ->
-
-#   methods:
-#     row: (r) ->
-#     cell: (r, c) ->
-
-# oj.Table.Row = oj.type 'Table.Row',
-#   base: oj.ModelView
-#   properties:
-#     row:
-#       get: ->
-#       set: (list) ->
-#   methods:
-#     cell: ->
-
 # oj.ModelView
 # ------------------------------------------------------------------------------
 # Model view base class
 oj.ModelView = oj.type 'ModelView',
   base: oj.View
 
-  constructor: (args) ->
+  constructor: (options) ->
 
     # console.log "ModelView.constructor: ", JSON.stringify arguments
 
-    @value = oj.argumentShift args, 'value'
-    @model = oj.argumentShift args, 'model'
+    @value = oj.argumentShift options, 'value' if options?.value?
+    @model = oj.argumentShift options, 'model' if options?.model?
 
     oj.ModelView.base.constructor.apply @, arguments
 
@@ -1888,14 +1733,25 @@ oj.TextBox = oj.type 'TextBox',
 
   base: oj.ModelKeyView
 
-  constructor: (args) ->
-    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
+
+  constructor: ->
+    {options, args} = oj.argumentsUnion arguments
+
+    console.log "args: ", args
+    console.log "options: ", options
+
+    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
       oj.input type:'text',
         keydown: => if @live then @viewChanged(); return
         keyup: => if @live then @viewChanged(); return
         change: => @viewChanged(); return
 
-    oj.TextBox.base.constructor.apply @, arguments
+    # Value can be set by argument
+    if args.length > 0
+      console.log "length > 0: oj.coffee:1906"
+      @value = args[0]
+
+    oj.TextBox.base.constructor.apply @, [options]
 
   properties:
     value:
@@ -1903,7 +1759,9 @@ oj.TextBox = oj.type 'TextBox',
         v = @el.value
         v = '' if not v? or v == 'undefined'
         v
-      set: (v) -> @el.value = v; return
+      set: (v) ->
+        console.log "setting v: ", v
+        @el.value = v; return
 
 # oj.CheckBox
 # ------------------------------------------------------------------------------
@@ -1912,12 +1770,18 @@ oj.TextBox = oj.type 'TextBox',
 oj.CheckBox = oj.type 'CheckBox',
   base: oj.ModelKeyView
 
-  constructor: (args) ->
-    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
+  constructor: ->
+    {options, args} = oj.argumentsUnion arguments
+
+    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
       oj.input type:'checkbox',
         change: => @viewChanged(); return
 
-    oj.CheckBox.base.constructor.apply @, arguments
+    # Value can be set by argument
+    if args.length > 0
+      @value = args[0]
+
+    oj.CheckBox.base.constructor.call @, options
 
   properties:
     value:
@@ -1938,14 +1802,21 @@ oj.CheckBox = oj.type 'CheckBox',
 oj.TextArea = oj.type 'TextArea',
   base: oj.ModelKeyView
 
-  constructor: (args) ->
-    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
+  constructor: ->
+
+    {options, args} = oj.argumentsUnion arguments
+
+    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
       oj.textarea
         keydown: => if @live then @viewChanged(); return
         keyup: => if @live then @viewChanged(); return
         change: => @viewChanged(); return
 
-    oj.TextArea.base.constructor.apply @, arguments
+    # Value can be set by argument
+    if args.length > 0
+      @value = args[0]
+
+    oj.TextArea.base.constructor.call @, options
 
   properties:
     value:
@@ -1959,13 +1830,21 @@ oj.TextArea = oj.type 'TextArea',
 oj.ListBox = oj.type 'ListBox',
   base: oj.ModelKeyView
 
-  constructor: (args) ->
-    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
+  constructor: ->
+
+    {options, args} = oj.argumentsUnion arguments
+
+    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
       oj.select change: => @viewChanged(); return
 
-    @options = oj.argumentShift args, 'options'
+    # @options is a list of elements
+    @options = oj.argumentShift options, 'options'
 
-    oj.ListBox.base.constructor.apply @, arguments
+    # Value can be set by argument
+    if args.length > 0
+      @value = args[0]
+
+    oj.ListBox.base.constructor.apply @, [options]
 
   properties:
     value:
@@ -1975,7 +1854,7 @@ oj.ListBox = oj.type 'ListBox',
     options:
       get: -> @_options
       set: (v) ->
-        throw new Error('oj.ListBox::options is not an array') unless oj.isArray v
+        throw new Error('oj.ListBox::options array is missing') unless oj.isArray v
         @_options = v
         @$el.oj ->
           for op in v
@@ -1993,9 +1872,10 @@ oj.Button = oj.type 'Button',
   constructor: (args) ->
     {options, args} = oj.argumentsUnion arguments
 
+    # Label is first argument
     options.label ?= if args.length > 0 then args[0] else ''
 
-    @el = oj.argumentShift(args, 'el') || oj =>
+    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
       oj.button options.label
 
     oj.Button.base.constructor.apply @, [options]
@@ -2003,6 +1883,169 @@ oj.Button = oj.type 'Button',
 # oj.Link
 # ------------------------------------------------------------------------------
 # oj.Link = class Link inherits Control
+
+# oj.List
+# ------------------------------------------------------------------------------
+
+oj.List = oj.type 'List',
+  base: oj.ModelsView
+
+  constructor: ->
+    # console.log "List constructor: ", arguments
+    {options, args} = oj.argumentsUnion arguments
+
+    # @ordered is write once
+    @_ordered = oj.argumentShift(options, 'ordered')
+
+    # @tagName is write once
+    @_tagName = oj.argumentShift(options, 'tagName')
+
+    @itemTagName = oj.argumentShift(options, 'itemTagName')
+
+    # Use el or create one
+    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
+      oj[@tagName]()
+
+    # Default each function to pass through values
+    options.each ?= (model, el) ->
+      # Mark row with id if possible
+      id = if model?.id? then id: model.id else null
+
+      # Convert model to value
+      if model?.toJSON? or oj.isObject model
+        # Display objects as their JSON equivalent
+        v = JSON.stringify model.toJSON()
+      else
+        v = model
+
+      # Emit tag
+      el v, id
+      return
+
+    # Set @items if it exists
+    @items = (oj.argumentShift options, 'items')
+
+    # Use args as items if they haven't already been set
+    if @items.length == 0 and args.length > 0
+      @items = args
+
+    # Args have been handled so don't pass them on
+    oj.List.base.constructor.apply @, [options]
+
+  properties:
+
+    # ordered: set ordered list or non-ordered (readonly, write on new)
+    ordered: get: -> @_ordered ? false
+
+    # tag: set tag (readonly, writeable on new)
+    tagName: get: -> @_tagName ? (if @ordered then 'ol' else 'ul')
+
+    # $itemsEl: get list of $(elements)
+    $itemsEl: get: -> @$ "> #{@itemTagName}"
+
+    # itemsEl: get list of elements
+    itemsEl: get: -> @$itemsEl.get()
+
+    # items: get or set all items at once (readwrite)
+    items:
+      # Used cached items or items as interpreted by ojValue plugin
+      # This will parse the contents of the li tag
+      get: ->
+        # Use cache if possible
+        return @_items if @_items?
+        @_items = @$itemsEl.ojValue()
+
+      set: (v) ->
+        @_items = v ? [];
+        @make();
+        return
+
+    # count: the number of items
+    count: get: -> @$itemsEl.length
+
+    # itemTagName: set or get the itemTagName
+    itemTagName:
+      get: -> @_itemTagName ? 'li'
+      set: (v) ->
+        @_itemTagName = if (oj.isObject v) then _getTagName(v) else v
+        if @el?
+          @make()
+        return
+
+  methods:
+    # Get item element at index
+    itemEl: (ix) -> @$itemsEl[ix]
+
+    # Get item $(element) at index
+    $itemEl: (ix) -> $ @itemEl(ix)
+
+    # Get item value at index
+    item: (ix) -> @$itemEl(ix).ojValue()
+
+    # Remake everything
+    make: ->
+      return unless @el?
+      if @models? and @each?
+        models = if oj.isBackbone @_models then @_models.models else @_models
+        @$el.oj =>
+          # Apply each to models
+          for model in models
+            oj[@itemTagName] =>
+              oj.emit @each model
+
+      # Items are already views so just render them
+      else if @items?
+        @$el.oj =>
+          # Apply each to models
+          for item in @items
+            oj[@itemTagName] item
+
+    add: (ix = @count-1, ojml) ->
+
+    remove: (ix = @count-1, ojml) ->
+
+    move: (ixFrom, ixTo) ->
+      ojml = @remove ixFrom
+      @addItem ixTo, ojml
+
+    clear: ->
+      for ix in [@items.length-1...0] by -1
+        @remove ix
+
+# oj.NumberList
+# ------------------------------------------------------------------------------
+
+oj.NumberList = ->
+  oj.List.call @, {ordered:true}, arguments...
+
+# oj.BulletList
+# ------------------------------------------------------------------------------
+
+oj.BulletList = ->
+  oj.List.call @, {ordered:false}, arguments...
+
+# oj.Table
+# ------------------------------------------------------------------------------
+# oj.Table = oj.type 'Table',
+#   base: oj.ModelsView
+
+#   properties:
+#     rows: (list) ->
+#     rowCount: ->
+#     cellCount: ->
+
+#   methods:
+#     row: (r) ->
+#     cell: (r, c) ->
+
+# oj.Table.Row = oj.type 'Table.Row',
+#   base: oj.ModelView
+#   properties:
+#     row:
+#       get: ->
+#       set: (list) ->
+#   methods:
+#     cell: ->
 
 # oj.sandbox
 # ------------------------------------------------------------------------------
