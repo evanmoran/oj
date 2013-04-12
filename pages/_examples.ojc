@@ -491,7 +491,8 @@ module.exports = [
       }
     });
   """
-,
+
+
   name: 'Create a Table Partial'
   cs: """
     # Create a partial that creates a table from its
@@ -526,5 +527,35 @@ module.exports = [
           backgroundColor: 'orange'
           padding:'50px'
   """
+,
+  name: 'Server-side Templating'
+  cs: """
+    ojml = oj ->
+      h1 'Server side it renders html'
+      div 'CSS comes down as well'
 
+      css
+        h1:
+          fontSize: '23px'
+          border:'1px solid red'
+
+
+    # Rendering the ojml to HTML like the server would
+    h2 'Render to HTML'
+    TextArea value:(oj.toHTML ojml), style:width:400, height:100
+
+    # Rendering the ojml to CSS like the server would
+    h2 'Render to CSS'
+    TextArea value:(oj.toCSS ojml), style:width:400, height:100
+
+
+    # JS events bound on the server bind automatically on the client
+    h2 'Javascript Events Bind Automatically'
+    div '(CLICK ME)', click: -> alert('it works!')
+
+  """
+  js: """
+    div("woops, didn't finish this yet");
+  """
+,
 ]

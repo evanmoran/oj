@@ -34,7 +34,6 @@ module.exports =
         h1 'This is OJ'
         p 'Type in the editor to change the page live.'
         p 'Use the ListBox to see other examples.'
-
       """
 
 ###
