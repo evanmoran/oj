@@ -778,14 +778,14 @@ _getTagName = (tag) ->
 
 # Helper to get instance on element
 _getInstanceOnElement = (el) ->
-  if el?.ojInstance?
-    el.ojInstance
+  if el?.oj?
+    el.oj
   else
     null
 
 # Helper to set instance on element
 _setInstanceOnElement = (el, inst) ->
-  el?.ojInstance = inst
+  el?.oj = inst
   return
 
 # Create tag methods
