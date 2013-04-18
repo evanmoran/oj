@@ -7,6 +7,17 @@ Backbone = require 'backbone'
 oj = require '../src/oj.coffee'
 oj.extend this
 
+contains = (control, args...) ->
+  html = oj.toHTML control
+  for arg in args
+    expect(html).to.contain arg
+
+jsonify = (any) ->
+  if oj.isString(any) or oj.isNumber(any) or oj.isBoolean(any)
+    '' + any
+  else
+    JSON.stringify any
+
 describe 'oj.List', ->
 
   beforeEach ->
@@ -42,22 +53,24 @@ describe 'oj.List', ->
     expect(control.count).to.equal 1
     expect(control.items).to.deep.equal [1]
 
-    html = oj.toHTML control
-    expect(html).to.contain '<ul'
-    expect(html).to.contain '<li>1</li>'
-    expect(html).to.contain '</ul>'
+    contains control,
+      'class="oj-List"'
+      '<div'
+      '<div>1</div>'
+      '</div>'
 
-  it 'construct with two argument', ->
+  it 'construct with two arguments', ->
     control = oj.List 1,2
     expect(oj.typeOf control).to.equal 'List'
     expect(control.count).to.equal 2
     expect(control.items).to.deep.equal [1,2]
 
-    html = oj.toHTML control
-    expect(html).to.contain '<ul'
-    expect(html).to.contain '<li>1</li>'
-    expect(html).to.contain '<li>2</li>'
-    expect(html).to.contain '</ul>'
+    contains control,
+      'class="oj-List"'
+      '<div'
+      '<div>1</div>'
+      '<div>2</div>'
+      '</div>'
 
   it 'construct with empty models argument', ->
     control = oj.List models:[]
@@ -65,7 +78,237 @@ describe 'oj.List', ->
     expect(oj.typeOf control).to.equal 'List'
     expect(control.items).to.deep.equal []
 
-  it 'construct from element', ->
+  it 'tagName and itemTagName', ->
+    control = oj.List 1, 2, tagName:'span', itemTagName:'div'
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.count).to.equal 2
+    expect(control.items).to.deep.equal [1,2]
+
+    contains control,
+      'class="oj-List"'
+      '<span'
+      '<div>1</div>'
+      '<div>2</div>'
+      '</span>'
+
+  it 'NumberList', ->
+    control = oj.NumberList 1,2
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.count).to.equal 2
+    expect(control.items).to.deep.equal [1,2]
+
+    contains control,
+      'class="oj-List"'
+      '<ol'
+      '<li>1</li>'
+      '<li>2</li>'
+      '</ol>'
+
+    it 'BulletList', ->
+    control = oj.BulletList 1,2
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.count).to.equal 2
+    expect(control.items).to.deep.equal [1,2]
+
+    contains control,
+      'class="oj-List"'
+      '<ul'
+      '<li>1</li>'
+      '<li>2</li>'
+      '</ul>'
+
+it 'construct with one model argument (default each)', ->
+    control = oj.List models:[1]
+    expect(control.count).to.equal 1
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
+
+    contains control,
+      '<div>1</div>'
+
+    expect(control.items).to.deep.equal ['1']
+
+  it 'construct with many models (default each)', ->
+    user1 = name:'Alfred', strength: 11
+    user2 = name:'Batman', strength: 22
+    user3 = name:'Catwoman', strength: 33
+    user4 = name:'Gordan', strength: 44
+    control = oj.List models:[user1,user2,user3]
+
+    expect(control.count).to.equal 3
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
+
+    contains control,
+      "<div>#{jsonify user1}</div>"
+      "<div>#{jsonify user2}</div>"
+      "<div>#{jsonify user3}</div>"
+
+    expect(control.items).to.deep.equal [
+      jsonify user1
+      jsonify user2
+      jsonify user3
+    ]
+
+  it 'construct with list of backbone models (default each)', ->
+
+    class UserModel extends Backbone.Model
+    user1 = new UserModel name:'Alfred', strength: 11
+    user2 = new UserModel name:'Batman', strength: 22
+    user3 = new UserModel name:'Catwoman', strength: 33
+    user4 = new UserModel name:'Gordan', strength: 44
+    control = oj.List models:[user1,user2,user3]
+
+    expect(control.count).to.equal 3
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
+
+    contains control,
+      "<div>#{jsonify user1}</div>"
+      "<div>#{jsonify user2}</div>"
+      "<div>#{jsonify user3}</div>"
+
+    expect(control.items).to.deep.equal [
+      jsonify user1
+      jsonify user2
+      jsonify user3
+    ]
+
+  it 'construct with collection of backbone models (default each)', ->
+
+    class UserModel extends Backbone.Model
+    class UserCollection extends Backbone.Collection
+      model: UserModel
+      comparator: (m) -> m.get 'name'
+
+    user1 = new UserModel name:'Alfred', strength: 11
+    user2 = new UserModel name:'Batman', strength: 22
+    user3 = new UserModel name:'Catwoman', strength: 33
+    user4 = new UserModel name:'Gordan', strength: 44
+
+    users = new UserCollection [user3, user1]
+
+    control = oj.List models:users
+
+    expect(control.count).to.equal 2
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
+
+    contains control,
+      "<div>#{jsonify user1}</div>"
+      "<div>#{jsonify user3}</div>"
+
+    expect(control.items).to.deep.equal [
+      jsonify user1
+      jsonify user3
+    ]
+
+    # Add element
+    users.add [user2]
+
+    contains control,
+      "<div>#{jsonify user1}</div>"
+      "<div>#{jsonify user2}</div>"
+      "<div>#{jsonify user3}</div>"
+
+    expect(control.items).to.deep.equal [
+      jsonify user1
+      jsonify user2
+      jsonify user3
+    ]
+
+    # Remove element
+    users.remove user1
+
+    contains control,
+      "<div>#{jsonify user2}</div>"
+      "<div>#{jsonify user3}</div>"
+
+    expect(control.items).to.deep.equal [
+      jsonify user2
+      jsonify user3
+    ]
+
+    # Reset elements
+    users.reset user4
+
+    contains control,
+      "<div>#{jsonify user4}</div>"
+
+    expect(control.items).to.deep.equal [
+      jsonify user4
+    ]
+
+
+  it 'construct with collection of backbone models (manual each)', ->
+
+    namify = (model) ->
+      model.get 'name'
+
+    class UserModel extends Backbone.Model
+    class UserCollection extends Backbone.Collection
+      model: UserModel
+      comparator: namify
+
+    user1 = new UserModel name:'Alfred', strength: 11
+    user2 = new UserModel name:'Batman', strength: 22
+    user3 = new UserModel name:'Catwoman', strength: 33
+    user4 = new UserModel name:'Gordan', strength: 44
+
+    users = new UserCollection [user3, user1]
+
+    control = oj.List models:users, each:namify
+
+    expect(control.count).to.equal 2
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
+
+    contains control,
+      "<div>#{namify user1}</div>"
+      "<div>#{namify user3}</div>"
+
+    expect(control.items).to.deep.equal [
+      namify user1
+      namify user3
+    ]
+
+    # Add element
+    users.add [user2]
+
+    contains control,
+      "<div>#{namify user1}</div>"
+      "<div>#{namify user2}</div>"
+      "<div>#{namify user3}</div>"
+
+    expect(control.items).to.deep.equal [
+      namify user1
+      namify user2
+      namify user3
+    ]
+
+    # Remove element
+    users.remove user1
+
+    contains control,
+      "<div>#{namify user2}</div>"
+      "<div>#{namify user3}</div>"
+
+    expect(control.items).to.deep.equal [
+      namify user2
+      namify user3
+    ]
+
+    # Reset elements
+    users.reset user4
+
+    contains control,
+      "<div>#{namify user4}</div>"
+
+    expect(control.items).to.deep.equal [
+      namify user4
+    ]
+
+  it 'BulletList from element', ->
     $('body').html """
       <ul>
         <li>one</li>
@@ -75,6 +318,50 @@ describe 'oj.List', ->
     """
 
     $list = $('ul')
+
+    control = oj.BulletList el:$list[0]
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.count).to.equal 3
+
+    expect(control.item(0)).to.equal 'one'
+    expect(control.item(1)).to.equal '2'
+    expect(control.item(2)).to.not.exist
+
+    expect(control.items).to.deep.equal ['one', '2', undefined]
+
+
+  it 'NumberList from element', ->
+    $('body').html """
+      <ol>
+        <li>one</li>
+        <li>2</li>
+        <li></li>
+      </ol>
+    """
+
+    $list = $('ol')
+
+    control = oj.NumberList el:$list[0]
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.count).to.equal 3
+
+    expect(control.item(0)).to.equal 'one'
+    expect(control.item(1)).to.equal '2'
+    expect(control.item(2)).to.not.exist
+
+    expect(control.items).to.deep.equal ['one', '2', undefined]
+
+
+  it 'List from element', ->
+    $('body').html """
+      <div>
+        <div>one</div>
+        <div>2</div>
+        <div></div>
+      </div>
+    """
+
+    $list = $('body > div')
 
     control = oj.List el:$list[0]
     expect(oj.typeOf control).to.equal 'List'
@@ -86,21 +373,3 @@ describe 'oj.List', ->
 
     expect(control.items).to.deep.equal ['one', '2', undefined]
 
-
-  it 'construct with one model argument default each'
-
-    # control = oj.List models:[1]
-    # expect(control.count).to.equal 1
-    # expect(oj.typeOf control).to.equal 'List'
-    # expect(control.items).to.deep.equal ['1']
-
-    # html = oj.toHTML control
-    # expect(html).to.contain '<ul'
-    # expect(html).to.contain '<li>1</li>'
-    # expect(html).to.contain '</ul>'
-    # expect(html).to.contain 'class=oj-List'
-
-  it 'construct with one model argument'
-
-  it 'construct with many model arguments default each'
-  it 'construct with many model arguments'
