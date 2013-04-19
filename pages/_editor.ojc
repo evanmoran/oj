@@ -16,7 +16,7 @@ module.exports = (default_code) ->
       '.editor-source':
         position: 'relative'
         width: '100%'
-        height: '30%'
+        height: '70%'
         border: '2px solid #fbcb7c'
         padding: '10px'
         display: 'block'
