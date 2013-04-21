@@ -7,7 +7,6 @@
   "dependencies": {
     "oj.markdown":"latest",
     "oj.mustache":"latest",
-    "oj.AceEditor":"latest",
     "underscore": "latest"
   }
 }
