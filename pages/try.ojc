@@ -31,31 +31,33 @@ module.exports =
       # oj.TryEditor()
 
       _editor """
-        page ->
-          # Define backbone model
-          class UserModel extends Backbone.Model
-
-          # Define backbone collection sorted by name
-          class UserCollection extends Backbone.Collection
-            model: UserModel
-            comparator: (m) -> m.get 'name'
-
-          user0 = new UserModel name:'Albert', number: "555-0000"
-          user1 = new UserModel name:'Britta', number: "555-1111"
-          user2 = new UserModel name:'Calvin', number: "555-2222"
-
-          users = new UserCollection [user2,user1,user0]
-
-          list = List models:users, each:(model) ->
-            div model.get('name') + "'s phone number is " + model.get('number')
-
-          user3 = new UserModel name:'Delores', number: "555-3333"
-          users.add user3
-
-
       """
 
 ###
+
+
+page ->
+  # Define backbone model
+  class UserModel extends Backbone.Model
+
+  # Define backbone collection sorted by name
+  class UserCollection extends Backbone.Collection
+    model: UserModel
+    comparator: (m) -> m.get 'name'
+
+  user0 = new UserModel name:'Albert', number: "555-0000"
+  user1 = new UserModel name:'Britta', number: "555-1111"
+  user2 = new UserModel name:'Calvin', number: "555-2222"
+
+  users = new UserCollection [user2,user1,user0]
+
+  list = List models:users, each:(model) ->
+    div model.get('name') + "'s phone number is " + model.get('number')
+
+  user3 = new UserModel name:'Delores', number: "555-3333"
+  users.add user3
+
+
 page ->
   class UserMode extends Backbone.Model
   user1 = new UserMode name:'Evan', age:'20'
