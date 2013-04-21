@@ -2,6 +2,3 @@
 node_modules
 modules
 *.html
-lib/server.js
-lib/oj.server.js
-lib/command.js

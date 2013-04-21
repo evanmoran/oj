@@ -1,0 +1,118 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/local/Cellar/node/0.8.14/bin/node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'publish' ]
+2 info using npm@1.1.65
+3 info using node@v0.8.14
+4 verbose publish [ '.' ]
+5 verbose read json /Users/evan/oj/pages/package.json
+6 warn package.json ojwebsite@0.0.1 No README.md file found!
+7 verbose cache add [ '.', null ]
+8 silly cache add name=undefined spec="." args=[".",null]
+9 verbose parsed url { pathname: '.', path: '.', href: '.' }
+10 silly lockFile 3a52ce78- .
+11 verbose lock . /Users/evan/.npm/3a52ce78-.lock
+12 verbose read json package.json
+13 verbose tar pack [ '/var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/tmp.tgz',
+13 verbose tar pack   '.' ]
+14 verbose tarball /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/tmp.tgz
+15 verbose folder .
+16 info prepublish ojwebsite@0.0.1
+17 silly lockFile 4229016e-8937-0-25166493910364807-tmp-tgz /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/tmp.tgz
+18 verbose lock /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/tmp.tgz /Users/evan/.npm/4229016e-8937-0-25166493910364807-tmp-tgz.lock
+19 silly lockFile 4229016e-8937-0-25166493910364807-tmp-tgz /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/tmp.tgz
+20 verbose tar unpack /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/tmp.tgz
+21 silly lockFile bdbbaf71-8937-0-25166493910364807-package /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/package
+22 verbose lock /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/package /Users/evan/.npm/bdbbaf71-8937-0-25166493910364807-package.lock
+23 silly gunzTarPerm modes [ '755', '644' ]
+24 silly gunzTarPerm extractEntry package.json
+25 silly gunzTarPerm extractEntry index.ojc
+26 silly gunzTarPerm extractEntry _examples.ojc
+27 silly gunzTarPerm extractEntry _layout.ojc
+28 silly gunzTarPerm extractEntry _snippet.ojc
+29 silly gunzTarPerm extractEntry _styles.ojc
+30 silly gunzTarPerm extractEntry _template.ojc
+31 silly gunzTarPerm extractEntry docs.ojc
+32 silly gunzTarPerm extractEntry _editor.ojc
+33 silly gunzTarPerm extractEntry learn.ojc
+34 silly gunzTarPerm extractEntry try.ojc
+35 silly gunzTarPerm extractEntry oj.TryEditor.ojc
+36 silly gunzTarPerm extractEntry _content.ojc
+37 silly gunzTarPerm extractEntry test.ojc
+38 silly gunzTarPerm extractEntry www/index.html
+39 verbose read json /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/package/package.json
+40 silly lockFile bdbbaf71-8937-0-25166493910364807-package /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/package
+41 verbose from cache /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/package/package.json
+42 verbose tar pack [ '/Users/evan/.npm/ojwebsite/0.0.1/package.tgz',
+42 verbose tar pack   '/var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/package' ]
+43 verbose tarball /Users/evan/.npm/ojwebsite/0.0.1/package.tgz
+44 verbose folder /var/folders/td/s3t2rx052374k3p15gclfbjw0000gn/T/npm-26216/1366569918937-0.25166493910364807/package
+45 silly lockFile 7e312382--npm-ojwebsite-0-0-1-package-tgz /Users/evan/.npm/ojwebsite/0.0.1/package.tgz
+46 verbose lock /Users/evan/.npm/ojwebsite/0.0.1/package.tgz /Users/evan/.npm/7e312382--npm-ojwebsite-0-0-1-package-tgz.lock
+47 silly lockFile 7e312382--npm-ojwebsite-0-0-1-package-tgz /Users/evan/.npm/ojwebsite/0.0.1/package.tgz
+48 silly lockFile f14e0dae-evan-npm-ojwebsite-0-0-1-package /Users/evan/.npm/ojwebsite/0.0.1/package
+49 verbose lock /Users/evan/.npm/ojwebsite/0.0.1/package /Users/evan/.npm/f14e0dae-evan-npm-ojwebsite-0-0-1-package.lock
+50 silly lockFile f14e0dae-evan-npm-ojwebsite-0-0-1-package /Users/evan/.npm/ojwebsite/0.0.1/package
+51 verbose tar unpack /Users/evan/.npm/ojwebsite/0.0.1/package.tgz
+52 silly lockFile f14e0dae-evan-npm-ojwebsite-0-0-1-package /Users/evan/.npm/ojwebsite/0.0.1/package
+53 verbose lock /Users/evan/.npm/ojwebsite/0.0.1/package /Users/evan/.npm/f14e0dae-evan-npm-ojwebsite-0-0-1-package.lock
+54 silly gunzTarPerm modes [ '755', '644' ]
+55 silly gunzTarPerm extractEntry package.json
+56 silly gunzTarPerm extractEntry docs.ojc
+57 silly gunzTarPerm extractEntry _examples.ojc
+58 silly gunzTarPerm extractEntry _layout.ojc
+59 silly gunzTarPerm extractEntry _snippet.ojc
+60 silly gunzTarPerm extractEntry _styles.ojc
+61 silly gunzTarPerm extractEntry _template.ojc
+62 silly gunzTarPerm extractEntry _editor.ojc
+63 silly gunzTarPerm extractEntry index.ojc
+64 silly gunzTarPerm extractEntry learn.ojc
+65 silly gunzTarPerm extractEntry oj.TryEditor.ojc
+66 silly gunzTarPerm extractEntry _content.ojc
+67 silly gunzTarPerm extractEntry test.ojc
+68 silly gunzTarPerm extractEntry try.ojc
+69 silly gunzTarPerm extractEntry www/index.html
+70 verbose read json /Users/evan/.npm/ojwebsite/0.0.1/package/package.json
+71 silly lockFile f14e0dae-evan-npm-ojwebsite-0-0-1-package /Users/evan/.npm/ojwebsite/0.0.1/package
+72 silly shasum updated bytes 39765
+73 info shasum 14139b40e7377b1617926a2d8cc6d40e6a6b07a9
+73 info shasum /Users/evan/.npm/ojwebsite/0.0.1/package.tgz
+74 verbose from cache /Users/evan/.npm/ojwebsite/0.0.1/package/package.json
+75 verbose chmod /Users/evan/.npm/ojwebsite/0.0.1/package.tgz 644
+76 verbose chown /Users/evan/.npm/ojwebsite/0.0.1/package.tgz [ 501, 20 ]
+77 silly lockFile 3a52ce78- .
+78 silly publish { name: 'ojwebsite',
+78 silly publish   version: '0.0.1',
+78 silly publish   private: true,
+78 silly publish   main: './',
+78 silly publish   author: { name: 'Evan Moran', email: 'evan@evanmoran.com' },
+78 silly publish   dependencies:
+78 silly publish    { 'oj.markdown': 'latest',
+78 silly publish      'oj.mustache': 'latest',
+78 silly publish      underscore: 'latest' },
+78 silly publish   _id: 'ojwebsite@0.0.1',
+78 silly publish   readme: 'ERROR: No README.md file found!',
+78 silly publish   description: 'ERROR: No README.md file found!',
+78 silly publish   dist: { shasum: '14139b40e7377b1617926a2d8cc6d40e6a6b07a9' } }
+79 error Error: This package has been marked as private
+79 error Remove the 'private' field from the package.json to publish it.
+79 error     at publish_ (/usr/local/Cellar/node/0.8.14/lib/node_modules/npm/lib/publish.js:83:31)
+79 error     at Array.1 (/usr/local/Cellar/node/0.8.14/lib/node_modules/npm/node_modules/slide/lib/bind-actor.js:15:8)
+79 error     at LOOP (/usr/local/Cellar/node/0.8.14/lib/node_modules/npm/node_modules/slide/lib/chain.js:15:14)
+79 error     at LOOP (/usr/local/Cellar/node/0.8.14/lib/node_modules/npm/node_modules/slide/lib/chain.js:14:28)
+79 error     at chain (/usr/local/Cellar/node/0.8.14/lib/node_modules/npm/node_modules/slide/lib/chain.js:20:5)
+79 error     at /usr/local/Cellar/node/0.8.14/lib/node_modules/npm/lib/publish.js:52:5
+79 error     at /usr/local/Cellar/node/0.8.14/lib/node_modules/npm/lib/cache.js:644:14
+79 error     at exports.unlock (/usr/local/Cellar/node/0.8.14/lib/node_modules/npm/node_modules/lockfile/lockfile.js:36:7)
+79 error     at fs.close (/usr/local/Cellar/node/0.8.14/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:90:5)
+79 error     at Object.oncomplete (fs.js:297:15)
+80 error If you need help, you may report this log at:
+80 error     <http://github.com/isaacs/npm/issues>
+80 error or email it to:
+80 error     <npm-@googlegroups.com>
+81 error System Darwin 12.3.0
+82 error command "/usr/local/Cellar/node/0.8.14/bin/node" "/usr/local/bin/npm" "publish"
+83 error cwd /Users/evan/oj/pages
+84 error node -v v0.8.14
+85 error npm -v 1.1.65
+86 verbose exit [ 1, true ]
