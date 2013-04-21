@@ -300,6 +300,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
+                "title": "oj.argumentShift",
+                "slug": "ojargumentshift"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
                 "title": "oj.type",
                 "slug": "ojtype"
               },
@@ -320,7 +328,26 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "slug": "ojview"
               },
               "depth": 2
-            }, {
+            }
+          ]
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "Detach element from dom",
+            "slug": "detach-element-from-dom"
+          },
+          "depth": 1
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "Attach element to dom where it use to be",
+            "slug": "attach-element-to-dom-where-it-use-to-be"
+          },
+          "depth": 1,
+          "children": [
+            {
               "type": "heading",
               "data": {
                 "level": 2,
@@ -372,8 +399,24 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "oj.Table",
-                "slug": "ojtable"
+                "title": "oj.ListBox",
+                "slug": "ojlistbox"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.Button",
+                "slug": "ojbutton"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.Link",
+                "slug": "ojlink"
               },
               "depth": 2
             }, {
@@ -384,12 +427,39 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "slug": "ojlist"
               },
               "depth": 2
+            }
+          ]
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "On add minimally create the missing model",
+            "slug": "on-add-minimally-create-the-missing-model"
+          },
+          "depth": 1,
+          "children": [
+            {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.NumberList",
+                "slug": "ojnumberlist"
+              },
+              "depth": 2
             }, {
               "type": "heading",
               "data": {
                 "level": 2,
-                "title": "oj.Link",
-                "slug": "ojlink"
+                "title": "oj.BulletList",
+                "slug": "ojbulletlist"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "oj.Table",
+                "slug": "ojtable"
               },
               "depth": 2
             }, {
@@ -406,6 +476,38 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "level": 2,
                 "title": "oj.use",
                 "slug": "ojuse"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "jqueryExtend(fn)",
+                "slug": "jqueryextendfn"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "jquery.oj",
+                "slug": "jqueryoj"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "jquery.ojValue",
+                "slug": "jqueryojvalue"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "jquery.ojAfter, jquery.ojBefore, ...",
+                "slug": "jqueryojafter-jqueryojbefore-"
               },
               "depth": 2
             }
@@ -619,6 +721,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               ]
             }
           ]
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "Express",
+            "slug": "express"
+          },
+          "depth": 1
         }
       ]
     }

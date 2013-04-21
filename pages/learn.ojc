@@ -34,5 +34,4 @@ module.exports = ->
 
 data = [
   h: 'What is OJ?', id: 'what-is-oj', d: ->
-    p '...'
 ]
