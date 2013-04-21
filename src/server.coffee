@@ -132,32 +132,6 @@ nodeModulePaths = (from) ->
     paths.push(dir)
   paths
 
-# # nodeModulePackageMain: Look in moduleDir for packages.json
-# # Load it and read the 'main' key to get the file.
-# # Return this file unioned with the original moduleDir
-# # Return null if package.json doesn't eixst or dir doesn't exist
-# nodeModulePackageMain = (moduleDir) ->
-#   console.log "nodeModulePackageMain called"
-#   # moduleDir = '/full/path/node_modules/module-name'
-#   console.log "moduleDir: ", moduleDir
-#   # moduleName = 'module-name'
-#   moduleName = path.basename moduleDir
-#   console.log "moduleName: ", moduleName
-
-#   # packageFile = '/full/path/node_modules/module-name/packages.json'
-#   packageFile = path.join moduleDir, 'packages.json'
-#   console.log "packageFile: ", packageFile
-#   try
-#     file = readFileSync packageFile
-#     if _.isString file
-#       obj = JSON.parse file
-#       if obj?
-#         main = obj.main
-#         console.log "main: ", main
-#         return main
-#   catch e
-#   null
-
 # Recursively get final link path
 resolveLink = (linkPath, out) ->
   try
@@ -878,7 +852,6 @@ _buildRequireCache = (modules, cache, isDebug) ->
   # To ourselves oj is local but to them oj is native.
   # Removing this cache record ensures only the native copy
   # is saved to the client.
-  delete cache.files[require.resolve './index.js']
   delete cache.files[require.resolve '../lib/oj.js']
 
   return cache
