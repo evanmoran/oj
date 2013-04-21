@@ -55,21 +55,25 @@ Loads immediately if it is already loaded</p></div></div><div class="code"><div 
   <span class="nx">output</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Register require.extension for .oj files in node</p></div></div><div class="code"><div class="wrapper"><span class="k">if</span> <span class="nx">require</span><span class="p">.</span><span class="nx">extensions</span>
 
   <span class="nv">coffee = </span><span class="nx">require</span> <span class="s">&#39;coffee-script&#39;</span>
-  <span class="nv">fs = </span><span class="nx">require</span> <span class="k">new</span> <span class="nb">String</span><span class="p">(</span><span class="s">&#39;fs&#39;</span><span class="p">)</span> <span class="c1"># Hack to avoid pulling fs to client</span>
 
   <span class="nv">stripBOM = </span><span class="nf">(c) -&gt;</span> <span class="k">if</span> <span class="nx">c</span><span class="p">.</span><span class="nx">charCodeAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mh">0xFEFF</span> <span class="k">then</span> <span class="p">(</span><span class="nx">c</span><span class="p">.</span><span class="nx">slice</span> <span class="mi">1</span><span class="p">)</span> <span class="k">else</span> <span class="nx">c</span>
 
   <span class="nv">wrapJS = </span><span class="nf">(code) -&gt;</span>
-    <span class="s">&quot;(function(){with(require(&#39;oj&#39;).sandbox){</span><span class="si">#{</span><span class="nx">code</span><span class="si">}</span><span class="s">}}).call(this);&quot;</span>
+    <span class="s">&quot;(function(){with( oj.sandbox){</span><span class="si">#{</span><span class="nx">code</span><span class="si">}</span><span class="s">}}).call(this);&quot;</span>
 
   <span class="nv">wrapCSMessage = </span><span class="nf">(message, filepath) -&gt;</span>
     <span class="s">&quot;</span><span class="si">#{</span><span class="nx">oj</span><span class="p">.</span><span class="nx">codes</span><span class="o">?</span><span class="p">.</span><span class="nx">red</span><span class="si">}</span><span class="s">coffee-script error in </span><span class="si">#{</span><span class="nx">filepath</span><span class="si">}</span><span class="s">: </span><span class="si">#{</span><span class="nx">message</span><span class="si">}#{</span><span class="nx">oj</span><span class="p">.</span><span class="nx">codes</span><span class="o">?</span><span class="p">.</span><span class="nx">reset</span><span class="si">}</span><span class="s">&quot;</span>
   <span class="nv">wrapJSMessage = </span><span class="nf">(message, filepath) -&gt;</span>
-    <span class="s">&quot;</span><span class="si">#{</span><span class="nx">oj</span><span class="p">.</span><span class="nx">codes</span><span class="o">?</span><span class="p">.</span><span class="nx">red</span><span class="si">}</span><span class="s">javascript error in </span><span class="si">#{</span><span class="nx">filepath</span><span class="si">}</span><span class="s">: </span><span class="si">#{</span><span class="nx">message</span><span class="si">}#{</span><span class="nx">oj</span><span class="p">.</span><span class="nx">codes</span><span class="o">?</span><span class="p">.</span><span class="nx">reset</span><span class="si">}</span><span class="s">&quot;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>.oj files are compiled as javascript</p></div></div><div class="code"><div class="wrapper">  <span class="nx">require</span><span class="p">.</span><span class="nx">extensions</span><span class="p">[</span><span class="s">&#39;.oj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nf">(module, filepath) -&gt;</span>
+    <span class="s">&quot;</span><span class="si">#{</span><span class="nx">oj</span><span class="p">.</span><span class="nx">codes</span><span class="o">?</span><span class="p">.</span><span class="nx">red</span><span class="si">}</span><span class="s">javascript error in </span><span class="si">#{</span><span class="nx">filepath</span><span class="si">}</span><span class="s">: </span><span class="si">#{</span><span class="nx">message</span><span class="si">}#{</span><span class="nx">oj</span><span class="p">.</span><span class="nx">codes</span><span class="o">?</span><span class="p">.</span><span class="nx">reset</span><span class="si">}</span><span class="s">&quot;</span>
+
+  <span class="nv">compileJS = </span><span class="nf">(module, code, filepath) -&gt;</span>
+    <span class="nv">code = </span><span class="nx">wrapJS</span> <span class="nx">code</span>
+    <span class="nv">global.oj = </span><span class="nx">oj</span>
+    <span class="nx">module</span><span class="p">.</span><span class="nx">_compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">filepath</span>
+    <span class="k">delete</span> <span class="nx">global</span><span class="p">.</span><span class="nx">oj</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>.oj files are compiled as javascript</p></div></div><div class="code"><div class="wrapper">  <span class="nx">require</span><span class="p">.</span><span class="nx">extensions</span><span class="p">[</span><span class="s">&#39;.oj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nf">(module, filepath) -&gt;</span>
     <span class="nv">code = </span><span class="nx">stripBOM</span> <span class="nx">fs</span><span class="p">.</span><span class="nx">readFileSync</span> <span class="nx">filepath</span><span class="p">,</span> <span class="s">&#39;utf8&#39;</span>
     <span class="k">try</span>
-      <span class="nv">code = </span><span class="nx">wrapJS</span> <span class="nx">code</span>
-      <span class="nx">module</span><span class="p">.</span><span class="nx">_compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">filepath</span>
+      <span class="nx">compileJS</span> <span class="nx">module</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">filepath</span>
     <span class="k">catch</span> <span class="nx">eJS</span>
       <span class="nv">eJS.message = </span><span class="nx">wrapJSMessage</span> <span class="nx">eJS</span><span class="p">.</span><span class="nx">message</span><span class="p">,</span> <span class="nx">filepath</span>
       <span class="k">throw</span> <span class="nx">eJS</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>.ojc files are compiled as coffee-script</p></div></div><div class="code"><div class="wrapper">  <span class="nx">require</span><span class="p">.</span><span class="nx">extensions</span><span class="p">[</span><span class="s">&#39;.ojc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nf">(module, filepath) -&gt;</span>
@@ -78,14 +82,13 @@ Loads immediately if it is already loaded</p></div></div><div class="code"><div 
     <span class="k">catch</span> <span class="nx">eCoffee</span>
       <span class="nv">eCoffee.message = </span><span class="nx">wrapCSMessage</span> <span class="nx">eCoffee</span><span class="p">.</span><span class="nx">message</span><span class="p">,</span> <span class="nx">filepath</span>
       <span class="k">throw</span> <span class="nx">eCoffee</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Compile javascript</p></div></div><div class="code"><div class="wrapper">    <span class="k">try</span>
-      <span class="nv">code = </span><span class="nx">wrapJS</span> <span class="nx">code</span>
-      <span class="nx">module</span><span class="p">.</span><span class="nx">_compile</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">filepath</span>
+      <span class="nx">compileJS</span> <span class="nx">module</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">filepath</span>
 
     <span class="k">catch</span> <span class="nx">eJS</span>
       <span class="nv">eJS.message = </span><span class="nx">wrapJSMessage</span> <span class="nx">eJS</span><span class="p">.</span><span class="nx">message</span><span class="p">,</span> <span class="nx">filepath</span>
       <span class="k">throw</span> <span class="nx">eJS</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>TODO: .ojlc files are compiled as literate coffee-script</p></div></div><div class="code"><div class="wrapper"><span class="nv">root = </span><span class="nx">@</span>
 
-<span class="nv">oj.version = </span><span class="s">&#39;0.0.12&#39;</span>
+<span class="nv">oj.version = </span><span class="s">&#39;0.0.13&#39;</span>
 
 <span class="nv">oj.isClient = </span><span class="kc">true</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Export for NodeJS if necessary</p></div></div><div class="code"><div class="wrapper"><span class="k">if</span> <span class="k">typeof</span> <span class="nx">module</span> <span class="o">!=</span> <span class="s">&#39;undefined&#39;</span>
   <span class="nv">exports = module.exports = </span><span class="nx">oj</span>
@@ -259,12 +262,9 @@ TODO: support options, deep: true</p></div></div><div class="code"><div class="w
     <span class="nx">_</span><span class="p">.</span><span class="nx">each</span> <span class="nx">obj</span><span class="p">,</span> <span class="nf">(value, index, list) -&gt;</span>
       <span class="k">if</span> <span class="nx">result</span> <span class="o">or</span> <span class="p">(</span><span class="nv">result = </span><span class="nx">iterator</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">index</span><span class="p">,</span> <span class="nx">list</span><span class="p">))</span>
         <span class="k">return</span> <span class="nx">breaker</span>
-    <span class="k">return</span> <span class="o">!!</span><span class="nx">result</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-iteration">Utility: Iteration</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_each(collection, iterator, context)</p>
-
-<pre><code>Iterate over collection or function. If a function
+    <span class="k">return</span> <span class="o">!!</span><span class="nx">result</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="utility-iteration">Utility: Iteration</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_each(collection, iterator, context)</p></div></div><div class="code"><div class="wrapper"><span class="c1">#</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><pre><code>Iterate over collection or function. If a function
 is encountered it is evaluated before iteration
-
-collection    Array or Object to iterate over
+</code></pre></div></div><div class="code"><div class="wrapper"><span class="c1">#</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><pre><code>collection    Array or Object to iterate over
 iterator      Function to call on each step
 context       (Optional) Object to pass as 'this' to iteration method
 </code></pre></div></div><div class="code"><div class="wrapper"><span class="nv">_.breaker = </span><span class="p">{}</span>
@@ -281,12 +281,9 @@ context       (Optional) Object to pass as 'this' to iteration method
     <span class="k">for</span> <span class="nx">k</span><span class="p">,</span> <span class="nx">v</span> <span class="k">of</span> <span class="nx">col</span>
       <span class="k">if</span> <span class="nx">_</span><span class="p">.</span><span class="nx">has</span> <span class="nx">col</span><span class="p">,</span> <span class="nx">k</span>
         <span class="k">if</span> <span class="nx">iterator</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">v</span><span class="p">,</span> <span class="nx">k</span><span class="p">,</span> <span class="nx">col</span><span class="p">)</span> <span class="o">==</span> <span class="nx">_</span><span class="p">.</span><span class="nx">breaker</span>
-          <span class="k">return</span> <span class="nx">_</span><span class="p">.</span><span class="nx">breaker</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.map(collection, iterator, options = {})</p>
-
-<pre><code>Map over object or array If a function
+          <span class="k">return</span> <span class="nx">_</span><span class="p">.</span><span class="nx">breaker</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>_.map(collection, iterator, options = {})</p></div></div><div class="code"><div class="wrapper"><span class="c1">#</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><pre><code>Map over object or array If a function
 is encountered it is evaluated before iteration
-
-collection    Array or Object to iterate over
+</code></pre></div></div><div class="code"><div class="wrapper"><span class="c1">#</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><pre><code>collection    Array or Object to iterate over
 iterator      Function to call on each step
 options
   context       (Optional) Object to pass as 'this' to iteration method
@@ -550,8 +547,7 @@ if there exists an argument to append to</p></div></div><div class="code"><div c
 
 <pre><code>Extend oj methods into a context. Common contexts are `global` `window`
 and `this` (used in coffee script). Helper methods are not extended (oj._)
-
-context          Object to extend oj methods and objects into
+</code></pre></div></div><div class="code"><div class="wrapper"><span class="c1">#</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><pre><code>context          Object to extend oj methods and objects into
 </code></pre></div></div><div class="code"><div class="wrapper"><span class="nv">oj.extend = </span><span class="nf">(context) -&gt;</span>
   <span class="nv">o = </span><span class="p">{}</span>
   <span class="k">for</span> <span class="nx">k</span><span class="p">,</span><span class="nx">v</span> <span class="k">of</span> <span class="nx">oj</span>
@@ -601,12 +597,12 @@ In short it is easier to check for _.isArray dom, then _isArray dom &amp;&amp; d
       <span class="nx">out</span> <span class="o">+=</span> <span class="s">&quot;-</span><span class="si">#{</span><span class="nx">c</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span><span class="si">}</span><span class="s">&quot;</span>
     <span class="k">else</span>
       <span class="nx">out</span> <span class="o">+=</span> <span class="nx">c</span>
-  <span class="nx">out</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-stylefromobject-convert-object-to-string-form">_styleFromObject: Convert object to string form</h2>
-
-<pre><code>inline:false      inline:true                inline:false,indent:true
+  <span class="nx">out</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-stylefromobject-convert-object-to-string-form">_styleFromObject: Convert object to string form</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="c1">#</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><pre><code>inline:false      inline:true                inline:false,indent:true
 color:red;        color:red;font-size:10px   \tcolor:red;
 font-size:10px;                              \tfont-size:10px;
-</code></pre></div></div><div class="code"><div class="wrapper"><span class="nv">_styleFromObject = </span><span class="nf">(obj, options = {}) -&gt;</span>
+</code></pre></div></div><div class="code"><div class="wrapper"><span class="c1">#</span>
+
+<span class="nv">_styleFromObject = </span><span class="nf">(obj, options = {}) -&gt;</span>
   <span class="nx">_</span><span class="p">.</span><span class="nx">defaults</span> <span class="nx">options</span><span class="p">,</span>
     <span class="nv">inline: </span><span class="kc">true</span>
     <span class="nv">indent: </span><span class="kc">false</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Trailing semi should only exist on when we aren't indenting</p></div></div><div class="code"><div class="wrapper">  <span class="nv">options.semi = </span><span class="o">!</span><span class="nx">options</span><span class="p">.</span><span class="nx">inline</span>
@@ -628,9 +624,7 @@ precicely what must be serialized with no adjustment.</p></div></div><div class=
     <span class="nv">space = </span><span class="s">&#39; &#39;</span>
   <span class="nx">out</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-cssfromobject">_cssFromObject:</h2>
 
-<p>Convert css selectors and rules to a string</p>
-
-<pre><code>debug:true               debug:false
+<p>Convert css selectors and rules to a string</p></div></div><div class="code"><div class="wrapper"><span class="c1">#</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><pre><code>debug:true               debug:false
 .cls {                   .cls{color: red}
     color: red;
 }\n
@@ -792,7 +786,10 @@ or they will be constructed twice.</p></div></div><div class="code"><div class="
 <span class="s">    if ( !(this instanceof </span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">) )</span>
 <span class="s">      _this = new </span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">(&#39;</span><span class="si">#{</span><span class="nx">delay</span><span class="si">}</span><span class="s">&#39;);</span>
 
-<span class="s">    if (arguments &amp;&amp; arguments[0] != &#39;</span><span class="si">#{</span><span class="nx">delay</span><span class="si">}</span><span class="s">&#39;)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>{name}.prototype.constructor.apply(_this, arguments);</p></div></div><div class="code"><div class="wrapper"><span class="s">    return _this;</span>
+<span class="s">    if (arguments &amp;&amp; arguments[0] != &#39;</span><span class="si">#{</span><span class="nx">delay</span><span class="si">}</span><span class="s">&#39;)</span>
+<span class="s">      </span><span class="si">#{</span><span class="nx">name</span><span class="si">}</span><span class="s">.prototype.constructor.apply(_this, arguments);</span>
+
+<span class="s">    return _this;</span>
 <span class="s">  }</span>
 <span class="s">  &quot;&quot;&quot;</span>
   <span class="p">)();</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Default the constructor to call its base</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="nx">args</span><span class="p">.</span><span class="nx">base</span><span class="o">?</span> <span class="o">and</span> <span class="p">((</span><span class="o">not</span> <span class="nx">args</span><span class="p">.</span><span class="nx">constructor</span><span class="o">?</span><span class="p">)</span> <span class="o">or</span> <span class="p">(</span><span class="o">not</span> <span class="nx">args</span><span class="p">.</span><span class="nx">hasOwnProperty</span><span class="p">(</span><span class="s">&#39;constructor&#39;</span><span class="p">)))</span>
@@ -1232,9 +1229,7 @@ When out of bounds an error message is thrown</p></div></div><div class="code"><
 <p>Include a plugin of oj</p></div></div><div class="code"><div class="wrapper"><span class="nv">oj.use = </span><span class="nf">(plugin, settings = {}) -&gt;</span>
   <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&#39;oj.use: function expected for first argument&#39;</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">isFunction</span> <span class="nx">plugin</span>
   <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s">&#39;oj.use: object expected for second argument&#39;</span><span class="p">)</span> <span class="nx">unless</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">isObject</span> <span class="nx">settings</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Call plugin to gather extension map</p></div></div><div class="code"><div class="wrapper">  <span class="nv">pluginMap = </span><span class="nx">plugin</span> <span class="nx">oj</span><span class="p">,</span> <span class="nx">settings</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Extend all properties</p></div></div><div class="code"><div class="wrapper">  <span class="k">for</span> <span class="nx">name</span><span class="p">,</span><span class="nx">value</span> <span class="k">of</span> <span class="nx">pluginMap</span>
-    <span class="nx">oj</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Add to sandbox</p></div></div><div class="code"><div class="wrapper">    <span class="nx">oj</span><span class="p">.</span><span class="nx">addProperty</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">sandbox</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span><span class="nx">value</span><span class="p">,</span> <span class="nv">writable: </span><span class="kc">false</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="jqueryextendfn">jqueryExtend(fn)</h2>
-
-<pre><code>$.fn.myExtension = jqueryExtend (($el,args) -&gt;
+    <span class="nx">oj</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Add to sandbox</p></div></div><div class="code"><div class="wrapper">    <span class="nx">oj</span><span class="p">.</span><span class="nx">addProperty</span> <span class="nx">oj</span><span class="p">.</span><span class="nx">sandbox</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">value</span><span class="o">:</span><span class="nx">value</span><span class="p">,</span> <span class="nv">writable: </span><span class="kc">false</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="jqueryextendfn">jqueryExtend(fn)</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="c1">#</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><pre><code>$.fn.myExtension = jqueryExtend (($el,args) -&gt;
   $el     # =&gt; The jquery matched element
   args    # =&gt; Array of arguments
   return a non-null value to stop iteration and return value to caller

@@ -129,24 +129,28 @@ oj.guid = (len = 8, chars = _chars) ->
 if require.extensions
 
   coffee = require 'coffee-script'
-  fs = require new String('fs') # Hack to avoid pulling fs to client
 
   stripBOM = (c) -> if c.charCodeAt(0) == 0xFEFF then (c.slice 1) else c
 
   wrapJS = (code) ->
-    "(function(){with(require('oj').sandbox){#{code}}}).call(this);"
+    "(function(){with( oj.sandbox){#{code}}}).call(this);"
 
   wrapCSMessage = (message, filepath) ->
     "#{oj.codes?.red}coffee-script error in #{filepath}: #{message}#{oj.codes?.reset}"
   wrapJSMessage = (message, filepath) ->
     "#{oj.codes?.red}javascript error in #{filepath}: #{message}#{oj.codes?.reset}"
 
+  compileJS = (module, code, filepath) ->
+    code = wrapJS code
+    global.oj = oj
+    module._compile code, filepath
+    delete global.oj
+
   # .oj files are compiled as javascript
   require.extensions['.oj'] = (module, filepath) ->
     code = stripBOM fs.readFileSync filepath, 'utf8'
     try
-      code = wrapJS code
-      module._compile code, filepath
+      compileJS module, code, filepath
     catch eJS
       eJS.message = wrapJSMessage eJS.message, filepath
       throw eJS
@@ -164,8 +168,7 @@ if require.extensions
 
     # Compile javascript
     try
-      code = wrapJS code
-      module._compile code, filepath
+      compileJS module, code, filepath
 
     catch eJS
       eJS.message = wrapJSMessage eJS.message, filepath

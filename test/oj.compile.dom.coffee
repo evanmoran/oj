@@ -131,15 +131,15 @@ describe 'oj.compile.dom', ->
 
   it 'attributes style string', ->
     ojml = oj.div style: 'text-align:center; color:red', ->
-    compileDOM ojml, 'div', 0, '<div style="text-align: center; color: red;"></div>'
+    compileDOM ojml, 'div', 0, '<div style="text-align:center; color:red"></div>'
 
   it 'attributes style object', ->
     ojml = oj.div style: {'text-align':'center', color: 'red'}, ->
-    compileDOM ojml, 'div', 0, '<div style="color: red; text-align: center;"></div>'
+    compileDOM ojml, 'div', 0, '<div style="color:red;text-align:center"></div>'
 
   it 'attributes style object with fancy keys', ->
     ojml = oj.div style: {textAlign:'center', color: 'red'}, ->
-    compileDOM ojml, 'div', 0, '<div style="color: red; text-align: center;"></div>'
+    compileDOM ojml, 'div', 0, '<div style="color:red;text-align:center"></div>'
 
   it 'simple nested', ->
     ojml = oj.div ->
@@ -152,7 +152,7 @@ describe 'oj.compile.dom', ->
       oj.div 'a1', ->
         oj.div 'b1'
       oj.div 'a2'
-    expected = '<div style="color: red; text-align: center;"><div>a1<div>b1</div></div><div>a2</div></div>'
+    expected = '<div style="color:red;text-align:center"><div>a1<div>b1</div></div><div>a2</div></div>'
     compileDOM ojml, 'div', 2, expected, debug: false
 
   # Debug should have no effect on dom creation
@@ -161,7 +161,7 @@ describe 'oj.compile.dom', ->
       oj.div 'a1', ->
         oj.div 'b1'
       oj.div 'a2'
-    expected = '<div style="color: red; text-align: center;"><div>a1<div>b1</div></div><div>a2</div></div>'
+    expected = '<div style="color:red;text-align:center"><div>a1<div>b1</div></div><div>a2</div></div>'
     compileDOM ojml, 'div', 2, expected, debug: true
 
   it '<html><body>', ->
