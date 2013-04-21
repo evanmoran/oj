@@ -83,20 +83,23 @@ oj.command = (options = {}) ->
   for fullPath in options.args
     compilePath fullPath, options
 
+  return
+
 # compilePath
 # ------------------------------------------------------------------------------
 # Compile any file or directory path
 
-compilePath = (fullPath, options = {}) ->
+compilePath = (fullPath, options = {}, cb = ->) ->
   if isDirectory fullPath
-    return compileDir fullPath, options
+    return compileDir fullPath, options, cb
   includeDir = path.dirname fullPath
-  compileFile fullPath, includeDir, options
+  compileFile fullPath, includeDir, options, cb
+  return
 
 # compileDir
 # ------------------------------------------------------------------------------
 
-compileDir = (dirPath, options = {}) ->
+compileDir = (dirPath, options = {}, cb = ->) ->
   # Handle recursion and gather files to watch and compile
   lsWatch dirPath, options, (err, files, dirs) ->
 
@@ -105,15 +108,21 @@ compileDir = (dirPath, options = {}) ->
       for d in dirs
         watchDir d, dirPath, options
 
+    # Call cb when it has been called length times
+    _cb = _.after files.length, cb
+
     for f in files
 
       # Compile and watch all pages
       if isOJPage f
-        compileFile f, dirPath, options
+        compileFile f, dirPath, options, _cb
 
       # Watch files that aren't pages
       else if options.watch
         watchFile f, dirPath, options
+        _cb()
+    return
+  return
 
 # nodeModulePaths: Determine node_module paths from a given path
 # Implementation is from node.js' Module._nodeModulePaths
@@ -165,7 +174,7 @@ basenameForExtensions = (p, arrayOfExt = []) ->
 
 # compileFile
 # ------------------------------------------------------------------------------
-compileFile = (filePath, includeDir, options = {}) ->
+compileFile = (filePath, includeDir, options = {}, cb = ->) ->
   # Time this method
   startTime = process.hrtime()
 
@@ -301,19 +310,24 @@ compileFile = (filePath, includeDir, options = {}) ->
   if mkdirp.sync dirOut
     verbose 3, "mkdir #{dirOut}"
 
-  # Write file
-  fs.writeFileSync fileOut, html
+  # Record
+  deltaTime = process.hrtime(startTime)
+  timeStamp = " (#{deltaTime[0] + Math.round(10000*deltaTime[1]/1000000000)/10000} sec)"
 
   # Clear caches
   cache = null
   hookCache = null
   hookOriginalCache = null
 
-  # Record
-  deltaTime = process.hrtime(startTime)
-  timeStamp = " (#{deltaTime[0] + Math.round(10000*deltaTime[1]/1000000000)/10000} sec)"
-  verbose 1, "compiled #{fileOut}#{timeStamp}", 'cyan'
-  return
+  # Write file
+  fs.writeFile fileOut, html, (err) ->
+
+    if err
+      error "file writing error #{filePath}: #{err}"
+      return
+
+    verbose 1, "compiled #{fileOut}#{timeStamp}", 'cyan'
+    return
 
 # Keep track of which files are watched
 watchCache = {}
