@@ -202,7 +202,7 @@ oj.isDOMElement = (obj) -> !!(obj and obj.nodeType == 1)
 oj.isDOMAttribute = (obj) -> !!(obj and obj.nodeType == 2)
 oj.isDOMText = (obj) -> !!(obj and obj.nodeType == 3)
 oj.isjQuery = (obj) -> !!(obj and obj.jquery)
-oj.isBackbone = (obj) -> !!(obj and obj.on and obj.off and obj.trigger)
+oj.isEvented = (obj) -> !!(obj and obj.on and obj.off and obj.trigger)
 oj.isOJ = (obj) -> !!(obj?.isOJ)
 oj.isArguments = (obj) -> toString.call(obj) == '[object Arguments]'
 
@@ -212,16 +212,15 @@ oj.typeOf = (any) ->
   return 'null' if any == null
   t = typeof any
   if t == 'object'
-    if oj.isArray any               then t = 'array'
-    else if oj.isOJ any             then t = any.typeName
-    else if oj.isRegEx any          then t = 'regexp'
-    else if oj.isDate any           then t = 'date'
-    else if oj.isDOMElement any     then t = 'element'
-    else if oj.isDOMText any        then t = 'text'
-    else if oj.isDOMAttribute any   then t = 'attribute'
-    else if oj.isBackbone any       then t = 'backbone'
-    else if oj.isjQuery any         then t = 'jquery'
-    else                            t = 'object'
+    if oj.isArray any                     then t = 'array'
+    else if oj.isOJ any                   then t = any.typeName
+    else if oj.isRegEx any                then t = 'regexp'
+    else if oj.isDate any                 then t = 'date'
+    else if oj.isDOMElement any           then t = 'dom-element'
+    else if oj.isDOMText any              then t = 'dom-text'
+    else if oj.isDOMAttribute any         then t = 'dom-attribute'
+    else if oj.isjQuery any               then t = 'jquery'
+    else                                  t = 'object'
   t
 
 oj.parse = (str) ->
@@ -1534,19 +1533,17 @@ oj.View = oj.type 'View',
 
     # Remove a single attribute
     removeAttribute: (name) ->
-      attr = {}
-      attr[name] = 1
-      @removeAttribute attr
+      @$el.removeAttr name
+      return
 
     # Remove multiple attributes
-    removeAttributes: (attributes) ->
-      if oj.isObject attributes
-        for k of attributes
-          @$el.removeAttr k
-      else if oj.isArray attributes
-        for k in attributes
-          @$el.removeAttr k
+    removeAttributes: (list) ->
+      for k in list
+        @removeAttribute k
       return
+
+    # emit: Emit instance as a tag function would do
+    emit: -> _.argumentsAppend @; return
 
     # Convert View to html
     toHTML: (options) ->
@@ -1558,16 +1555,14 @@ oj.View = oj.type 'View',
     # Convert View to string (for debugging)
     toString: -> @toHTML()
 
-    # Detach element from dom
-    detach: -> throw 'detach nyi'
-      # The implementation is to set el manipulate it, and remember how to set it back
+    # # Detach element from dom
+    # detach: -> throw 'detach nyi'
+    #   # The implementation is to set el manipulate it, and remember how to set it back
 
-    # Attach element to dom where it use to be
-    attach: -> throw 'attach nyi'
-      # The implementation is to unset el from detach
+    # # Attach element to dom where it use to be
+    # attach: -> throw 'attach nyi'
+    #   # The implementation is to unset el from detach
 
-    # emit: Emit instance as a tag function would do
-    emit: -> _.argumentsAppend @; return
 
 # oj.CollectionView
 # ------------------------------------------------------------------------------
@@ -1644,13 +1639,13 @@ oj.ModelView = oj.type 'ModelView',
       get: -> @_model
       set: (v) ->
         # Unbind events on the old model
-        if oj.isBackbone @_model
+        if oj.isEvented @_model
           @_model.off 'change', null, @
 
         @_model = v;
 
         # Bind events on the new model
-        if oj.isBackbone @_model
+        if oj.isEvented @_model
           @_model.on 'change', @modelChanged, @
 
         # Trigger change manually when settings new model
@@ -1677,18 +1672,12 @@ oj.ModelKeyView = oj.type 'ModelKeyView',
     # console.log "ModelKeyView.constructor: ", JSON.stringify arguments
     @key = oj.argumentShift options, 'key' if options?.key?
 
-    # Set live if it exists
-    @live = oj.argumentShift options, 'live' if options?.live?
-
     # Call super to bind model and value
     oj.ModelKeyView.base.constructor.apply @, arguments
 
   properties:
     # Key used to access model
     key: null
-
-    # Live update model as text changes
-    live: true
 
     # Value directly gets and sets to the dom
     # when it changes it must trigger viewChanged
@@ -1738,6 +1727,10 @@ oj.TextBox = oj.type 'TextBox',
     # Value can be set by argument
     @value = args[0] if args.length > 0
 
+
+    # Set live if it exists
+    @live = oj.argumentShift options, 'live' if options?.live?
+
     oj.TextBox.base.constructor.apply @, [options]
 
   properties:
@@ -1748,6 +1741,9 @@ oj.TextBox = oj.type 'TextBox',
         v
       set: (v) ->
         @el.value = v; return
+
+    # Live update model as text changes
+    live: true
 
 # oj.CheckBox
 # ------------------------------------------------------------------------------
@@ -1806,6 +1802,9 @@ oj.TextArea = oj.type 'TextArea',
     value:
       get: -> @el.value
       set: (v) -> @el.value = v; return
+
+    # Live update model as text changes
+    live: true
 
 # oj.ListBox
 # ------------------------------------------------------------------------------
@@ -1940,9 +1939,13 @@ oj.List = oj.type 'List',
 
   methods:
     # Get item value at index
-    item: (ix) ->
+    item: (ix, ojml) ->
       ix = boundOrThrow ix, @count, "oj.List.item: index"
-      @$itemEl(ix).ojValue()
+      if ojml?
+        @$itemEl(ix).oj ojml
+        return
+      else
+        @$itemEl(ix).ojValue()
 
     # Get item element at index
     itemEl: (ix) ->
@@ -1962,7 +1965,7 @@ oj.List = oj.type 'List',
       # Convert models to views
       views = []
       if @models? and @each?
-        models = if oj.isBackbone @_models then @_models.models else @_models
+        models = if oj.isEvented @_models then @_models.models else @_models
         for model in models
           views.push @_itemFromModel model
 
@@ -2206,10 +2209,10 @@ $.fn.ojValue = jqueryExtend
 
     switch oj.typeOf child
       # Parse the text to turn it into bool, number, or string
-      when 'text'
+      when 'dom-text'
         text = child.nodeValue
       # Get elements as oj instances or elements
-      when 'element'
+      when 'dom-element'
         if (inst = _getInstanceOnElement child)?
           inst
         else

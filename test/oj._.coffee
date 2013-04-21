@@ -2,6 +2,7 @@ path = require 'path'
 fs = require 'fs'
 
 oj = require '../src/oj.coffee'
+Backbone = require 'backbone'
 _ = oj.__
 
 describe 'oj._', ->
@@ -193,8 +194,14 @@ describe 'oj._', ->
     (_.uniqueSort [1,1,1,1]).should.deep.equal [1]
 
   it 'isOJML'
+
   it 'isElement'
+
   it 'isjQuery'
-  it 'isBackbone'
 
-
+  it 'isEvented', ->
+    class UserModel extends Backbone.Model
+    user = new UserModel name:'Evan'
+    console.log "user.model?: ", user.model?
+    expect(oj.isEvented(user)).to.equal true
+    expect(oj.typeOf(user)).to.equal 'object'
