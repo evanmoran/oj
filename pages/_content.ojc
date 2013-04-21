@@ -16,6 +16,14 @@ module.exports =
     div 'methods:', c:'code-subheading method'
     contentCodeItems methods, 'method'
 
+  renderArguments: (args) ->
+    div 'arguments:', c:'code-subheading argument'
+    contentCodeItems args, 'argument'
+
+  renderOptions: (opts) ->
+    div 'options:', c:'code-subheading option'
+    contentCodeItems opts, 'option'
+
   renderInherits: (inherits) ->
     div 'base:', c:'code-subheading inherit'
     div c:'code-items', ->

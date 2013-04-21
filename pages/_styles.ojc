@@ -16,6 +16,8 @@ module.exports = ->
   functionLinkColor = linkColor
   methodLinkColor = '#a64d09'
   propertyLinkColor = '#b3820a'
+  optionLinkColor = propertyLinkColor
+  argumentLinkColor = propertyLinkColor
 
   # Fonts
   familyMonospace = 'Inconsolata, Consolas, Courier New, monospace'
@@ -48,10 +50,10 @@ module.exports = ->
 
     h3:
       fontFamily: familySanSarif
-      fontSize: '14px'
+      fontSize: '16px'
       fontWeight: 'lighter'
-      marginTop: '10px'
-      marginBottom: '10px'
+      marginTop: '22px'
+      marginBottom: '14px'
       color: '#222'
 
     a:
@@ -82,6 +84,14 @@ module.exports = ->
       color: propertyLinkColor
       fontFamily: familyMonospace
 
+    'a.option':
+      color: optionLinkColor
+      fontFamily: familyMonospace
+
+    'a.argument':
+      color: argumentLinkColor
+      fontFamily: familyMonospace
+
     'a:hover':
       textDecoration:'underline'
 
@@ -92,8 +102,11 @@ module.exports = ->
       margin: '16px 0'
       lineHeight: '20px'
 
+    ul:
+      marginBottom: '16px'
+
     li:
-      marginLeft: '20px'
+      margin: '10px 0 10px 20px'
       color: textColor
       fontFamily: familySanSarif
       fontSize: '14px'
@@ -107,9 +120,10 @@ module.exports = ->
       color: textColor
       display: 'block'
       lineHeight: '20px'
+      marginTop: '10px'
 
     '.code-items':
-      margin: '5px 0 10px 10px'
+      margin: '10px 0 10px 10px'
       width: '100%'
 
     '.code-items tr':

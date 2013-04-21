@@ -15,7 +15,7 @@ OJ Simplifies:
 oj.use require 'oj.markdown'
 
 _template = require './_template'
-{renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderInherits:inherits} = require './_content'
+{renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderInherits:inherits, renderOptions:options, renderArguments:arguments_} = require './_content'
 
 # _snippet = require './_snippet'
 # _editor = require './_editor'
@@ -99,8 +99,8 @@ data = [
             npm install -g oj
       """
     ,
-      h: 'File Types (oj / ojc)', id: 'file-types', d: """
-        The `oj.js` javascript library works perfectly fine inside of `.js`, or `.coffee` files. The only issue is that it gets tiring writing `oj.html`, `oj.Table`, everywhere.
+      h: 'File Types (.oj / .ojc)', id: 'file-types', d: """
+        The [oj.js](#download) javascript library works perfectly fine inside of `.js`, or `.coffee` files. The only issue is that it gets tiring writing `oj` in front of everything: `oj.html`, `oj.Table`, etc.
 
         To solve this OJ supports two file types:
 
@@ -109,7 +109,7 @@ data = [
 
         These files have been fully integrated into node. This means you can include other files using `require`, and you must use `module.exports` to set the what the module should return. Here are some examples:
 
-        .oj example (javascript):
+        ### .oj example (javascript):
 
             # hello.oj
             module.exports = return [html,
@@ -119,7 +119,7 @@ data = [
               ]
             ]
 
-        .ojc example (coffee-script):
+        ### .ojc example (coffee-script):
 
             # hello.ojc
             module.exports = ->
@@ -133,7 +133,7 @@ data = [
       h: 'Command Line', id: 'command-line', d: """
         The `oj` command builds `.oj` and `.ojc` [file types](#file-types) into html files.
 
-        Major features:
+        ### Features
 
         * _Auto Minification:_ All javascript, css, html are minified unless `--debug` is set
         * _Unified Templating:_ `.oj` and `.ojc` files turn into javacsript
@@ -142,7 +142,7 @@ data = [
         * Node modules can be included as well. Simply `require` them, and they will also be brought into the system.
         * Built in support for coffee-script with `.ojc` files. You don't even need to install it on the command line.
 
-        Usage:
+        ### Usage
 
             oj [options] <file> <dir> ...
 
@@ -157,344 +157,60 @@ data = [
               -v, --verbose <level>    Turn on verbose level 0-3
               -w, --watch              Turn on watch mode
 
-        Defaults:
+        When options are omitted these are the defaults:
 
-            --output directory defaults to "./"
-            --debug defaults to off
+            --output defaults to ./
+            --debug defaults to off<br>
             --verbose defaults to 1
 
-        Ignored file prefixes:
+        ### Ignored file prefixes
 
           * Partials and Templates (start with `_`)
           * OJ Plugins (start with `oj.`)
           * Hidden files (start with `.`)
 
-        Examples
+        ### Examples
 
-            oj hello.oj                 # Outputs './hello.html'
+        Build `hello.oj` to current directory
 
-            oj -d -o www hello.oj       # Outputs debug './www/hello.html'
+            oj hello.oj
 
-            oj --watch -o www hello.oj  # Watch  './www/hello.html'
+        Build `hello.oj` without minification to `www` directory
 
-            oj -o www pages             # Build pages directory to www
+            oj -d -o www hello.oj
 
-            oj -r -o www pages          # Recursively build pages to www
+        Watch `hello.oj` and build to `www` directory
 
-            oj -w -r -o www pages       # Recursively watch pages to www
+            oj --watch -o www hello.oj
+
+        Build `pages` directory to `www`
+
+            oj -o www pages
+
+        Recursively build `pages` directory to `www`
+
+            oj -r -o www pages
+
+        Recursively watch and build `pages` directory to `www`
+
+            oj -w -r -o www pages
 
       """
     ]
-  ,
-    h: 'Creating Types', id: 'creating-types', d: """
-      The point of OJ is creating types that better abstract the web. To do this OJ includes a function called [oj.type](#type).
 
-      Features:
-
-      * Creates 100% real javascript types
-      * Works seemlessly between javascript and coffee-script
-      * First class properties support:
-        * Properties by value
-        * Properties by get and set functions
-      * Supports Constructors and Methods
-      * Supports Inheritance
-        * `inherits` up to one Type
-        * Call super with `this.super.methodName()`
-      * `new` is optional
-
-    """
-    items: [
-      h:'oj.type (function)', id:'type', d: ->
-        markdown """
-          This method creates types
-
-          Example: Create a User Type
-
-              # Define type user
-              User = oj.type 'User',
-                properties:
-                  name: null
-                  birthDate: null
-                methods:
-                  # Calculate age from @birthDate
-                  age: ->
-                    today = new Date()
-                    age = today.getFullYear() - @birthDate.getFullYear()
-                    m = today.getMonth() - @birthDate.getMonth()
-                    if m < 0 or (m == 0 and today.getDate() < @birthDate.getDate())
-                      age--
-                    age
-
-              # Create a user
-              user = new User name:'Kelly', birthDate: new Date(1969, 0, 1)
-
-              # Manipulate the user
-
-              user.name               # => 'Kelly'
-              user.birthDate          # => Date(1969, 0, 1)
-
-              user.name = 'Ted'       # => name is set to 'Ted'
-
-              # List properties
-
-              user.properties         # => ['name', 'birthDate']
-              user.has('birthDate')   # => true
-              user.has('fakeProp')    # => false
-
-              # List methods
-
-              user.methods            # => ['age']
-              user.can('age')         # => true
-              user.can('fakeMethod')  # => false
-
-              user.type               # => User
-              user.typeName           # => 'User'
-
-        """
-    ,
-      h:'oj.Type (interface)', id:'Type', d: ->
-        markdown """
-          All types created using [oj.type](#type) contain this interface:
-        """
-        properties [
-          h:'type', id:'Type-type', d:"""
-            The type that made this instance
-          """
-        ,
-          h:'typeName', id:'Type-typeName', d:"""
-            The name of type that made this instance
-          """
-        ,
-          h:'properties', id:'Type-properties', d:"""
-            Array of all properties the type supports (readonly)
-          """
-        ,
-          h:'methods', id:'Type-methods', d:"""
-            Array of all methods the type supports (readonly)
-          """
-        ]
-        methods [
-          h:'get()', id:'Type-get', d:"""
-            Get all properties as an object
-          """
-        ,
-          h:'get(prop)', id:'Type-get', d:"""
-            Get the value of property `prop`. `undefined` is returned if `prop` is not a valid property
-          """
-        ,
-          h:'set(prop,val)', id:'Type-set', d:"""
-            Set property `prop` to value `val`
-          """
-        ,
-          h:'set(props)', id:'Type-set', d:"""
-            Set all properties at once. `props` is an object mapping key to value. Invalid keys defined in `props` are ignored.
-          """
-        ,
-          h:'has(prop)', id:'Type-has', d:"""
-            Determine if string `prop` is a property of this instance
-          """
-        ,
-          h:'can(method)', id:'Type-has', d:"""
-            Determine if string `method` is a method of this instance
-          """
-        ,
-          h:'toJSON()', id:'Type-toJSON', d:"""
-            Convert properties to json
-          """
-        ]
-    ,
-      h:'oj.typeOf', id:'typeOf', d: ->
-        markdown """
-          This function helps detect what type an object is. It is much smarter then the built in `typeof` keyword.
-
-              User = oj.type 'User',
-                properties:
-                  name: 'Joseph'
-              user = new User
-
-              typeOf user       # => 'User'
-              typeOf 'str'      # => 'string'
-              typeOf $('body')  # => 'jquery'
-
-        """
-
-
-    ]
-  ,
-    h: 'Base Types', id: 'base-types', d: """
-      For those of you who want to make your own rich oj views, there are a few inheritable types that will make your life easier.
-
-      [View](#View) - The heart of OJ, this makes objects behave like [tag functions](#tag).
-
-      [ModelKeyView](#ModelKeyView) - Binds the view to a part of a model (a model + key). Used by all the [form elements](#form-types). Great for creating two-way bindings.
-
-      [CollectionView](#CollectionView) - Bind the view to a collection of models. Used by [List](#List) and [Table](#Table). Automatically binds to collection add, remove, change events.
-    """
-      # [ModelView](#ModelView) - Bind the view to a model. Good for simple views that should re-render when changed.
-    items: [
-      h:'oj.View', id:'View', d: ->
-        markdown """
-          This object is the basis of much of the functionality of OJ. It emits creation events so that objects act like [oj.tag](#tag). It creates the root element of your object and gives convenient access to it through [el](#View-el). It provides an [attributes](#View-attributes) property and related methods to let you set and get attributes. .
-        """
-        properties [
-          h:'el', id:'View-el', d:"""
-            The root element for the view (read-only, cached).
-
-            Override the `make` method.
-          """
-         ,
-          h:'$el', id:'View-$el', d:"""
-            The root element enabled with jquery goodness (read-only, cached)
-          """
-         ,
-          h:'attributes', id:'View-attributes', d:"""
-            Get all attributes for the root element (read-only)
-          """
-         ,
-          h:'emit', id:'View-emit-property', d:"""
-            Construct with `emit:false` to prevent the creation event. This way you can create OJ objects in any order and later call the [emit()](#View-emit-method) method, when you want it to appear.
-
-                cb = CheckBox({emit:false});  // Silently create CheckBox
-                div('before checkbox');       // Create a div
-                cb.emit()                     // Emit checkbox so it appears here
-          """
-        ]
-        methods [
-
-          h:'addAttribute(name,value)', id:'View-addAttribute', d:"""
-            Add an attribute. Supports everything [oj.tag](#tag) supports, including jQuery events and `style` renaming such as `fontSize` to `font-size`.
-          """
-        ,
-
-          h:'addAttribute(name,value)', id:'View-addAttribute', d:"""
-            Add an attribute. Supports everything [oj.tag](#tag) supports, including jQuery events and `style` renaming such as `fontSize` to `font-size`.
-          """
-        ,
-
-          h:'addAttributes(obj)', id:'View-addAttributes', d:"""
-            Add multiple attributes at once. Supports everything [oj.tag](#tag) supports. Including jQuery events and `style` renaming such as `fontSize` to `font-size`.
-          """
-        ,
-
-          h:'removeAttribute(name)', id:'View-addAttribute', d:"""
-            Remove attribute with by `name`.
-          """
-        ,
-
-          h:'removeAttributes(list)', id:'View-addAttributes', d:"""
-            Remove all attributes in the list.
-          """
-        ,
-
-          h:'$(selector)', id:'View-$', d:"""
-            Find elements from root with jQuery.
-          """
-        ,
-          h:'toHTML()', id:'View-toHTML', d:"""
-            Convert view to html
-          """
-        ,
-          h:'toDOM()', id:'View-toDOM', d:"""
-            Convert view to dom
-          """
-        ,
-          h:'toString()', id:'View-toString', d:"""
-            Convert view to a string. By default this calls toHTML()
-          """
-
-        #   h:'detach', id:'View-detach', d:"""
-        #     (Not Yet Implemented)
-
-        #     Detach the element from the dom leaving a placeholder
-        #     so that it can be reattached in the same place.
-        #   """
-        # ,
-        #   h:'attach', id:'View-attach', d:"""
-        #     (Not Yet Implemented)
-
-        #     Attach the element from the dom leaving a placeholder
-        #     so that it can be reattached in the same place.
-        #   """
-
-        ]
-    # ,
-    #   h:'oj.ModelView', id:'ModelView', d: ->
-
-    #     inherits h:'View', id:'View'
-
-    #     properties [
-    #       h:'model', id:'ModelView-model', d:"""
-    #         Bind a model to this view
-    #       """
-    #     ,
-    #       h:'attributes', id:'View-attributes', d:"""
-    #         Accessor to root element attributes. jQuery events will be bound.
-    #       """
-    #     ]
-    ,
-      h:'oj.ModelKeyView', id:'ModelKeyView', d: ->
-
-        inherits h:'View', id:'View'
-
-        properties [
-          h:'model', id:'ModelKeyView-model', d:"""
-            The model part of the model-key that partialy binds a model.
-          """
-        ,
-          h:'attributes', id:'View-attributes', d:"""
-            Accessor to root element attributes. jQuery events will be bound.
-          """
-        ]
-    ,
-      h:'oj.CollectionView', id:'CollectionView', d: ->
-
-        inherits h:'View', id:'View'
-
-        properties [
-          h:'model', id:'ModelView-model', d:"""
-            Bind a model to this view
-          """
-        ,
-          h:'attributes', id:'View-attributes', d:"""
-            Accessor to root element attributes. jQuery events will be bound.
-          """
-        ]
-    ]
+  # Collection Types
+  # --------------------------------------------------------------------------
   ,
     h: 'Collection Types', id: 'collection-types', d: """
-      These objects are built-in to OJ and designed to be the building blocks for your website. These objects are a great way to create the more complex nested tags like: \<ul\> or \<table\>.
+      These objects are built-in to OJ and designed to be the building blocks for more complex websites. [BulletList](#BulletList), [NumberList](NumberList) exist to easily create numbered lists or bulleted lists.
 
-      For this purpose [oj.BulletList](#BulletList), [oj.NumberList](NumberList) exist.
+      All collection types can be created directly through a list of arguments, or by binding to a Backbone.Collection object. If a collection object is used these objects will minimally rebuild themselves as the collection changes.
 
-      There is also a third kind of list called simply [oj.List](#List).
+      [List](#List) exists to create lists of items without symbols. It uses `<div>` for its tags instead of `<ul>` or `<li>` as this is often desired for `ChatWindows` or `FriendLists` -- basically this is ideal for whenever you don't really want numbers or bullets.
 
+      [Table](#Table) is the most complex object built into OJ. It supports everything [List](#List) does, but adds another dimension. It also supports Backbone.Collection binding and is designed to support hundreds of thousands of rows. In generally OJ is built around the idea of direct DOM manipulation. Server-side it builds strings, but client side it just modifies elements directly for much improved performance.
 
-
-      * Objects that data bind to models: [TextBox](TextBox), [TextArea](TextArea), [ListBox](ListBox), [CheckBox](CheckBox),
-
-      * Objects that data bind to collections:
-        * [List](#List)
-        * [Table](#Table)
-
-      Anywhere you see `ojml` as an argument you can pass any oj view, object or function. You can also pass raw [ojml](#ojml).
-
-      Almost all objects will inherit from [oj.View](#View) so definitely read up and see what all they can do.
-      When you construct an object all options are automatically set into any object properties.
-
-      For example:
-
-          checkbox = CheckBox({value:true});
-
-      Is the same as:
-
-          checkbox = CheckBox();
-          checkbox.value = true;
-
-      (Note: because [oj.type](#type) removes the need to use `new`, so in the above example it wasn't necessary to call `new Checkbox()`. See [oj.type](#type) if you want to learn more about why this was done.)
-
-      In addition, any options that don't map to properties will be passed through to the root element as attributes. This lets this work as you would expect:
-
-        CheckBox({value:true, id:'id123', style:{color:'red'}})
+      All collection objects inherit from [CollectionView](#CollectionView) and [View](#View) and so definitely take a look at what those provide.
 
     """
 
@@ -539,7 +255,7 @@ data = [
         inherits h:'CollectionView', id:'CollectionView'
         properties [
           h:'count', id:'List-count', d:"""
-            Number of items (Number, read-only)
+            Number of items (Number, [read-only](#read-only)))
           """
          ,
           h:'models', id:'List-models', d:"""
@@ -566,15 +282,15 @@ data = [
           """
          ,
           h:'itemTagName', id:'List-itemTagName', d:"""
-            Name of tag for each item (String, read-write)
+            Name of tag for each item (String, [read-write](#read-write))
           """
          ,
           h:'itemsEl', id:'List-itemsEl', d:"""
-            Helper to get all item elements ([DOMElement], read-only)
+            Helper to get all item elements ([DOMElement], [read-only](#read-only)))
           """
          ,
           h:'$itemsEl', id:'List-$itemsEl', d:"""
-            Helper to get all item jquery elements ([jQueryElement], read-only)
+            Helper to get all item jquery elements ([jQueryElement], [read-only](#read-only)))
           """
         ]
         methods [
@@ -676,25 +392,425 @@ data = [
 
   ,
     h: 'Form Types', id: 'form-types', d: """
-      These objects create smart form elements that two-way bind to _parts_ of a model: a model-key. Why parts? The reason is a TextBox usually only affects a single key of the model, for example the `email` field, or `name` field. A [CheckBox](#CheckBox) similarly only affects the `wantsTheNewsletter` or `isOver18`. These keys can all be on the same UserModel, but they affect different things.
+      These objects create smart form elements that two-way bind to _parts_ of a model: a model-key. Why only part of a model? The reason is controls usually only affect a single key, for example the `email` field, or `name` field might be bound to a [TextBox](#TextBox). While a  [CheckBox](#CheckBox) might bind to boolean properties `wantsTheNewsletter` or `isRegistered`. These keys can all be on the same `UserModel`, but they affect different things.
 
-      Example of binding a TextBox to a UserModel's name
+      ### Example of binding a TextBox
 
-          # Create a user
+      Create a user
+
           var UserModel = new Backbone.Model.extend();
           var user = new UserModel({name:'Evan'});
 
-          # Bind TextBox to the model-key
-          # Two way binding will happen automatically
+      Bind TextBox to the user's name
+
           var TextBox({model: user, key:'name'});
 
-    The same binding syntax works on all Form Types because they all inherite from the common base [ModelKeyView](#ModelKeyView).
+      Two way binding will happen automatically. If you change the model's name the TextBox will update. If you type in the TextBox the model will update.
+
+    The model-key binding syntax works on all Form Types the inherit from [ModelKeyView](#ModelKeyView).
 
     """
     items: [
-      h:'oj.CheckBox', id:'CheckBox', d: ->
+      h:'oj.CheckBox(value, properties)', id:'CheckBox', d: ->
+
+
+        markdown """
+          An OJ object that creates and manipulates a CheckBox control. The `value` property can be set in the first argument, or through via `properties`.
+        """
 
         inherits h:'ModelKeyView', id:'ModelKeyView'
+
+        properties [
+          h:'value', id:'CheckBox-value', d:"""
+            The value of the control as a boolean ([read-write](#read-write)).
+
+            True means checked. False unchecked.
+          """
+        ,
+          h:'model', id:'CheckBox-model', d:"""
+            Bind a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ,
+          h:'key', id:'CheckBox-key', d:"""
+            Bind a specific key of a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ]
+
+        markdown """
+          ### Example
+              var myCheckBox = CheckBox(true, click:function(){alert('click worked!');});
+
+        """
+    ,
+      h:'oj.TextBox(value, properties)', id:'TextBox', d: ->
+
+
+        markdown """
+          An build-in OJ type that creates and manipulates a checkbox form element. The `value` property can be set in the first argument, or in the `options` object.
+        """
+
+        inherits h:'ModelKeyView', id:'ModelKeyView'
+
+        properties [
+          h:'value', id:'TextBox-value', d:"""
+            The value of the control as a string ([read-write](#read-write)).
+          """
+        ,
+          h:'model', id:'TextBox-model', d:"""
+            Bind a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ,
+          h:'key', id:'TextBox-key', d:"""
+            Bind a specific key of a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+
+        ]
+        markdown """
+          ### Example
+              var myTextBox = TextBox('Default text');
+        """
+
+    ]
+  ,
+    h: 'Creating Types', id: 'creating-types', d: """
+      The point of OJ is creating types that better abstract the web. To do this OJ includes a function called [oj.type](#type).
+
+      ### Features
+
+      * Creates 100% real javascript types
+      * Works seemlessly between javascript and coffee-script
+      * First class properties support:
+        * Properties by value
+        * Properties by get and set functions
+      * Supports Constructors and Methods
+      * Supports Inheritance
+        * `inherits` up to one Type
+        * Call super with `this.super.methodName()`
+      * `new` is optional
+
+    """
+    items: [
+      h:'oj.type (name, options)', id:'type', d: ->
+
+        markdown """
+          This function creates new type constructors. is a big part of why OJ types are so easy to create and use. Generally you should create new types when the component is well understood and often when it has an analogous model.
+        """
+
+        arguments_ [
+          h:'name', id:'Type-argument-name', d:"""
+            The type that made this instance
+          """
+        ]
+
+        options [
+          h:'base:', id:'Type-option-base', d:"""
+            The type to inherit. When making OJ views use a [base type](#base-types).
+          """
+        ,
+          h:'properties:<obj>', id:'Type-option-properties', d:"""
+            Define the type's properties.
+          """
+        ,
+          h:'methods:<obj>', id:'Type-option-methods', d:"""
+            Define the type's methods.
+
+            To call super use: `TypeName.base.methodName.apply(this, arguments);
+          """
+        ,
+          h:'constructor:<fn>', id:'Type-option-methods', d:"""
+            Optionally define a constructor. `this` will be bound correctly.
+
+            To call super use: `TypeName.base.constructor.apply(this, arguments);
+          """
+
+        ]
+
+        markdown """
+
+          ### Example
+
+              # Define type user
+              User = oj.type 'User',
+                properties:
+                  name: null
+                  birthDate: null
+                methods:
+                  # Calculate age from @birthDate
+                  age: ->
+                    today = new Date()
+                    age = today.getFullYear() - @birthDate.getFullYear()
+                    m = today.getMonth() - @birthDate.getMonth()
+                    if m < 0 or (m == 0 and today.getDate() < @birthDate.getDate())
+                      age--
+                    age
+
+              # Create a user
+              user = new User name:'Kelly', birthDate: new Date(1969, 0, 1)
+
+              # Manipulate the user
+
+              user.name               # => 'Kelly'
+              user.birthDate          # => Date(1969, 0, 1)
+
+              user.name = 'Ted'       # => name is set to 'Ted'
+
+              # List properties
+
+              user.properties         # => ['name', 'birthDate']
+              user.has('birthDate')   # => true
+              user.has('fakeProp')    # => false
+
+              # List methods
+
+              user.methods            # => ['age']
+              user.can('age')         # => true
+              user.can('fakeMethod')  # => false
+
+              user.type               # => User
+              user.typeName           # => 'User'
+
+        """
+    ,
+      h:'oj.Type (options, args...)', id:'Type', d: ->
+
+        markdown """
+
+        """
+
+        properties [
+          h:'type', id:'Type-type', d:"""
+            The type that made this instance ([read-only](#read-only))
+          """
+        ,
+          h:'typeName', id:'Type-typeName', d:"""
+            The name of type that made this instance ([read-only](#read-only))
+          """
+        ,
+          h:'properties', id:'Type-properties', d:"""
+            Array of all properties the type supports ([read-only](#read-only))
+          """
+        ,
+          h:'methods', id:'Type-methods', d:"""
+            Array of all methods the type supports ([read-only](#read-only))
+          """
+        ]
+        methods [
+          h:'get()', id:'Type-get', d:"""
+            Get all properties as an object
+          """
+        ,
+          h:'get(prop)', id:'Type-get', d:"""
+            Get the value of property `prop`. `undefined` is returned if `prop` is not a valid property
+          """
+        ,
+          h:'set(prop,val)', id:'Type-set', d:"""
+            Set property `prop` to value `val`
+          """
+        ,
+          h:'set(props)', id:'Type-set', d:"""
+            Set all properties at once. `props` is an object mapping key to value. Invalid keys defined in `props` are ignored.
+          """
+        ,
+          h:'has(prop)', id:'Type-has', d:"""
+            Determine if string `prop` is a property of this instance
+          """
+        ,
+          h:'can(method)', id:'Type-has', d:"""
+            Determine if string `method` is a method of this instance
+          """
+        ,
+          h:'toJSON()', id:'Type-toJSON', d:"""
+            Convert properties to json
+          """
+        ]
+    ,
+      h:'oj.typeOf (any)', id:'typeOf', d: ->
+        markdown """
+          This function helps detect what type an object is. It is much smarter then the built in `typeof` keyword.
+        """
+        arguments_ [
+          h:'any', id:'typeOf-any', d:"""
+            Returns the type of `any` as a string.
+          """
+        ]
+
+        markdown """
+          ### Example
+
+              // OJ types have their own name
+              oj.typeOf(new CheckBox());  // "CheckBox"
+
+              // jQuery selectors work
+              oj.typeOf($('body'));       // "jquery"
+              oj.typeOf($('body')[0]);    // 'dom-element'
+
+              // As do DOM elements and DOM text elements
+              $('body').html('test')
+              var $contents = $('body').contents()
+              oj.typeOf($contents[0]);    // 'dom-text'
+
+              // Standard items work as you would expect
+              oj.typeOf(undefined);       // 'undefined'
+              oj.typeOf(null);            // 'null'
+              oj.typeOf(true);            // 'boolean'
+              oj.typeOf(42);              // 'number'
+              oj.typeOf("test");          // 'string'
+              oj.typeOf(/.*/);            // 'regexp'
+              oj.typeOf(new Date());      // 'date'
+
+        """
+    ]
+  ,
+    h: 'Base Types', id: 'base-types', d: """
+      For those of you who want to make your own rich oj views, there are a few inheritable types that will make your life easier.
+
+      [View](#View) - The heart of OJ, this makes objects behave like [tag functions](#tag).
+
+      [ModelKeyView](#ModelKeyView) - Binds the view to a part of a model (a model + key). Used by all the [form elements](#form-types). Great for creating two-way bindings.
+
+      [CollectionView](#CollectionView) - Bind the view to a collection of models. Used by [List](#List) and [Table](#Table). Automatically binds to collection add, remove, change events.
+    """
+      # [ModelView](#ModelView) - Bind the view to a model. Good for simple views that should re-render when changed.
+    items: [
+      h:'oj.View', id:'View', d: ->
+        markdown """
+          This object is the basis of much of the functionality of OJ. It emits creation events so that objects act like [oj.tag](#tag). It creates the root element of your object and gives convenient access to it through [el](#View-el). It provides an [attributes](#View-attributes) property and related methods to let you set and get attributes.
+
+          All types created using [oj.type](#type) behave this way.
+
+              var textbox = TextBox({value:'my text'});
+
+          Is the same as:
+
+              var textbox = TextBox();
+              textbox.value = 'my text';
+
+          (Note: because [oj.type](#type) removes the need to use `new`, so in the above example it wasn't necessary to call `new TextBox()`. See [oj.type](#type) if you want to learn more about why this was done.)
+
+          Any options that don't map to properties will be passed through to the root element as attributes. This lets this work as you would expect:
+
+              TextBox({value:'Placeholder text', id:'id123', style:{color:'red'}})
+
+          Also options can come in any order. This is especially useful for defining style ()
+
+              TextBox({id:'id123'}, 'my text', {style:{
+                  color:'red'
+                }
+              })
+        """
+        properties [
+          h:'el', id:'View-el', d:"""
+            The root element ([read-only](#read-only), [cached](#cached)).
+          """
+         ,
+          h:'$el', id:'View-$el', d:"""
+            The jquery-enabled root element ([read-only](#read-only), [cached](#cached))
+          """
+         ,
+          h:'attributes', id:'View-attributes', d:"""
+            Get all attributes for the root element ([read-only](#read-only))
+          """
+         ,
+          h:'emit', id:'View-emit-property', d:"""
+            Construct with `emit:false` to prevent the creation event. This way you can create OJ objects in any order and later call the [emit()](#View-emit-method) method, when you want it to appear.
+
+                var cb = CheckBox({emit:false});  // Silently create CheckBox
+                div('before textbox');            // Create a div
+                cb.emit()                         // Emit CheckBox so it appears here
+          """
+        ]
+        methods [
+
+          h:'addAttribute(name,value)', id:'View-addAttribute', d:"""
+            Add an attribute. Supports everything [oj.tag](#tag) supports, including jQuery events and `style` renaming such as `fontSize` to `font-size`.
+          """
+        ,
+
+          h:'addAttribute(name,value)', id:'View-addAttribute', d:"""
+            Add an attribute. Supports everything [oj.tag](#tag) supports, including jQuery events and `style` renaming such as `fontSize` to `font-size`.
+          """
+        ,
+
+          h:'addAttributes(obj)', id:'View-addAttributes', d:"""
+            Add multiple attributes at once. Supports everything [oj.tag](#tag) supports. Including jQuery events and `style` renaming such as `fontSize` to `font-size`.
+          """
+        ,
+
+          h:'removeAttribute(name)', id:'View-addAttribute', d:"""
+            Remove attribute with by `name`.
+          """
+        ,
+
+          h:'removeAttributes(list)', id:'View-addAttributes', d:"""
+            Remove all attributes in the list.
+          """
+        ,
+
+          h:'$(selector)', id:'View-$', d:"""
+            Find elements from root with jQuery.
+          """
+        ,
+          h:'toHTML()', id:'View-toHTML', d:"""
+            Convert view to html
+          """
+        ,
+          h:'toDOM()', id:'View-toDOM', d:"""
+            Convert view to dom
+          """
+        ,
+          h:'toString()', id:'View-toString', d:"""
+            Convert view to a string. By default this calls toHTML()
+          """
+
+        #   h:'detach', id:'View-detach', d:"""
+        #     (Not Yet Implemented)
+
+        #     Detach the element from the dom leaving a placeholder
+        #     so that it can be reattached in the same place.
+        #   """
+        # ,
+        #   h:'attach', id:'View-attach', d:"""
+        #     (Not Yet Implemented)
+
+        #     Attach the element from the dom leaving a placeholder
+        #     so that it can be reattached in the same place.
+        #   """
+
+        ]
+
+
+
+        ###
+    # Key used to access model
+    key: null
+
+    # Live update model as text changes
+    live: true
+    value:
+      get: -> throw "#{@typeName} value getter not implemented"
+      set: (v) -> throw "#{@typeName} value setter not implemented"
+
+    modelChanged: ->
+    viewChanged: ->
+  ###
+    ,
+      h:'oj.ModelKeyView', id:'ModelKeyView', d: ->
+
+        inherits h:'View', id:'View'
+
+        properties [
+          h:'model', id:'ModelKeyView-model', d:"""
+            The model part of the model-key that partially binds a model. Both key and model are required.
+          """
+        ,
+          h:'key', id:'ModelKeyView-key', d:"""
+            The key part of the model-key that partially binds a model. Both key and model are required.
+          """
+        ]
+    ,
+      h:'oj.CollectionView', id:'CollectionView', d: ->
+
+        inherits h:'View', id:'View'
 
         properties [
           h:'model', id:'ModelView-model', d:"""
@@ -729,8 +845,6 @@ Command Line
 
 Helper Methods
 
-  oj.type
-  oj.typeOf
   oj.isUndefined
   oj.isBoolean
   oj.isNumber
@@ -751,16 +865,6 @@ Helper Methods
   oj.addProperties
   oj.addMethod
   oj.addMethods
-
-Inheritable Types
-
-  View
-  ModelView
-  FormView
-
-Layout Libraries
-
-  Tabs
 
 Form Libraries
   All Controls
