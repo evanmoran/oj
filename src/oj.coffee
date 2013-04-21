@@ -175,7 +175,7 @@ if require.extensions
 
 root = @
 
-oj.version = '0.0.11'
+oj.version = '0.0.12'
 
 oj.isClient = true
 
