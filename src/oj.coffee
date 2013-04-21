@@ -133,7 +133,7 @@ if require.extensions
   stripBOM = (c) -> if c.charCodeAt(0) == 0xFEFF then (c.slice 1) else c
 
   wrapJS = (code) ->
-    "(function(){with( oj.sandbox){#{code}}}).call(this);"
+    "(function(){with(oj.sandbox){#{code}}}).call(this);"
 
   wrapCSMessage = (message, filepath) ->
     "#{oj.codes?.red}coffee-script error in #{filepath}: #{message}#{oj.codes?.reset}"
@@ -178,7 +178,7 @@ if require.extensions
 
 root = @
 
-oj.version = '0.0.13'
+oj.version = '0.0.14'
 
 oj.isClient = true
 
