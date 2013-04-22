@@ -12,7 +12,7 @@ OJ Simplifies:
 
 ###
 
-oj.use require 'oj.markdown'
+oj.use require 'oj-markdown'
 
 siteCSS = require './_styles'
 _template = require './_template'

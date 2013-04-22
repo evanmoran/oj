@@ -1,6 +1,6 @@
 _ = require 'underscore'
 
-oj.use require 'oj.AceEditor'
+oj.use require 'oj-ace-editor'
 
 module.exports =
 

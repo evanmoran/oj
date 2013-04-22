@@ -1,8 +1,8 @@
 _ = require 'underscore'
 
-oj.use require 'oj.markdown'
-oj.use require 'oj.mustache'
-oj.use require 'oj.AceEditor'
+oj.use require 'oj-markdown'
+oj.use require 'oj-mustache'
+oj.use require 'oj-ace-editor'
 oj.use require './oj.TryEditor'
 
 _styles = require './_styles'
