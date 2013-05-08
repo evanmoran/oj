@@ -112,6 +112,11 @@ module.exports = ->
       fontSize: '14px'
       lineHeight: '20px'
 
+    '.code-heading':
+      color: '#222'
+      fontFamily: familyMonospace
+      fontSize: 19
+
     '.code-subheading':
       fontFamily: familySanSarifLight
       fontSize: '14px'

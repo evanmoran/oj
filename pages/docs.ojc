@@ -15,7 +15,7 @@ OJ Simplifies:
 oj.use require 'oj-markdown'
 
 _template = require './_template'
-{renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderInherits:inherits, renderOptions:options, renderArguments:arguments_} = require './_content'
+{renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
 
 # _snippet = require './_snippet'
 # _editor = require './_editor'
@@ -69,131 +69,15 @@ data = [
 
       """
     ,
-      h: 'License', id: 'license', d: """
-        Copyright (c) 2013 Evan Moran <br>
-        OJ may be freely distributed under the [MIT license](https://raw.github.com/ojjs/oj/master/LICENSE)
-
-      """
-    ,
       h: 'Download', id: 'download', d: ->
         a href:'https://github.com/ojjs/oj/raw/master/lib/oj.js', ->
           Button 'Download OJ', c:'download-button'
         # a href:'https://github.com/ojjs/oj/raw/master/lib/oj.js', ->
         #   Button 'Download OJ Minified', c:'download-button'
     ,
-      h: 'Install', id: 'install', d: """
-        OJ can be run in a web browser without installation. Simply add the script `oj.js` and you are good to go.
-
-        To use OJ on the server you will need to install the `oj` command built on top of [node.js](http://nodejs.org). For this you need to install node and its package manager `npm`. There are many ways to do this installation, but this will get you started:
-
-        Install `node` on OSX with [homebrew](http://mxcl.github.com/homebrew/):
-
-            brew install node
-
-        Install `node` on Ubuntu with apt-get:
-
-            sudo apt-get install nodejs npm
-
-        Finally install `oj` with `npm`:
-
-            npm install -g oj
-      """
-    ,
-      h: 'File Types (.oj / .ojc)', id: 'file-types', d: """
-        The [oj.js](#download) javascript library works perfectly fine inside of `.js`, or `.coffee` files. The only issue is that it gets tiring writing `oj` in front of everything: `oj.html`, `oj.Table`, etc.
-
-        To solve this OJ supports two file types:
-
-        * `.oj` is javascript
-        * `.ojc` is coffee-script
-
-        These files have been fully integrated into node. This means you can include other files using `require`, and you must use `module.exports` to set the what the module should return. Here are some examples:
-
-        ### .oj example (javascript):
-
-            # hello.oj
-            module.exports = return [html,
-              [head],
-              [body,
-                [div 'Hello world']
-              ]
-            ]
-
-        ### .ojc example (coffee-script):
-
-            # hello.ojc
-            module.exports = ->
-              html ->
-                head ->
-                body ->
-                  div 'Hello world'
-
-      """
-    ,
-      h: 'Command Line', id: 'command-line', d: """
-        The `oj` command builds `.oj` and `.ojc` [file types](#file-types) into html files.
-
-        ### Features
-
-        * _Auto Minification:_ All javascript, css, html are minified unless `--debug` is set
-        * _Unified Templating:_ `.oj` and `.ojc` files turn into javacsript
-        * Files and Directories can be built, recursed upon, and watched
-        * Files can be included from other files using node's `require` syntax. These files will be automatically minified into the final html file.
-        * Node modules can be included as well. Simply `require` them, and they will also be brought into the system.
-        * Built in support for coffee-script with `.ojc` files. You don't even need to install it on the command line.
-
-        ### Usage
-
-            oj [options] <file> <dir> ...
-
-            Options:
-
-              -h, --help               output usage information
-              -V, --version            output the version number
-              -d, --debug              Turn on debug output
-              -o, --output <dir>       Directory to output all files to
-              -r, --recurse            Recurse into directories
-              -m, --modules <modules>  List of modules to include
-              -v, --verbose <level>    Turn on verbose level 0-3
-              -w, --watch              Turn on watch mode
-
-        When options are omitted these are the defaults:
-
-            --output defaults to ./
-            --debug defaults to off<br>
-            --verbose defaults to 1
-
-        ### Ignored file prefixes
-
-          * Partials and Templates (start with `_`)
-          * OJ Plugins (start with `oj.`)
-          * Hidden files (start with `.`)
-
-        ### Examples
-
-        Build `hello.oj` to current directory
-
-            oj hello.oj
-
-        Build `hello.oj` without minification to `www` directory
-
-            oj -d -o www hello.oj
-
-        Watch `hello.oj` and build to `www` directory
-
-            oj --watch -o www hello.oj
-
-        Build `pages` directory to `www`
-
-            oj -o www pages
-
-        Recursively build `pages` directory to `www`
-
-            oj -r -o www pages
-
-        Recursively watch and build `pages` directory to `www`
-
-            oj -w -r -o www pages
+      h: 'License', id: 'license', d: """
+        Copyright (c) 2013 Evan Moran <br>
+        OJ may be freely distributed under the [MIT license](https://raw.github.com/ojjs/oj/master/LICENSE)
 
       """
     ]
@@ -216,17 +100,17 @@ data = [
 
     items: [
       h:'oj.BulletList', id:'BulletList', d: """
-          An alias for [oj.List](#List) with [tagName](#List-tagName) of 'ul', and [itemTagName](#List-itemTagName) of 'li'.
+          This is a simple alias for [oj.List](#List) to abstract creating **bulleted** lists. It overrides the properties [tagName](#List-tagName) to `ul`, and [itemTagName](#List-itemTagName) to `li`.
         """
     ,
       h:'oj.NumberList', id:'NumberList', d: """
-          An alias for [oj.List](#List) with [tagName](#List-tagName) of 'ol', and [itemTagName](#List-itemTagName) of 'li'.
+          This is a simple alias for [oj.List](#List) to abstract creating **numbered** lists. It overrides the properties [tagName](#List-tagName) to `ul`, and [itemTagName](#List-itemTagName) to `li`.
         """
     ,
       h:'oj.List', id:'List', d: ->
 
         markdown """
-          Lists are the heart of OJ. They are a building block that are often the first example of the full power of the system.
+          Lists are at the heart of OJ. They are a fundamental building block that lets you bind collections of models to views. That can be as simple as NumberList and BulletList above. Or they can be more complex and render Chat Messages, Todo Lists, or whatever else you want tied to data.
 
           Lists can be constructed by basic types:
 
@@ -251,7 +135,20 @@ data = [
               );
 
         """
+        name 'List(items..., properties)'
 
+        arguments_ [
+          h:'items...', id:'List-argument-items', d:"""
+            Any number of values to add to the list.
+
+            Constructing with these arguments has the same effect as setting the [items](List-items) property.
+          """
+        ,
+          h:'properties', id:'Table-argument-rows', d:"""
+            An object to bulk set properties.
+
+            Keys that aren't properties are passed as attributes to the root element.
+          """        ]
         inherits h:'CollectionView', id:'CollectionView'
         properties [
           h:'count', id:'List-count', d:"""
@@ -387,6 +284,164 @@ data = [
                 list.swap(1,2);            // ['a','c','b']
           """
         ]
+    ,
+      h:'oj.Table', id:'Table', d: ->
+
+        markdown """
+          Tables are another building block in OJ. Like [List] it can be used to show static data or be bound to collections of models. When the collection changes it will automatically add and remove rows to rerender the table.
+
+          Tables can be constructed with arrays of values:
+
+              Table(
+                [1,2,3],
+                [4,5,6],
+              );
+        """
+        name 'Table(rows..., properties)'
+
+        arguments_ [
+          h:'rows...', id:'Table-argument-rows', d:"""
+            Any number of rows to add to the table.
+
+            Constructing with these arguments has the same effect as setting the [items](List-items) property.
+          """
+        ,
+          h:'properties', id:'Table-argument-properties', d:"""
+            A object to bulk set properties.
+
+            Keys that aren't properties are passed as attributes to the root element.
+          """
+        ]
+        inherits h:'CollectionView', id:'CollectionView'
+        properties [
+          h:'rowCount', id:'Table-rowCount', d:"""
+            Number of rows (Number, [read-only](#read-only)))
+          """
+         ,
+          h:'columnCount', id:'Table-columnCount', d:"""
+            Number of columns (Number, [read-only](#read-only)))
+          """
+         ,
+          h:'models', id:'Table-models', d:"""
+            Inherited from [CollectionView.models](#CollectionView-models)
+
+            The models for the view. This can be an Array or a Backbone.Collection
+
+            When Backbone is used changes to the collection will cause the view
+            to be automatically redrawn. This is done minimally so adds and removes
+            cause fewest redraws redraws possible.
+          """
+         ,
+          h:'each', id:'Table-each', d:"""
+            Inherited from [CollectionView.each](#CollectionView-each)
+
+            A mapping function that turns a model into a view.
+
+            Use this whenever you set [models](#models) to specify which part of the model to render.
+          """
+         ,
+          h:'rowsEl', id:'Table-rowsEl', d:"""
+            Helper to get all row elements ([DOMElement], [read-only](#read-only)))
+          """
+         ,
+          h:'$rowsEl', id:'Table-$rowsEl', d:"""
+            Helper to get all row jquery elements ([jQueryElement], [read-only](#read-only)))
+          """
+        ]
+        methods [
+
+          h:'row(array, oj)', id:'List-item', d:"""
+            Get or set the item at `index`
+            `index` may be negative to access elements at the end.
+
+            When `view` is specified the item is set to the oj view
+            When `view` is omitted the item value is returned
+            How this value is returned is handled by [ojValue](jquery-ojValue)
+            a included jQuery plugin.
+
+                list.item(2)              // get item
+                list.item(2, 'hello')     // set item to 'hello'
+                list.item(2, function(){  // Set item to a TextBox
+                  TextBox 'goodbye'
+                }
+          """
+        ,
+          h:'itemEl(index)', id:'List-itemEl', d:"""
+            Helper to get an item's containing element
+          """
+        ,
+          h:'$itemEl(index)', id:'List-$itemEl', d:"""
+            Helper to get an item's containing element wrapped by jquery
+          """
+        ,
+          h:'add(index, oj)', id:'List-add', d:"""
+            Add item at `index`
+            `index` may be negative to access elements at the end.
+            `oj` may be any oj view or object.
+
+                list = List('a','b');      // ['a','b']
+                list.add(1, 'c');          // ['a','c','b']
+                list.add(-1, 'd');         // ['a','c','b','d']
+          """
+        ,
+          h:'remove(index)', id:'List-remove', d:"""
+            Remove item at index
+            `index` may be negative to access elements at the end.
+
+                list = List('a','b','c');  // ['a','b','c']
+                list.remove(1);            // ['a','c']
+                list.remove(-1);           // ['a']
+          """
+        ,
+          h:'push(oj)', id:'List-push', d:"""
+            Add a new last item
+
+                list = List('a','b');      // ['a','b']
+                list.push('c');            // ['a','b','c']
+          """
+        ,
+          h:'pop()', id:'List-pop', d:"""
+            Remove the last item
+
+                list = List('a','b');      // ['a','b']
+                list.pop();                // ['a']
+          """
+        ,
+          h:'shift(oj)', id:'List-shift', d:"""
+            Remove the first item
+
+                list = List('a','b');      // ['a','b']
+                list.shift();              // ['b']
+          """
+        ,
+          h:'unshift(oj)', id:'List-unshift', d:"""
+            Add a new first item
+
+                list = List('a','b');      // ['a','b']
+                list.unshift('c');         // ['c','a','b']
+          """
+        ,
+          h:'clear(oj)', id:'List-clear', d:"""
+            Remove all items
+
+                list = List('a','b');      // ['a','b']
+                list.clear();              // []
+          """
+        ,
+          h:'move(index, index2)', id:'List-move', d:"""
+            Move item from `index` to `index2`
+
+            list = List('a','b','c');      // ['a','b','c']
+                list.move(2,0);            // ['c','b','a']
+          """
+        ,
+          h:'swap(index, index2)', id:'List-swap', d:"""
+            Swap items at `index` to `index2`
+
+            list = List('a','b','c');      // ['a','b','c']
+                list.swap(1,2);            // ['a','c','b']
+          """
+        ]
 
     ]
 
@@ -411,12 +466,13 @@ data = [
 
     """
     items: [
-      h:'oj.CheckBox(value, properties)', id:'CheckBox', d: ->
-
+      h:'oj.CheckBox', id:'CheckBox', d: ->
 
         markdown """
           An OJ object that creates and manipulates a CheckBox control. The `value` property can be set in the first argument, or through via `properties`.
         """
+
+        name 'CheckBox(value, properties)'
 
         inherits h:'ModelKeyView', id:'ModelKeyView'
 
@@ -442,12 +498,15 @@ data = [
 
         """
     ,
-      h:'oj.TextBox(value, properties)', id:'TextBox', d: ->
+      h:'oj.TextBox', id:'TextBox', d: ->
 
 
         markdown """
           An build-in OJ type that creates and manipulates a checkbox form element. The `value` property can be set in the first argument, or in the `options` object.
+
+
         """
+        name 'TextBox(value, properties)'
 
         inherits h:'ModelKeyView', id:'ModelKeyView'
 
@@ -490,11 +549,13 @@ data = [
 
     """
     items: [
-      h:'oj.type (name, options)', id:'type', d: ->
+      h:'oj.type', id:'type', d: ->
 
         markdown """
           This function creates new type constructors. is a big part of why OJ types are so easy to create and use. Generally you should create new types when the component is well understood and often when it has an analogous model.
         """
+
+        name 'type(name, options)'
 
         arguments_ [
           h:'name', id:'Type-argument-name', d:"""
@@ -571,12 +632,11 @@ data = [
 
         """
     ,
-      h:'oj.Type (options, args...)', id:'Type', d: ->
+      h:'Type Interface', id:'Type', d: ->
 
         markdown """
-
+          All types created by [oj.type](#type) have the following methods and properties.
         """
-
         properties [
           h:'type', id:'Type-type', d:"""
             The type that made this instance ([read-only](#read-only))
@@ -624,10 +684,13 @@ data = [
           """
         ]
     ,
-      h:'oj.typeOf (any)', id:'typeOf', d: ->
+      h:'oj.typeOf', id:'typeOf', d: ->
         markdown """
           This function helps detect what type an object is. It is much smarter then the built in `typeof` keyword.
         """
+
+        name 'typeOf(any)'
+
         arguments_ [
           h:'any', id:'typeOf-any', d:"""
             Returns the type of `any` as a string.
@@ -637,19 +700,19 @@ data = [
         markdown """
           ### Example
 
-              // OJ types have their own name
+              // OJ types return their own name
               oj.typeOf(new CheckBox());  // "CheckBox"
 
-              // jQuery selectors work
+              // jQuery selectors return 'jquery'
               oj.typeOf($('body'));       // "jquery"
               oj.typeOf($('body')[0]);    // 'dom-element'
 
-              // As do DOM elements and DOM text elements
+              // DOM elements and DOM text elements also work
               $('body').html('test')
               var $contents = $('body').contents()
               oj.typeOf($contents[0]);    // 'dom-text'
 
-              // Standard items work as you would expect
+              // Basic types work too
               oj.typeOf(undefined);       // 'undefined'
               oj.typeOf(null);            // 'null'
               oj.typeOf(true);            // 'boolean'
@@ -821,6 +884,132 @@ data = [
             Accessor to root element attributes. jQuery events will be bound.
           """
         ]
+
+    ]
+
+  ,
+    h: 'Static Websites', id: 'static-websites', d: """
+      OJ has the capability of building static websites on the command-line using the [oj command](#command-line). This is best for sites that don't change depending on which user loads the page. Either the pages don't change or the data to render comes from ajax requests.
+
+      ### Features
+
+        * _Auto Minification:_ All javascript, css, html are minified unless `--debug` is set
+        * _Unified Templating:_ `.oj` and `.ojc` files turn into javacsript, html, and css.
+        * Files and Directories can be built, recursed upon, and watched
+        * Files are automatically minified unless `--debug` option is set.
+        * Files can be included from other files using node's `require` syntax.
+        * Node modules can be included as well. Simply `require` them, and they will also be brought into the system (similar to [browserify](http://browserify.org/)).
+        * Built in support for coffee-script with `.ojc` files. You don't even need to install coffee-script, it just works.
+    """
+    items: [
+
+      h: 'Install', id: 'install', d: """
+
+        To use OJ on the server you will need to install the `oj` command built on top of [node.js](http://nodejs.org). For this you need to install node and its package manager `npm`. There are many ways to do this installation, but this will get you started:
+
+        Install `node` on OSX with [homebrew](http://mxcl.github.com/homebrew/):
+
+            brew install node
+
+        Install `node` on Ubuntu with apt-get:
+
+            sudo apt-get install nodejs npm
+
+        Finally install `oj` with `npm`:
+
+            npm install -g oj
+      """
+    ,
+      h: 'File Types (.oj / .ojc)', id: 'file-types', d: """
+        The [oj.js](#download) javascript library works perfectly fine inside of `.js`, or `.coffee` files. The only issue is that it gets tiring writing `oj` in front of everything: `oj.html`, `oj.Table`, etc.
+
+        To solve this OJ supports two file types:
+
+        * `.oj` is javascript
+        * `.ojc` is coffee-script
+
+        These files have been fully integrated into node. This means you can include other files using `require`, and you must use `module.exports` to set the what the module should return. Here are some examples:
+
+        ### .oj example (javascript):
+
+            # hello.oj
+            module.exports = return [html,
+              [head],
+              [body,
+                [div 'Hello world']
+              ]
+            ]
+
+        ### .ojc example (coffee-script):
+
+            # hello.ojc
+            module.exports = ->
+              html ->
+                head ->
+                body ->
+                  div 'Hello world'
+
+      """
+    ,
+      h: 'Command Line', id: 'command-line', d: """
+        The `oj` command builds `.oj` and `.ojc` [file types](#file-types) into html files.
+
+        ### Usage
+
+            oj [options] <file> <dir> ...
+
+            Options:
+
+              -h, --help               output usage information
+              -V, --version            output the version number
+              -d, --debug              Turn on debug output
+              -o, --output <dir>       Directory to output all files to
+              -r, --recurse            Recurse into directories
+              -m, --modules <modules>  List of modules to include
+              -v, --verbose <level>    Turn on verbose level 0-3
+              -w, --watch              Turn on watch mode
+
+        When options are omitted these are the defaults:
+
+            --output defaults to ./
+            --debug defaults to off<br>
+            --verbose defaults to 1
+
+        ### Ignored file prefixes
+
+          * Partials and Templates (start with `_`)
+          * OJ Plugins (start with `oj.`)
+          * Hidden files (start with `.`)
+
+        ### Examples
+
+        Build `hello.oj` to current directory
+
+            oj hello.oj
+
+        Build `hello.oj` without minification to `www` directory
+
+            oj -d -o www hello.oj
+
+        Watch `hello.oj` and build to `www` directory
+
+            oj --watch -o www hello.oj
+
+        Build `pages` directory to `www`
+
+            oj -o www pages
+
+        Recursively build `pages` directory to `www`
+
+            oj -r -o www pages
+
+        Recursively watch and build `pages` directory to `www`
+
+            oj -w -r -o www pages
+
+      """
+
+
     ]
 ]
 

@@ -8,6 +8,9 @@ module.exports =
     for section,ix in data
       contentSection section, ix
 
+  renderName: (name) ->
+    h3 c:'code-heading', name
+
   renderProperties: (properties) ->
     div 'properties:', c:'code-subheading property'
     contentCodeItems properties, 'property'
