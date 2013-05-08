@@ -28,10 +28,12 @@ module.exports =
       meta 'http-equiv':"X-UA-Compatible", content:'IE=edge,chrome=1'
 
     body ->
-      oj.TryEditor()
+      editor = oj.TryEditor()
 
       # _editor """
       # """
+
+      `window.editor = editor`
 
 ###
 

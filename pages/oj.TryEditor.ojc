@@ -1,4 +1,9 @@
-# oj.use require 'oj.AceEditor'
+# oj.TryEditor.ojc
+
+
+# Full screen
+# Half screen
+# Takes
 
 makeCSS = null
 module.exports = (oj, settings) ->
@@ -34,6 +39,15 @@ module.exports = (oj, settings) ->
             div c:'TryEditor-output2'
 
     properties:
+
+      width:
+        get: -> @_width
+        set: (v) -> @_width = v
+
+      height:
+        get: -> @_height
+        set: (v) -> @_height = v
+
       editor:
         get: -> @_editor
 
