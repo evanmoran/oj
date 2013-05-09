@@ -3,6 +3,9 @@ _ = require 'underscore'
 oj.use require 'oj-markdown'
 oj.use require 'oj-mustache'
 oj.use require 'oj-ace-editor'
+oj.use require 'oj-vimeo-video'
+oj.use require 'oj-twitter-follow-button'
+
 oj.use require './oj.TryEditor'
 
 _styles = require './_styles'
@@ -28,15 +31,18 @@ module.exports =
       meta 'http-equiv':"X-UA-Compatible", content:'IE=edge,chrome=1'
 
     body ->
-      editor = oj.TryEditor()
 
-      # _editor """
-      # """
+      _editor """
+      """
 
-      `window.editor = editor`
+      # `window.editor = editor`
+      # b = Button('hello')
+      # # div ->
+      # editor = oj.TryEditor()
+      # editor.theme = 'orange'
+      # editor.mode = 'ojc'
 
 ###
-
 
 page ->
   # Define backbone model

@@ -765,21 +765,13 @@ data = [
           h:'el', id:'View-el', d:"""
             The root element ([read-only](#read-only), [cached](#cached)).
           """
-         ,
+        ,
           h:'$el', id:'View-$el', d:"""
             The jquery-enabled root element ([read-only](#read-only), [cached](#cached))
           """
-         ,
+        ,
           h:'attributes', id:'View-attributes', d:"""
             Get all attributes for the root element ([read-only](#read-only))
-          """
-         ,
-          h:'emit', id:'View-emit-property', d:"""
-            Construct with `emit:false` to prevent the creation event. This way you can create OJ objects in any order and later call the [emit()](#View-emit-method) method, when you want it to appear.
-
-                var cb = CheckBox({emit:false});  // Silently create CheckBox
-                div('before textbox');            // Create a div
-                cb.emit()                         // Emit CheckBox so it appears here
           """
         ]
         methods [

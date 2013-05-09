@@ -24,12 +24,12 @@ module.exports =
         CodeModel = Backbone.Model.extend()
         code = new CodeModel({code: 'function test(){\n}\nvar foo = 5;'});
 
-      # ae = AceEditor
-      #   model: code
-      #   key: 'code'
-      #   wrapLimit: '23'
-      #   mode: 'javascript'
-      #   theme: 'solarized_light'
+      ae = AceEditor
+        model: code
+        key: 'code'
+        wrapLimit: '23'
+        mode: 'javascript'
+        theme: 'solarized_light'
 
       # ae2 = AceEditor
       #   model: code

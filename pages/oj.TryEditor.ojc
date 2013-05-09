@@ -13,8 +13,7 @@ module.exports = (oj, settings) ->
       {options, args} = oj.argumentsUnion arguments
 
       # Create editor (readonly)
-      @_editor = AceEditor
-        emit: false
+      @_editor = new AceEditor
         theme: 'orange'
         mode:'ojc'
         fontSize: 16
@@ -30,13 +29,13 @@ module.exports = (oj, settings) ->
       @state = oj.argumentShift(options, 'state') ? 'js'
 
       # Create element
-      @el = oj.toDOM =>
+      @ojml = oj =>
         makeCSS()
         div =>
           @editor.emit()
-          div c:'TryEditor-result', ->
-            iframe c:'TryEditor-output'
-            div c:'TryEditor-output2'
+          div c:'oj-TryEditor-result', ->
+            iframe c:'oj-TryEditor-output'
+            div c:'oj-TryEditor-output2'
 
     properties:
 
@@ -90,7 +89,13 @@ module.exports = (oj, settings) ->
 makeCSS = ->
 
   css
-    '.editor-source':
+
+    '.oj-TryEditor-source-cs':
+      display: 'block'
+      width: '100%'
+      height: '100%'
+
+    '.oj-TryEditor-source':
       position: 'relative'
       width: '100%'
       height: '30%'
@@ -100,44 +105,44 @@ makeCSS = ->
       backgroundColor: '#fefaf3'
       boxShadow: '2px 2px 4px RGBA(0,0,0,0.15)'
 
-    '.editor-source-cs':
+    '.oj-TryEditor-source-cs':
       display: 'block'
       width: '100%'
       height: '100%'
 
-    '.editor-source-cs.hidden':
+    '.oj-TryEditor-source-cs.hidden':
       display: 'none'
 
-    '.editor-source-js':
+    '.oj-TryEditor-source-js':
       display: 'block'
       width: '100%'
       height: '100%'
 
-    '.editor-source-js.hidden':
+    '.oj-TryEditor-source-js.hidden':
       display: 'none'
 
-    '.editor-source-css':
+    '.oj-TryEditor-source-css':
       display: 'block'
       width: '100%'
       height: '100%'
 
-    '.editor-source-html':
+    '.oj-TryEditor-source-html':
       display: 'block'
       width: '100%'
       height: '100%'
 
-    '.editor-frame':
+    '.oj-TryEditor-frame':
       display: 'block'
       position: 'relative'
       width: '100%'
       height: '65%'
 
-    '.editor-iframe':
+    '.oj-TryEditor-iframe':
       display: 'block'
       width: '100%'
       height: '100%'
 
-    '.editor-console':
+    '.oj-TryEditor-console':
       position: 'absolute'
       top: 0
       left: 0
@@ -150,13 +155,13 @@ makeCSS = ->
       width: '100%'
       height: '100%'
 
-    '.editor-resizer':
+    '.oj-TryEditor-resizer':
       width: '100%'
       height: '10px'
       backgroundColor: '#FFBA4D'
       zIndex: 10
 
-    '.editor-bar':
+    '.oj-TryEditor-bar':
       position:'absolute'
       top: '0px'
       right: '0px'
@@ -164,14 +169,14 @@ makeCSS = ->
       height: '21px'
       zIndex: 5
 
-    '.editor-example-chooser':
+    '.oj-TryEditor-example-chooser':
       position:'relative'
       float:'right'
       height: '100%'
       zIndex: 10
       marginLeft:'8px'
 
-    '.editor-language-tab':
+    '.oj-TryEditor-language-tab':
       display:'inline-block'
       width: '30px'
       height: '100%'
@@ -182,5 +187,5 @@ makeCSS = ->
       border:'1px solid gray'
       borderRadius:'3px'
 
-    '.editor-language-tab.selected':
+    '.oj-TryEditor-language-tab.selected':
       backgroundColor: '#FECD78'
