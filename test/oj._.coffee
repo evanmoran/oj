@@ -202,6 +202,5 @@ describe 'oj._', ->
   it 'isEvented', ->
     class UserModel extends Backbone.Model
     user = new UserModel name:'Evan'
-    console.log "user.model?: ", user.model?
     expect(oj.isEvented(user)).to.equal true
     expect(oj.typeOf(user)).to.equal 'object'

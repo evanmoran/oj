@@ -43,12 +43,12 @@ describe 'oj.CheckBox', ->
     expect(results.html).to.contain 'class="oj-CheckBox"'
     expect(results.html).to.contain 'checked="checked"'
 
-  it 'compile emit:false', ->
+  it 'compile with new keyword', ->
     control = null
 
     htmlDiv = oj.toHTML ->
       oj.div c:'test', ->
-        control = oj.CheckBox value:true, emit:false
+        control = new oj.CheckBox value:true
         return
 
     expect(control.typeName).to.equal 'CheckBox'

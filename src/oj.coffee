@@ -869,34 +869,40 @@ oj.compile = (options, ojml) ->
     html: true
     dom: true
     css: true
+    cssMap: false
     debug: false
     ignore: {}
 
   # Always ignore oj and css tags
-  _.extend options.ignore, oj:1,css:1
+  _.extend options.ignore, oj:1, css:1
 
-  options.html = if options.html then [] else null    # html accumulator
-  options.dom = if options.dom and document? then (document.createElement 'OJ') else null
-  options.css = if options.css then {} else null      # css accumulator
-  options.indent = ''                                 # indent counter
-  options.types = []                                  # remember what types were used
-  options.tags = {}                                   # remember what tags were used
+  acc = _.clone options
+  acc.html = if options.html then [] else null    # html accumulator
+  acc.dom = if options.dom and document? then (document.createElement 'OJ') else null
+  acc.css = if options.css || options.cssMap then {} else null
+  acc.indent = ''                                 # indent counter
+  acc.types = []                                  # remember what types were used
+  acc.tags = {}                                   # remember what tags were used
 
-  _compileAny ojml, options
+  _compileAny ojml, acc
 
-  # Generate css if necessary
+  # Generate cssMap
+  if options.cssMap
+    cssMap = acc.css
+
+  # Generate css
   if options.css
-    css = _cssFromObject options.css, options.debug
+    css = _cssFromObject acc.css, options.debug
 
-  # Generate HTML if necessary
-  if options.html?
-    html = options.html.join ''
+  # Generate HTML
+  if options.html
+    html = acc.html.join ''
 
-  # Generate dom if necessary
-  if options.dom?
+  # Generate dom
+  if options.dom
 
     # Remove the <oj> wrapping from the dom element
-    dom = options.dom.childNodes
+    dom = acc.dom.childNodes
 
     # Cleanup inconsistencies of childNodes
     if dom.length?
@@ -916,7 +922,7 @@ oj.compile = (options, ojml) ->
     else if dom.length == 1
       dom = dom[0]
 
-  out = html:html, dom:dom, css:css, types:options.types, tags:options.tags
+  out = html:html, dom:dom, css:css, cssMap:cssMap, types:acc.types, tags:acc.tags
 
   out
 
@@ -982,7 +988,7 @@ _attributesFromObject = (obj) ->
 #         color: red;
 #     }\n
 
-_cssFromObject = (cssMap, isDebug = false) ->
+_cssFromObject = (cssMap, isDebug = 0) ->
   newline = if isDebug then '\n' else ''
   space = if isDebug then ' ' else ''
   inline = !isDebug
@@ -1046,8 +1052,10 @@ _compileAny = (ojml, options) ->
     else
       # OJ type
       if oj.isOJ ojml
-        options.html?.push ojml.el.outerHTML
-        options.dom?.appendChild ojml.el
+        options.html?.push ojml.toHTML()
+        options.dom?.appendChild ojml.toDOM()
+        if options.css?
+          _.extend options.css, ojml.toCSSMap()
 
   return
 
@@ -1316,8 +1324,10 @@ oj.type = (name, args = {}) ->
   delay = '__DELAYED__'
   Out = new Function("""return function #{name}(){
     var _this = this;
-    if ( !(this instanceof #{name}) )
+    if ( !(this instanceof #{name}) ) {
       _this = new #{name}('#{delay}');
+      _this.__autonew__ = true;
+    }
 
     if (arguments && arguments[0] != '#{delay}')
       #{name}.prototype.constructor.apply(_this, arguments);
@@ -1453,9 +1463,8 @@ oj.View = oj.type 'View',
     # Set instance on @el
     _setInstanceOnElement @el, @
 
-    # Emit as a tag would do if emit is truthy or unset
-    emit = oj.argumentShift(options, 'emit') ? true
-    @emit() if emit
+    # Emit as a tag if new wasn't called
+    @emit() if @.__autonew__
 
     # Generate id if missing
     options.id ?= oj.id()
@@ -1478,12 +1487,20 @@ oj.View = oj.type 'View',
     @_isConstructed = true
 
   properties:
+
+    # ojml sets the initial structure and css of the View
+    # This must be set before el is accessible
+    ojml:
+      get: -> @_ojml
+      set: (v) ->
+        @_ojml = v
+        {dom:@el, cssMap:@cssMap} = oj.compile css:0, cssMap:1, dom:1, html:0, v
     # Get element
     el:
       get: -> @_el
       set: (v) ->
         @_el = v
-        # clear cache of $el
+        # Clear cache of $el
         @_$el = null
         return
 
@@ -1500,6 +1517,12 @@ oj.View = oj.type 'View',
     id:
       get: -> @$el.attr 'id'
       set: (v) -> @$el.attr 'id', v
+
+    # CSS generated for this instance
+    cssMap:
+      get: -> @_cssMap ? {}
+      set: (v) ->
+        @_cssMap = v
 
     # Flag is set to true
     isConstructed: get: -> @_isConstructed ? false
@@ -1554,6 +1577,12 @@ oj.View = oj.type 'View',
 
     # Convert View to dom (for compiling)
     toDOM: -> @el
+
+    # Convert
+    toCSS: (debug) -> _cssFromObject @cssMap, debug
+
+    # Convert
+    toCSSMap: -> @cssMap
 
     # Convert View to string (for debugging)
     toString: -> @toHTML()
@@ -1721,7 +1750,7 @@ oj.TextBox = oj.type 'TextBox',
   constructor: ->
     {options, args} = oj.argumentsUnion arguments
 
-    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
+    @ojml = oj =>
       oj.input type:'text',
         keydown: => if @live then @viewChanged(); return
         keyup: => if @live then @viewChanged(); return
@@ -1729,7 +1758,6 @@ oj.TextBox = oj.type 'TextBox',
 
     # Value can be set by argument
     @value = args[0] if args.length > 0
-
 
     # Set live if it exists
     @live = oj.argumentShift options, 'live' if options?.live?
@@ -1758,7 +1786,7 @@ oj.CheckBox = oj.type 'CheckBox',
   constructor: ->
     {options, args} = oj.argumentsUnion arguments
 
-    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
+    @ojml = oj =>
       oj.input type:'checkbox',
         change: => @viewChanged(); return
 
@@ -1787,10 +1815,9 @@ oj.TextArea = oj.type 'TextArea',
   base: oj.ModelKeyView
 
   constructor: ->
-
     {options, args} = oj.argumentsUnion arguments
 
-    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
+    @ojml = oj =>
       oj.textarea
         keydown: => if @live then @viewChanged(); return
         keyup: => if @live then @viewChanged(); return
@@ -1817,10 +1844,9 @@ oj.ListBox = oj.type 'ListBox',
   base: oj.ModelKeyView
 
   constructor: ->
-
     {options, args} = oj.argumentsUnion arguments
 
-    @el = oj.argumentShift(options, 'el') || oj.toDOM =>
+    @ojml = oj =>
       oj.select change: => @viewChanged(); return
 
     # @options is a list of elements
@@ -1860,7 +1886,7 @@ oj.Button = oj.type 'Button',
     # Label is first argument
     options.label ?= if args.length > 0 then args[0] else ''
 
-    @el = oj.argumentShift(args, 'el') || oj.toDOM =>
+    @ojml = oj =>
       oj.button options.label
 
     oj.Button.base.constructor.apply @, [options]
@@ -1889,14 +1915,17 @@ oj.List = oj.type 'List',
     # console.log "List constructor: ", arguments
     {options, args} = oj.argumentsUnion arguments
 
-    # write-once property
+    # tagName is write-once
     @_tagName = oj.argumentShift options, 'tagName'
 
     @itemTagName = oj.argumentShift options, 'itemTagName'
 
-    # Use el or create one
-    @el = oj.argumentShift(options, 'el') ? oj.toDOM =>
+    # Generate el
+    @ojml = oj =>
       oj[@tagName]()
+
+    # Use el if it was passed in
+    @el = oj.argumentShift(options, 'el') if options.el?
 
     # Default @each function to pass through values
     options.each ?= (model) ->
