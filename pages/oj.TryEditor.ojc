@@ -1,9 +1,8 @@
 # oj.TryEditor.ojc
 
+editorOutlineColor = '#FFD272'
 
-# Full screen
-# Half screen
-# Takes
+lineHeight = 22
 
 makeCSS = null
 module.exports = (oj, settings) ->
@@ -14,6 +13,7 @@ module.exports = (oj, settings) ->
 
       # Create editor (readonly)
       @_editor = new AceEditor
+        c: 'oj-TryEditor-input-editor'
         theme: 'orange'
         mode:'ojc'
         fontSize: 16
@@ -30,22 +30,66 @@ module.exports = (oj, settings) ->
 
       # Create element
       @ojml = oj =>
-        makeCSS()
         div =>
-          @editor.emit()
-          div c:'oj-TryEditor-result', ->
-            iframe c:'oj-TryEditor-output'
-            div c:'oj-TryEditor-output2'
+          makeCSS()
+          div c:'oj-TryEditor-resizer'
+          div c:'oj-TryEditor-inputs', =>
+            @editor.emit() # oj-TryEditor-input-editor
+          div c:'oj-TryEditor-outputs', ->
+            iframe c:'oj-TryEditor-output-iframe'
+          div c:'oj-TryEditor-seperator'
+
+      # Remember some references to keep stuff reasonable
+      @$inputs = @$ '> .oj-TryEditor-inputs'
+      @$input = @$ '> .oj-TryEditor-input-editor'
+      @$outputs = @$ '> .oj-TryEditor-outputs'
+      @$output = @$ '> .oj-TryEditor-output-iframe'
+      @$seperator = @$ '> .oj-TryEditor-seperator'
+      @$resizer = @$ '> .oj-TryEditor-resizer'
+
+      @minWidth = oj.argumentShift(options, 'minWidth') ? 400
+      @minHeight = oj.argumentShift(options, 'minHeight') ? lineHeight * 2
+
+      @width = oj.argumentShift(options, 'width') if options.width?
+      @height = oj.argumentShift(options, 'height') ? @minHeight
+
+      @split = oj.argumentShift(options, 'split') ? 0.5
+
+      TryEditor.base.constructor.apply @, [options]
+
+      if oj.isClient
+        @$resizer.resizable
+          minHeight: @minHeight
+          minWidth: @minWidth
+          handles:'s'
+
+        @$el.resize (e,ui) =>
+          @updateFrame()
+
+
+        @$resizer.resize (e,ui) =>
+          @height = $(e.currentTarget).height()
+          @updateFrame()
 
     properties:
 
       width:
-        get: -> @_width
-        set: (v) -> @_width = v
+        get: ->
+          @$el.width() || @minWidth
+        set: (v) ->
+          @$el.css(width:v);
+          #@updateFrame()
 
       height:
-        get: -> @_height
-        set: (v) -> @_height = v
+        get: -> @$el.height()
+        set: (v) -> @$el.css(height:v); #@updateFrame()
+
+      # split ratio from 0-1
+      split:
+        get: -> @_split
+        set: (v) ->
+          @_split = v;
+          @updateFrame()
 
       editor:
         get: -> @_editor
@@ -83,12 +127,80 @@ module.exports = (oj, settings) ->
       toggleState: ->
         @state = if @state == 'js' then 'cs' else 'js'
 
+      # Given width/height/split recalculate everything
+      updateFrame: ->
+        w = @width
+        h = @height
+
+        # The editor
+        @editor.height = h
+        @editor.width = w/2
+
+        # The output
+        @$outputs.height h
+        @$output.height h
+        @$outputs.width w/2
+        @$output.width w/2
+
+        @$resizer.width w
+        @$resizer.height h
+
+        # The seperator
+        @$seperator.height @height
+        @$seperator.css('left', Math.floor(@width*@split))
+
+      # Positioning can only happen once inserted
+      inserted: ->
+        @updateFrame()
+
   return TryEditor: TryEditor
 
-
 makeCSS = ->
-
   css
+
+    '.oj-TryEditor':
+      border: "2px solid #{editorOutlineColor}"
+      boxShadow: '2px 2px 4px RGBA(0,0,0,0.15)'
+      display:'block'
+      position:'relative'
+      backgroundColor:'#eee'
+      zIndex:20
+
+    '.oj-TryEditor-seperator':
+      position:'absolute'
+      top:0
+      left:0
+      backgroundColor:editorOutlineColor
+      width:2
+      height:1 # resized automatically
+
+    '.oj-TryEditor-resizer':
+      position:'absolute'
+      top:-1
+      left:-1
+      # border: "2px solid #{editorOutlineColor}"
+      # backgroundColor:'white'
+      width:2 # resized automatically
+      height:1 # resized automatically
+      zIndex:0
+
+    '.oj-TryEditor-inputs':
+      display:'inline-block'
+      resize:'none'
+      zIndex:30
+
+    '.oj-TryEditor-input-editor':
+      resize:'none'
+
+    '.oj-TryEditor-outputs':
+      display:'inline-block'
+      # display:'relative'
+      zIndex:10
+
+    '.oj-TryEditor-output-iframe':
+      width:'100%'
+      height:'100%'
+      backgroundColor:'white'
 
     '.oj-TryEditor-source-cs':
       display: 'block'
@@ -154,12 +266,6 @@ makeCSS = ->
       margin: '0px 0px 10px 0px'
       width: '100%'
       height: '100%'
-
-    '.oj-TryEditor-resizer':
-      width: '100%'
-      height: '10px'
-      backgroundColor: '#FFBA4D'
-      zIndex: 10
 
     '.oj-TryEditor-bar':
       position:'absolute'

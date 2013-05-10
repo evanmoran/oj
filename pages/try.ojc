@@ -10,37 +10,40 @@ oj.use require './oj.TryEditor'
 
 _styles = require './_styles'
 _snippet = require './_snippet'
-_editor = require './_editor'
+# _editor = require './_editor'
 
-module.exports =
+_template = require './_template'
 
-  html lang:'en', ->
-    _styles()
+module.exports = ->
 
-    head ->
-      title 'Try OJ -- Unified Templating'
+  _template
 
-      link url:'styles/reset.css'
-      script url: 'scripts/jquery.js'
-      script url:'scripts/coffee-script.js'
-      script url: 'scripts/underscore.js'
-      script url: 'scripts/backbone.js'
-      script url: 'scripts/ace/ace.js'
+    title: 'Try OJ - Unified templating for the people'
 
-      meta charset:'UTF-8'
-      meta 'http-equiv':"X-UA-Compatible", content:'IE=edge,chrome=1'
+    styles: [
+      'reset.css'
+      'gg.css'
+      'jquery-ui-1.10.3.custom.css'
+    ]
 
-    body ->
+    scripts: [
+      'jquery.js'
+      'underscore.js'
+      'backbone.js'
+      'coffee-script.js'
+      'ace/ace.js'
+      'jquery-ui-1.10.3.custom.js'
+      'jquery.ba-resize.min.js'
+    ]
 
-      _editor """
-      """
+    middle: ->
+      editor = oj.TryEditor()
+      `window.editor = editor`
 
-      # `window.editor = editor`
-      # b = Button('hello')
-      # # div ->
-      # editor = oj.TryEditor()
-      # editor.theme = 'orange'
-      # editor.mode = 'ojc'
+    head: ->
+      _styles()
+
+    body: ->
 
 ###
 

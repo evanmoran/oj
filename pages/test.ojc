@@ -30,6 +30,7 @@ module.exports =
         wrapLimit: '23'
         mode: 'javascript'
         theme: 'solarized_light'
+        padding: 20
 
       # ae2 = AceEditor
       #   model: code
