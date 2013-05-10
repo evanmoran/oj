@@ -16,7 +16,7 @@ uglifyjs = require 'uglify-js'
 
 # Run in the context of the dom and jquery
 jsdom = (require 'jsdom').jsdom
-global.$ = require 'jquery'
+global.jQuery = global.$ = require 'jquery'
 global.document = jsdom "<html><head></head><body></body></html>"
 global.window = document.createWindow()
 

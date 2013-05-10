@@ -30,7 +30,7 @@ oj.begin = (page) ->
 
     # Compile only the body and below
     bodyOnly = html:1, doctype:1, head:1, link:1, script:1
-    {dom} = oj.compile dom:1, html:0, css:0, ignore:bodyOnly, (require page)
+    {dom,types} = oj.compile dom:1, html:0, css:0, ignore:bodyOnly, (require page)
 
     if not dom?
       console.error 'oj: dom failed to compile'
@@ -49,6 +49,9 @@ oj.begin = (page) ->
       dom = [dom]
     for d in dom
       body.appendChild d
+
+    for t in types
+      t.inserted()
 
     # Trigger events bound through oj.ready
     oj.ready()
@@ -881,9 +884,8 @@ oj.compile = (options, ojml) ->
   acc.dom = if options.dom and document? then (document.createElement 'OJ') else null
   acc.css = if options.css || options.cssMap then {} else null
   acc.indent = ''                                 # indent counter
-  acc.types = []                                  # remember what types were used
+  acc.types = [] if options.dom                   # remember types if making dom
   acc.tags = {}                                   # remember what tags were used
-
   _compileAny ojml, acc
 
   # Generate cssMap
@@ -1052,6 +1054,7 @@ _compileAny = (ojml, options) ->
     else
       # OJ type
       if oj.isOJ ojml
+        options.types?.push ojml
         options.html?.push ojml.toHTML()
         options.dom?.appendChild ojml.toDOM()
         if options.css?
@@ -1217,30 +1220,6 @@ _attributesBindEventsToDOM = (events, el) ->
         $(el)[ek](ev)
     else
       console.error "oj: jquery is missing when binding a '#{ek}' event"
-
-# oj.toDOM
-# ------------------------------------------------------------------------------
-# Make oj directly in the DOM
-
-oj.toDOM = (options, ojml) ->
-
-  # Options is optional
-  if not oj.isObject options
-    ojml = options
-    options = {}
-
-  # Create dom not html
-  _.extend options,
-    dom: true
-    html: true
-    css: true
-
-  result = oj.compile options, ojml
-
-  # Bind js if it exists
-  result.js?()
-
-  result.dom
 
 # oj.toHTML
 # ------------------------------------------------------------------------------
@@ -1524,10 +1503,14 @@ oj.View = oj.type 'View',
       set: (v) ->
         @_cssMap = v
 
-    # Flag is set to true
+    # Determine if this view has been fully constructed (readonly)
     isConstructed: get: -> @_isConstructed ? false
 
+    # Determine if this view has been fully inserted (readonly)
+    isInserted: get: -> @_isInserted ? false
+
   methods:
+
 
     # Mirror backbone view's find by selector
     $: -> @$el.find arguments...
@@ -1595,6 +1578,9 @@ oj.View = oj.type 'View',
     # attach: -> throw 'attach nyi'
     #   # The implementation is to unset el from detach
 
+    # inserted is called the instance is inserted in the dom (override)
+    inserted: ->
+      @_isInserted = true
 
 # oj.CollectionView
 # ------------------------------------------------------------------------------
@@ -2216,13 +2202,17 @@ $.fn.oj = jqueryExtend
       return $el[0].oj
 
     # Compile ojml
-    dom = oj.toDOM args...
+    {dom,types} = oj.compile {dom:1,html:0,css:0}, args...
 
     # Reset content and append to dom
     $el.html ''
     dom = [dom] unless oj.isArray dom
     for d in dom
       $el.append d
+
+    # Call inserted event on all types
+    for t in types
+      t.inserted()
 
     return
 
@@ -2268,11 +2258,16 @@ for ojName,jqName of plugins
       set: ($el, args) ->
 
         # Compile ojml for each one to separate references
-        dom = oj.toDOM args...
+        {dom,types} = oj.compile {dom:1,html:0}, args...
 
         # Append to the dom
         $el[jqName] dom
+
+        for t in types
+          t.inserted()
+
         return
+
       get:null
 
 

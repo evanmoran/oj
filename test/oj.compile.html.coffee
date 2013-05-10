@@ -25,7 +25,7 @@ _getAll = -> $('html').html()
 _logAll = -> console.log _getAll()
 _clearAll = -> $('html').html headEmpty + bodyEmpty
 
-compileTest = (ojml, typesLength, html, options = {}) ->
+compileTest = (ojml, html, options = {}) ->
   options = _.defaults {}, options,
     html:true
     css:true
@@ -34,8 +34,6 @@ compileTest = (ojml, typesLength, html, options = {}) ->
     body:false
 
   r = oj.compile options, ojml
-  expect(r.types).to.be.an 'array'
-  expect(r.types.length).to.equal typesLength
   if not (options.html == false)
     expect(r.html).to.be.a 'string'
     expect(r.html).to.equal html
@@ -55,80 +53,80 @@ describe 'oj.compile.html', ->
 
   it 'div', ->
     ojml = oj.div 'test'
-    compileTest ojml, 0, '<div>test</div>'
+    compileTest ojml, '<div>test</div>'
 
   it 'values', ->
-    compileTest '', 0, ''
-    compileTest 'test', 0, 'test'
-    compileTest 42, 0, '42'
-    compileTest true, 0, 'true'
-    compileTest false, 0, 'false'
-    compileTest [], 0, ''
-    compileTest (->), 0, ''
-    compileTest null, 0, ''
-    compileTest undefined, 0, ''
+    compileTest '', ''
+    compileTest 'test', 'test'
+    compileTest 42, '42'
+    compileTest true, 'true'
+    compileTest false, 'false'
+    compileTest [], ''
+    compileTest (->), ''
+    compileTest null, ''
+    compileTest undefined, ''
 
   it 'function returning value', ->
-    compileTest (-> true), 0, 'true'
-    compileTest (-> false), 0, 'false'
-    compileTest (-> 42), 0, '42'
-    compileTest (-> 'test'), 0, 'test'
-    compileTest (-> undefined), 0, ''
-    compileTest (-> null), 0, ''
+    compileTest (-> true), 'true'
+    compileTest (-> false), 'false'
+    compileTest (-> 42), '42'
+    compileTest (-> 'test'), 'test'
+    compileTest (-> undefined), ''
+    compileTest (-> null), ''
 
   it 'span', ->
     ojml = oj.span 'test'
-    compileTest ojml, 0, '<span>test</span>'
+    compileTest ojml, '<span>test</span>'
 
   it 'opened', ->
     ojml = oj.hr()
-    compileTest ojml, 0, '<hr>'
+    compileTest ojml, '<hr>'
 
   it 'closed', ->
     ojml = oj.div()
-    compileTest ojml, 0, '<div></div>'
+    compileTest ojml, '<div></div>'
 
   it 'nested divs', ->
     ojml = oj.div oj.div 'test'
-    compileTest ojml, 0, '<div><div>test</div></div>'
+    compileTest ojml, '<div><div>test</div></div>'
 
   it 'attributes empty', ->
     ojml = oj.div {}, ->
-    compileTest ojml, 0, '<div></div>'
+    compileTest ojml, '<div></div>'
 
   it 'attributes class', ->
     ojml = oj.div class: 'c1', ->
-    compileTest ojml, 0, '<div class="c1"></div>'
+    compileTest ojml, '<div class="c1"></div>'
 
   it 'attributes class with c', ->
     ojml = oj.div c: 'c1', ->
-    compileTest ojml, 0, '<div class="c1"></div>'
+    compileTest ojml, '<div class="c1"></div>'
 
   it 'attributes id', ->
     ojml = oj.div id: 'id1', ->
-    compileTest ojml, 0, '<div id="id1"></div>'
+    compileTest ojml, '<div id="id1"></div>'
 
   it 'attributes multiple', ->
     ojml = oj.div class: 'c1', id: 'id1', ->
-    compileTest ojml, 0, '<div class="c1" id="id1"></div>'
+    compileTest ojml, '<div class="c1" id="id1"></div>'
 
   it 'attributes style string', ->
     ojml = oj.div style: 'text-align:center; color:red', ->
-    compileTest ojml, 0, '<div style="text-align:center; color:red"></div>'
+    compileTest ojml, '<div style="text-align:center; color:red"></div>'
 
   it 'attributes style object', ->
     ojml = oj.div style: {'text-align':'center', color: 'red'}, ->
-    compileTest ojml, 0, '<div style="color:red;text-align:center"></div>'
+    compileTest ojml, '<div style="color:red;text-align:center"></div>'
 
   it 'attributes style object with fancy keys', ->
     ojml = oj.div style: {textAlign:'center', color: 'red'}, ->
-    compileTest ojml, 0, '<div style="color:red;text-align:center"></div>'
+    compileTest ojml, '<div style="color:red;text-align:center"></div>'
 
   it 'simple nested', ->
     ojml = oj.div ->
       oj.span 'a1'
     expected = '<div><span>a1</span></div>'
-    compileTest ojml, 0, expected, debug: false
+    compileTest ojml, expected, debug: false
 
   it 'nested', ->
     ojml = oj.div style: {'text-align':'center', color: 'red'}, ->
@@ -136,7 +134,7 @@ describe 'oj.compile.html', ->
         oj.div 'b1'
       oj.div 'a2'
     expected = '<div style="color:red;text-align:center"><div>a1<div>b1</div></div><div>a2</div></div>'
-    compileTest ojml, 0, expected, debug: false
+    compileTest ojml, expected, debug: false
 
   it 'nested with debug printing', ->
     ojml = oj.div style: {'text-align':'center', color: 'red'}, ->
@@ -144,21 +142,21 @@ describe 'oj.compile.html', ->
         oj.div 'b1'
       oj.div 'a2'
     expected = '<div style="color:red;text-align:center">\n\t<div>\n\t\ta1\n\t\t<div>b1</div>\n\t</div>\n\t<div>a2</div>\n</div>'
-    compileTest ojml, 0, expected, debug: true
+    compileTest ojml, expected, debug: true
 
   it '<html><body>', ->
     ojml = oj.html ->
       oj.body ->
         oj.div 'a1'
     expected = '<html><body><div>a1</div></body></html>'
-    compileTest ojml, 0, expected, debug: false
+    compileTest ojml, expected, debug: false
 
   it '<html><body> with debug printing', ->
     ojml = oj.html ->
       oj.body ->
         oj.div 'a1'
     expected = '<html><body><div>a1</div></body></html>'
-    compileTest ojml, 0, expected, debug: true
+    compileTest ojml, expected, debug: true
 
   it '<html><head><body>', ->
       ojml = oj.html ->
@@ -169,7 +167,7 @@ describe 'oj.compile.html', ->
           # css should be ignored in structure
           oj.css '.selector':color:'red'
       expected = '<html><head><script src="script.js" type="text/javascript"></script></head><body><div>a1</div></body></html>'
-      compileTest ojml, 0, expected, debug: false
+      compileTest ojml, expected, debug: false
 
   it '<html><head><body> with debug printing', ->
     ojml = oj.html ->
@@ -178,7 +176,7 @@ describe 'oj.compile.html', ->
       oj.body ->
         oj.div 'a1'
     expected = '<html>\n\t<head><script src="script.js" type="text/javascript"></script></head>\n\t<body><div>a1</div></body>\n</html>'
-    compileTest ojml, 0, expected, debug: true
+    compileTest ojml, expected, debug: true
 
   it '<html><head><body> with ignore', ->
     ojml = oj.html ->
@@ -187,7 +185,7 @@ describe 'oj.compile.html', ->
       oj.body ->
         oj.div 'a1'
     expected = '<body><div>a1</div></body>'
-    compileTest ojml, 0, expected, ignore: {html:1, doctype:1, head:1, link:1, script:1}
+    compileTest ojml, expected, ignore: {html:1, doctype:1, head:1, link:1, script:1}
 
 
 
