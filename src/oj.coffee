@@ -195,14 +195,23 @@ else
 # ------------------------------------------------------------------------------
 # Based on [underscore.js](http://underscorejs.org/)
 # The potential duplication saddens me but oj needs sophisticated type detection
+
+ArrayP = Array.prototype
+FuncP = Function.prototype
+ObjP = Object.prototype
+
+slice = ArrayP.slice
+unshift = ArrayP.unshift
+concat = ArrayP.concat
+
 oj.isUndefined = (obj) -> obj == undefined
-oj.isBoolean = (obj) -> obj == true or obj == false or toString.call(obj) == '[object Boolean]'
+oj.isBoolean = (obj) -> obj == true or obj == false or ObjP.toString.call(obj) == '[object Boolean]'
 oj.isNumber = (obj) -> !!(obj == 0 or (obj and obj.toExponential and obj.toFixed))
 oj.isString = (obj) -> !!(obj == '' or (obj and obj.charCodeAt and obj.substr))
 oj.isDate = (obj) -> !!(obj and obj.getTimezoneOffset and obj.setUTCFullYear)
 oj.isFunction = (obj) -> typeof obj == 'function'
-oj.isArray = Array.isArray or (obj) -> toString.call(obj) == '[object Array]'
-oj.isRegEx = (obj) -> toString.call(obj) == '[object RegExp]'
+oj.isArray = Array.isArray or (obj) -> ObjP.toString.call(obj) == '[object Array]'
+oj.isRegEx = (obj) -> ObjP.toString.call(obj) == '[object RegExp]'
 oj.isDOM = (obj) -> !!(obj and obj.nodeType?)
 oj.isDOMElement = (obj) -> !!(obj and obj.nodeType == 1)
 oj.isDOMAttribute = (obj) -> !!(obj and obj.nodeType == 2)
@@ -210,7 +219,7 @@ oj.isDOMText = (obj) -> !!(obj and obj.nodeType == 3)
 oj.isjQuery = (obj) -> !!(obj and obj.jquery)
 oj.isEvented = (obj) -> !!(obj and obj.on and obj.off and obj.trigger)
 oj.isOJ = (obj) -> !!(obj?.isOJ)
-oj.isArguments = (obj) -> toString.call(obj) == '[object Arguments]'
+oj.isArguments = (obj) -> ObjP.toString.call(obj) == '[object Arguments]'
 
 # typeOf: Mimic behavior of built-in typeof operator and integrate jQuery, Backbone, and OJ types
 oj.typeOf = (any) ->
@@ -249,14 +258,6 @@ oj.isObject = (obj) -> (oj.typeOf obj) == 'object'
 # Utility: Helpers
 # ------------------------------------------------------------------------------
 # Some are from [underscore.js](http://underscorejs.org/).
-
-ArrayP = Array.prototype
-FuncP = Function.prototype
-ObjP = Object.prototype
-
-slice = ArrayP.slice
-unshift = ArrayP.unshift
-concat = ArrayP.concat
 
 oj.__ = _ = {}
 _.isCapitalLetter = (c) -> !!(c.match /[A-Z]/)
@@ -506,6 +507,24 @@ _.uniqueSort = (array, isSorted = false) ->
 
 _.uniqueSortedUnion = (array, array2) ->
   _.uniqueSort (array.concat array2)
+
+_.debounce = (wait, func, immediate) ->
+  timeout = null
+  result = null
+  ->
+    context = @
+    args = arguments
+    later = ->
+      timeout = null;
+      if !immediate
+        result = func.apply context, args
+
+    callNow = immediate and !timeout
+    clearTimeout timeout
+    timeout = setTimeout later, wait
+    if callNow
+      result = func.apply context, args
+    result
 
 # Path Helpers
 # ------------------------------------------------------------------------------
@@ -764,7 +783,7 @@ oj.tag = (name, args...) ->
 
 oj.tag.elements =
   closed: 'a abbr acronym address applet article aside audio b bdo big blockquote body button canvas caption center cite code colgroup command datalist dd del details dfn dir div dl dt em embed fieldset figcaption figure font footer form frameset h1 h2 h3 h4 h5 h6 head header hgroup html i iframe ins keygen kbd label legend li map mark menu meter nav noframes noscript object ol optgroup option output p pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr tt u ul var video wbr xmp'.split ' '
-  open: 'area base br col command css embed hr img input keygen link meta param source track wbr'.split ' '
+  open: 'area base br col command css !DOCTYPE embed hr img input keygen link meta param source track wbr'.split ' '
 
 oj.tag.elements.all = (oj.tag.elements.closed.concat oj.tag.elements.open).sort()
 
@@ -800,21 +819,50 @@ for t in oj.tag.elements.all
     # Remember the tag name
     _setTagName oj[t], t
 
-# Customize a few tags
-
+# Clear attributes
 _defaultClear = (dest, d, e) ->
   _.defaults dest, d
   for k of e
     delete dest[k]
   dest
 
+# Adjust tag attributes
 _tagAttributes = (name, attributes) ->
   attr = _.clone attributes
   switch name
+
+    # link tags default to stylesheet, text/css, url instead of href
     when 'link' then _defaultClear attr, {rel:'stylesheet', type:'text/css', href: attr.url or attr.src}, {url:0, src:0}
+
+    # script tags default to javascript, url instead of src
     when 'script' then _defaultClear attr, {type:'text/javascript', src: attr.url}, url:0
+
+    # anchor tags can use url instead of href
     when 'a' then _defaultClear attr, {href:attr.url}, url:0
   attr
+
+
+# doctype tag
+# ------------------------------------------------------------------------------
+
+dhp = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01'
+w3 = '"http://www.w3.org/TR/html4/'
+strict5 = '<!DOCTYPE html>'
+strict4 = dhp+'//EN" '+w3+'strict.dtd">'
+
+doctypes =
+  '5': strict5
+  'HTML 5': strict5
+  '4': strict4
+  'HTML 4.01 Strict': strict4
+  'HTML 4.01 Frameset': dhp+' Frameset//EN" '+w3+'frameset.dtd">'
+  'HTML 4.01 Transitional': dhp+' Transitional//EN" '+w3+'loose.dtd">'
+
+oj.doctype = (type = 5) ->
+  # Emit like a tag
+  ojml = doctypes[type]
+  _.argumentsAppend ojml
+  ojml
 
 # oj.page
 # ------------------------------------------------------------------------------
@@ -975,9 +1023,16 @@ _attributesFromObject = (obj) ->
   # Serialize attributes in order for consistent output
   space = ''
   for k in _.keys(obj).sort()
-    # Ignore null
-    if (v = obj[k])?
+    v = obj[k]
+
+    # Boolean attributes have no value
+    if (v == true)
+      out += "#{space}#{k}"
+
+    # Other attributes have a value
+    else
       out += "#{space}#{k}=\"#{v}\""
+
     space = ' '
   out
 
@@ -1093,10 +1148,12 @@ _compileTag = (ojml, options) ->
   if oj.isObject ojml[1]
     attributes = ojml[1]
 
+  # Remaining arguments are children of this tag
   children = if attributes then ojml.slice 2 else ojml.slice 1
 
   # Compile to css if requested
   if options.css and tag == 'css'
+
     # Extend options.css with rules
     for selector,styles of attributes
       options.css[selector] ?= styles
@@ -1123,7 +1180,12 @@ _compileTag = (ojml, options) ->
       if oj.isObject attributes
         for attrName in _.keys(attributes).sort()
           attrValue = attributes[attrName]
-          el.setAttribute attrName, attrValue
+          # Boolean attributes have no value
+          if attrValue == true
+            att = document.createAttribute attrName
+            el.setAttributeNode att
+          else
+            el.setAttribute attrName, attrValue
 
       # Bind events
       _attributesBindEventsToDOM events, el
@@ -1176,6 +1238,13 @@ _attributeClassAllowsArrays = (attr) ->
     attr.class = attr.join ' '
   return
 
+# Omit falsy values except for zero
+_attributeOmitFalsyValues = (attr) ->
+  if oj.isObject attr
+    # Filter out falsy except for 0
+    for k,v of attr
+      delete attr[k] if v == null or v == undefined or v == false
+
 # Filter out jquery events
 _attributesFilterOutEvents = (attr) ->
   out = {}
@@ -1199,6 +1268,9 @@ _attributesProcessedForOJ = (attr) ->
 
   # class takes arrays
   _attributeClassAllowsArrays attr
+
+  # Omit keys that false, null, or undefined
+  _attributeOmitFalsyValues attr
 
   # TODO: Consider jsoning anything that isn't a string
   # any keys that aren't strings are jsoned
@@ -1467,20 +1539,18 @@ oj.View = oj.type 'View',
 
   properties:
 
-    # ojml sets the initial structure and css of the View
-    # This must be set before el is accessible
-    ojml:
-      get: -> @_ojml
-      set: (v) ->
-        @_ojml = v
-        {dom:@el, cssMap:@cssMap} = oj.compile css:0, cssMap:1, dom:1, html:0, v
-    # Get element
+    # The element backing the View
     el:
       get: -> @_el
       set: (v) ->
-        @_el = v
-        # Clear cache of $el
-        @_$el = null
+        # Set the element directly if this is a dom element
+        if oj.isDOMElement v
+          @_el = v
+          # Clear cache of $el
+          @_$el = null
+        # Generate the element from ojml
+        else
+          {dom:@_el, cssMap:@cssMap} = oj.compile css:0, cssMap:1, dom:1, html:0, v
         return
 
     # Get and cache jquery-enabled element (readonly)
@@ -1507,7 +1577,8 @@ oj.View = oj.type 'View',
     isConstructed: get: -> @_isConstructed ? false
 
     # Determine if this view has been fully inserted (readonly)
-    isInserted: get: -> @_isInserted ? false
+    isInserted:
+      get: -> @_isInserted ? false
 
   methods:
 
@@ -1530,8 +1601,17 @@ oj.View = oj.type 'View',
       # Add attributes as object
       if oj.isObject attr
         for k,v of attr
+
+          # Wrap k in quotes if it has whitespace
           if k == 'class'
             @$el.addClass v
+
+          # Boolean attributes have no value
+          else if v == true
+            att = document.createAttribute k
+            @el.setAttributeNode att
+
+          # Otherwise add it normally
           else
             @$el.attr k, v
 
@@ -1736,7 +1816,7 @@ oj.TextBox = oj.type 'TextBox',
   constructor: ->
     {options, args} = oj.argumentsUnion arguments
 
-    @ojml = oj =>
+    @el = oj =>
       oj.input type:'text',
         keydown: => if @live then @viewChanged(); return
         keyup: => if @live then @viewChanged(); return
@@ -1772,7 +1852,7 @@ oj.CheckBox = oj.type 'CheckBox',
   constructor: ->
     {options, args} = oj.argumentsUnion arguments
 
-    @ojml = oj =>
+    @el = oj =>
       oj.input type:'checkbox',
         change: => @viewChanged(); return
 
@@ -1803,7 +1883,7 @@ oj.TextArea = oj.type 'TextArea',
   constructor: ->
     {options, args} = oj.argumentsUnion arguments
 
-    @ojml = oj =>
+    @el = oj =>
       oj.textarea
         keydown: => if @live then @viewChanged(); return
         keyup: => if @live then @viewChanged(); return
@@ -1832,7 +1912,7 @@ oj.ListBox = oj.type 'ListBox',
   constructor: ->
     {options, args} = oj.argumentsUnion arguments
 
-    @ojml = oj =>
+    @el = oj =>
       oj.select change: => @viewChanged(); return
 
     # @options is a list of elements
@@ -1872,7 +1952,7 @@ oj.Button = oj.type 'Button',
     # Label is first argument
     options.label ?= if args.length > 0 then args[0] else ''
 
-    @ojml = oj =>
+    @el = oj =>
       oj.button options.label
 
     oj.Button.base.constructor.apply @, [options]
@@ -1907,7 +1987,7 @@ oj.List = oj.type 'List',
     @itemTagName = oj.argumentShift options, 'itemTagName'
 
     # Generate el
-    @ojml = oj =>
+    @el = oj =>
       oj[@tagName]()
 
     # Use el if it was passed in

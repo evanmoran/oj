@@ -55,6 +55,16 @@ describe 'oj.tag', ->
     (div {}).should.deep.equal ['div']
     (div {}, (->)).should.deep.equal ['div']
 
+  it 'string attributes', ->
+    (div foo:'bar').should.deep.equal ['div', {'foo':'bar'}]
+    (div foo:'').should.deep.equal ['div', {'foo':''}]
+
+  it 'boolean attributes', ->
+    (div foo:true).should.deep.equal ['div', {'foo':true}]
+
+  it 'null attributes', ->
+    (div foo:null).should.deep.equal ['div', {'foo':null}]
+
   it 'name with object', ->
     user = name:'Sam'
     expect(div c:'cls', user.name).to.deep.equal ['div', c:'cls', 'Sam']

@@ -106,6 +106,26 @@ describe 'oj.compile.html', ->
     ojml = oj.div id: 'id1', ->
     compileTest ojml, '<div id="id1"></div>'
 
+  it 'attributes string', ->
+    ojml = oj.div attr: 'str', ->
+    compileTest ojml, '<div attr="str"></div>'
+    ojml = oj.div attr: '', ->
+    compileTest ojml, '<div attr=""></div>'
+
+  it 'attributes boolean', ->
+    ojml = oj.div attr: true
+    compileTest ojml, '<div attr></div>'
+    ojml = oj.div attr: false
+    compileTest ojml, '<div></div>'
+
+  it 'attributes undefined', ->
+    ojml = oj.div attr: undefined
+    compileTest ojml, '<div></div>'
+
+  it 'attributes null', ->
+    ojml = oj.div attr: null
+    compileTest ojml, '<div></div>'
+
   it 'attributes multiple', ->
     ojml = oj.div class: 'c1', id: 'id1', ->
     compileTest ojml, '<div class="c1" id="id1"></div>'
@@ -187,5 +207,33 @@ describe 'oj.compile.html', ->
     expected = '<body><div>a1</div></body>'
     compileTest ojml, expected, ignore: {html:1, doctype:1, head:1, link:1, script:1}
 
+  it 'doctype', ->
+    ojml = oj.doctype()
+    expected = '<!DOCTYPE html>'
+    compileTest ojml, expected, ignore: {}
+
+    ojml = oj.doctype 5
+    expected = '<!DOCTYPE html>'
+    compileTest ojml, expected, ignore: {}
+
+    ojml = oj.doctype('HTML 5')
+    expected = '<!DOCTYPE html>'
+    compileTest ojml, expected, ignore: {}
+
+    ojml = oj.doctype 4
+    expected = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">'
+    compileTest ojml, expected, ignore: {}
+
+    ojml = oj.doctype('HTML 4.01 Strict')
+    expected = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">'
+    compileTest ojml, expected, ignore: {}
+
+    ojml = oj.doctype('HTML 4.01 Transitional')
+    expected = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">'
+    compileTest ojml, expected, ignore: {}
+
+    ojml = oj.doctype('HTML 4.01 Frameset')
+    expected = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">'
+    compileTest ojml, expected, ignore: {}
 
 

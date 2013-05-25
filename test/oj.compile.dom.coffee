@@ -125,6 +125,27 @@ describe 'oj.compile.dom', ->
     ojml = oj.div id: 'id1', ->
     compileDOM ojml, 'div', 0, '<div id="id1"></div>'
 
+  it 'attributes string', ->
+    ojml = oj.div attr: 'str', ->
+    compileDOM ojml, 'div', 0, '<div attr="str"></div>'
+    ojml = oj.div attr: '', ->
+    compileDOM ojml, 'div', 0, '<div attr=""></div>'
+
+  it 'attributes boolean', ->
+    ojml = oj.div attr: true
+    # js-dom has a bug where this should be: <div attr></div>
+    compileDOM ojml, 'div', 0, '<div attr=""></div>'
+    ojml = oj.div attr: false
+    compileDOM ojml, 'div', 0, '<div></div>'
+
+  it 'attributes undefined', ->
+    ojml = oj.div attr: undefined
+    compileDOM ojml, 'div', 0, '<div></div>'
+
+  it 'attributes null', ->
+    ojml = oj.div attr: null
+    compileDOM ojml, 'div', 0, '<div></div>'
+
   it 'attributes multiple', ->
     ojml = oj.div class: 'c1', id: 'id1', ->
     compileDOM ojml, 'div', 0, '<div class="c1" id="id1"></div>'
