@@ -1,11 +1,18 @@
 # oj.TryEditor.ojc
 
-editorOutlineColor = '#FFD272'
+editorBorderColor = '#ffd272'
+editorBackgroundColor = '#fefaf3'
+editorBorderWidth = 2
+editorPadding = 4
+consolePadding = 4
+phoneWidth = 696
+maximizeDuration = 500
 
-lineHeight = 22
+lineHeight = 21
 
 makeCSS = null
 module.exports = (oj, settings) ->
+
   TryEditor = type 'TryEditor',
     base: ModelKeyView
     constructor: ->
@@ -16,7 +23,7 @@ module.exports = (oj, settings) ->
         c: 'oj-TryEditor-input-editor'
         theme: 'orange'
         mode:'ojc'
-        fontSize: 16
+        fontSize: 15
         tabSize: 2
         behaviorsEnabled: true
         useSoftTabs: true
@@ -25,64 +32,91 @@ module.exports = (oj, settings) ->
         showPrintMargin: false
         readOnly: false
         showIndentGuides: false
-
-      @state = oj.argumentShift(options, 'state') ? 'js'
+        change: => @editorChanged.apply @, arguments
 
       # Create element
-      @ojml = oj =>
+      @el = oj =>
         div =>
           makeCSS()
-          div c:'oj-TryEditor-resizer'
+
+          div c:'oj-TryEditor-resizer', ->
+            div c:'oj-TryEditor-gripper ui-resizable-s'
+
           div c:'oj-TryEditor-inputs', =>
+            div c:'oj-TryEditor-bar', ->
+              div c:'oj-TryEditor-bar-states', ->
+                div c:'oj-TryEditor-bar-state cs', 'CS', title:'Use CoffeeScript'
+                div c:'oj-TryEditor-bar-state js selected', 'JS', title:'Use JavaScript'
+
             @editor.emit() # oj-TryEditor-input-editor
           div c:'oj-TryEditor-outputs', ->
+            div c:'oj-TryEditor-console'
             iframe c:'oj-TryEditor-output-iframe'
+            div c:'oj-TryEditor-bar', ->
+              div c:'oj-TryEditor-bar-maximize', title:'Maximize'
           div c:'oj-TryEditor-seperator'
 
+      if args.length > 0
+        @value = args[0]
+
       # Remember some references to keep stuff reasonable
-      @$inputs = @$ '> .oj-TryEditor-inputs'
-      @$input = @$ '> .oj-TryEditor-input-editor'
-      @$outputs = @$ '> .oj-TryEditor-outputs'
-      @$output = @$ '> .oj-TryEditor-output-iframe'
-      @$seperator = @$ '> .oj-TryEditor-seperator'
-      @$resizer = @$ '> .oj-TryEditor-resizer'
+      @$inputs = @$ '.oj-TryEditor-inputs'
+      @$input = @$ '.oj-TryEditor-input-editor'
+      @$outputs = @$ '.oj-TryEditor-outputs'
+      @$output = @$ '.oj-TryEditor-output-iframe'
+      @$seperator = @$ '.oj-TryEditor-seperator'
+      @$resizer = @$ '.oj-TryEditor-resizer'
+      @$console = @$ '.oj-TryEditor-console'
+      @$gripper = @$ '.oj-TryEditor-gripper'
+
+      @$jsButton = @$ '.oj-TryEditor-bar-state.js'
+      @$csButton = @$ '.oj-TryEditor-bar-state.cs'
+      @$maximizeButton = @$ '.oj-TryEditor-bar-maximize'
+
+      @js = oj.argumentShift(options,'js') if options.js?
+      @cs = oj.argumentShift(options,'cs') if options.cs?
+      @state = oj.argumentShift(options, 'state') ? 'js'
+
+      @value = oj.argumentShift(options,'js') if options.value?
 
       @minWidth = oj.argumentShift(options, 'minWidth') ? 400
-      @minHeight = oj.argumentShift(options, 'minHeight') ? lineHeight * 2
+      @minHeight = oj.argumentShift(options, 'minHeight') ? (lineHeight * 1 + 2 * editorPadding)
 
-      @width = oj.argumentShift(options, 'width') if options.width?
-      @height = oj.argumentShift(options, 'height') ? @minHeight
+      @width = oj.argumentShift(options, 'width')
+      @height = oj.argumentShift(options, 'height')
 
       @split = oj.argumentShift(options, 'split') ? 0.5
 
+      @lineCount = oj.argumentShift(options, 'lineCount') ? 'fit'
+
+      @maximize = oj.argumentShift(options, 'maximize') ? false
+
       TryEditor.base.constructor.apply @, [options]
 
-      if oj.isClient
-        @$resizer.resizable
-          minHeight: @minHeight
-          minWidth: @minWidth
-          handles:'s'
-
-        @$el.resize (e,ui) =>
-          @updateFrame()
-
-
-        @$resizer.resize (e,ui) =>
-          @height = $(e.currentTarget).height()
-          @updateFrame()
+      # Bind any events
+      @_bindEvents()
 
     properties:
 
       width:
-        get: ->
-          @$el.width() || @minWidth
-        set: (v) ->
-          @$el.css(width:v);
-          #@updateFrame()
+        get: -> @$el.width()
 
       height:
-        get: -> @$el.height()
-        set: (v) -> @$el.css(height:v); #@updateFrame()
+        get: -> @_height ? @minHeight
+        set: (v) -> @_height = v; @updateFrame()
+
+      lineCount:
+        get: -> @_lineCount
+        set: (v) ->
+          # Set lineCount to 'fit' and it will automatically figure it out
+          if v == 'fit' and @value?
+            # Fit to whichever is bigger @cs or @js
+            @_lineCount = Math.max (@cs?.split(/\r\n|\r|\n/)?.length) || 1, (@js?.split(/\r\n|\r|\n/)?.length || 1)
+          else
+            @_lineCount = v
+
+          # Adjust height to lineCount
+          @height = @_lineCount * lineHeight + editorPadding * 2
 
       # split ratio from 0-1
       split:
@@ -94,64 +128,362 @@ module.exports = (oj, settings) ->
       editor:
         get: -> @_editor
 
+      # Accessor to editor.value
       value:
         get: -> @editor.value
         set: (v) -> @editor.value = v
 
-      valueJS:
-        get: -> @_valueJS
-        set: (v) -> @_valueJS = v
+      # Adjust the js value
+      js:
+        get: -> @_js
+        set: (v) -> @_js = v; @updateValue()
 
-      valueCS:
-        get: -> @_valueCS
-        set: (v) -> @_valueCS = v
+      # Adjust the cs value
+      cs:
+        get: -> @_cs
+        set: (v) -> @_cs = v; @updateValue()
 
+      # Display 'cs' or 'js'
       state:
         get: -> @_state
         set: (v) ->
-          @_state = v
+          @_state = v;
           if v == 'js'
-            @mode = 'oj'
-            @value = @_valueJS
-            @viewChanged()
+            @editor.mode = 'oj'
+            @$jsButton.addClass 'selected'
+            @$csButton.removeClass 'selected'
           else
-            @mode = 'ojc'
-            @value = @_valueCS
-            @viewChanged()
+            @$jsButton.addClass('selected')
+            @editor.mode = 'ojc'
+            @$jsButton.removeClass 'selected'
+            @$csButton.addClass 'selected'
+
+          @updateValue()
 
       mode:
         get: -> @editor.mode
         set: (v) -> @editor.mode = v
 
+      fit:
+        get: -> @_fit ? true
+        set: (v) -> @_fit = v
+
+      maximize:
+        get: -> @_maximize ? false
+        set: (v) ->
+          @_maximize = v
+
+          return unless @isInserted
+
+          if v
+            pos = @$el.offset()
+            pos.top -= $(window).scrollTop()
+            pos.left -= $(window).scrollLeft()
+
+            @_prevWidth = @width
+            @_prevHeight = @height
+            @_prevTop = pos.top
+            @_prevLeft = pos.left
+            @_prevZIndex = @$el.css 'z-index'
+
+            # Change to using fixed positioning
+            @$el.css
+              position:'fixed'
+              top:pos.top
+              left:pos.left
+              zIndex: 1000
+
+            # Disable scrolling
+            $('body').css
+              overflow:'hidden'
+
+            if oj.isClient
+              @$resizer.resizable 'disable'
+
+            @$el.animate({top:0, height:'100%'}, {
+              progress: =>
+                @height = @$el.height()
+              complete: =>
+                @$el.animate({left:0, width:'100%'},{
+                  duration: maximizeDuration
+                })
+              duration: maximizeDuration
+            })
+
+            @$gripper.hide()
+
+          else
+
+            @$el.animate({left:@_prevLeft, width:@_prevWidth}, {
+              duration: maximizeDuration
+              complete: =>
+                @$el.animate({top:@_prevTop, height: @_prevHeight},{
+                  progress: =>
+                    @height = @$el.height()
+                  complete: =>
+                    @$el.css
+                      position:'relative'
+                      top:''
+                      left:''
+                  duration: maximizeDuration
+                })
+            })
+
+            @$gripper.show()
+
+
+            # Enable scrolling
+            $('body').css
+              overflow:'auto'
+
+      cs: ''
+      js: ''
+      css: ''
+      html: ''
+
+      $inputs: null
+      $input: null
+      $outputs: null
+      $output: null
+      $seperator: null
+      $resizer: null
+      $console: null
+      $gripper: null
+
+      $jsButton: null
+      $csButton: null
+      $maximizeButton: null
+
     methods:
       toggleState: ->
         @state = if @state == 'js' then 'cs' else 'js'
 
+      # Detect editor changes
+      editorChanged: ->
+        if @state == 'js'
+          @_js = @value
+        else
+          @_cs = @value
+        @recompile()
+
+      valueChanged: ->
+        TryEditor.base.valueChanged.apply @, arguments
+
+      windowResized: (innerWidth, innerHeight) ->
+        if @maximize
+          @height = innerHeight - editorBorderWidth * 2
+
+      # Given values and state recompile everything
+      updateValue: ->
+        if @state == 'js'
+          @mode = 'oj'
+          @value = @js
+        else
+          @mode = 'ojc'
+          @value = @cs
+        @recompile()
+
       # Given width/height/split recalculate everything
       updateFrame: ->
+
         w = @width
         h = @height
 
-        # The editor
-        @editor.height = h
-        @editor.width = w/2
-
-        # The output
-        @$outputs.height h
-        @$output.height h
-        @$outputs.width w/2
-        @$output.width w/2
-
         @$resizer.width w
-        @$resizer.height h
 
-        # The seperator
-        @$seperator.height @height
-        @$seperator.css('left', Math.floor(@width*@split))
+        @editor.height = h - editorPadding * 2
+        @$inputs.height h
+        @$outputs.height h
+
+        # iphone
+        if w < phoneWidth
+          @$inputs.css display:'block'
+
+          # The input
+          @editor.width = w - editorPadding * 2
+
+          # The output
+          @$outputs.width w
+          @$output.width w
+          @$output.height h - editorPadding
+
+          @$console.height h - 2 * consolePadding
+          @$console.width w - 2 * consolePadding
+
+          # Seperator
+          @$seperator.hide()
+
+          @$outputs.css 'border-top':"#{editorBorderWidth}px solid #{editorBorderColor}"
+
+          # resizer
+          if Math.abs(h / 2 - @$resizer.height()) > 10
+            @$resizer.height h * 2
+
+          @$el.height h * 2
+
+        else
+          @$inputs.css display:'inline-block'
+
+          # The editor
+          @editor.width = w / 2 - editorPadding * 2
+
+          # The output
+          @$outputs.css('border-top':'')
+          @$outputs.height h
+          @$outputs.width w / 2
+          @$output.width w / 2
+          @$output.height h
+          @$console.width w / 2 - 2 * consolePadding
+          @$console.height h - 2 * consolePadding
+
+          # The seperator
+          @$seperator.show()
+          @$seperator.height @height
+          @$seperator.css('left', Math.floor(@width*@split))
+
+          if Math.abs(h - @$resizer.height()) > 10
+            @$resizer.height h
+
+          @$el.height h
 
       # Positioning can only happen once inserted
       inserted: ->
+        TryEditor.base.inserted.apply @
+        @lineCount = @lineCount
+
+        # Maximize instantly if it defaulted that way
+        d = maximizeDuration
+        maximizeDuration = 0
+        @maximize = @maximize
+        maximizeDuration = d
+
         @updateFrame()
+        @recompile()
+
+      consoleError: (message) ->
+        if @isConstructed
+          @$console.html message
+          @$console.show()
+        return
+
+      consoleSuccess: ->
+        if @isConstructed
+          @$console.hide()
+        return
+
+      recompile: ->
+        # Do nothing if we aren't inserted yet (no place to output to)
+        return unless @isInserted
+        code = @value
+
+        # Compile coffee script to javascript
+        if @state == 'cs'
+          try
+            code = CoffeeScript.compile code, bare:true
+          catch eCoffee
+            # Set console message
+            @consoleError "<b>coffee-script error:</b> #{eCoffee.message}"
+            return
+
+        # Compile oj into ojml
+        wrapjs = "oj(function(){with(oj){#{code}}})"
+        try
+          ojml = eval wrapjs
+        catch eRuntime
+          @consoleError "<b>runtime error:</b> #{eRuntime.message}"
+          return
+
+        # Compile the ojml into dom, html and css
+        try
+          results = oj.compile debug:1, html:1, dom:1, css:1, ojml
+
+
+          # For simplicity wrap html, body, head around content if none of those tags exist
+          if not results.tags.html? and not results.tags.head? and not results.tags.body?
+            wrapjs = """oj(function(){with(oj){
+              html(function(){
+                head();
+                body(function(){
+                  #{code}
+                });
+              })
+            }})
+            """
+            ojml = eval wrapjs
+            results = oj.compile debug:1, html:1, dom:1, css:1, ojml
+
+          # Error if html, head, body are missing after all of this
+          if not results.tags.html?
+            @consoleError '<b>validation error</b>: <html> tag is missing'
+            return
+          if not results.tags.head?
+            @consoleError '<b>validation error</b>: <head> tag is missing'
+            return
+          if not results.tags.body?
+            @consoleError '<b>validation error</b>: <body> tag is missing'
+            return
+
+        catch eCompile
+          @consoleError "<b>oj error:</b> #{eCompile.message}"
+          throw eCompile
+
+        # Update html
+        @html = results.html
+        @css = results.css
+
+        # Append html to iframe
+        @$output.contents().find('html').replaceWith($(results.dom))
+
+        # Inserted types must be alerted. This is done automatically
+        # by the oj jquery plugin on insertion but for the editor
+        # we do it more automatically so we have access to html,css
+        # generated parts
+        for t in results.types
+          t.inserted()
+
+        # Append style to iframe
+        # @$output.contents().find('head').append("<style>#{results.css}</style>")
+
+        @consoleSuccess()
+
+
+      _bindEvents: ->
+
+        # Bind js and css buttons
+        @$jsButton.click => @state = 'js'
+        @$csButton.click => @state = 'cs'
+
+        # Bind popout button
+        @$maximizeButton.click => @maximize = !@maximize
+
+
+        # Make the editor resizable
+        if oj.isClient
+
+          $.resize.throttleWindow = false
+          $.resize.delay = 100
+
+          # Detect when the window resizes
+          $(window).resize =>
+            @windowResized window.innerWidth, window.innerHeight
+
+          @$resizer.resizable
+            minHeight: @minHeight
+            minWidth: @minWidth
+            handles:'s'
+
+          @$el.resize (e,ui) =>
+            @updateFrame()
+
+          @$resizer.resize (e,ui) =>
+            h = $(e.currentTarget).height()
+            if @width < phoneWidth
+              # manually cap min height
+              if h / 2 > @minHeight
+                @height = h / 2
+            else
+              @height = h
+            @updateFrame()
 
   return TryEditor: TryEditor
 
@@ -159,121 +491,72 @@ makeCSS = ->
   css
 
     '.oj-TryEditor':
-      border: "2px solid #{editorOutlineColor}"
+      border: "#{editorBorderWidth}px solid #{editorBorderColor}"
       boxShadow: '2px 2px 4px RGBA(0,0,0,0.15)'
       display:'block'
       position:'relative'
-      backgroundColor:'#eee'
       zIndex:20
+      backgroundColor: 'white'
 
     '.oj-TryEditor-seperator':
       position:'absolute'
       top:0
       left:0
-      backgroundColor:editorOutlineColor
+      backgroundColor:editorBorderColor
       width:2
       height:1 # resized automatically
+      zIndex: 100
 
     '.oj-TryEditor-resizer':
       position:'absolute'
       top:-1
       left:-1
-      # border: "2px solid #{editorOutlineColor}"
+      # border: "2px solid #{editorBorderColor}"
       # backgroundColor:'white'
       width:2 # resized automatically
       height:1 # resized automatically
-      zIndex:0
 
     '.oj-TryEditor-inputs':
       display:'inline-block'
-      resize:'none'
       zIndex:30
+      position:'relative'
 
     '.oj-TryEditor-input-editor':
       resize:'none'
+      border: "#{editorPadding}px solid #{editorBackgroundColor}"
 
     '.oj-TryEditor-outputs':
       display:'inline-block'
-      # display:'relative'
-      zIndex:10
+      position:'relative'
+      zIndex:40
 
     '.oj-TryEditor-output-iframe':
       width:'100%'
       height:'100%'
+      position:'absolute'
       backgroundColor:'white'
-
-    '.oj-TryEditor-source-cs':
-      display: 'block'
-      width: '100%'
-      height: '100%'
-
-    '.oj-TryEditor-source':
-      position: 'relative'
-      width: '100%'
-      height: '30%'
-      border: '2px solid #fbcb7c'
-      padding: '10px'
-      display: 'block'
-      backgroundColor: '#fefaf3'
-      boxShadow: '2px 2px 4px RGBA(0,0,0,0.15)'
-
-    '.oj-TryEditor-source-cs':
-      display: 'block'
-      width: '100%'
-      height: '100%'
-
-    '.oj-TryEditor-source-cs.hidden':
-      display: 'none'
-
-    '.oj-TryEditor-source-js':
-      display: 'block'
-      width: '100%'
-      height: '100%'
-
-    '.oj-TryEditor-source-js.hidden':
-      display: 'none'
-
-    '.oj-TryEditor-source-css':
-      display: 'block'
-      width: '100%'
-      height: '100%'
-
-    '.oj-TryEditor-source-html':
-      display: 'block'
-      width: '100%'
-      height: '100%'
-
-    '.oj-TryEditor-frame':
-      display: 'block'
-      position: 'relative'
-      width: '100%'
-      height: '65%'
-
-    '.oj-TryEditor-iframe':
-      display: 'block'
-      width: '100%'
-      height: '100%'
+      zIndex: 20
 
     '.oj-TryEditor-console':
       position: 'absolute'
-      top: 0
-      left: 0
       color:'darkorange'
-      backgroundColor: 'RGBA(255,255,255,0.9)'
-      textAlign: 'center'
-      fontSize: '18px'
-      padding: '14px 4px'
-      margin: '0px 0px 10px 0px'
+      backgroundColor: 'RGBA(255,255,255,0.8)'
+      textAlign: 'left'
+      fontSize: '16px'
+      padding: "#{consolePadding}px"
+      # margin: '0px 0px 10px 0px'
       width: '100%'
       height: '100%'
+      zIndex: 30
+      display: 'none'
 
     '.oj-TryEditor-bar':
       position:'absolute'
       top: '0px'
       right: '0px'
-      margin: '8px 8px 0 0'
+      margin: '8px 4px 0 0'
       height: '21px'
-      zIndex: 5
+      zIndex: 100
 
     '.oj-TryEditor-example-chooser':
       position:'relative'
@@ -282,16 +565,41 @@ makeCSS = ->
       zIndex: 10
       marginLeft:'8px'
 
-    '.oj-TryEditor-language-tab':
+    '.oj-TryEditor-bar-state':
       display:'inline-block'
-      width: '30px'
+      color: '#D5A876'
+      width: '25px'
       height: '100%'
       float: 'right'
       marginLeft: '0px'
-      zIndex: 10
-      backgroundColor:'white'
-      border:'1px solid gray'
-      borderRadius:'3px'
+      zIndex: 101
+      textAlign: 'center'
+      cursor:'pointer'
+      fontSize: 12
 
-    '.oj-TryEditor-language-tab.selected':
-      backgroundColor: '#FECD78'
+    '.oj-TryEditor-bar-state:hover':
+      textDecoration:'underline'
+
+    '.oj-TryEditor-bar-state.selected':
+      fontWeight:'bold'
+      color:'#E88E00'
+      textDecoration:'none !important'
+
+    '.oj-TryEditor-bar-maximize':
+      display:'inline-block'
+      backgroundImage: 'url(media/try_popout.png)'
+      width: '15px'
+      height: '12px'
+      float: 'right'
+      zIndex: 101
+      cursor:'pointer'
+
+    '.oj-TryEditor-gripper':
+      position:'absolute'
+      bottom: 2
+      right: 2
+      left: 'auto'
+      width: 12
+      height: 12
+      backgroundImage: 'url(media/try_gripper.png)'
+      zIndex: 101

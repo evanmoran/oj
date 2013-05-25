@@ -12,6 +12,7 @@ module.exports = ->
   codeBackgroundColor = '#FEFAF3'
   codeLineColor = '#FFD36B'
   linkColor = '#E78B00'
+  borderColor = '#ffd272'
   typeLinkColor = linkColor
   functionLinkColor = linkColor
   methodLinkColor = '#a64d09'
@@ -94,6 +95,10 @@ module.exports = ->
 
     'a:hover':
       textDecoration:'underline'
+
+    blockquote:
+      padding: '0 0 0 10'
+      borderLeft: "2px solid #{borderColor}"
 
     p:
       color: textColor

@@ -24,7 +24,7 @@ module.exports = ->
 
   _template
 
-    title: 'OJ Docs -- Unified Templating'
+    title: 'OJ Docs - Unified Templating'
 
     styles: [
       'reset.css'
@@ -37,6 +37,8 @@ module.exports = ->
       'backbone.js'
       'coffee-script.js'
       'ace/ace.js'
+      'jquery-ui-1.10.3.custom.js'
+      'jquery.ba-resize.min.js'
     ]
 
     left: ->

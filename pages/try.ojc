@@ -1,15 +1,11 @@
 _ = require 'underscore'
 
-oj.use require 'oj-markdown'
-oj.use require 'oj-mustache'
-oj.use require 'oj-ace-editor'
-oj.use require 'oj-vimeo-video'
-oj.use require 'oj-twitter-follow-button'
-
-oj.use require './oj.TryEditor'
+_plugins = require './_plugins'
 
 _styles = require './_styles'
 _snippet = require './_snippet'
+_examples = require './_examples'
+
 # _editor = require './_editor'
 
 _template = require './_template'
@@ -37,8 +33,27 @@ module.exports = ->
     ]
 
     middle: ->
-      editor = oj.TryEditor()
-      `window.editor = editor`
+
+      TryEditor
+        cs:"""
+          # Define id with 'id'
+          div id:'my-id',
+            'This div has my-id'
+
+          # Define class with 'c' or 'class'
+          div c:'my-class',
+            'This div has my-class'
+        """
+        js:"""
+          // Define id with 'id'
+          div({id:'my-id'},
+            'This div has my-id');
+
+          // Define class with 'c' or 'class'
+          div({c:'my-class'},
+            'This div has my-class');
+        """
+        maximize: true
 
     head: ->
       _styles()

@@ -1,20 +1,22 @@
-_ = require 'underscore'
+# _ = require 'underscore'
 
-oj.use require 'oj-ace-editor'
-oj.use require 'oj-vimeo-video'
-oj.use require 'oj-twitter-follow-button'
+_plugins = require './_plugins'
 
-module.exports =
+module.exports = oj ->
 
+  doctype 5
   html lang:'en', ->
     head ->
       title 'Test'
 
       link url:'styles/reset.css'
+      link url:'styles/jquery-ui-1.10.3.custom.css'
       script url: 'scripts/jquery.js'
       script url: 'scripts/underscore.js'
       script url: 'scripts/backbone.js'
       script url: 'scripts/ace/ace.js'
+      script url: 'scripts/jquery-ui-1.10.3.custom.js'
+      script url: 'scripts/jquery.ba-resize.min.js'
 
       meta charset:'UTF-8'
       meta 'http-equiv':"X-UA-Compatible", content:'IE=edge,chrome=1'
@@ -24,14 +26,26 @@ module.exports =
         CodeModel = Backbone.Model.extend()
         code = new CodeModel({code: 'function test(){\n}\nvar foo = 5;'});
 
-      ae = AceEditor
-        model: code
-        key: 'code'
-        wrapLimit: '23'
-        mode: 'javascript'
-        theme: 'solarized_light'
-        padding: 20
+      ae = AceEditor()
+        # model: code
+        # key: 'code'
+        # wrapLimit: '23'
+        # mode: 'javascript'
+        # theme: 'solarized_light'
+        # padding: 20
+      # ae.$el.css border:'1px solid orange'
+      `window.ae = ae;`
 
+      # css
+      #   '.ace_line':
+      #     height: '20px !important'
+
+      div 'This is a site'
+      # t = TryEditor
+      #   js: """
+      #     div('this should work');
+
+      # `window.t = t`
       # ae2 = AceEditor
       #   model: code
       #   key: 'code'
@@ -46,15 +60,14 @@ module.exports =
 
       # TwitterFollowButton 'evanmoran', showUsername:false
       # TwitterFollowButton('evanmoran', {showCount: false, large:false});
-      TwitterFollowButton 'evanmoran'
-      TwitterFollowButton 'iamthelawton'
+      # TwitterFollowButton 'evanmoran'
+      # TwitterFollowButton 'iamthelawton'
 
-      VimeoVideo()
+      # VimeoVideo()
 
-      # `window.ae = ae;`
       # `window.ae2 = ae2;`
 
-      br()
+      # br()
 
       # `window.vid = vid;`
 

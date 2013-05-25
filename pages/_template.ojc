@@ -5,7 +5,8 @@ _ = require 'underscore'
 
 _styles = require './_styles'
 
-module.exports = _template = (parts) ->
+module.exports = _template = (parts) -> oj ->
+  doctype 5
   html ->
     head ->
       title parts.title
