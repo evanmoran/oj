@@ -183,7 +183,7 @@ root = @
 
 oj.version = '0.0.14'
 
-oj.isClient = true
+oj.isClient = not process?.versions?.node
 
 # Export for NodeJS if necessary
 if typeof module != 'undefined'
@@ -220,6 +220,7 @@ oj.isjQuery = (obj) -> !!(obj and obj.jquery)
 oj.isEvented = (obj) -> !!(obj and obj.on and obj.off and obj.trigger)
 oj.isOJ = (obj) -> !!(obj?.isOJ)
 oj.isArguments = (obj) -> ObjP.toString.call(obj) == '[object Arguments]'
+oj.isDefined = (obj) -> not (typeof obj == 'undefined')
 
 # typeOf: Mimic behavior of built-in typeof operator and integrate jQuery, Backbone, and OJ types
 oj.typeOf = (any) ->
@@ -608,6 +609,17 @@ _.pathDirname = (path) ->
     # It has a dirname, strip trailing slash
     dir = dir.substr 0, dir.length - 1
   root + dir
+
+# oj.dependency
+# ------------------------------------------------------------------------------
+# Ensure dependencies through oj plugins
+
+oj.dependency = (name) ->
+  obj = if oj.isClient then window[name] else global[name]
+  throw new Error("oj: #{name} dependency is missing") unless oj.isDefined obj
+
+# Depend on jQuery
+oj.dependency 'jQuery'
 
 # oj.addMethod
 # ------------------------------------------------------------------------------
@@ -2251,7 +2263,7 @@ jqueryExtend = (options = {}) ->
   _.defaults options, get:_.identity, set:_.identity
   ->
     args = _.toArray arguments
-    $els = $(@)
+    $els = jQuery(@)
     # Map over jquery selection if no arguments
     if (oj.isFunction options.get) and args.length == 0
       out = []
@@ -2274,7 +2286,7 @@ jqueryExtend = (options = {}) ->
 
 # jquery.oj
 # -----------------------------------------------------------------------------
-$.fn.oj = jqueryExtend
+jQuery.fn.oj = jqueryExtend
   set:($el, args) ->
 
     # No arguments return the first instance
@@ -2302,7 +2314,7 @@ $.fn.oj = jqueryExtend
 # jquery.ojValue
 # -----------------------------------------------------------------------------
 # Get the value of the selected element's contents
-$.fn.ojValue = jqueryExtend
+jQuery.fn.ojValue = jqueryExtend
   set: null
   get: ($el, args) ->
 
@@ -2334,7 +2346,7 @@ plugins =
 
 for ojName,jqName of plugins
   do (ojName, jqName) ->
-    $.fn[ojName] = jqueryExtend
+    jQuery.fn[ojName] = jqueryExtend
       set: ($el, args) ->
 
         # Compile ojml for each one to separate references
