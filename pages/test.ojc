@@ -1,6 +1,21 @@
 # _ = require 'underscore'
 
 _plugins = require './_plugins'
+# _cssFromObject = (cssMap, isDebug = 0) ->
+#   newline = if isDebug then '\n' else ''
+#   space = if isDebug then ' ' else ''
+#   inline = !isDebug
+#   indent = isDebug
+#   css = ''
+#   for selector, styles of cssMap
+#     rules = _styleFromObject styles, inline:inline, indent:indent
+#     css += "#{selector}#{space}{#{newline}#{rules}}#{newline}"
+#   css
+
+# domcss = (obj) ->
+#   css = _cssFromObject obj
+#   console.log "css: ", css
+# `window.domcss = domcss`
 
 module.exports = oj ->
 
@@ -40,7 +55,9 @@ module.exports = oj ->
       #   '.ace_line':
       #     height: '20px !important'
 
-      div 'This is a site'
+
+      # domcss div:color:'red'
+
       # t = TryEditor
       #   js: """
       #     div('this should work');

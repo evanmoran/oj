@@ -6,7 +6,7 @@ path = require 'path'
 fs = require 'fs'
 async = require 'async'
 
-oj = require '../src/oj.coffee'
+oj = require '../lib/oj.js'
 oj.extend this
 
 compileDOM = (ojml, tag, childrenCount, html, options) ->

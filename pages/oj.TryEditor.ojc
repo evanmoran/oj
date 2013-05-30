@@ -16,6 +16,7 @@ module.exports = (oj, settings) ->
   TryEditor = type 'TryEditor',
     base: ModelKeyView
     constructor: ->
+      console.log "here: oj.TryEditor.ojc:20"
       {options, args} = oj.argumentsUnion arguments
 
       # Create editor (readonly)

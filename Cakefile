@@ -20,6 +20,8 @@ CAKE_DIR = __dirname
 WWW_DIR = path.join CAKE_DIR, 'www'
 PAGES_DIR = path.join CAKE_DIR, 'pages'
 LIB_DIR = path.join CAKE_DIR, 'lib'
+DOCS_DIR = path.join CAKE_DIR, 'docs'
+SRC_DIR = path.join CAKE_DIR, 'src'
 
 # Tasks
 # ------------------------------------------------------------------------------
@@ -29,9 +31,10 @@ task "build", "Build everything and run tests", ->
   invoke "build:docs"
   invoke "test"
 
-
 task "build:js", "Compile coffee script files", ->
-  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/oj.coffee']
+  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/oj.litcoffee']
+  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/server.litcoffee']
+  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/command.litcoffee']
 
 task "build:js:watch", "Watch compile coffee script files", ->
   launch 'coffee', ['--compile', '--lint', '-o', LIB_DIR, '--watch', 'src']
@@ -52,20 +55,24 @@ task "watch", "Watch all build targets", ->
   invoke 'build:js:watch'
 
 task "build:docs", "Build documentation", ->
-  invoke 'build:groc'
+  launch 'docco', [SRC_DIR + '/oj.litcoffee', '--output', DOCS_DIR]
+  launch 'docco', [SRC_DIR + '/server.litcoffee', '--output', DOCS_DIR]
+  launch 'docco', [SRC_DIR + '/command.litcoffee', '--output', DOCS_DIR]
 
-task "build:groc", "Build groc documentation", ->
-  launch 'groc', ['--out', 'docs', 'src/*.coffee']
+#   invoke 'build:groc'
 
-task "build:docco", "Build docco documentation", ->
-  launch 'docco', ['src/*.coffee']
+# task "build:groc", "Build groc documentation", ->
+#   launch 'groc', ['--out', 'docs', 'src/*.coffee']
 
-task "view:docs", "Open documentation in a browser", ->
-  launch 'open', ['docs/oj.html']
+# task "build:docco", "Build docco documentation", ->
+#   launch 'docco', ['src/*.coffee']
 
-task "docs", "Build and view docs", ->
-  invoke 'build:docs'
-  setTimeout (-> invoke 'view:docs'), 1000
+# task "view:docs", "Open documentation in a browser", ->
+#   launch 'open', ['docs/oj.html']
+
+# task "docs", "Build and view docs", ->
+#   invoke 'build:docs'
+#   setTimeout (-> invoke 'view:docs'), 1000
 
 task "test", "Run unit tests", ->
   exec "NODE_ENV=testing mocha", (err, output) ->

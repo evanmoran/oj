@@ -4,7 +4,7 @@
 path = require 'path'
 fs = require 'fs'
 Backbone = require 'backbone'
-oj = require '../src/oj.coffee'
+oj = require '../lib/oj.js'
 oj.extend this
 
 contains = (control, args...) ->

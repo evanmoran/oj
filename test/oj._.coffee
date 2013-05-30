@@ -1,7 +1,7 @@
 path = require 'path'
 fs = require 'fs'
 
-oj = require '../src/oj.coffee'
+oj = require '../lib/oj.js'
 Backbone = require 'backbone'
 _ = oj.__
 
