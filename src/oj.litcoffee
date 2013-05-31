@@ -1086,8 +1086,8 @@ options
           out += c
       out
 
-    # _styleFromObject: Convert object to string form
-    # -----------------------------------------------------------------------------
+_styleFromObject: Convert object to string form
+-----------------------------------------------------------------------------
     #
     #     inline:false      inline:true                inline:false,indent:true
     #     color:red;        color:red;font-size:10px   \tcolor:red;
@@ -1111,10 +1111,11 @@ options
         out += "#{indent}#{k}:#{obj[kFancy]}#{semi}#{newline}"
       out
 
-    # _attributesFromObject: Convert object to attribute string
-    # -----------------------------------------------------------------------------
-    # This object has nothing special. No renamed keys, no jquery events. It is
-    # precicely what must be serialized with no adjustment.
+_attributesFromObject: Convert object to attribute string
+-----------------------------------------------------------------------------
+This object has nothing special. No renamed keys, no jquery events. It is
+precicely what must be serialized with no adjustment.
+
     _attributesFromObject = (obj) ->
       # Pass through non objects
       return obj if not oj.isObject obj
@@ -1136,14 +1137,15 @@ options
         space = ' '
       out
 
-    # _cssFromObject:
-    # -----------------------------------------------------------------------------
-    # Convert css selectors and rules to a string
+_cssFromObject:
+-----------------------------------------------------------------------------
+Convert css selectors and rules to a string
+
     #
-    #     debug:true               debug:false
-    #     .cls {                   .cls{color: red}
-    #         color: red;
-    #     }\n
+    # debug:true               debug:false
+    # .cls {                   .cls{color: red}
+    #   color: red;
+    # }\n
 
     _cssFromObject = (cssMap, isDebug = 0) ->
       newline = if isDebug then '\n' else ''
@@ -1156,7 +1158,10 @@ options
         css += "#{selector}#{space}{#{newline}#{rules}}#{newline}"
       css
 
-    # Recursive helper for compiling that wraps indention
+_compileDeeper:
+-----------------------------------------------------------------------------
+Recursive helper for compiling that wraps indention
+
     _compileDeeper = (method, ojml, options) ->
       i = options.indent
       options.indent += '\t'
@@ -1460,8 +1465,8 @@ options
         delete args[key]
       value
 
-    # oj.type
-    # ------------------------------------------------------------------------------
+oj.type
+------------------------------------------------------------------------------
 
     oj.type = (name, args = {}) ->
       throw 'oj.type: string expected for first argument' unless oj.isString name
@@ -1593,13 +1598,14 @@ options
           list.push v
       options: obj, args: list
 
-    # oj.enum
-    # ------------------------------------------------------------------------
+oj.enum
+------------------------------------------------------------------------
+
     oj.enum = (name, args) ->
       throw 'NYI'
 
-    # oj.View
-    # ------------------------------------------------------------------------------
+oj.View
+------------------------------------------------------------------------------
 
     oj.View = oj.type 'View',
 
@@ -1762,8 +1768,9 @@ options
         inserted: ->
           @_isInserted = true
 
-    # oj.CollectionView
-    # ------------------------------------------------------------------------------
+oj.CollectionView
+------------------------------------------------------------------------------
+
     oj.CollectionView = oj.type 'CollectionView',
       base: oj.View
 
@@ -1819,9 +1826,10 @@ options
         collectionChanged: (model, collection, options) -> # Do nothing
         collectionDestroyed: (collection, options) -> @make()
 
-    # oj.ModelView
-    # ------------------------------------------------------------------------------
-    # Model view base class
+oj.ModelView
+------------------------------------------------------------------------------
+Model view base class
+
     oj.ModelView = oj.type 'ModelView',
       base: oj.View
 
@@ -1859,9 +1867,10 @@ options
 
         make: (model) -> throw "oj.#{@typeName}: make not implemented"
 
-    # oj.ModelKeyView
-    # ------------------------------------------------------------------------------
-    # Model key view base class
+oj.ModelKeyView
+------------------------------------------------------------------------------
+Model key view base class
+
     oj.ModelKeyView = oj.type 'ModelKeyView',
       # Inherit ModelView to handle model and bindings
       base: oj.ModelView
@@ -1905,9 +1914,9 @@ options
             ), 10
           return
 
-    # oj.TextBox
-    # ------------------------------------------------------------------------------
-    # TextBox control
+oj.TextBox
+------------------------------------------------------------------------------
+TextBox control
 
     oj.TextBox = oj.type 'TextBox',
 
@@ -1942,9 +1951,9 @@ options
         # Live update model as text changes
         live: true
 
-    # oj.CheckBox
-    # ------------------------------------------------------------------------------
-    # CheckBox control
+oj.CheckBox
+------------------------------------------------------------------------------
+CheckBox control
 
     oj.CheckBox = oj.type 'CheckBox',
       base: oj.ModelKeyView
@@ -1973,9 +1982,9 @@ options
               @$el.removeAttr 'checked'
             return
 
-    # oj.TextArea
-    # ------------------------------------------------------------------------------
-    # TextArea control
+oj.TextArea
+------------------------------------------------------------------------------
+TextArea control
 
     oj.TextArea = oj.type 'TextArea',
       base: oj.ModelKeyView
@@ -2002,9 +2011,9 @@ options
         # Live update model as text changes
         live: true
 
-    # oj.ListBox
-    # ------------------------------------------------------------------------------
-    # ListBox control
+oj.ListBox
+------------------------------------------------------------------------------
+ListBox control
 
     oj.ListBox = oj.type 'ListBox',
       base: oj.ModelKeyView
@@ -2039,9 +2048,9 @@ options
               return
             return
 
-    # oj.Button
-    # ------------------------------------------------------------------------------
-    # Button control
+oj.Button
+------------------------------------------------------------------------------
+Button control
 
     oj.Button = oj.type 'Button',
       base: oj.View
@@ -2057,17 +2066,17 @@ options
 
         oj.Button.base.constructor.apply @, [options]
 
-    # oj.Link
-    # ------------------------------------------------------------------------------
-    # oj.Link = class Link inherits Control
+oj.Link
+------------------------------------------------------------------------------
+oj.Link = class Link inherits Control
 
-    # oj.List
-    # ------------------------------------------------------------------------------
+oj.List
+------------------------------------------------------------------------------
 
-    # boundOrThrow: Determine if the index is in range after negative correction
-    # When out of bounds an error message is thrown
+_boundOrThrow: Determine if the index is in range after negative correction
+When out of bounds an error message is thrown
 
-    boundOrThrow = (ix, count, message) ->
+    _boundOrThrow = (ix, count, message) ->
       # Correct negative indexes to be in range
       ixNew = if ix < 0 then ix + count else ix
       unless 0 <= ixNew and ixNew < count
@@ -2138,7 +2147,7 @@ options
       methods:
         # Get item value at index
         item: (ix, ojml) ->
-          ix = boundOrThrow ix, @count, "oj.List.item: index"
+          ix = _boundOrThrow ix, @count, "oj.List.item: index"
           if ojml?
             @$itemEl(ix).oj ojml
             return
@@ -2147,12 +2156,12 @@ options
 
         # Get item element at index
         itemEl: (ix) ->
-          ix = boundOrThrow ix, @count, "oj.List.itemEl: index"
+          ix = _boundOrThrow ix, @count, "oj.List.itemEl: index"
           @$itemsEl[ix]
 
         # Get item jquery element at index
         $itemEl: (ix) ->
-          ix = boundOrThrow ix, @count, "oj.List.$itemEl: index"
+          ix = _boundOrThrow ix, @count, "oj.List.$itemEl: index"
           @$itemsEl.eq(ix)
 
         # Remake everything
@@ -2195,7 +2204,7 @@ options
             ojml = ix
             ix = @count
 
-          ix = boundOrThrow ix, @count+1, "oj.List.add: index"
+          ix = _boundOrThrow ix, @count+1, "oj.List.add: index"
 
           tag = @itemTagName
           # Empty
@@ -2212,7 +2221,7 @@ options
           return
 
         remove: (ix = -1) ->
-          ix = boundOrThrow ix, @count, "oj.List.remove: index"
+          ix = _boundOrThrow ix, @count, "oj.List.remove: index"
           out = @item ix
           @$itemEl(ix).remove()
           @itemsChanged()
@@ -2221,8 +2230,8 @@ options
         move: (ixFrom, ixTo = -1) ->
           return if ixFrom == ixTo
 
-          ixFrom = boundOrThrow ixFrom, @count, "oj.List.move: fromIndex"
-          ixTo = boundOrThrow ixTo, @count, "oj.List.move: toIndex"
+          ixFrom = _boundOrThrow ixFrom, @count, "oj.List.move: fromIndex"
+          ixTo = _boundOrThrow ixTo, @count, "oj.List.move: toIndex"
 
           if ixTo > ixFrom
             @$itemEl(ixFrom).insertAfter @$itemEl(ixTo)
@@ -2235,8 +2244,8 @@ options
         swap: (ix1, ix2) ->
           return if ix1 == ix2
 
-          ix1 = boundOrThrow ix1, @count, "oj.List.swap: firstIndex"
-          ix2 = boundOrThrow ix2, @count, "oj.List.swap: secondIndex"
+          ix1 = _boundOrThrow ix1, @count, "oj.List.swap: firstIndex"
+          ix2 = _boundOrThrow ix2, @count, "oj.List.swap: secondIndex"
 
           if Math.abs(ix1-ix2) == 1
             @move ix1, ix2
@@ -2277,20 +2286,23 @@ options
           @make()
           return
 
-    # oj.NumberList
-    # ------------------------------------------------------------------------------
+oj.NumberList
+------------------------------------------------------------------------------
+NumberList is a `List` specialized with `<ol>` and `<li>` tags
 
     oj.NumberList = ->
       oj.List.call @, {tagName:'ol', itemTagName:'li'}, arguments...
 
-    # oj.BulletList
-    # ------------------------------------------------------------------------------
+oj.BulletList
+------------------------------------------------------------------------------
+BulletList is a `List` specialized with `<ul>` and `<li>` tags
 
     oj.BulletList = ->
       oj.List.call @, {tagName:'ul', itemTagName:'li'}, arguments...
 
-    # oj.Table
-    # ------------------------------------------------------------------------------
+oj.Table
+------------------------------------------------------------------------------
+
     # oj.Table = oj.type 'Table',
     #   base: oj.CollectionView
 
@@ -2312,17 +2324,18 @@ options
     #   methods:
     #     cell: ->
 
-    # oj.sandbox
-    # ------------------------------------------------------------------------------
-    # The sandbox is a readonly version of oj that is exposed to the user
+oj.sandbox
+------------------------------------------------------------------------------
+The sandbox is a readonly version of oj that is exposed to the user
+
     oj.sandbox = {}
     for key in _.keys oj
       if key.length > 0 and key[0] != '_'
         oj.addProperty oj.sandbox, key, value:oj[key], writable:false
 
-    # oj.use
-    # ------------------------------------------------------------------------------
-    # Include a plugin of oj
+oj.use(plugin, settings)
+------------------------------------------------------------------------------
+Include a plugin of OJ with `settings`
 
     oj.use = (plugin, settings = {}) ->
       throw new Error('oj.use: function expected for first argument') unless oj.isFunction plugin
@@ -2338,8 +2351,9 @@ options
         oj.addProperty oj.sandbox, name, value:value, writable: false
 
 
-    # jqueryExtend(fn)
-    # -----------------------------------------------------------------------------
+jqueryExtend(fn)
+-----------------------------------------------------------------------------
+
     #
     #     $.fn.myExtension = jqueryExtend (($el,args) ->
     #       $el     # => The jquery matched element
@@ -2372,8 +2386,9 @@ options
 
           $els
 
-    # jquery.oj
-    # -----------------------------------------------------------------------------
+  jquery.oj
+  -----------------------------------------------------------------------------
+
     jQuery.fn.oj = jqueryExtend
       set:($el, args) ->
 
@@ -2399,9 +2414,10 @@ options
       get: ($el) ->
         $el[0].oj
 
-    # jquery.ojValue
-    # -----------------------------------------------------------------------------
-    # Get the value of the selected element's contents
+jquery.ojValue
+-----------------------------------------------------------------------------
+Get the value of the selected element's contents
+
     jQuery.fn.ojValue = jqueryExtend
       set: null
       get: ($el, args) ->
@@ -2420,8 +2436,8 @@ options
             else
               child
 
-    # jquery.ojAfter, jquery.ojBefore, ...
-    # -----------------------------------------------------------------------------
+jquery.ojAfter, jquery.ojBefore, ...
+-----------------------------------------------------------------------------
 
     plugins =
       ojAfter: 'after'
