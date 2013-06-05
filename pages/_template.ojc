@@ -6,48 +6,47 @@ _ = require 'underscore'
 _styles = require './_styles'
 
 module.exports = _template = (parts) ->
-  oj ->
-    # doctype 5
-    html ->
-      head ->
-        title parts.title
+  doctype 5
+  html ->
+    head ->
+      title parts.title
 
-        if _.isArray parts.styles
-          for s in parts.styles
-            link url: "styles/#{s}"
+      if _.isArray parts.styles
+        for s in parts.styles
+          link url: "styles/#{s}"
 
-        if _.isArray parts.scripts
-          for s in parts.scripts
-            script url: "scripts/#{s}"
+      if _.isArray parts.scripts
+        for s in parts.scripts
+          script url: "scripts/#{s}"
 
-        parts.head?()
+      parts.head?()
 
-        _styles()
+      _styles()
 
-      body ->
-        parts.body?()
-        div c:'orange-corner left'
-        div c:'orange-corner right'
+    body ->
+      parts.body?()
+      div c:'orange-corner left'
+      div c:'orange-corner right'
 
-        div c:'all gg', ->
-          parts?.all?()
+      div c:'all gg', ->
+        parts?.all?()
 
-          div c:'row', ->
-            header c:'gg100', ->
-              _header()
+        div c:'row', ->
+          header c:'gg100', ->
+            _header()
 
-            div c:'middle gg100', ->
-                parts?.middle?()
+          div c:'middle gg100', ->
+              parts?.middle?()
 
-              div c:'row', ->
-                div c:'left gg25', ->
-                  parts?.left?()
+            div c:'row', ->
+              div c:'left gg25', ->
+                parts?.left?()
 
-                div c:'right gg75', ->
-                  parts?.right?()
+              div c:'right gg75', ->
+                parts?.right?()
 
-            footer c:'gg100', ->
-              _footer()
+          footer c:'gg100', ->
+            _footer()
 
   orangeSize = '75px'
   css

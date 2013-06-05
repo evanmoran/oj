@@ -97,7 +97,7 @@ module.exports = ->
       textDecoration:'underline'
 
     blockquote:
-      padding: '0 0 0 10'
+      padding: '0 0 0 10px'
       borderLeft: "2px solid #{borderColor}"
 
     p:
@@ -105,7 +105,7 @@ module.exports = ->
       fontFamily: familySanSarif
       fontSize: '14px'
       margin: '16px 0'
-      lineHeight: '20px'
+      lineHeight: '24px'
 
     ul:
       marginBottom: '16px'
@@ -120,7 +120,7 @@ module.exports = ->
     '.code-heading':
       color: '#222'
       fontFamily: familyMonospace
-      fontSize: 19
+      fontSize: '19px'
 
     '.code-subheading':
       fontFamily: familySanSarifLight
@@ -187,9 +187,9 @@ module.exports = ->
     '.header-option':
       fontFamily: 'Helvetica, Arial, Tahoma'
       color: '#E98C00'
-      fontSize:20
+      fontSize: '20px'
       fontWeight: '100'
-      marginRight:25
+      marginRight: '25px'
 
     '.toc-section':
       backgroundColor: '#FF9900'
@@ -228,13 +228,13 @@ module.exports = ->
       border: '1px solid #orange'
 
     '.download-button':
-      height: 27
+      height: '27px'
       border: '2px solid orange'
       borderRadius: '5px'
       backgroundColor: '#FEFAF3'
       boxShadow: '2px 2px 2px RGBA(0,0,0,0.2)'
       cursor: 'pointer'
-      fontSize: 14
+      fontSize: '14px'
       fontFamily: familySanSarif
 
 
