@@ -1062,7 +1062,7 @@ This is not a public API so it seemed to horrible.
           }
 
           if (!!m.match(/\\//)) {
-            r = oj.__.pathResolve(f, oj.__.pathJoin(oj.__.pathDirname(f), m));
+            r = oj._pathResolve(f, oj._pathJoin(oj._pathDirname(f), m));
             ext = ['.ojc','.oj','.coffee','.js','.json'];
             for(i = 0; i < ext.length; i++){
               ex = ext[i];
@@ -1070,14 +1070,14 @@ This is not a public API so it seemed to horrible.
                 return r+ex;
             }
           } else {
-            dir = oj.__.pathDirname(f);
+            dir = oj._pathDirname(f);
             while(true) {
-              dm = oj.__.pathJoin(dir, 'node_modules');
+              dm = oj._pathJoin(dir, 'node_modules');
               if(M[dm] && M[dm][m])
-                return oj.__.pathJoin(dm, m, M[dm][m]);
+                return oj._pathJoin(dm, m, M[dm][m]);
               if(dir == '/')
                 break;
-              dir = oj.__.pathResolve(dir, '..');
+              dir = oj._pathResolve(dir, '..');
             }
           }
           throw new Error("module not found (" + m + ")");

@@ -22,84 +22,6 @@ describe 'oj._', ->
   fnPlus1 = (v) -> v + 1
   objValues3 = array3
 
-  it 'each Array', (done) ->
-    i = 0
-    _.each array3, ((v,k,o) ->
-      assert.equal this, 'this', 'this is incorrect'
-      assert.equal o, array3, "obj is incorrect"
-      assert.equal k, i, "key is incorrect"
-      assert.equal v, array3[i], "value is incorrect"
-      i++
-      done() if i == array3.length),
-      "this"
-
-  it 'each Object', (done) ->
-    i = 0
-    _.each obj3, ((v,k,o) ->
-      assert.equal this, 'this', 'this is incorrect'
-      assert.equal o, obj3, "obj is incorrect"
-      assert.equal k, objKeys3[i], "key is incorrect"
-      assert.equal v, objValues3[i], "value is incorrect"
-      i++
-      done() if i == array3.length), "this"
-
-  it 'map', ->
-    # Values
-    (_.map 1, fnPlus1).should.deep.equal 2
-    (_.map fn2, fnPlus1).should.deep.equal fn2
-
-    # Array
-    (_.map array3, fnPlus1).should.deep.equal [2,3,4]
-
-    # Object
-    (_.map obj3, fnPlus1).should.deep.equal {one: 2, two: 3, three:4}
-
-    # Null in the middle
-    (_.map [null,2,3], (v) -> if v then v+1 else null ).should.deep.equal [null,3,4]
-
-  it 'map recursive', ->
-    # Object
-    (_.map {a:1,b:{c:2}}, fnPlus1, recurse: true).should.deep.equal {a:2,b:{c:3}}
-
-    # Array
-    (_.map [1,2,[3, [4]]], fnPlus1, recurse: true).should.deep.equal [2,3,[4,[5]]]
-
-    # Array
-    (_.map [1,fn2,{a:3, b:[4]}], fnPlus1, recurse: true).should.deep.equal [2,fn2,{a:4, b:[5]}]
-
-  it 'map evaluate', ->
-    # Function
-    (_.map (->1), fnPlus1, recurse: true, evaluate: true).should.deep.equal 2
-
-    # Function
-    (_.map (->[]), fnPlus1, recurse: true, evaluate: true).should.deep.equal []
-
-    # Empty object
-    (_.map (->{}), fnPlus1, recurse: true, evaluate: true).should.deep.equal {}
-
-    # Empty object
-    (_.map (->{a:1}), fnPlus1, recurse: true, evaluate: true).should.deep.equal {a:2}
-
-    # Array, Object
-    (_.map [1,(->2),{a:3, b:[4]}], fnPlus1, recurse: true, evaluate: true).should.deep.equal [2,3,{a:4, b:[5]}]
-
-    # Super complex nested
-    (_.map (->[1,(->2),{a:3, b:(->[(->4)])}]), fnPlus1, recurse: true, evaluate: true).should.deep.equal [2,3,{a:4, b:[5]}]
-
-  it 'keys', ->
-    (_.keys {}).should.deep.equal []
-    (_.keys obj3).should.deep.equal objKeys3
-
-  it 'values', ->
-    (_.values {}).should.deep.equal []
-    (_.values obj3).should.deep.equal objValues3
-
-  it 'flatten'
-  it 'bind'
-  it 'reduce'
-
-    # expect(_.values 1).should.throw 'Invalid object'
-
   it 'isUndefined', ->
     (oj.isUndefined undefined).should.equal true
     (oj.isUndefined null).should.equal false
@@ -176,31 +98,15 @@ describe 'oj._', ->
     assert.isFalse (oj.isObject 1), '1 case'
     assert.isFalse (oj.isObject "string"), 'string case'
 
-  it 'has', ->
-    (_.has obj3, 'zero').should.equal false
-    (_.has obj3, 1).should.equal false
-    (_.has obj3, null).should.equal false
-    (_.has obj3, 'one').should.equal true
-    (_.has obj3, 'two').should.equal true
-    (_.has obj3, 'three').should.equal true
-
-  it 'uniqueSort', ->
-    (_.uniqueSort []).should.deep.equal []
-    (_.uniqueSort [1]).should.deep.equal [1]
-    (_.uniqueSort [1,2]).should.deep.equal [1,2]
-    (_.uniqueSort [2,1]).should.deep.equal [1,2]
-    (_.uniqueSort [2,1,2]).should.deep.equal [1,2]
-    (_.uniqueSort [2,1,2,1]).should.deep.equal [1,2]
-    (_.uniqueSort [1,1,1,1]).should.deep.equal [1]
-
-  it 'isOJML'
-
-  it 'isElement'
-
-  it 'isjQuery'
 
   it 'isEvent', ->
     class UserModel extends Backbone.Model
     user = new UserModel name:'Evan'
     expect(oj.isEvent(user)).to.equal true
     expect(oj.typeOf(user)).to.equal 'object'
+
+  it 'isOJML'
+
+  it 'isElement'
+
+  it 'isjQuery'
