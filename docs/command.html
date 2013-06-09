@@ -1,25 +1,144 @@
-<!DOCTYPE html><html lang="en"><head><title>command</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="command"><meta name="groc-project-path" content="src/command.coffee"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">src/command.coffee</div></div><div id="document"><div class="segment"></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="commandcoffee">command.coffee</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="nv">_ = </span><span class="nx">require</span> <span class="s">&#39;underscore&#39;</span>
-<span class="nv">commander = </span><span class="nx">require</span> <span class="s">&#39;commander&#39;</span>
-<span class="nv">oj = </span><span class="nx">require</span> <span class="s">&#39;./server&#39;</span>
+<!DOCTYPE html>
 
-<span class="nv">module.exports = </span><span class="o">-&gt;</span>
+<html>
+<head>
+  <title>command.litcoffee</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>command.litcoffee</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h1">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <h1>command.coffee</h1>
 
-  <span class="nx">commander</span><span class="p">.</span><span class="nx">version</span><span class="p">(</span><span class="nx">oj</span><span class="p">.</span><span class="nx">version</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">usage</span><span class="p">(</span><span class="s">&#39;[options] &lt;file&gt; &lt;dir&gt; ...&#39;</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-d, --debug&#39;</span><span class="p">,</span> <span class="s">&#39;Turn on debug output (default: false)&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-o, --output &lt;dir&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;Directory to output all files to (default: .)&#39;</span><span class="p">,</span> <span class="nx">process</span><span class="p">.</span><span class="nx">cwd</span><span class="p">())</span>
-    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-r, --recurse&#39;</span><span class="p">,</span> <span class="s">&#39;Recurse into directories (default: off)&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-m, --modules &lt;modules&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;List of modules to include&#39;</span><span class="p">,</span> <span class="p">[])</span>
-    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-v, --verbose &lt;level&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;Turn on verbose level 0-3 (default: 1)&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">option</span><span class="p">(</span><span class="s">&#39;-w, --watch&#39;</span><span class="p">,</span> <span class="s">&#39;Turn on watch mode (default: off)&#39;</span><span class="p">,</span> <span class="kc">false</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">argv</span><span class="p">)</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Show usage with no parameters</p></div></div><div class="code"><div class="wrapper">  <span class="k">if</span> <span class="o">not</span> <span class="nx">_</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">commander</span><span class="p">.</span><span class="nx">args</span><span class="p">)</span> <span class="o">or</span> <span class="nx">commander</span><span class="p">.</span><span class="nx">args</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span>
-    <span class="nx">usage</span><span class="p">()</span>
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>  Dependencies</p>
 
-  <span class="nv">options = </span><span class="nx">_</span><span class="p">.</span><span class="nx">pick</span> <span class="nx">commander</span><span class="p">,</span> <span class="s">&#39;args&#39;</span><span class="p">,</span> <span class="s">&#39;debug&#39;</span><span class="p">,</span> <span class="s">&#39;output&#39;</span><span class="p">,</span> <span class="s">&#39;recurse&#39;</span><span class="p">,</span> <span class="s">&#39;modules&#39;</span><span class="p">,</span> <span class="s">&#39;verbose&#39;</span><span class="p">,</span> <span class="s">&#39;watch&#39;</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>_ = require <span class="string">'underscore'</span>
+commander = require <span class="string">'commander'</span>
+oj = require <span class="string">'./server'</span>
 
-  <span class="nx">oj</span><span class="p">.</span><span class="nx">command</span> <span class="nx">options</span>
-  <span class="k">return</span>
+module.<span class="function"><span class="title">exports</span></span> = -&gt;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>  Usage</p>
 
-<span class="nv">usage = </span><span class="nf">(code = 0) -&gt;</span>
-  <span class="nx">commander</span><span class="p">.</span><span class="nx">help</span><span class="p">()</span>
-  <span class="nx">process</span><span class="p">.</span><span class="nx">exit</span> <span class="nx">code</span></div></div></div></div></body></html>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  commander.version(oj.version)
+    .usage(<span class="string">'[options] &lt;file&gt; &lt;dir&gt; ...'</span>)
+    .option(<span class="string">'-d, --debug'</span>, <span class="string">'Turn on debug output (default: false)'</span>, <span class="literal">false</span>)
+    .option(<span class="string">'-o, --output &lt;dir&gt;'</span>, <span class="string">'Directory to output all files to (default: .)'</span>, process.cwd())
+    .option(<span class="string">'-r, --recurse'</span>, <span class="string">'Recurse into directories (default: off)'</span>, <span class="literal">false</span>)
+    .option(<span class="string">'-m, --modules &lt;modules&gt;'</span>, <span class="string">'List of modules to include'</span>, [])
+    .option(<span class="string">'-v, --verbose &lt;level&gt;'</span>, <span class="string">'Turn on verbose level 0-3 (default: 1)'</span>, <span class="number">1</span>)
+    .option(<span class="string">'-w, --watch'</span>, <span class="string">'Turn on watch mode (default: off)'</span>, <span class="literal">false</span>)
+    .parse(process.argv)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>  No arguments shows usage</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> <span class="keyword">not</span> _.isArray(commander.args) <span class="keyword">or</span> commander.args.length == <span class="number">0</span>
+    usage()
+
+  options = _.pick commander, <span class="string">'args'</span>, <span class="string">'debug'</span>, <span class="string">'output'</span>, <span class="string">'recurse'</span>, <span class="string">'modules'</span>, <span class="string">'verbose'</span>, <span class="string">'watch'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>  Execute command through oj module api</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  oj.command options
+  <span class="keyword">return</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>  Helper method to show usage</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">usage</span></span> = (code = <span class="number">0</span>) -&gt;
+  commander.help()
+  process.exit code</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
