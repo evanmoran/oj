@@ -13,11 +13,11 @@ module.exports = _template = (parts) ->
 
       if _.isArray parts.styles
         for s in parts.styles
-          link url: "styles/#{s}"
+          link href: "styles/#{s}", rel:'stylesheet', type:'text/css'
 
       if _.isArray parts.scripts
         for s in parts.scripts
-          script url: "scripts/#{s}"
+          script src: "scripts/#{s}", type:'text/javascript'
 
       parts.head?()
 

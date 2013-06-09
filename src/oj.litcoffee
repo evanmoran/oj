@@ -29,10 +29,12 @@ oj.begin
 
     oj.begin = (page) ->
 
-      # Defer dom manipulation until the page has loaded
+  Defer dom manipulation until the page has loaded
+
       _readyOrLoad ->
 
-        # Compile only the body and below
+  Compile only the body and below
+
         bodyOnly = html:1, doctype:1, head:1, link:1, script:1
         {dom,types} = oj.compile dom:1, html:0, css:0, ignore:bodyOnly, (require page)
 
@@ -40,24 +42,29 @@ oj.begin
           console.error 'oj: dom failed to compile'
           return
 
-        # Find body
-        body = document.getElementsByTagName('body')
+  Find body element
+
+        body = document.getElementsByTagName 'body'
         if body.length == 0
           console.error 'oj: <body> was not found'
           return
         body = body[0]
 
-        # Clear body and insert dom elements
+  Clear body and insert dom elements
+
         body.innerHTML = ''
         if not oj.isArray dom
           dom = [dom]
         for d in dom
           body.appendChild d
 
+  Trigger inserted event for types
+
         for t in types
           t.inserted()
 
-        # Trigger events bound through oj.ready
+  Trigger events bound through oj.ready
+
         oj.ready()
 
 _readyOrLoad
@@ -92,15 +99,21 @@ oj.ready
 
     _readyQueue = queue:[], loaded:false
     oj.ready = (f) ->
-      # Call everything if no arguments
+
+  Call everything if no arguments
+
       if oj.isUndefined f
         _readyQueue.loaded = true
         while (f = _readyQueue.queue.shift())
           f()
-      # Call load if already loaded
+
+  Call load if already loaded
+
       else if _readyQueue.loaded
         f()
-      # Queue function for later
+
+  Queue function for later
+
       else
         _readyQueue.queue.push f
       return
@@ -846,10 +859,6 @@ Get attributes from args by unioning all objects
         if oj.isObject arg
           _.extend attributes, arg
 
-Help the attributes out as they have shitting
-
-      attributes = _upgradeTagMethod name, attributes
-
 Add attributes to ojml if they exist
 
       ojml.push attributes unless _.isEmpty attributes
@@ -888,66 +897,54 @@ Loop over attributes
 
       ojml
 
+  Define all elements as closed or open
+
     oj.tag.elements =
       closed: 'a abbr acronym address applet article aside audio b bdo big blockquote body button canvas caption center cite code colgroup command datalist dd del details dfn dir div dl dt em embed fieldset figcaption figure font footer form frameset h1 h2 h3 h4 h5 h6 head header hgroup html i iframe ins keygen kbd label legend li map mark menu meter nav noframes noscript object ol optgroup option output p pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr tt u ul var video wbr xmp'.split ' '
       open: 'area base br col command css !DOCTYPE embed hr img input keygen link meta param source track wbr'.split ' '
 
+  Keep track of all valid elements
+
     oj.tag.elements.all = (oj.tag.elements.closed.concat oj.tag.elements.open).sort()
+
+  Determine if an element is closed or open
 
     oj.tag.isClosed = (tag) ->
       (_.indexOf oj.tag.elements.open, tag, true) == -1
 
-    # Helper to set tag name on a tag
+  Record tag name on a given tag function
+
     _setTagName = (tag, name) ->
       if tag?
         tag.tagName = name
       return
 
-    # Helper to get tag name on a tag
+  Get a tag name on a given tag function
+
     _getTagName = (tag) ->
       tag.tagName
 
-    # Helper to get instance on element
+  Record an oj instance on a given element
+
+    _setInstanceOnElement = (el, inst) ->
+      el?.oj = inst
+      return
+
+  Get a oj instance on a given element
+
     _getInstanceOnElement = (el) ->
       if el?.oj?
         el.oj
       else
         null
 
-    # Helper to set instance on element
-    _setInstanceOnElement = (el, inst) ->
-      el?.oj = inst
-      return
+  Create all the tag methods
 
-    # Create tag methods
     for t in oj.tag.elements.all
       do (t) ->
         oj[t] = -> oj.tag t, arguments...
         # Remember the tag name
         _setTagName oj[t], t
-
-    # Clear attributes
-    _defaultClear = (dest, d, e) ->
-      _.defaults dest, d
-      for k of e
-        delete dest[k]
-      dest
-
-    # Adjust tag attributes
-    _upgradeTagMethod = (name, attributes) ->
-      attr = _.clone attributes
-      switch name
-
-        # link tags default to stylesheet, text/css, url instead of href
-        when 'link' then _defaultClear attr, {rel:'stylesheet', type:'text/css', href: attr.url or attr.src}, {url:0, src:0}
-
-        # script tags default to javascript, url instead of src
-        when 'script' then _defaultClear attr, {type:'text/javascript', src: attr.url}, url:0
-
-        # anchor tags can use url instead of href
-        when 'a' then _defaultClear attr, {href:attr.url}, url:0
-      attr
-
 
 doctype tag
 ------------------------------------------------------------------------------
