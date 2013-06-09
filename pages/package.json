@@ -9,6 +9,7 @@
     "oj-mustache":"latest",
     "oj-ace-editor":"latest",
     "oj-vimeo-video":"latest",
+    "oj-bootstrap":"latest",
     "underscore": "latest"
   }
 }

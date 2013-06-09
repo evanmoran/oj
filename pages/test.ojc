@@ -16,7 +16,29 @@ _plugins = require './_plugins'
 #   css = _cssFromObject obj
 #   console.log "css: ", css
 # `window.domcss = domcss`
+###
+    h1('Welcome to OJ')
 
+    list = BulletList(
+      "Everything is Javascript",
+      "Objects create html"
+    )
+
+    list.add("Objects live edit the dom");
+    list.add("CSS works!");
+
+    css({
+      h1:{
+        color:'orange'
+      }
+    });
+
+    var btn = Button('Add item',{click:function(){
+      list.add('Event binding works!')
+    }})
+
+    btn.click()
+###
 module.exports = oj ->
 
   doctype 5
@@ -25,13 +47,17 @@ module.exports = oj ->
       title 'Test'
 
       link url:'styles/reset.css'
-      # link url:'styles/jquery-ui-1.10.3.custom.css'
-      # script url: 'scripts/jquery.js'
+      link url:'styles/bootstrap.css'
+      link url:'styles/jquery-ui-1.10.3.custom.css'
+      script url: 'scripts/jquery.js'
       script url: 'scripts/underscore.js'
       script url: 'scripts/backbone.js'
       script url: 'scripts/ace/ace.js'
-      # script url: 'scripts/jquery-ui-1.10.3.custom.js'
-      # script url: 'scripts/jquery.ba-resize.min.js'
+
+      script src: 'scripts/bootstrap.js'
+
+      script url: 'scripts/jquery-ui-1.10.3.custom.js'
+      script url: 'scripts/jquery.ba-resize.min.js'
 
       meta charset:'UTF-8'
       meta 'http-equiv':"X-UA-Compatible", content:'IE=edge,chrome=1'
@@ -40,6 +66,19 @@ module.exports = oj ->
       if oj.isClient
         CodeModel = Backbone.Model.extend()
         code = new CodeModel({code: 'function test(){\n}\nvar foo = 5;'});
+      h1 'This is a header'
+      h2 'header 2'
+      p 'Paragraph goes here. Looking good'
+
+      table c:'table table-striped', ->
+        tr ->
+          td 1
+          td 2
+          td 3
+        tr ->
+          td 4
+          td 5
+          td 6
 
       ae = AceEditor()
         # model: code
