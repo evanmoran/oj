@@ -199,8 +199,8 @@ describe 'oj._', ->
 
   it 'isjQuery'
 
-  it 'isEvented', ->
+  it 'isEvent', ->
     class UserModel extends Backbone.Model
     user = new UserModel name:'Evan'
-    expect(oj.isEvented(user)).to.equal true
+    expect(oj.isEvent(user)).to.equal true
     expect(oj.typeOf(user)).to.equal 'object'

@@ -147,6 +147,8 @@ Generate a unique oj id
 Register require.extension for .oj files in node
 -------------------------------------------------------------------------------
 
+TODO: Consider moving this to server.litcoffee
+
     if require.extensions
 
       coffee = require 'coffee-script'
@@ -224,7 +226,18 @@ Export Model to NodeJS or globally
 
 Type Helpers
 ------------------------------------------------------------------------------
-Based on [underscore.js](http://underscorejs.org/)
+
+    oj.isDOM = (obj) -> !!(obj and obj.nodeType?)
+    oj.isDOMElement = (obj) -> !!(obj and obj.nodeType == 1)
+    oj.isDOMAttribute = (obj) -> !!(obj and obj.nodeType == 2)
+    oj.isDOMText = (obj) -> !!(obj and obj.nodeType == 3)
+
+    oj.isjQuery = (obj) -> !!(obj and obj.jquery)
+    oj.isEvent = (obj) -> !!(obj and obj.on and obj.off and obj.trigger)
+    oj.isOJ = (obj) -> !!(obj?.isOJ)
+    oj.isDefined = (obj) -> not (typeof obj == 'undefined')
+
+Type Helpers based on [underscore.js](http://underscorejs.org/)
 The potential duplication saddens me but oj needs sophisticated type detection
 
 Store short names for commonly used prototypes and methods
@@ -247,15 +260,7 @@ Define
     oj.isFunction = (obj) -> typeof obj == 'function'
     oj.isArray = Array.isArray or (obj) -> ObjP.toString.call(obj) == '[object Array]'
     oj.isRegEx = (obj) -> ObjP.toString.call(obj) == '[object RegExp]'
-    oj.isDOM = (obj) -> !!(obj and obj.nodeType?)
-    oj.isDOMElement = (obj) -> !!(obj and obj.nodeType == 1)
-    oj.isDOMAttribute = (obj) -> !!(obj and obj.nodeType == 2)
-    oj.isDOMText = (obj) -> !!(obj and obj.nodeType == 3)
-    oj.isjQuery = (obj) -> !!(obj and obj.jquery)
-    oj.isEvented = (obj) -> !!(obj and obj.on and obj.off and obj.trigger)
-    oj.isOJ = (obj) -> !!(obj?.isOJ)
     oj.isArguments = (obj) -> ObjP.toString.call(obj) == '[object Arguments]'
-    oj.isDefined = (obj) -> not (typeof obj == 'undefined')
 
     # typeOf: Mimic behavior of built-in typeof operator and integrate jQuery, Backbone, and OJ types
     oj.typeOf = (any) ->
@@ -363,6 +368,8 @@ Utility: Helpers
         mid = (low + high) >> 1;
         if iterator(array[mid]) < iterator(obj) then low = mid + 1 else high = mid;
       low
+
+  TODO: Simplify this method because ArrayP.indexOf should always exist
 
     _.indexOf = (array, item, isSorted) ->
       return -1 unless array?
@@ -495,7 +502,7 @@ Utility: Iteration
       ))
       obj
 
-  defaults
+  _defaults
 
     _.defaults = (obj) ->
       _.each(slice.call(arguments, 1), ((source) ->
@@ -1845,13 +1852,13 @@ Model view base class
           get: -> @_model
           set: (v) ->
             # Unbind events on the old model
-            if oj.isEvented @_model
+            if oj.isEvent @_model
               @_model.off 'change', null, @
 
             @_model = v;
 
             # Bind events on the new model
-            if oj.isEvented @_model
+            if oj.isEvent @_model
               @_model.on 'change', @modelChanged, @
 
             # Trigger change manually when settings new model
@@ -2172,7 +2179,7 @@ When out of bounds an error message is thrown
           # Convert models to views
           views = []
           if @models? and @each?
-            models = if oj.isEvented @_models then @_models.models else @_models
+            models = if oj.isEvent @_models then @_models.models else @_models
             for model in models
               views.push @_itemFromModel model
 
