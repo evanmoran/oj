@@ -50,6 +50,7 @@ describe 'oj.compile.css', ->
       body:
         color: 'red'
     cssTest ojml, 'body{color:red}'
+    cssTest ojml, 'body {\n\tcolor:red;\n}\n', debug:true
 
   it 'two rules', ->
     ojml = oj.css
@@ -59,12 +60,7 @@ describe 'oj.compile.css', ->
         border: '1px solid black'
 
     cssTest ojml, 'body{color:red}.selector{border:1px solid black}'
-
-  it 'one rule debug', ->
-    ojml = oj.css
-      body:
-        color: 'red'
-    cssTest ojml, 'body {\n\tcolor:red;\n}\n', debug:true
+    cssTest ojml, 'body {\n\tcolor:red;\n}\n.selector {\n\tborder:1px solid black;\n}\n', debug:true
 
   # TODO: This can only work if css minifier is really smart. Not sure if
   # there is a node minifier that supports this...
@@ -75,22 +71,7 @@ describe 'oj.compile.css', ->
     #   '.c2':
     #     color: 'red'
     # cssTest ojml, '.c1,.c2{color:red}'
-
-  it 'merged rules debug', ->
-    ojml = oj.css
-      '.c1':
-        color: 'red'
-      '.c2':
-        color: 'red'
-    cssTest ojml, '.c1 {\n\tcolor:red;\n}\n.c2 {\n\tcolor:red;\n}\n',debug:true
-
-  it 'merged rules debug', ->
-    ojml = oj.css
-      '.c1':
-        color: 'red'
-      '.c2':
-        color: 'red'
-    cssTest ojml, '.c1 {\n\tcolor:red;\n}\n.c2 {\n\tcolor:red;\n}\n',debug:true
+    # cssTest ojml, '.c1,\n.c2 {\n\tcolor:red;\n}\n.c2 {\n\tcolor:red;\n}\n',debug:true
 
   it 'single comma seperated definition', ->
     ojml = oj.css
@@ -98,6 +79,7 @@ describe 'oj.compile.css', ->
           color:'red'
 
     cssTest ojml, '.c1,.c2{color:red}'
+    cssTest ojml, '.c1,\n.c2 {\n\tcolor:red;\n}\n', debug:true
 
   it 'single nested definition', ->
     ojml = oj.css
@@ -106,6 +88,7 @@ describe 'oj.compile.css', ->
           color:'red'
 
     cssTest ojml, '.c1 .c2{color:red}'
+    cssTest ojml, '.c1 .c2 {\n\tcolor:red;\n}\n', debug:true
 
   it 'multiple nested definitions', ->
     ojml = oj.css
@@ -118,6 +101,7 @@ describe 'oj.compile.css', ->
             color:'yellow'
 
     cssTest ojml, 'div .c1{color:red}div #id1{color:blue}div #id1 .c2{color:yellow}'
+    cssTest ojml, 'div .c1 {\n\tcolor:red;\n}\ndiv #id1 {\n\tcolor:blue;\n}\ndiv #id1 .c2 {\n\tcolor:yellow;\n}\n', debug:true
 
   it 'single nested definitions with &', ->
     ojml = oj.css
@@ -126,6 +110,7 @@ describe 'oj.compile.css', ->
           color:'red'
 
     cssTest ojml, '.c1.red{color:red}'
+    cssTest ojml, '.c1.red {\n\tcolor:red;\n}\n', debug:true
 
   it 'single nested definitions with &:hover', ->
     ojml = oj.css
@@ -135,6 +120,8 @@ describe 'oj.compile.css', ->
             color:'red'
 
     cssTest ojml, '.c1 .c2:hover{color:red}'
+    cssTest ojml, '.c1 .c2:hover {\n\tcolor:red;\n}\n', debug:true
+
 
   it 'multiple nested definitions with & at front', ->
     ojml = oj.css
@@ -146,6 +133,7 @@ describe 'oj.compile.css', ->
           '&.c2':
             color:'yellow'
     cssTest ojml, 'div.c1{color:red}div#id1{color:blue}div#id1.c2{color:yellow}'
+    cssTest ojml, 'div.c1 {\n\tcolor:red;\n}\ndiv#id1 {\n\tcolor:blue;\n}\ndiv#id1.c2 {\n\tcolor:yellow;\n}\n', debug:true
 
   it 'multiple nested definitions with & at end', ->
     ojml = oj.css
@@ -157,6 +145,7 @@ describe 'oj.compile.css', ->
           '.c2 &':
             color:'yellow'
     cssTest ojml, '.c1 div{color:red}div#id1{color:blue}.c2 div#id1{color:yellow}'
+    cssTest ojml, '.c1 div {\n\tcolor:red;\n}\ndiv#id1 {\n\tcolor:blue;\n}\n.c2 div#id1 {\n\tcolor:yellow;\n}\n', debug:true
 
   it 'nested definitions with comma seperation', ->
     ojml = oj.css
@@ -168,39 +157,7 @@ describe 'oj.compile.css', ->
           '.c3 &':
             color:'purple'
     cssTest ojml, 'a .c1,b .c1{color:red}a .c1.c2,b .c1.c2{color:yellow}.c3 a .c1,.c3 b .c1{color:purple}'
-
-  ###
-
-
-  OJ Example:
-      css
-        '.column-1-3':
-          width:'33.3333%'
-          '@media (max-width: 600px)':
-            width:'100%'
-
-  SASS Example:
-
-      .column-1-3 {
-        width: 33.3333%;
-        @media (max-width: 600px) {
-          width: 100%;
-        }
-      }
-
-  RESULT:
-
-      .column-1-3 {
-        width: 33.3333%;
-      }
-      @media (max-width: 600px) {
-        .column-1-3 {
-          width: 100%;
-        }
-      }
-  ###
-
-
+    cssTest ojml, 'a .c1,\nb .c1 {\n\tcolor:red;\n}\na .c1.c2,\nb .c1.c2 {\n\tcolor:yellow;\n}\n.c3 a .c1,\n.c3 b .c1 {\n\tcolor:purple;\n}\n', debug:true
 
   it 'top level @media query', ->
 
@@ -222,6 +179,7 @@ describe 'oj.compile.css', ->
               color:'purple'
 
     cssTest ojml, '@media screen (min-width: 768px) and (max-width: 979px){.c1{color:red}.c1.c2{color:orange}.c1.c2 .c3{color:purple}}'
+    cssTest ojml, '@media screen (min-width: 768px) and (max-width: 979px) {\n\t.c1 {\n\t\tcolor:red;\n\t}\n\t.c1.c2 {\n\t\tcolor:orange;\n\t}\n\t.c1.c2 .c3 {\n\t\tcolor:purple;\n\t}\n}\n', debug:true
 
   it 'nested @media query', ->
 
@@ -232,6 +190,7 @@ describe 'oj.compile.css', ->
           color:'black'
 
     cssTest ojml, '.c1{color:blue}@media print{.c1{color:black}}'
+    cssTest ojml, '.c1 {\n\tcolor:blue;\n}\n@media print {\n\t.c1 {\n\t\tcolor:black;\n\t}\n}\n', debug:true
 
   it 'complex nested @media query with complex selectors', ->
     ojml = oj.css
@@ -244,6 +203,7 @@ describe 'oj.compile.css', ->
               color:'orange'
 
     cssTest ojml, '.c0{color:blue}@media screen (min-width: 100px){.c0 .c1{color:red}}@media screen (min-width: 100px) and screen (min-width: 200px){.c0 .c1{color:orange}}'
+    cssTest ojml, '.c0 {\n\tcolor:blue;\n}\n@media screen (min-width: 100px) {\n\t.c0 .c1 {\n\t\tcolor:red;\n\t}\n}\n@media screen (min-width: 100px) and screen (min-width: 200px) {\n\t.c0 .c1 {\n\t\tcolor:orange;\n\t}\n}\n', debug:true
 
   it 'complex nested @media query with complex selectors', ->
     ojml = oj.css
@@ -261,6 +221,7 @@ describe 'oj.compile.css', ->
                 color:'yellow'
 
     cssTest ojml, '.c0{color:blue}@media screen (min-width: 100px){.c0 .c1{color:red}}@media screen (min-width: 100px) and screen (min-width: 200px){.c0 .c1{color:orange}.c0 .c1.c2{color:purple}}@media screen (min-width: 100px) and screen (min-width: 300px){.c0 .c1 .c3{color:yellow}}'
+    cssTest ojml, '.c0 {\n\tcolor:blue;\n}\n@media screen (min-width: 100px) {\n\t.c0 .c1 {\n\t\tcolor:red;\n\t}\n}\n@media screen (min-width: 100px) and screen (min-width: 200px) {\n\t.c0 .c1 {\n\t\tcolor:orange;\n\t}\n\t.c0 .c1.c2 {\n\t\tcolor:purple;\n\t}\n}\n@media screen (min-width: 100px) and screen (min-width: 300px) {\n\t.c0 .c1 .c3 {\n\t\tcolor:yellow;\n\t}\n}\n', debug:true
 
   it 'comma-seperated nested @media queries with complex selectors', ->
     ojml = oj.css
@@ -273,6 +234,7 @@ describe 'oj.compile.css', ->
               color:'orange'
 
     cssTest ojml, '@media screen (min-width: 100px){.c1{color:red}}@media screen (min-width: 100px) and handheld (max-width: 200px),screen (min-width: 100px) and print (max-width: 300px){.c1.c2{color:orange}}'
+    cssTest ojml, '@media screen (min-width: 100px) {\n\t.c1 {\n\t\tcolor:red;\n\t}\n}\n@media screen (min-width: 100px) and handheld (max-width: 200px), screen (min-width: 100px) and print (max-width: 300px) {\n\t.c1.c2 {\n\t\tcolor:orange;\n\t}\n}\n', debug:true
 
   it 'comma-seperated nested @media queries with complex selectors', ->
     ojml = oj.css
@@ -285,6 +247,8 @@ describe 'oj.compile.css', ->
               color:'orange'
 
     cssTest ojml, '@media screen (min-width: 100px){.c1{color:red}}@media screen (min-width: 100px) and handheld (max-width: 200px),screen (min-width: 100px) and print (max-width: 300px){.c1.c2{color:orange}}'
+    cssTest ojml, '@media screen (min-width: 100px) {\n\t.c1 {\n\t\tcolor:red;\n\t}\n}\n@media screen (min-width: 100px) and handheld (max-width: 200px), screen (min-width: 100px) and print (max-width: 300px) {\n\t.c1.c2 {\n\t\tcolor:orange;\n\t}\n}\n', debug:true
+
 
 
   it '@media monitor', ->
@@ -294,6 +258,8 @@ describe 'oj.compile.css', ->
           color:'red'
 
     cssTest ojml, '.c1{color:red}'
+    cssTest ojml, '.c1 {\n\tcolor:red;\n}\n', debug:true
+
 
   it '@media tablet', ->
     ojml = oj.css
@@ -302,6 +268,7 @@ describe 'oj.compile.css', ->
           color:'red'
 
     cssTest ojml, '@media only screen and (min-width: 768px) and (max-width: 959px){.c1{color:red}}'
+    cssTest ojml, '@media only screen and (min-width: 768px) and (max-width: 959px) {\n\t.c1 {\n\t\tcolor:red;\n\t}\n}\n', debug:true
 
   it '@media phone', ->
     ojml = oj.css
@@ -310,6 +277,7 @@ describe 'oj.compile.css', ->
           color:'red'
 
     cssTest ojml, '@media only screen and (max-width: 767px){.c1{color:red}}'
+    cssTest ojml, '@media only screen and (max-width: 767px) {\n\t.c1 {\n\t\tcolor:red;\n\t}\n}\n', debug:true
 
   it '@media widescreen', ->
     ojml = oj.css
@@ -318,6 +286,7 @@ describe 'oj.compile.css', ->
           color:'red'
 
     cssTest ojml, '@media only screen and (min-width: 1200px){.c1{color:red}}'
+    cssTest ojml, '@media only screen and (min-width: 1200px) {\n\t.c1 {\n\t\tcolor:red;\n\t}\n}\n', debug:true
 
   it '@media nested monitor phone tablet', ->
     ojml = oj.css
@@ -330,3 +299,4 @@ describe 'oj.compile.css', ->
             color:'purple'
 
     cssTest ojml, '.c1{color:red}@media only screen and (max-width: 767px){.c1{color:blue}}@media only screen and (min-width: 768px) and (max-width: 959px){.c1{color:purple}}'
+    cssTest ojml, '.c1 {\n\tcolor:red;\n}\n@media only screen and (max-width: 767px) {\n\t.c1 {\n\t\tcolor:blue;\n\t}\n}\n@media only screen and (min-width: 768px) and (max-width: 959px) {\n\t.c1 {\n\t\tcolor:purple;\n\t}\n}\n', debug:true

@@ -1147,7 +1147,7 @@ _styleFromObject:
 Convert object to string form
 
     #
-    #     inline:false      inline:true                inline:false,indent:true
+    #     inline:false      inline:true                inline:false,indent:'\t'
     #     color:red;        color:red;font-size:10px   \tcolor:red;
     #     font-size:10px;                              \tfont-size:10px;
     #
@@ -1158,7 +1158,7 @@ Convert object to string form
 
       _defaults options,
         inline: true
-        indent: false
+        indent: ''
 
   Trailing semi should only exist on when we aren't indenting
 
@@ -1171,7 +1171,7 @@ Convert object to string form
 
   Support indention and inlining
 
-      indent = if options.indent then '\t' else ''
+      indent = options.indent ? ''
       newline = if options.inline then '' else '\n'
 
       for kFancy,ix in keys
@@ -1333,44 +1333,42 @@ debug:true will output newlines
       newline = if debug then '\n' else ''
       space = if debug then ' ' else ''
       inline = !debug
-      indent = debug
 
-      flatCssMap = _flattenCSSMap cssMap
+
+      flatMap = _flattenCSSMap cssMap
 
       css = ''
-      for media, selectorMap of flatCssMap
-        if media != ''
+      for media, selectorMap of flatMap
+
+
+  Serialize media query
+
+        if media
+          media = media.replace /,/g, ",#{space}"
           css += "#{media}#{space}{#{newline}"
+
         for selector,styles of selectorMap
-          rules = _styleFromObject styles, inline:inline, indent:indent
-          css += "#{selector}#{space}{#{newline}#{rules}}#{newline}"
+
+          indent = if debug and media then '\t' else ''
+
+  Serialize selector
+
+          selector = selector.replace /,/g, ",#{newline}"
+          css += "#{indent}#{selector}#{space}{#{newline}"
+
+  Serialize style rules
+
+          indentRule = if debug then indent + '\t' else indent
+
+          rules = _styleFromObject styles, inline:inline, indent:indentRule
+          css += "#{rules}#{indent}}#{newline}"
+
+  End media query
 
         if media != ''
           css += "}#{newline}"
-      css
 
-
-_cssFromObject2:
------------------------------------------------------------------------------
-Convert css selectors and rules to a string
-
-Supports nested objections, comma seperated rules, and @media queries
-
-debug:true will output newlines
-
-    _cssFromObject2 = (cssMap, debug = 0) ->
-
-  Deterine what output characters are needed
-
-      newline = if debug then '\n' else ''
-      space = if debug then ' ' else ''
-      inline = !debug
-      indent = debug
-
-      css = ''
-      for selector, styles of cssMap
-        rules = _styleFromObject styles, inline:inline, indent:indent
-        css += "#{selector}#{space}{#{newline}#{rules}}#{newline}"
+        console.log "css:\n\n", css
       css
 
 _compileDeeper
