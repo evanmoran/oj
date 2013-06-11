@@ -81,6 +81,8 @@ module.exports = oj ->
           td 5
           td 6
 
+      oj.TwitterFollowButton(large:true)
+
       ae = AceEditor()
         # model: code
         # key: 'code'

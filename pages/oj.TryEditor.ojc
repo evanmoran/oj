@@ -442,7 +442,7 @@ module.exports = (oj, settings) ->
           t.inserted()
 
         # Append style to iframe
-        # @$output.contents().find('head').append("<style>#{results.css}</style>")
+        @$output.contents().find('head').append("<style>#{results.css}</style>")
 
         @consoleSuccess()
 

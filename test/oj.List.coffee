@@ -93,12 +93,12 @@ describe 'oj.List', ->
 
   it 'NumberList', ->
     control = oj.NumberList 1,2
-    expect(oj.typeOf control).to.equal 'List'
+    expect(oj.typeOf control).to.equal 'NumberList'
     expect(control.count).to.equal 2
     expect(control.items).to.deep.equal [1,2]
 
     contains control,
-      'class="oj-List"'
+      'class="oj-NumberList"'
       '<ol'
       '<li>1</li>'
       '<li>2</li>'
@@ -106,12 +106,12 @@ describe 'oj.List', ->
 
     it 'BulletList', ->
     control = oj.BulletList 1,2
-    expect(oj.typeOf control).to.equal 'List'
+    expect(oj.typeOf control).to.equal 'BulletList'
     expect(control.count).to.equal 2
     expect(control.items).to.deep.equal [1,2]
 
     contains control,
-      'class="oj-List"'
+      'class="oj-BulletList"'
       '<ul'
       '<li>1</li>'
       '<li>2</li>'
@@ -320,7 +320,7 @@ it 'construct with one model argument (default each)', ->
     $list = $('ul')
 
     control = oj.BulletList el:$list[0]
-    expect(oj.typeOf control).to.equal 'List'
+    expect(oj.typeOf control).to.equal 'BulletList'
     expect(control.count).to.equal 3
 
     expect(control.item(0)).to.equal 'one'
@@ -342,7 +342,7 @@ it 'construct with one model argument (default each)', ->
     $list = $('ol')
 
     control = oj.NumberList el:$list[0]
-    expect(oj.typeOf control).to.equal 'List'
+    expect(oj.typeOf control).to.equal 'NumberList'
     expect(control.count).to.equal 3
 
     expect(control.item(0)).to.equal 'one'

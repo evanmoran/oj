@@ -464,12 +464,37 @@ _bind: Helper to bind context to function
             return breaker
         return !!result
 
+_setObject: Set object deeply and ensure each part is an object
+
+    _setObject = (obj, keys..., value) ->
+
+      o = obj
+      for k,ix in keys
+
+  Initialize key to empty object if necessary
+
+        if typeof o[k] != 'object'
+
+          o[k] = {} unless (typeof o[k] == 'object')
+
+  Set final value if this is the last key
+
+        if ix == keys.length - 1
+          o[k] = value
+          break
+
+  Continue deeper
+
+        o = o[k]
+
+      obj
+
 Utility: Iteration
 ------------------------------------------------------------------------
 
   _each
 
-    oj._breaker = {}
+    _breaker = {}
 
     _each = (col, iterator, context) ->
 
@@ -478,13 +503,13 @@ Utility: Iteration
         col.forEach iterator, context
       else if oj.isArray col
         for v, i in col
-          if iterator.call(context, v, i, col) == oj._breaker
-            return oj._breaker
+          if iterator.call(context, v, i, col) == _breaker
+            return _breaker
       else
         for k, v of col
           if _has col, k
-            if iterator.call(context, v, k, col) == oj._breaker
-              return oj._breaker
+            if iterator.call(context, v, k, col) == _breaker
+              return _breaker
 
   _map
 
@@ -581,8 +606,15 @@ Utility: Iteration
 
   _uniqueSortedUnion
 
-    _uniqueSortedUnion = (array, array2) ->
-      _uniqueSort (array.concat array2)
+    _uniqueSortedUnion = (arr, arr2) ->
+      _uniqueSort (arr.concat arr2)
+
+  _splitAndTrim
+
+    _splitAndTrim = (str, seperator, limit) ->
+      r = str.split seperator, limit
+      oj._map r, (v) -> v.trim()
+
 
 Path Helpers
 ------------------------------------------------------------------------------
@@ -1096,7 +1128,11 @@ Define method
 
       out
 
-    _styleKeyFromFancy = (key) ->
+_styleKeyFromCamalCase
+-----------------------------------------------------------------------------
+Convert style keys from oj camal case to css default
+
+    _styleKeyFromCamalCase = (key) ->
       out = ""
       # Loop over characters in key looking for camal case
       for c in key
@@ -1106,8 +1142,10 @@ Define method
           out += c
       out
 
-_styleFromObject: Convert object to string form
+_styleFromObject:
 -----------------------------------------------------------------------------
+Convert object to string form
+
     #
     #     inline:false      inline:true                inline:false,indent:true
     #     color:red;        color:red;font-size:10px   \tcolor:red;
@@ -1115,20 +1153,41 @@ _styleFromObject: Convert object to string form
     #
 
     _styleFromObject = (obj, options = {}) ->
+
+  Default options
+
       _defaults options,
         inline: true
         indent: false
-      # Trailing semi should only exist on when we aren't indenting
+
+  Trailing semi should only exist on when we aren't indenting
+
       options.semi = !options.inline
       out = ""
+
+  Sort keys to create consistent output
+
       keys = _keys(obj).sort()
+
+  Support indention and inlining
+
       indent = if options.indent then '\t' else ''
       newline = if options.inline then '' else '\n'
+
       for kFancy,ix in keys
-        # Add semi if it is not inline or it is not the last key
+
+  Add semi if it is not inline or it is not the last key
+
         semi = if options.semi or ix != keys.length-1 then ";" else ''
-        k = _styleKeyFromFancy kFancy
+
+  Allow keys to be camal case
+
+        k = _styleKeyFromCamalCase kFancy
+
+  Collect css result for this key
+
         out += "#{indent}#{k}:#{obj[kFancy]}#{semi}#{newline}"
+
       out
 
 _attributesFromObject: Convert object to attribute string
@@ -1157,28 +1216,164 @@ precicely what must be serialized with no adjustment.
         space = ' '
       out
 
+_flattenCSSMap
+-----------------------------------------------------------------------------
+Take an OJ object definition of CSS and simplify it to the form:
+'@media query': 'rule': 'stylesMap'
+
+This method is the heart of `_cssFromObject`
+
+Nested definitions, media definitions and comma definitions are resolved.
+
+    _flattenCSSMap = (cssMap) ->
+      flatMap = {}
+      _flattenCSSMap_ cssMap, flatMap, [''], ['']
+      flatMap
+
+  Recursive helper with accumulators for flatMap (output)
+
+    _flattenCSSMap_ = (cssMap, flatMapAcc, selectorsAcc, mediasAcc) ->
+
+  Built in media helpers
+
+      medias =
+        'widescreen': 'only screen and (min-width: 1200px)'
+        'monitor': '' # Monitor is the default
+        'tablet': 'only screen and (min-width: 768px) and (max-width: 959px)'
+        'phone': 'only screen and (max-width: 767px)'
+
+      for selector, rules of cssMap
+
+  (1) Recursive Case: Recurse on `rules` when it is an object
+
+        if typeof rules == 'object'
+
+  (1a) Media Query found: Generate the next media queries
+
+          if selector.indexOf('@media') == 0
+
+            selectorsNext = selectorsAcc
+            selector = (selector.slice '@media'.length).trim()
+
+  Media queries can be comma seperated
+
+            mediaParts = _splitAndTrim selector, ','
+
+  Substitute convience media query methods
+
+            mediaParts = oj._map mediaParts, (v) ->
+              if medias[v]? then medias[v] else v
+
+  Calculate the next media queries
+
+            mediasNext = []
+            for mediaOuter in mediasAcc
+              for mediaInner in mediaParts
+
+                mediaCur = mediaInner
+                if (mediaInner.indexOf '&') == -1 and mediaOuter != ''
+                  mediaCur = "& and #{mediaInner}"
+
+                mediasNext.push mediaCur.replace(/&/g, mediaOuter)
+
+  (1b) Selector Found: Generate the next selectors
+
+          else
+            mediasNext = mediasAcc
+
+  Selectors can be comma seperated
+
+            selectorParts = _splitAndTrim selector, ','
+
+  Generate the next selectors and substitue `&` when present
+
+            selectorsNext = []
+            for selOuter in selectorsAcc
+              for selInner in selectorParts
+
+  When `&` is not present just insert in front with a space
+
+                selCur = selInner
+                if (selInner.indexOf '&') == -1 and selOuter != ''
+                  selCur = "& #{selInner}"
+
+                selectorsNext.push selCur.replace(/&/g, selOuter)
+
+  Recurse through objects after calculating the next selectors
+
+
+          _flattenCSSMap_ rules, flatMapAcc, selectorsNext, mediasNext
+
+  (2) Base Case: Record our selector when `rules` is a value
+
+        else
+          selectorWithCommas = selectorsAcc.sort().join ','
+
+          mediaWithAnds = mediasAcc.sort().join ','
+          mediaWithAnds = "@media " + mediaWithAnds unless mediaWithAnds == ''
+
+  Record the rule deeply in `flatMapAcc`
+
+          _setObject flatMapAcc, mediaWithAnds, selectorWithCommas, selector, rules
+
+      return
+
 _cssFromObject:
 -----------------------------------------------------------------------------
 Convert css selectors and rules to a string
 
-    #
-    # debug:true               debug:false
-    # .cls {                   .cls{color: red}
-    #   color: red;
-    # }\n
+Supports nested objections, comma seperated rules, and @media queries
 
-    _cssFromObject = (cssMap, isDebug = 0) ->
-      newline = if isDebug then '\n' else ''
-      space = if isDebug then ' ' else ''
-      inline = !isDebug
-      indent = isDebug
+debug:true will output newlines
+
+    _cssFromObject = (cssMap, debug = 0) ->
+
+  Deterine what output characters are needed
+
+      newline = if debug then '\n' else ''
+      space = if debug then ' ' else ''
+      inline = !debug
+      indent = debug
+
+      flatCssMap = _flattenCSSMap cssMap
+
+      css = ''
+      for media, selectorMap of flatCssMap
+        if media != ''
+          css += "#{media}#{space}{#{newline}"
+        for selector,styles of selectorMap
+          rules = _styleFromObject styles, inline:inline, indent:indent
+          css += "#{selector}#{space}{#{newline}#{rules}}#{newline}"
+
+        if media != ''
+          css += "}#{newline}"
+      css
+
+
+_cssFromObject2:
+-----------------------------------------------------------------------------
+Convert css selectors and rules to a string
+
+Supports nested objections, comma seperated rules, and @media queries
+
+debug:true will output newlines
+
+    _cssFromObject2 = (cssMap, debug = 0) ->
+
+  Deterine what output characters are needed
+
+      newline = if debug then '\n' else ''
+      space = if debug then ' ' else ''
+      inline = !debug
+      indent = debug
+
       css = ''
       for selector, styles of cssMap
         rules = _styleFromObject styles, inline:inline, indent:indent
         css += "#{selector}#{space}{#{newline}#{rules}}#{newline}"
       css
 
-_compileDeeper:
+_compileDeeper
 -----------------------------------------------------------------------------
 Recursive helper for compiling that wraps indention
 
@@ -2311,15 +2506,21 @@ oj.NumberList
 ------------------------------------------------------------------------------
 NumberList is a `List` specialized with `<ol>` and `<li>` tags
 
-    oj.NumberList = ->
-      oj.List.call @, {tagName:'ol', itemTagName:'li'}, arguments...
+    oj.NumberList = oj.type 'NumberList',
+      base: oj.List
+      constructor: ->
+        args = [{tagName:'ol', itemTagName:'li'}, arguments...]
+        oj.NumberList.base.constructor.apply @, args
 
 oj.BulletList
 ------------------------------------------------------------------------------
 BulletList is a `List` specialized with `<ul>` and `<li>` tags
 
-    oj.BulletList = ->
-      oj.List.call @, {tagName:'ul', itemTagName:'li'}, arguments...
+    oj.BulletList = oj.type 'BulletList',
+      base: oj.List
+      constructor: ->
+        args = [{tagName:'ul', itemTagName:'li'}, arguments...]
+        oj.BulletList.base.constructor.apply @, args
 
 oj.Table
 ------------------------------------------------------------------------------
