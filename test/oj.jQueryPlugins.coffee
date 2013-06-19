@@ -115,11 +115,12 @@ describe 'oj.jQueryPlugins', ->
     """
 
 
+
   it "jquery.ojValue get number", ->
     $('body').html """
       <div class="test">42</div>
     """
-    expect($('.test').ojValue()).to.equal '42'
+    expect($('.test').ojValue()).to.equal 42
 
   it "jquery.ojValue get string", ->
     $('body').html """
@@ -146,6 +147,39 @@ describe 'oj.jQueryPlugins', ->
 
   it "jquery.ojValue get many (strings)", ->
     results = $many.ojValue()
+    expect(results).to.deep.equal 'many1'
+
+  it "jquery.ojValues get number", ->
+    $('body').html """
+      <div class="test">42</div>
+    """
+    expect($('.test').ojValues()).to.deep.equal [42]
+
+  it "jquery.ojValues get string", ->
+    $('body').html """
+      <div class="test">forty-two</div>
+    """
+    expect($('.test').ojValues()).to.deep.equal ['forty-two']
+
+  it "jquery.ojValues get oj instance", ->
+    cb = null
+    $('body').oj ->
+      oj.div c:'test', ->
+        cb = oj.CheckBox value:true
+
+    result = $('.test').ojValues()
+    expect(oj.isOJ result[0]).to.equal true
+    expect(result[0].typeName).to.equal 'CheckBox'
+    expect(result).to.deep.equal [cb]
+
+  it "jquery.ojValues get one (element)", ->
+
+    result = $one.ojValues()
+    expect(oj.isDOMElement result[0]).to.equal true
+    expect(result[0].tagName).to.equal 'DIV'
+
+  it "jquery.ojValues get many (strings)", ->
+    results = $many.ojValues()
     expect(results).to.deep.equal ['many1', 'many2']
 
   # jquery.ojAfter

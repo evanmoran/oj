@@ -615,6 +615,13 @@ Utility: Iteration
       r = str.split seperator, limit
       oj._map r, (v) -> v.trim()
 
+  _boundOrThrow: Bound index to allow negatives, throw when out of range
+
+    _boundOrThrow = (ix, count, message, method) ->
+      ixNew = if ix < 0 then ix + count else ix
+      unless 0 <= ixNew and ixNew < count
+        throw new Error("oj.#{method}#{message} is out of bounds (#{ix} in [0,#{count-1}])")
+      ixNew
 
 Path Helpers
 ------------------------------------------------------------------------------
@@ -1368,7 +1375,6 @@ debug:true will output newlines
         if media != ''
           css += "}#{newline}"
 
-        console.log "css:\n\n", css
       css
 
 _compileDeeper
@@ -2029,7 +2035,7 @@ oj.CollectionView
 
       methods:
         # Override make to create your view
-        make: -> throw "oj.#{typeName}: make not implemented"
+        make: -> throw new Error("oj.#{@typeName}: `make` method not implemented by custom view")
 
         # Override these events to minimally update on change
         collectionAdded: (model, collection) -> @make()
@@ -2078,7 +2084,7 @@ Model view base class
           @$el.oj =>
             @make @mode
 
-        make: (model) -> throw "oj.#{@typeName}: make not implemented"
+        make: (model) -> throw "oj.#{@typeName}: `make` method not implemented on custom view"
 
 oj.ModelKeyView
 ------------------------------------------------------------------------------
@@ -2253,7 +2259,7 @@ ListBox control
         options:
           get: -> @_options
           set: (v) ->
-            throw new Error('oj.ListBox::options array is missing') unless oj.isArray v
+            throw new Error("oj.#{@typeName}.options array is missing") unless oj.isArray v
             @_options = v
             @$el.oj ->
               for op in v
@@ -2286,16 +2292,6 @@ oj.Link = class Link inherits Control
 oj.List
 ------------------------------------------------------------------------------
 List control with model bindings and live editing
-
-_boundOrThrow: Determine if the index is in range after negative correction
-When out of bounds an error message is thrown
-
-    _boundOrThrow = (ix, count, message) ->
-      # Correct negative indexes to be in range
-      ixNew = if ix < 0 then ix + count else ix
-      unless 0 <= ixNew and ixNew < count
-        throw new Error(message + " is out of bounds (#{ix} in [0,#{count-1}])")
-      ixNew
 
     oj.List = oj.type 'List',
       base: oj.CollectionView
@@ -2330,71 +2326,86 @@ When out of bounds an error message is thrown
         items = if args.length > 0 then args else null
         @items = if options.items? then (oj.argumentShift options, 'items') else items
 
+### Properties
+
       properties:
 
-        # items: get or set all items at once (readwrite)
+items: get or set all items at once (readwrite)
+
         items:
-          # Used cached items or items as interpreted by ojValue jquery plugin
           get: ->
+
+  Used cached items or items as interpreted by ojValues jquery plugin
+
             return @_items if @_items?
-            v = @$itemsEl.ojValue()
-            if oj.isArray v then v else [v]
+            v = @$items.ojValues()
 
           set: (v) -> @_items = v; @make(); return
 
-        count: get: -> @$itemsEl.length
+        count: get: -> @$items.length
 
-        # tagName: name of root tag
+tagName: name of root tag (writeonce)
+
         tagName: get: -> @_tagName ? 'div'
 
-        # itemTagName: name of item tags
+itemTagName: name of item tags (readwrite)
+
         itemTagName:
           get: -> @_itemTagName ? 'div'
           set: (v) -> @_itemTagName = v; @make(); return
 
-        # itemsEl: list of elements
-        itemsEl: get: -> @$itemsEl.get()
+$items: list of `<li>` elements (readonly)
 
-        # $itemsEl: list of jquery elements
-        $itemsEl: get: -> @_$itemsEl ? (@_$itemsEl = @$("> #{@itemTagName}"))
+        $items: get: -> @_$items ? (@_$items = @$("> #{@itemTagName}"))
+
+### Methods
 
       methods:
-        # Get item value at index
+
+
+#### Accessor Methods
+
+item: get or set item value at item ix
+
         item: (ix, ojml) ->
-          ix = _boundOrThrow ix, @count, "oj.List.item: index"
+          ix = @_bound ix, @count, ".item: index"
           if ojml?
-            @$itemEl(ix).oj ojml
+            @$item(ix).oj ojml
             return
           else
-            @$itemEl(ix).ojValue()
+            @$item(ix).ojValue()
 
-        # Get item element at index
-        itemEl: (ix) ->
-          ix = _boundOrThrow ix, @count, "oj.List.itemEl: index"
-          @$itemsEl[ix]
+$item: `<li>` element for a given item ix. The tag name may change.
 
-        # Get item jquery element at index
-        $itemEl: (ix) ->
-          ix = _boundOrThrow ix, @count, "oj.List.$itemEl: index"
-          @$itemsEl.eq(ix)
+        $item: (ix) ->
+          ix = @_bound ix, @count, ".$item: index"
+          @$items.eq(ix)
 
-        # Remake everything
+#### CollectionView Methods
+
+make: Remake view from property data
+
         make: ->
-          # Some properties call make before construction completes
+
+  Some properties call make before construction completes
+
           return unless @isConstructed
 
-          # Convert models to views
+  Convert models to views
+
           views = []
           if @models? and @each?
             models = if oj.isEvent @_models then @_models.models else @_models
             for model in models
               views.push @_itemFromModel model
 
-          # Items are already views
+  Items are already views
+
           else if @items?
             views = @items
 
-          # Render the views
+  Render the views
+
           @$el.oj =>
             for view in views
               @_itemElFromItem view
@@ -2402,14 +2413,53 @@ When out of bounds an error message is thrown
           @itemsChanged()
           return
 
-        # Helper to map model to item
+#### CollectionView Events
+
+collectionAdded: Model add occurred, add the item
+
+        collectionAdded: (m, c) ->
+          ix = c.indexOf m
+          item = @_itemFromModel m
+          @add ix, item
+          return
+
+collectionRemoved: Model remove occured, delete the item
+
+        collectionRemoved: (m, c, o) ->
+          @remove o.index
+          return
+
+collectionRemoved: On add
+
+        collectionReset: ->
+          @make()
+          return
+
+#### Helper Methods
+
+  _itemFromModel: Helper to map model to item
+
         _itemFromModel: (model) ->
           oj =>
             @each model
 
-        # Helper to create itemTagName wrapped item
+  _itemElFromItem: Helper to create itemTagName wrapped item
+
         _itemElFromItem: (item) ->
           oj[@itemTagName] item
+
+  _bound: Bound index to allow negatives, throw when out of range
+
+        _bound: (ix, count, message) ->
+          _boundOrThrow ix,count,message,@typeName
+
+#### Events
+
+itemsChanged: Model changed occured, clear relevant cached values
+
+        itemsChanged: -> @_items = null; @_$items = null; return
+
+#### Manipulation Methods
 
         add: (ix, ojml) ->
 
@@ -2418,7 +2468,7 @@ When out of bounds an error message is thrown
             ojml = ix
             ix = @count
 
-          ix = _boundOrThrow ix, @count+1, "oj.List.add: index"
+          ix = @_bound ix, @count+1, ".add: index"
 
           tag = @itemTagName
           # Empty
@@ -2426,31 +2476,31 @@ When out of bounds an error message is thrown
             @$el.oj -> oj[tag] ojml
           # Last
           else if ix == @count
-            @$itemEl(ix-1).ojAfter -> oj[tag] ojml
+            @$item(ix-1).ojAfter -> oj[tag] ojml
           # Not last
           else
-            @$itemEl(ix).ojBefore -> oj[tag] ojml
+            @$item(ix).ojBefore -> oj[tag] ojml
 
           @itemsChanged()
           return
 
         remove: (ix = -1) ->
-          ix = _boundOrThrow ix, @count, "oj.List.remove: index"
+          ix = @_bound ix, @count, ".remove: index"
           out = @item ix
-          @$itemEl(ix).remove()
+          @$item(ix).remove()
           @itemsChanged()
           out
 
         move: (ixFrom, ixTo = -1) ->
           return if ixFrom == ixTo
 
-          ixFrom = _boundOrThrow ixFrom, @count, "oj.List.move: fromIndex"
-          ixTo = _boundOrThrow ixTo, @count, "oj.List.move: toIndex"
+          ixFrom = @_bound ixFrom, @count, ".move: fromIndex"
+          ixTo = @_bound ixTo, @count, ".move: toIndex"
 
           if ixTo > ixFrom
-            @$itemEl(ixFrom).insertAfter @$itemEl(ixTo)
+            @$item(ixFrom).insertAfter @$item(ixTo)
           else
-            @$itemEl(ixFrom).insertBefore @$itemEl(ixTo)
+            @$item(ixFrom).insertBefore @$item(ixTo)
 
           @itemsChanged()
           return
@@ -2458,8 +2508,8 @@ When out of bounds an error message is thrown
         swap: (ix1, ix2) ->
           return if ix1 == ix2
 
-          ix1 = _boundOrThrow ix1, @count, "oj.List.swap: firstIndex"
-          ix2 = _boundOrThrow ix2, @count, "oj.List.swap: secondIndex"
+          ix1 = @_bound ix1, @count, ".swap: firstIndex"
+          ix2 = @_bound ix2, @count, ".swap: secondIndex"
 
           if Math.abs(ix1-ix2) == 1
             @move ix1, ix2
@@ -2479,26 +2529,7 @@ When out of bounds an error message is thrown
 
         pop: -> @remove -1
 
-        clear: -> @$itemsEl.remove(); @itemsChanged(); return
-
-        # When items change clear relevant cached values
-        itemsChanged: -> @_$itemsEl = null; return
-
-        # # On add minimally create the missing model
-        collectionAdded: (m, c) ->
-          ix = c.indexOf m
-          item = @_itemFromModel m
-          @add ix, item
-          return
-
-        # On add minimally create the missing model
-        collectionRemoved: (m, c, o) ->
-          @remove o.index
-          return
-
-        collectionReset: ->
-          @make()
-          return
+        clear: -> @$items.remove(); @itemsChanged(); return
 
 oj.NumberList
 ------------------------------------------------------------------------------
@@ -2524,26 +2555,422 @@ oj.Table
 ------------------------------------------------------------------------------
 Table control
 
-    # oj.Table = oj.type 'Table',
-    #   base: oj.CollectionView
+    oj.Table = oj.type 'Table',
 
-    #   properties:
-    #     rows: (list) ->
-    #     rowCount: ->
-    #     cellCount: ->
+Inherit and construct
 
-    #   methods:
-    #     row: (r) ->
-    #     cell: (r, c) ->
+      base: oj.CollectionView
 
-    # oj.Table.Row = oj.type 'Table.Row',
-    #   base: oj.ModelView
-    #   properties:
-    #     row:
-    #       get: ->
-    #       set: (list) ->
-    #   methods:
-    #     cell: ->
+      constructor: ->
+        # console.log "Table constructor: ", arguments
+        {options, args} = oj.argumentsUnion arguments
+
+        # Generate el
+        @el = oj =>
+          oj.table()
+
+        # Use el if it was passed in
+        @el = oj.argumentShift(options, 'el') if options.el?
+
+        # Default @each function to pass through values
+        options.each ?= (model) ->
+          if (oj.isString model) or (oj.isNumber model) or (oj.isBoolean model)
+            model
+          else
+            JSON.stringify model
+
+        # Args have been handled so don't pass them on
+        oj.Table.base.constructor.apply @, [options]
+
+        # Validate args as arrays
+        for arg in args
+          unless oj.isArray arg
+            throw new Error 'oj.Table: array expected for row arguments'
+
+        # Set @rows to options or args if they exist
+        rows = args
+
+        @rows = if options.rows? then (oj.argumentShift options, 'rows') else rows
+
+### Properties
+
+      properties:
+
+rowCount: The number of rows (readonly)
+
+        rowCount: get: -> @$trs.length
+
+columnCount: The number of columns (readonly)
+
+        columnCount: get: -> @$tr(0).find('> td').length ? @$theadTR.find('> th').length ? @$tfootTR.find('> td').length ? 0
+
+#### Accessor properties
+
+rows: Row values as a list of lists as interpreted by ojValue plugin (readwrite)
+
+        rows:
+          get: ->
+            return @_rows if @_rows?
+            @_rows = []
+            for rx in [0...@rowCount] by 1
+              r = oj._map (@$tdsRow rx), ($td) -> $td.ojValues()
+              @_rows.push r
+            @_rows
+
+          set: (v) ->
+            @_rows = v; @make(); return
+
+header: Array of header values as interpreted by ojValue plugin (readwrite)
+TODO: NYI
+
+        header:
+          get: ->
+            throw new Error('NYI')
+          set: (v) ->
+           throw new Error('NYI')
+
+footer: Array of footer values as interpreted by ojValue plugin (readwrite)
+TODO: NYI
+
+        footer:
+          get: ->
+            throw new Error('NYI')
+          set: (v) ->
+           throw new Error('NYI')
+
+caption: The table caption (readwrite)
+
+        caption:
+          get: -> @$caption.ojValue()
+          set: (v) -> @$caption.oj v; return
+
+Element accessors
+
+        $table: get: -> @$el
+
+        $caption: get: -> @$ '> caption'
+
+        $colgroup: get: -> @$ '> colgroup'
+
+        $thead: get: -> @$ '> thead'
+
+        $tfoot: get: -> @$ '> tfoot'
+
+        $tbody: get: -> @$ '> tbody'
+
+        $theadTR: get: -> $thead.find '> tr'
+
+        $tfootTR: get: -> $tfoot.find '> tr'
+
+        $ths: get: -> @$theadTR.find '> th'
+
+        $trs: get: -> @_$trs ? (@_$trs = @$("> tbody > tr"))
+
+Table tags must have an order: `<caption>` `<colgroup>` `<thead>` `<tfoot>` `<tbody>`
+These accessors create table tags and preserve this order very carefully
+
+$tfootMake: get or create `<tfoot>` before `<tbody>` or appended to `<table>`
+
+        $tfootMake: get: ->
+          return @$tfoot if @$tfoot.length > 0
+          tag = '<tfoot></tfoot>'
+          if @$tfoot.length > 0
+            @$tfoot.insertBefore tag
+          else
+            @$table.append tag
+
+          @$tfoot
+
+$theadMake: get or create `<thead>` after `<colgroup>` or after `<caption>`, or prepended to `<table>`
+
+        $theadMake: get: ->
+          return @$thead if @$thead.length > 0
+          t = '<thead></thead>'
+          if @$colgroup.length > 0
+            @$colgroup.insertAfter t
+          else if @$caption.length > 0
+            @$caption.insertAfter t
+          else
+            @$table.prepend t
+
+          @$thead
+
+$tbodyMake: get or create `<tbody>` appened to `<table>`
+
+        $tbodyMake: get: ->
+          if @$tbody.length > 0
+            return @$tbody
+          else
+            @$table.append('<tbody></tbody>')
+          @$tbody
+
+$colgroupMake: get or create `<colgroup>` after `<caption>` or prepended to `<table>`
+
+        $colgroupMake: get: ->
+          return @$colgroup if @$colgroup.length > 0
+          tag = '<colgroup></colgroup>'
+          if @$caption.length > 0
+            @$caption.insertAfter tag
+          else
+            @$table.append tag
+          @$tbody
+
+$theadTRMake: get or create `<tr>` inside of `<thead>`
+
+        $theadTRMake: get: ->
+          return @$theadTR if @$theadTR.length > 0
+          @$theadMake.html('<tr></tr>')
+          @$theadTR
+
+$tfootTRMake: get or create `<tr>` inside of `<tfoot>`
+
+        $tfootTRMake: get: ->
+          return @$tfootTR if @$tfootTR.length > 0
+          @$tfootMake.html('<tr></tr>')
+          @$tfootTR
+
+### Methods
+
+      methods:
+
+#### CollectionView Methods
+
+make: Remake everything
+
+        make: ->
+
+  Some properties call make before construction completes
+
+          return unless @isConstructed
+
+  Convert models to views
+
+          rowViews = []
+          if @models? and @each?
+            models = if oj.isEvent @_models then @_models.models else @_models
+            for model in models
+              rowViews.push @_rowFromModel model
+
+  Rows are already rowViews
+
+          else if @rows?
+            rowViews = @rows
+
+  Render rows
+
+          @$tbodyMake.oj =>
+
+            for r in rowViews
+              oj.tr ->
+                for c in r
+                  oj.td c
+
+          console.log "@toHTML(): ", @toHTML()
+
+          @bodyChanged()
+          return
+
+#### CollectionView Events
+
+        # On add minimally create the missing model
+        collectionAdded: (m, c) ->
+          rx = c.indexOf m
+          row = @_rowFromModel m
+          @addRow rx, item
+          return
+
+        # On add minimally create the missing model
+        collectionRemoved: (m, c, o) ->
+          @removeRow o.index
+          return
+
+        collectionReset: ->
+          @make()
+          return
+
+#### Accessor Methods
+
+table.header(r,ojml)    // value for header
+table.cell(r,c,ojml)    // get/set value for cell
+
+$tr: Get `<tr>` jquery element at row rx
+
+        $tr: (rx) ->
+          rx = @_bound rx, @rowCount, ".$tr: rx"
+          @$trs.eq(rx)
+
+$tdsRow: Get list of `<td>`s in row rx
+
+        $tdsRow: (rx) ->
+          rx = @_bound rx, @rowCount, ".$tdsRow: rx"
+          @$tr(rx).find '> td'
+
+$tdsColumn: Get list of `<td>`s in column cx
+
+        $tdsColumn: (cx) ->
+          rx = @_bound rx, @rowCount, ".$tdsRow: rx"
+          @$tr(rx).find '> td'
+
+$td: Get `<td>` row rx, column cx
+
+        $td: (rx,cx) ->
+          rx = @_bound rx, @rowCount, ".$td: rx"
+          cx = @_bound cx, @cellCount(rx), ".$td: cx"
+          @$tdsRow.eq(cx)
+
+row: Get values at a given row
+
+        row: (rx, listOJML) ->
+          rx = @_bound rx, @rowCount, ".row: rx"
+          if listOJML?
+            throw new Error("oj.#{@typeName}: array expected for second argument with length length cellCount(#{rx})") unless listOJML.length == cellCount(rx)
+            for ojml,cx in listOJML
+              @$td(rx,cx).oj ojml
+            return
+          else
+            @$tdsRow(rx).ojValues()
+
+column: Get or set values at column cx
+
+        column: (cx, listOJML) ->
+          cx = @_bound cx, @columnCount, ".column: cx"
+
+cell: Get or set value at row rx, column cx
+
+        cell: (rx, cx, ojml) ->
+          if ojml?
+            @$td(rx, cx).oj ojml
+          else
+
+#### Manipulation Methods
+
+table.moveColumn(c,c2)
+table.removeColumn(c)
+table.swapColumn(c,c2)
+table.popColumn()
+table.pushColumn([ojml])
+table.shiftColumn()
+table.unshiftColumn([ojml])
+
+addRow: Add row to index rx (defaults to end)
+
+        addRow: (rx, listOJML) ->
+
+  Default to adding at the end
+
+          if arguments.length == 1
+            listOJML = rx
+            rx = @rowCount
+
+          rx = @_bound rx, @rowCount+1, ".addRow: rx"
+
+          tag = @rowTagName
+          # Empty
+          if @rowCount == 0
+            @$el.oj -> oj[tag] listOJML
+          # Last
+          else if rx == @rowCount
+            @$tr(rx-1).ojAfter -> oj[tag] listOJML
+          # Not last
+          else
+            @$tr(rx).ojBefore -> oj[tag] listOJML
+
+          @bodyChanged()
+          return
+
+removeRow: Remove row at index rx (defaults to end)
+
+        removeRow: (rx = -1) ->
+          rx = @_bound rx, @rowCount, ".removeRow: index"
+          out = @row rx
+          @$tr(rx).remove()
+          @bodyChanged()
+          out
+
+moveRow: Move row at index rx (defaults to end)
+
+        moveRow: (rxFrom, rxTo = -1) ->
+          return if rxFrom == rxTo
+
+          rxFrom = @_bound rxFrom, @rowCount, ".moveRow: fromIndex"
+          rxTo = @_bound rxTo, @rowCount, ".moveRow: toIndex"
+
+          if rxTo > rxFrom
+            @$tr(rxFrom).insertAfter @$tr(rxTo)
+          else
+            @$tr(rxFrom).insertBefore @$tr(rxTo)
+
+          @bodyChanged()
+          return
+
+swapRow: Swap row rx1 and rx2
+
+        swapRow: (ix1, ix2) ->
+          return if ix1 == ix2
+
+          ix1 = @_bound ix1, @rowCount, ".swap: firstIndex"
+          ix2 = @_bound ix2, @rowCount, ".swap: secondIndex"
+
+          if Math.abs(ix1-ix2) == 1
+            @move ix1, ix2
+          else
+            ixMin = Math.min ix1, ix2
+            ixMax = Math.max ix1, ix2
+            @move ixMax, ixMin
+            @move ixMin+1, ixMax
+          @bodyChanged()
+          return
+
+        unshiftRow: (v) -> @add 0, v; return
+
+        shiftRow: -> @remove 0
+
+        pushRow: (v) -> @add(v); return
+
+        popRow: -> @remove -1
+
+        clearColgroup: -> @$colgroup.remove(); return
+
+        clearBody: -> @$tbody.remove(); @bodyChanged(); return
+
+        clearHeader: -> @$thead.remove(); @headerChanged(); return
+
+        clearFooter: -> @$tfoot.remove(); @footerChanged(); return
+
+        clearCaption: -> @$capation.remove(); return
+
+clear: Remove all values
+
+        clear: -> @clearBody(); @clearHeader(); @clearFooter(); @$caption.remove()
+
+#### Event Handlers
+
+        # When body changes clear relevant cached values
+        bodyChanged: -> @_rows = null; @_columns = null; @_$trs = null; return
+
+        # When header changes clear relevant cached values
+        headerChanged: -> @_header = null; return
+
+        # When footer changes clear relevant cached values
+        footerChanged: -> @_footer = null; return
+
+#### Helper Methods
+
+_rowFromModel: Helper to map model to row
+
+        _rowFromModel: (model) ->
+          oj =>
+            @each model
+
+_rowElFromItem: Helper to create rowTagName wrapped row
+
+        _rowElFromItem: (row) ->
+          oj[@rowTagName] row
+
+  _bound: Bound index to allow negatives, throw when out of range
+
+        _bound: (ix, count, message) ->
+          _boundOrThrow ix, count, message, @typeName
 
 oj.sandbox
 ------------------------------------------------------------------------------
@@ -2572,18 +2999,15 @@ Include a plugin of OJ with `settings`
         oj.addProperty oj.sandbox, name, value:value, writable: false
 
 
-jqueryExtend(fn)
+_jqueryExtend(fn)
 -----------------------------------------------------------------------------
 
-    #
-    #     $.fn.myExtension = jqueryExtend (($el,args) ->
-    #       $el     # => The jquery matched element
-    #       args    # => Array of arguments
-    #       return a non-null value to stop iteration and return value to caller
-    #      ), (($el) ->
-    #      ), isMap
-    jqueryExtend = (options = {}) ->
-      _defaults options, get:_identity, set:_identity
+option.get is called to retrieve value per element
+option.set is called when setting elements
+option.first:true means return only the first get, otherwise it is returned as an array.
+
+    _jqueryExtend = (options = {}) ->
+      _defaults options, get:_identity, set:_identity, first: false
       ->
         args = _toArray arguments
         $els = jQuery(@)
@@ -2592,9 +3016,8 @@ jqueryExtend(fn)
           out = []
           for el in $els
             out.push options.get $(el)
-          # Unwrap arrays of length one
-          if out.length == 1
-            return out[0]
+            if options.first
+              return out[0]
           out
 
         else if (oj.isFunction options.set)
@@ -2610,7 +3033,7 @@ jqueryExtend(fn)
   jquery.oj
   -----------------------------------------------------------------------------
 
-    jQuery.fn.oj = jqueryExtend
+    jQuery.fn.oj = _jqueryExtend
       set:($el, args) ->
 
         # No arguments return the first instance
@@ -2637,25 +3060,37 @@ jqueryExtend(fn)
 
 jquery.ojValue
 -----------------------------------------------------------------------------
-Get the value of the selected element's contents
+Get the first value of the selected contents
 
-    jQuery.fn.ojValue = jqueryExtend
+    _jqGetValue = ($el, args) ->
+
+      el = $el[0]
+      child = el.firstChild
+
+      switch oj.typeOf child
+        # Parse the text to turn it into bool, number, or string
+        when 'dom-text'
+          text = oj.parse child.nodeValue
+        # Get elements as oj instances or elements
+        when 'dom-element'
+          if (inst = _getInstanceOnElement child)?
+            inst
+          else
+            child
+
+    jQuery.fn.ojValue = _jqueryExtend
+      first: true
       set: null
-      get: ($el, args) ->
+      get: _jqGetValue
 
-        el = $el[0]
-        child = el.firstChild
+jquery.ojValues
+-----------------------------------------------------------------------------
+Get values as an array of the selected element's contents
 
-        switch oj.typeOf child
-          # Parse the text to turn it into bool, number, or string
-          when 'dom-text'
-            text = child.nodeValue
-          # Get elements as oj instances or elements
-          when 'dom-element'
-            if (inst = _getInstanceOnElement child)?
-              inst
-            else
-              child
+    jQuery.fn.ojValues = _jqueryExtend
+      first: false
+      set: null
+      get: _jqGetValue
 
 jquery.ojAfter, jquery.ojBefore, ...
 -----------------------------------------------------------------------------
@@ -2671,7 +3106,7 @@ jquery.ojAfter, jquery.ojBefore, ...
 
     for ojName,jqName of plugins
       do (ojName, jqName) ->
-        jQuery.fn[ojName] = jqueryExtend
+        jQuery.fn[ojName] = _jqueryExtend
           set: ($el, args) ->
 
             # Compile ojml for each one to separate references

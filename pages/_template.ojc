@@ -9,6 +9,7 @@ module.exports = _template = (parts) ->
   doctype 5
   html ->
     head ->
+      meta name:'viewport', content:'width=device-width'
       title parts.title
 
       if _.isArray parts.styles

@@ -44,6 +44,8 @@ module.exports = oj ->
   doctype 5
   html lang:'en', ->
     head ->
+      meta name:'viewport', content:'width=device-width'
+
       title 'Test'
 
       link href:'styles/reset.css', rel:'stylesheet', type:'text/css'
@@ -64,34 +66,86 @@ module.exports = oj ->
       meta 'http-equiv':"X-UA-Compatible", content:'IE=edge,chrome=1'
 
     body ->
-      if oj.isClient
-        CodeModel = Backbone.Model.extend()
-        code = new CodeModel({code: 'function test(){\n}\nvar foo = 5;'});
-      h1 'This is a header'
-      h2 'header 2'
-      p 'Paragraph goes here. Looking good'
 
-      table c:'table table-striped', ->
+      div 'Outer', ->
+
+        div 'Class none'
+
+        div c:'c1', 'Class 1'
+
+        div c:'c1 c2', 'Class 1 & 2'
+
+      table style:{width:'1000px', border:'1px solid black'}, ->
+
         tr ->
-          td 1
-          td 2
-          td 3
+          td('asdf')
+          td('asdf')
+          td 'asdf', colspan:4, style:backgroundColor:'red'
+
         tr ->
-          td 4
-          td 5
-          td 6
+          td('asdf')
+          td('asdf')
+          td('asdf')
+          td('asdf')
+          td('asdf')
+          td('asdf')
 
-      oj.TwitterFollowButton(large:true)
 
-      ae = AceEditor()
-        # model: code
-        # key: 'code'
-        # wrapLimit: '23'
-        # mode: 'javascript'
-        # theme: 'solarized_light'
-        # padding: 20
+      BulletList(
+        new CheckBox()
+        2
+        3
+      )
+
+      List(
+        new CheckBox()
+        2
+        3
+      )
+
+      # Table(
+      #   [1,td]
+      #   [5,6,7]
+      #   []
+      # )
+
+
+
+      css
+        div:
+          color:'red'
+
+          '@media tablet':
+            color:'green'
+
+          '@media phone':
+            color:'purple'
+            '.c2':
+              border:'1px solid black'
+
+          '&:nth-child(even)':
+            fontSize:'20px'
+
+
+
+
+
+
+
+
+
+
+
+
+      # ae = AceEditor()
+      #   model: code
+      #   key: 'code'
+      #   wrapLimit: '23'
+      #   mode: 'javascript'
+      #   theme: 'solarized_light'
+      #   padding: 20
       # ae.$el.css border:'1px solid orange'
-      `window.ae = ae;`
+      # `window.ae = ae;`
 
       # css
       #   '.ace_line':

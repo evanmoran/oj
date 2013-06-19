@@ -91,6 +91,86 @@ describe 'oj.List', ->
       '<div>2</div>'
       '</span>'
 
+  it 'remove, add', ->
+    control = oj.List 1,2,3
+    expect(control.count).to.equal 3
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.items).to.deep.equal [1,2,3]
+
+    r = control.remove(1)
+    expect(r).to.equal 2
+    expect(control.items).to.deep.equal [1,3]
+
+    r = control.remove(1)
+    expect(r).to.equal 3
+    expect(control.items).to.deep.equal [1]
+
+    r = control.remove(0)
+    expect(r).to.equal 1
+    expect(control.items).to.deep.equal []
+
+    expect(-> control.remove(1)).to.throw Error
+    expect(-> control.add(1,4)).to.throw Error
+
+    control.add(0,4)
+    expect(control.items).to.deep.equal [4]
+
+    control.add(1,5)
+    expect(control.items).to.deep.equal [4,5]
+
+    control.add(1,6)
+    expect(control.items).to.deep.equal [4,6,5]
+
+  it 'shift, unshift', ->
+    control = oj.List 1,2,3
+    expect(control.count).to.equal 3
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.items).to.deep.equal [1,2,3]
+
+    r = control.shift()
+    expect(r).to.equal 1
+    expect(control.items).to.deep.equal [2,3]
+
+    r = control.shift()
+    expect(r).to.equal 2
+    expect(control.items).to.deep.equal [3]
+
+    r = control.shift()
+    expect(r).to.equal 3
+    expect(control.items).to.deep.equal []
+
+    expect(-> control.shift()).to.throw Error
+    control.unshift(4)
+    expect(control.items).to.deep.equal [4]
+
+    control.unshift(5)
+    expect(control.items).to.deep.equal [5,4]
+
+  it 'pop, push', ->
+    control = oj.List 1,2,3
+    expect(control.count).to.equal 3
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.items).to.deep.equal [1,2,3]
+
+    r = control.pop()
+    expect(r).to.equal 3
+    expect(control.items).to.deep.equal [1,2]
+
+    r = control.pop()
+    expect(r).to.equal 2
+    expect(control.items).to.deep.equal [1]
+
+    r = control.pop()
+    expect(r).to.equal 1
+    expect(control.items).to.deep.equal []
+
+    expect(-> control.pop()).to.throw Error
+    control.push(4)
+    expect(control.items).to.deep.equal [4]
+
+    control.push(5)
+    expect(control.items).to.deep.equal [4,5]
+
   it 'NumberList', ->
     control = oj.NumberList 1,2
     expect(oj.typeOf control).to.equal 'NumberList'
@@ -117,7 +197,7 @@ describe 'oj.List', ->
       '<li>2</li>'
       '</ul>'
 
-it 'construct with one model argument (default each)', ->
+  it 'construct with one model argument (default each)', ->
     control = oj.List models:[1]
     expect(control.count).to.equal 1
     expect(oj.typeOf control).to.equal 'List'
@@ -126,7 +206,7 @@ it 'construct with one model argument (default each)', ->
     contains control,
       '<div>1</div>'
 
-    expect(control.items).to.deep.equal ['1']
+    expect(control.items).to.deep.equal [1]
 
   it 'construct with many models (default each)', ->
     user1 = name:'Alfred', strength: 11
@@ -324,10 +404,10 @@ it 'construct with one model argument (default each)', ->
     expect(control.count).to.equal 3
 
     expect(control.item(0)).to.equal 'one'
-    expect(control.item(1)).to.equal '2'
+    expect(control.item(1)).to.equal 2
     expect(control.item(2)).to.not.exist
 
-    expect(control.items).to.deep.equal ['one', '2', undefined]
+    expect(control.items).to.deep.equal ['one', 2, undefined]
 
 
   it 'NumberList from element', ->
@@ -346,10 +426,10 @@ it 'construct with one model argument (default each)', ->
     expect(control.count).to.equal 3
 
     expect(control.item(0)).to.equal 'one'
-    expect(control.item(1)).to.equal '2'
+    expect(control.item(1)).to.equal 2
     expect(control.item(2)).to.not.exist
 
-    expect(control.items).to.deep.equal ['one', '2', undefined]
+    expect(control.items).to.deep.equal ['one', 2, undefined]
 
 
   it 'List from element', ->
@@ -368,8 +448,8 @@ it 'construct with one model argument (default each)', ->
     expect(control.count).to.equal 3
 
     expect(control.item(0)).to.equal 'one'
-    expect(control.item(1)).to.equal '2'
+    expect(control.item(1)).to.equal 2
     expect(control.item(2)).to.not.exist
 
-    expect(control.items).to.deep.equal ['one', '2', undefined]
+    expect(control.items).to.deep.equal ['one', 2, undefined]
 
