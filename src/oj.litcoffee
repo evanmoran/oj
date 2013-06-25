@@ -1547,10 +1547,20 @@ Recursive helper for compiling that wraps indention
         attr.style = _styleFromObject attr.style, inline:true
       return
 
-    # Allow attributes to alias c to class
-    _attributeCMeansClass = (attr) ->
+    # Allow attributes to alias c to class and use arrays instead of space seperated strings
+    _attributeCMeansClassAndAllowsArrays = (attr) ->
+      # Convert to c and class from arrays to strings
+      if attr?.c? and oj.isArray(attr.c)
+        attr.c = attr.c.join ' '
+      if attr?.class? and oj.isArray(attr.class)
+        attr.class = attr.class.join ' '
+
+      # Move c to class
       if attr?.c?
-        attr.class = attr.c
+        if attr?.class?
+          attr.class += ' ' + attr.c
+        else
+          attr.class = attr.c
         delete attr.c
       return
 
@@ -1583,13 +1593,10 @@ Recursive helper for compiling that wraps indention
     _attributesProcessedForOJ = (attr) ->
 
       # Alias c to class
-      _attributeCMeansClass attr
+      _attributeCMeansClassAndAllowsArrays attr
 
       # style takes objects
       _attributeStyleAllowsObject attr
-
-      # class takes arrays
-      _attributeClassAllowsArrays attr
 
       # Omit keys that false, null, or undefined
       _attributeOmitFalsyValues attr

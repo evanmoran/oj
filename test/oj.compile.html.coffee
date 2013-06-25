@@ -102,6 +102,22 @@ describe 'oj.compile.html', ->
     ojml = oj.div c: 'c1', ->
     compileTest ojml, '<div class="c1"></div>'
 
+  it 'attributes class as array', ->
+    ojml = oj.div class: ['c1','c2'], ->
+    compileTest ojml, '<div class="c1 c2"></div>'
+
+  it 'attributes c as array', ->
+    ojml = oj.div c: ['c1','c2'], ->
+    compileTest ojml, '<div class="c1 c2"></div>'
+
+  it 'attributes class and c as array', ->
+    ojml = oj.div class: ['c1','c2'], c:['c3'], ->
+    compileTest ojml, '<div class="c1 c2 c3"></div>'
+
+  it 'attributes class and c as array', ->
+    ojml = oj.div class: ['c1','c2'], c:'c3 c4', ->
+    compileTest ojml, '<div class="c1 c2 c3 c4"></div>'
+
   it 'attributes id', ->
     ojml = oj.div id: 'id1', ->
     compileTest ojml, '<div id="id1"></div>'
