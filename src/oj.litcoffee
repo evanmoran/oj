@@ -1293,6 +1293,7 @@ Nested definitions, media definitions and comma definitions are resolved.
             selectorParts = _splitAndTrim selector, ','
 
   Generate the next selectors and substitue `&` when present
+  TODO: Refactor to use the same code as media queries
 
             selectorsNext = []
             for selOuter in selectorsAcc
@@ -1341,12 +1342,10 @@ debug:true will output newlines
       space = if debug then ' ' else ''
       inline = !debug
 
-
       flatMap = _flattenCSSMap cssMap
 
       css = ''
       for media, selectorMap of flatMap
-
 
   Serialize media query
 
@@ -1355,7 +1354,6 @@ debug:true will output newlines
           css += "#{media}#{space}{#{newline}"
 
         for selector,styles of selectorMap
-
           indent = if debug and media then '\t' else ''
 
   Serialize selector
@@ -2395,7 +2393,7 @@ make: Remake view from property data
 
           views = []
           if @models? and @each?
-            models = if oj.isEvent @_models then @_models.models else @_models
+            models = if oj.isEvent @models then @models.models else @models
             for model in models
               views.push @_itemFromModel model
 
@@ -2463,11 +2461,6 @@ itemsChanged: Model changed occured, clear relevant cached values
 
         add: (ix, ojml) ->
 
-          # Default to adding at the end
-          if arguments.length == 1
-            ojml = ix
-            ix = @count
-
           ix = @_bound ix, @count+1, ".add: index"
 
           tag = @itemTagName
@@ -2484,7 +2477,7 @@ itemsChanged: Model changed occured, clear relevant cached values
           @itemsChanged()
           return
 
-        remove: (ix = -1) ->
+        remove: (ix) ->
           ix = @_bound ix, @count, ".remove: index"
           out = @item ix
           @$item(ix).remove()
@@ -2525,7 +2518,7 @@ itemsChanged: Model changed occured, clear relevant cached values
 
         shift: -> @remove 0
 
-        push: (v) -> @add(v); return
+        push: (v) -> @add(@count, v); return
 
         pop: -> @remove -1
 
@@ -2573,11 +2566,14 @@ Inherit and construct
         @el = oj.argumentShift(options, 'el') if options.el?
 
         # Default @each function to pass through values
-        options.each ?= (model) ->
-          if (oj.isString model) or (oj.isNumber model) or (oj.isBoolean model)
-            model
+        options.each ?= (model,cell) ->
+          values = if (oj.isString model) or (oj.isNumber model) or (oj.isBoolean model)
+            [model]
+          else if (oj.isEvent model) and typeof model.attributes == 'object'
+            _values model.attributes
           else
-            JSON.stringify model
+            _values model
+          cell v for v in values
 
         # Args have been handled so don't pass them on
         oj.Table.base.constructor.apply @, [options]
@@ -2588,9 +2584,10 @@ Inherit and construct
             throw new Error 'oj.Table: array expected for row arguments'
 
         # Set @rows to options or args if they exist
-        rows = args
+        rows = (oj.argumentShift options, 'rows') ? args
 
-        @rows = if options.rows? then (oj.argumentShift options, 'rows') else rows
+        if rows.length > 0
+          @rows = rows
 
 ### Properties
 
@@ -2602,7 +2599,15 @@ rowCount: The number of rows (readonly)
 
 columnCount: The number of columns (readonly)
 
-        columnCount: get: -> @$tr(0).find('> td').length ? @$theadTR.find('> th').length ? @$tfootTR.find('> td').length ? 0
+        columnCount: get: ->
+          if (trlen = @$tr(0).find('> td').length) > 0
+            trlen
+          else if (thlen = @$theadTR.find('> th').length) > 0
+            thlen
+          else if (tflen = @$tfootTR.find('> td').length) > 0
+            tflen
+          else
+            0
 
 #### Accessor properties
 
@@ -2617,32 +2622,39 @@ rows: Row values as a list of lists as interpreted by ojValue plugin (readwrite)
               @_rows.push r
             @_rows
 
-          set: (v) ->
-            @_rows = v; @make(); return
+          set: (list) ->
+            return @clearBody() unless list? and list.length > 0
+            @_rows = list; @make(); return
 
 header: Array of header values as interpreted by ojValue plugin (readwrite)
-TODO: NYI
 
         header:
           get: ->
-            throw new Error('NYI')
-          set: (v) ->
-           throw new Error('NYI')
+            @$theadTR.find('> th').ojValues()
+          set: (list) ->
+            throw new Error('oj.Table.header: array expected for first argument') unless oj.isArray list
+            return @clearHeader() unless list? and list.length > 0
+            @$theadTRMake.oj =>
+              for ojml in list
+                oj.th ojml
 
 footer: Array of footer values as interpreted by ojValue plugin (readwrite)
-TODO: NYI
 
         footer:
           get: ->
-            throw new Error('NYI')
-          set: (v) ->
-           throw new Error('NYI')
+            @$tfootTR.find('> td').ojValues()
+          set: (list) ->
+            throw new Error('oj.Table.footer: array expected for first argument') unless oj.isArray list
+            return @clearFooter() unless list? and list.length > 0
+            @$tfootTRMake.oj =>
+              for ojml in list
+                oj.td ojml
 
 caption: The table caption (readwrite)
 
         caption:
           get: -> @$caption.ojValue()
-          set: (v) -> @$caption.oj v; return
+          set: (v) -> @$captionMake.oj v; return
 
 Element accessors
 
@@ -2658,9 +2670,9 @@ Element accessors
 
         $tbody: get: -> @$ '> tbody'
 
-        $theadTR: get: -> $thead.find '> tr'
+        $theadTR: get: -> @$thead.find '> tr'
 
-        $tfootTR: get: -> $tfoot.find '> tr'
+        $tfootTR: get: -> @$tfoot.find '> tr'
 
         $ths: get: -> @$theadTR.find '> th'
 
@@ -2669,15 +2681,33 @@ Element accessors
 Table tags must have an order: `<caption>` `<colgroup>` `<thead>` `<tfoot>` `<tbody>`
 These accessors create table tags and preserve this order very carefully
 
+$colgroupMake: get or create `<colgroup>` after `<caption>` or prepended to `<table>`
+
+        $colgroupMake: get: ->
+          return @$colgroup if @$colgroup.length > 0
+          t = '<colgroup></colgroup>'
+          if @$caption.length > 0
+            @$caption.insertAfter t
+          else
+            @$table.append t
+          @$tbody
+
+$captionMake: get or create `<caption>` prepended to `<table>`
+
+        $captionMake: get: ->
+          return @$caption if @$caption.length > 0
+          @$table.prepend '<caption></caption>'
+          @$caption
+
 $tfootMake: get or create `<tfoot>` before `<tbody>` or appended to `<table>`
 
         $tfootMake: get: ->
           return @$tfoot if @$tfoot.length > 0
-          tag = '<tfoot></tfoot>'
+          t = '<tfoot></tfoot>'
           if @$tfoot.length > 0
-            @$tfoot.insertBefore tag
+            @$tfoot.insertBefore t
           else
-            @$table.append tag
+            @$table.append t
 
           @$tfoot
 
@@ -2698,35 +2728,22 @@ $theadMake: get or create `<thead>` after `<colgroup>` or after `<caption>`, or 
 $tbodyMake: get or create `<tbody>` appened to `<table>`
 
         $tbodyMake: get: ->
-          if @$tbody.length > 0
-            return @$tbody
-          else
-            @$table.append('<tbody></tbody>')
-          @$tbody
-
-$colgroupMake: get or create `<colgroup>` after `<caption>` or prepended to `<table>`
-
-        $colgroupMake: get: ->
-          return @$colgroup if @$colgroup.length > 0
-          tag = '<colgroup></colgroup>'
-          if @$caption.length > 0
-            @$caption.insertAfter tag
-          else
-            @$table.append tag
+          return @$tbody if @$tbody.length > 0
+          @$table.append '<tbody></tbody>'
           @$tbody
 
 $theadTRMake: get or create `<tr>` inside of `<thead>`
 
         $theadTRMake: get: ->
           return @$theadTR if @$theadTR.length > 0
-          @$theadMake.html('<tr></tr>')
+          @$theadMake.html '<tr></tr>'
           @$theadTR
 
 $tfootTRMake: get or create `<tr>` inside of `<tfoot>`
 
         $tfootTRMake: get: ->
           return @$tfootTR if @$tfootTR.length > 0
-          @$tfootMake.html('<tr></tr>')
+          @$tfootMake.html '<tr></tr>'
           @$tfootTR
 
 ### Methods
@@ -2747,25 +2764,24 @@ make: Remake everything
 
           rowViews = []
           if @models? and @each?
-            models = if oj.isEvent @_models then @_models.models else @_models
+            models = if oj.isEvent @models then @models.models else @_models
             for model in models
               rowViews.push @_rowFromModel model
 
-  Rows are already rowViews
+  Rows need tds to become views
 
           else if @rows?
-            rowViews = @rows
-
-  Render rows
-
-          @$tbodyMake.oj =>
-
-            for r in rowViews
-              oj.tr ->
-                for c in r
+            for row in @rows
+              rowViews.push oj ->
+                for c in row
                   oj.td c
 
-          console.log "@toHTML(): ", @toHTML()
+  Render rows into tbody
+
+          if rowViews.length > 0
+            @$tbodyMake.oj =>
+              for r in rowViews
+                oj.tr r
 
           @bodyChanged()
           return
@@ -2776,7 +2792,7 @@ make: Remake everything
         collectionAdded: (m, c) ->
           rx = c.indexOf m
           row = @_rowFromModel m
-          @addRow rx, item
+          @_addRowTR rx, oj -> oj.tr row
           return
 
         # On add minimally create the missing model
@@ -2796,27 +2812,21 @@ table.cell(r,c,ojml)    // get/set value for cell
 $tr: Get `<tr>` jquery element at row rx
 
         $tr: (rx) ->
-          rx = @_bound rx, @rowCount, ".$tr: rx"
+          rx = if rx < 0 then rx + count else rx
           @$trs.eq(rx)
 
 $tdsRow: Get list of `<td>`s in row rx
 
         $tdsRow: (rx) ->
-          rx = @_bound rx, @rowCount, ".$tdsRow: rx"
-          @$tr(rx).find '> td'
-
-$tdsColumn: Get list of `<td>`s in column cx
-
-        $tdsColumn: (cx) ->
-          rx = @_bound rx, @rowCount, ".$tdsRow: rx"
+          rx = if rx < 0 then rx + count else rx
           @$tr(rx).find '> td'
 
 $td: Get `<td>` row rx, column cx
 
         $td: (rx,cx) ->
-          rx = @_bound rx, @rowCount, ".$td: rx"
-          cx = @_bound cx, @cellCount(rx), ".$td: cx"
-          @$tdsRow.eq(cx)
+          rx = if rx < 0 then rx + @rowCount else rx
+          cx = if cx < 0 then cx + @columnCount else cx
+          @$tdsRow(rx).eq(cx)
 
 row: Get values at a given row
 
@@ -2830,57 +2840,57 @@ row: Get values at a given row
           else
             @$tdsRow(rx).ojValues()
 
-column: Get or set values at column cx
-
-        column: (cx, listOJML) ->
-          cx = @_bound cx, @columnCount, ".column: cx"
-
 cell: Get or set value at row rx, column cx
 
         cell: (rx, cx, ojml) ->
           if ojml?
             @$td(rx, cx).oj ojml
           else
+            @td(rx, cx).ojValue()
 
 #### Manipulation Methods
 
-table.moveColumn(c,c2)
-table.removeColumn(c)
-table.swapColumn(c,c2)
-table.popColumn()
-table.pushColumn([ojml])
-table.shiftColumn()
-table.unshiftColumn([ojml])
 
-addRow: Add row to index rx (defaults to end)
+addRow: Add row to index rx
 
         addRow: (rx, listOJML) ->
-
-  Default to adding at the end
-
-          if arguments.length == 1
-            listOJML = rx
-            rx = @rowCount
+          throw new Error('oj.addRow: expected two arguments') unless arguments.length == 2
 
           rx = @_bound rx, @rowCount+1, ".addRow: rx"
 
-          tag = @rowTagName
+          tr =
+            ->
+              oj.tr ->
+                for o in listOJML
+                  oj.td o
+
+          @_addRowTR rx, tr
+          return
+
+_addRowTR: Helper to add row directly with `<tr>`
+
+        _addRowTR: (rx, tr) ->
+
           # Empty
           if @rowCount == 0
-            @$el.oj -> oj[tag] listOJML
+            @$el.oj tr
+
           # Last
           else if rx == @rowCount
-            @$tr(rx-1).ojAfter -> oj[tag] listOJML
+            @$tr(rx-1).ojAfter tr
+
           # Not last
           else
-            @$tr(rx).ojBefore -> oj[tag] listOJML
+            @$tr(rx).ojBefore tr
 
           @bodyChanged()
           return
 
 removeRow: Remove row at index rx (defaults to end)
 
-        removeRow: (rx = -1) ->
+        removeRow: (rx) ->
+          throw new Error('oj.removeRow: expected one argument') unless arguments.length == 1
+
           rx = @_bound rx, @rowCount, ".removeRow: index"
           out = @row rx
           @$tr(rx).remove()
@@ -2889,57 +2899,50 @@ removeRow: Remove row at index rx (defaults to end)
 
 moveRow: Move row at index rx (defaults to end)
 
-        moveRow: (rxFrom, rxTo = -1) ->
+        moveRow: (rxFrom, rxTo) ->
           return if rxFrom == rxTo
 
           rxFrom = @_bound rxFrom, @rowCount, ".moveRow: fromIndex"
           rxTo = @_bound rxTo, @rowCount, ".moveRow: toIndex"
 
-          if rxTo > rxFrom
-            @$tr(rxFrom).insertAfter @$tr(rxTo)
-          else
-            @$tr(rxFrom).insertBefore @$tr(rxTo)
+          insert = if rxTo > rxFrom then 'insertAfter' else 'insertBefore'
+          @$tr(rxFrom)[insert] @$tr(rxTo)
 
           @bodyChanged()
           return
 
 swapRow: Swap row rx1 and rx2
 
-        swapRow: (ix1, ix2) ->
-          return if ix1 == ix2
+        swapRow: (rx1, rx2) ->
+          return if rx1 == rx2
 
-          ix1 = @_bound ix1, @rowCount, ".swap: firstIndex"
-          ix2 = @_bound ix2, @rowCount, ".swap: secondIndex"
+          rx1 = @_bound rx1, @rowCount, ".swap: firstIndex"
+          rx2 = @_bound rx2, @rowCount, ".swap: secondIndex"
 
-          if Math.abs(ix1-ix2) == 1
-            @move ix1, ix2
+          if Math.abs(rx1-rx2) == 1
+            @moveRow rx1, rx2
           else
-            ixMin = Math.min ix1, ix2
-            ixMax = Math.max ix1, ix2
-            @move ixMax, ixMin
-            @move ixMin+1, ixMax
+            rxMin = Math.min rx1, rx2
+            rxMax = Math.max rx1, rx2
+            @moveRow rxMax, rxMin
+            @moveRow rxMin+1, rxMax
           @bodyChanged()
           return
 
-        unshiftRow: (v) -> @add 0, v; return
-
-        shiftRow: -> @remove 0
-
-        pushRow: (v) -> @add(v); return
-
-        popRow: -> @remove -1
+        unshiftRow: (v) -> @addRow(0, v); return
+        shiftRow: -> @removeRow 0
+        pushRow: (v) -> @addRow(@rowCount, v); return
+        popRow: -> @removeRow -1
 
         clearColgroup: -> @$colgroup.remove(); return
 
-        clearBody: -> @$tbody.remove(); @bodyChanged(); return
+        clearBody: -> console.log "clearing body: oj.litcoffee:2930";@$tbody.remove(); @bodyChanged(); return
 
         clearHeader: -> @$thead.remove(); @headerChanged(); return
 
         clearFooter: -> @$tfoot.remove(); @footerChanged(); return
 
         clearCaption: -> @$capation.remove(); return
-
-clear: Remove all values
 
         clear: -> @clearBody(); @clearHeader(); @clearFooter(); @$caption.remove()
 
@@ -2960,7 +2963,7 @@ _rowFromModel: Helper to map model to row
 
         _rowFromModel: (model) ->
           oj =>
-            @each model
+            @each model, oj.td
 
 _rowElFromItem: Helper to create rowTagName wrapped row
 
@@ -3030,8 +3033,8 @@ option.first:true means return only the first get, otherwise it is returned as a
 
           $els
 
-  jquery.oj
-  -----------------------------------------------------------------------------
+jquery.oj
+-----------------------------------------------------------------------------
 
     jQuery.fn.oj = _jqueryExtend
       set:($el, args) ->
@@ -3092,7 +3095,7 @@ Get values as an array of the selected element's contents
       set: null
       get: _jqGetValue
 
-jquery.ojAfter, jquery.ojBefore, ...
+jquery plugins
 -----------------------------------------------------------------------------
 
     plugins =

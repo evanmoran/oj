@@ -7,10 +7,68 @@ Backbone = require 'backbone'
 oj = require '../lib/oj.js'
 oj.extend this
 
+a1 = 'a1'
+a2 = 'a2'
+a3 = 'a3'
+b1 = 'b1'
+b2 = 'b2'
+b3 = 'b3'
+c1 = 'c1'
+c2 = 'c2'
+c3 = 'c3'
+d1 = 'd1'
+d2 = 'd2'
+d3 = 'd3'
+h1 = 'h1'
+h2 = 'h2'
+h3 = 'h3'
+f1 = 'f1'
+f2 = 'f2'
+f3 = 'f3'
+
+aRow = [a1,a2,a3]
+bRow = [b1,b2,b3]
+cRow = [c1,c2,c3]
+dRow = [d1,d2,d3]
+hRow = [h1,h2,h3]
+fRow = [f1,f2,f3]
+col1 = [a1,b1,c1]
+col2 = [a2,b2,c2]
+col3 = [a3,b3,c3]
+
+user1 = id:1, name:'Alfred', strength: 11
+user2 = id:2, name:'Batman', strength: 22
+user3 = id:3, name:'Catwoman', strength: 33
+user4 = id:4, name:'Gordan', strength: 44
+user5 = id:5, name:'Poison Ivy', strength: 55
+users3 = [user1,user2,user3]
+users4 = [user1,user2,user3,user4]
+users5 = [user1,user2,user3,user4,user5]
+
+class UserModel extends Backbone.Model
+
+userModel1 = new UserModel user1
+userModel2 = new UserModel user2
+userModel3 = new UserModel user3
+userModel4 = new UserModel user4
+userModel5 = new UserModel user5
+userModels3 = [userModel1,userModel2,userModel3]
+userModels4 = [userModel1,userModel2,userModel3,userModel4]
+userModels5 = [userModel1,userModel2,userModel3,userModel4,userModel5]
+
+class UserCollection extends Backbone.Collection
+  model: UserModel
+  comparator: (m) -> m.get 'name'
+
 contains = (control, args...) ->
   html = oj.toHTML control
   for arg in args
     expect(html).to.contain arg
+
+doesNotContain = (control, args...) ->
+  html = oj.toHTML control
+  for arg in args
+    expect(html).to.not.contain arg
 
 jsonify = (any) ->
   if oj.isString(any) or oj.isNumber(any) or oj.isBoolean(any)
@@ -23,35 +81,35 @@ describe 'oj.Table', ->
   beforeEach ->
     $('body').html ''
 
-  # it 'exists', ->
-  #   expect(oj.Table).to.be.a 'function'
+  it 'exists', ->
+    expect(oj.Table).to.be.a 'function'
 
-  # it 'construct default', ->
-  #   control = oj.Table()
-  #   expect(oj.isOJ control).to.equal true
-  #   expect(oj.typeOf control).to.equal 'Table'
-  #   expect(control.rowCount).to.equal 0
-  #   expect(control.columnCount).to.equal 0
-  #   expect(control.rows).to.deep.equal []
+  it 'construct default', ->
+    control = oj.Table()
+    expect(oj.isOJ control).to.equal true
+    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.rowCount).to.equal 0
+    expect(control.columnCount).to.equal 0
+    expect(control.rows).to.deep.equal []
 
-  # it 'construct with id', ->
-  #   id = 'my-id'
-  #   control = oj.Table id:id
-  #   expect(control.rowCount).to.equal 0
-  #   expect(control.columnCount).to.equal 0
-  #   expect(control.id).to.equal id
-  #   expect(control.attributes.id).to.equal id
+  it 'construct with id', ->
+    id = 'my-id'
+    control = oj.Table id:id
+    expect(control.rowCount).to.equal 0
+    expect(control.columnCount).to.equal 0
+    expect(control.id).to.equal id
+    expect(control.attributes.id).to.equal id
 
-  # it 'construct with name', ->
-  #   name = 'my-name'
-  #   control = oj.Table name:name
-  #   expect(control.rowCount).to.equal 0
-  #   expect(control.columnCount).to.equal 0
-  #   expect(control.name).to.not.exist
-  #   expect(control.attributes.name).to.equal name
+  it 'construct with name', ->
+    name = 'my-name'
+    control = oj.Table name:name
+    expect(control.rowCount).to.equal 0
+    expect(control.columnCount).to.equal 0
+    expect(control.name).to.not.exist
+    expect(control.attributes.name).to.equal name
 
-  # it 'construct with invalid argument', ->
-  #   expect(-> oj.Table 1).to.throw(Error)
+  it 'construct with invalid argument', ->
+    expect(-> oj.Table 1).to.throw(Error)
 
   it 'construct with one argument', ->
     control = oj.Table [1]
@@ -88,24 +146,6 @@ describe 'oj.Table', ->
       '</tbody>'
       '</table>'
 
-  a1 = 'a1'
-  a2 = 'a2'
-  a3 = 'a3'
-  a4 = 'a4'
-  a5 = 'a5'
-  b1 = 'b1'
-  b2 = 'b2'
-  b3 = 'b3'
-  b4 = 'b4'
-  b5 = 'b5'
-  c1 = 'c1'
-  c2 = 'c2'
-  c3 = 'c3'
-  c4 = 'c4'
-  c5 = 'c5'
-  aRow = [a1,a2,a3]
-  bRow = [b1,b2,b3]
-  cRow = [c1,c2,c3]
 
   it 'removeRow, addRow', ->
     control = oj.Table aRow, bRow, cRow
@@ -115,376 +155,459 @@ describe 'oj.Table', ->
     expect(control.rows).to.deep.equal [aRow, bRow, cRow]
 
     r = control.removeRow(1)
-    # expect(r).to.equal bRow
+    expect(r).to.deep.equal bRow
     expect(control.rows).to.deep.equal [aRow,cRow]
 
-    # r = control.removeRow(1)
-    # expect(r).to.equal 3
-    # expect(control.rows).to.deep.equal [1]
+    r = control.removeRow(1)
+    expect(r).to.deep.equal cRow
+    expect(control.rows).to.deep.equal [aRow]
+
+    r = control.removeRow(0)
+    expect(r).to.deep.equal aRow
+    expect(control.rows).to.deep.equal []
+
+    expect(-> control.removeRow(1)).to.throw Error
+    expect(-> control.addRow(aRow,4)).to.throw Error
+
+    # add empty
+    control.addRow(0,bRow)
+    expect(control.rows).to.deep.equal [bRow]
+
+    # add last
+    control.addRow(1,cRow)
+    expect(control.rows).to.deep.equal [bRow, cRow]
 
-    # r = control.removeRow(0)
-    # expect(r).to.equal 1
-    # expect(control.rows).to.deep.equal []
+    # add first
+    control.addRow(0,aRow)
+    expect(control.rows).to.deep.equal [aRow, bRow, cRow]
 
-    # expect(-> control.removeRow(1)).to.throw Error
-    # expect(-> control.add(1,4)).to.throw Error
+    # add middle
+    control.addRow(1,dRow)
+    expect(control.rows).to.deep.equal [aRow, dRow, bRow, cRow]
 
-    # control.addRow(0,4)
-    # expect(control.rows).to.deep.equal [4]
+    # add not enough args
+    expect(-> control.addRow(1)).to.throw Error
+
+    # add invalid args
+    expect(-> control.addRow(100,dRow)).to.throw Error
 
-    # control.addRow(1,5)
-    # expect(control.rows).to.deep.equal [4,5]
+  it 'shiftRow, unshiftRow', ->
+    control = oj.Table aRow, bRow, cRow
+    expect(control.rowCount).to.equal 3
+    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.rows).to.deep.equal [aRow, bRow, cRow]
 
-    # control.addRow(1,6)
-    # expect(control.rows).to.deep.equal [4,6,5]
+    r = control.shiftRow()
+    expect(r).to.deep.equal aRow
+    expect(control.rows).to.deep.equal [bRow, cRow]
 
-  # it 'shiftRow, unshiftRow', ->
-  #   control = oj.Table 1,2,3
-  #   expect(control.rowCount).to.equal 3
-  #   expect(oj.typeOf control).to.equal 'Table'
-  #   expect(control.rows).to.deep.equal [1,2,3]
+    r = control.shiftRow()
+    expect(r).to.deep.equal bRow
+    expect(control.rows).to.deep.equal [cRow]
 
-  #   r = control.shiftRow()
-  #   expect(r).to.equal 1
-  #   expect(control.rows).to.deep.equal [2,3]
+    r = control.shiftRow()
+    expect(r).to.deep.equal cRow
+    expect(control.rows).to.deep.equal []
 
-  #   r = control.shiftRow()
-  #   expect(r).to.equal 2
-  #   expect(control.rows).to.deep.equal [3]
+    expect(-> control.shiftRow()).to.throw Error
+    control.unshiftRow(aRow)
+    expect(control.rows).to.deep.equal [aRow]
 
-  #   r = control.shiftRow()
-  #   expect(r).to.equal 3
-  #   expect(control.rows).to.deep.equal []
+    control.unshiftRow(bRow)
+    expect(control.rows).to.deep.equal [bRow, aRow]
 
-  #   expect(-> control.shiftRow()).to.throw Error
-  #   control.unshiftRow(4)
-  #   expect(control.rows).to.deep.equal [4]
+  it 'popRow, pushRow', ->
+    control = oj.Table aRow,bRow,cRow
+    expect(control.rowCount).to.equal 3
+    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.rows).to.deep.equal [aRow,bRow,cRow]
 
-  #   control.unshiftRow(5)
-  #   expect(control.rows).to.deep.equal [5,4]
+    r = control.popRow()
+    expect(r).to.deep.equal cRow
+    expect(control.rows).to.deep.equal [aRow,bRow]
 
-  # it 'popRow, pushRow', ->
-  #   control = oj.Table 1,2,3
-  #   expect(control.rowCount).to.equal 3
-  #   expect(oj.typeOf control).to.equal 'Table'
-  #   expect(control.rows).to.deep.equal [1,2,3]
+    r = control.popRow()
+    expect(r).to.deep.equal bRow
+    expect(control.rows).to.deep.equal [aRow]
+
+    r = control.popRow()
+    expect(r).to.deep.equal aRow
+    expect(control.rows).to.deep.equal []
 
-  #   r = control.popRow()
-  #   expect(r).to.equal 3
-  #   expect(control.rows).to.deep.equal [1,2]
-
-  #   r = control.popRow()
-  #   expect(r).to.equal 2
-  #   expect(control.rows).to.deep.equal [1]
-
-  #   r = control.popRow()
-  #   expect(r).to.equal 1
-  #   expect(control.rows).to.deep.equal []
-
-  #   expect(-> control.popRow()).to.throw Error
-  #   control.pushRow(4)
-  #   expect(control.rows).to.deep.equal [4]
-
-  #   control.pushRow(5)
-  #   expect(control.rows).to.deep.equal [4,5]
-
-
-  # it 'removeColumn, addColumn', ->
-  #   control = oj.Table 1,2,3
-  #   expect(control.rowCount).to.equal 3
-  #   expect(oj.typeOf control).to.equal 'Table'
-  #   expect(control.rows).to.deep.equal [1,2,3]
-
-  #   r = control.removeColumn(1)
-  #   expect(r).to.equal 2
-  #   expect(control.rows).to.deep.equal [1,3]
-
-  #   r = control.removeColumn(1)
-  #   expect(r).to.equal 3
-  #   expect(control.rows).to.deep.equal [1]
-
-  #   r = control.removeColumn(0)
-  #   expect(r).to.equal 1
-  #   expect(control.rows).to.deep.equal []
-
-  #   expect(-> control.removeColumn(1)).to.throw Error
-  #   expect(-> control.add(1,4)).to.throw Error
-
-  #   control.addColumn(0,4)
-  #   expect(control.rows).to.deep.equal [4]
-
-  #   control.addColumn(1,5)
-  #   expect(control.rows).to.deep.equal [4,5]
-
-  #   control.addColumn(1,6)
-  #   expect(control.rows).to.deep.equal [4,6,5]
-
-  # it 'shiftColumn, unshiftColumn', ->
-  #   control = oj.Table 1,2,3
-  #   expect(control.rowCount).to.equal 3
-  #   expect(oj.typeOf control).to.equal 'Table'
-  #   expect(control.rows).to.deep.equal [1,2,3]
-
-  #   r = control.shiftColumn()
-  #   expect(r).to.equal 1
-  #   expect(control.rows).to.deep.equal [2,3]
-
-  #   r = control.shiftColumn()
-  #   expect(r).to.equal 2
-  #   expect(control.rows).to.deep.equal [3]
-
-  #   r = control.shiftColumn()
-  #   expect(r).to.equal 3
-  #   expect(control.rows).to.deep.equal []
-
-  #   expect(-> control.shiftColumn()).to.throw Error
-  #   control.unshiftColumn(4)
-  #   expect(control.rows).to.deep.equal [4]
-
-  #   control.unshiftColumn(5)
-  #   expect(control.rows).to.deep.equal [5,4]
-
-  # it 'popColumn, pushColumn', ->
-  #   control = oj.Table 1,2,3
-  #   expect(control.rowCount).to.equal 3
-  #   expect(oj.typeOf control).to.equal 'Table'
-  #   expect(control.rows).to.deep.equal [1,2,3]
-
-  #   r = control.popColumn()
-  #   expect(r).to.equal 3
-  #   expect(control.rows).to.deep.equal [1,2]
-
-  #   r = control.popColumn()
-  #   expect(r).to.equal 2
-  #   expect(control.rows).to.deep.equal [1]
-
-  #   r = control.popColumn()
-  #   expect(r).to.equal 1
-  #   expect(control.rows).to.deep.equal []
-
-  #   expect(-> control.popColumn()).to.throw Error
-  #   control.pushColumn(4)
-  #   expect(control.rows).to.deep.equal [4]
-
-  #   control.pushColumn(5)
-  #   expect(control.rows).to.deep.equal [4,5]
-
-  # it 'construct with empty models argument', ->
-  #   control = oj.Table models:[]
-  #   expect(control.rowCount).to.equal 0
-  #   expect(-> control.cellCount(0)).to.throw Error
-  #   expect(oj.typeOf control).to.equal 'Table'
-  #   expect(control.rows).to.deep.equal []
-
-  # it 'construct with one model argument (default each)', ->
-  #   control = oj.Table models:[1]
-  #   expect(oj.typeOf control).to.equal 'Table'
-  #   expect(control.typeName).to.equal 'Table'
-  #   expect(control.rowCount).to.equal 1
-
-  #   contains control,
-  #     '<td>1</td>'
-
-#     expect(control.rows).to.deep.equal ['1']
-
-#   it 'construct with many models (default each)', ->
-#     user1 = name:'Alfred', strength: 11
-#     user2 = name:'Batman', strength: 22
-#     user3 = name:'Catwoman', strength: 33
-#     user4 = name:'Gordan', strength: 44
-#     control = oj.Table models:[user1,user2,user3]
-
-#     expect(control.rowCount).to.equal 3
-#     expect(oj.typeOf control).to.equal 'Table'
-#     expect(control.typeName).to.equal 'Table'
-
-#     contains control,
-#       "<div>#{jsonify user1}</div>"
-#       "<div>#{jsonify user2}</div>"
-#       "<div>#{jsonify user3}</div>"
-
-#     expect(control.rows).to.deep.equal [
-#       jsonify user1
-#       jsonify user2
-#       jsonify user3
-#     ]
-
-#   it 'construct with collection of backbone models (default each)', ->
-
-#     class UserModel extends Backbone.Model
-#     user1 = new UserModel name:'Alfred', strength: 11
-#     user2 = new UserModel name:'Batman', strength: 22
-#     user3 = new UserModel name:'Catwoman', strength: 33
-#     user4 = new UserModel name:'Gordan', strength: 44
-#     control = oj.Table models:[user1,user2,user3]
-
-#     expect(control.rowCount).to.equal 3
-#     expect(oj.typeOf control).to.equal 'Table'
-#     expect(control.typeName).to.equal 'Table'
-
-#     contains control,
-#       "<div>#{jsonify user1}</div>"
-#       "<div>#{jsonify user2}</div>"
-#       "<div>#{jsonify user3}</div>"
-
-#     expect(control.rows).to.deep.equal [
-#       jsonify user1
-#       jsonify user2
-#       jsonify user3
-#     ]
-
-#   it 'construct with collection of backbone models (default each)', ->
-
-#     class UserModel extends Backbone.Model
-#     class UserCollection extends Backbone.Collection
-#       model: UserModel
-#       comparator: (m) -> m.get 'name'
-
-#     user1 = new UserModel name:'Alfred', strength: 11
-#     user2 = new UserModel name:'Batman', strength: 22
-#     user3 = new UserModel name:'Catwoman', strength: 33
-#     user4 = new UserModel name:'Gordan', strength: 44
-
-#     users = new UserCollection [user3, user1]
-
-#     control = oj.Table models:users
-
-#     expect(control.rowCount).to.equal 2
-#     expect(oj.typeOf control).to.equal 'Table'
-#     expect(control.typeName).to.equal 'Table'
-
-#     contains control,
-#       "<div>#{jsonify user1}</div>"
-#       "<div>#{jsonify user3}</div>"
-
-#     expect(control.rows).to.deep.equal [
-#       jsonify user1
-#       jsonify user3
-#     ]
-
-#     # Add element
-#     users.add [user2]
-
-#     contains control,
-#       "<div>#{jsonify user1}</div>"
-#       "<div>#{jsonify user2}</div>"
-#       "<div>#{jsonify user3}</div>"
-
-#     expect(control.rows).to.deep.equal [
-#       jsonify user1
-#       jsonify user2
-#       jsonify user3
-#     ]
-
-#     # Remove element
-#     users.remove user1
-
-#     contains control,
-#       "<div>#{jsonify user2}</div>"
-#       "<div>#{jsonify user3}</div>"
-
-#     expect(control.rows).to.deep.equal [
-#       jsonify user2
-#       jsonify user3
-#     ]
-
-#     # Reset elements
-#     users.reset user4
-
-#     contains control,
-#       "<div>#{jsonify user4}</div>"
-
-#     expect(control.rows).to.deep.equal [
-#       jsonify user4
-#     ]
-
-
-#   it 'construct with collection of backbone models (manual each)', ->
-
-#     namify = (model) ->
-#       model.get 'name'
-
-#     class UserModel extends Backbone.Model
-#     class UserCollection extends Backbone.Collection
-#       model: UserModel
-#       comparator: namify
-
-#     user1 = new UserModel name:'Alfred', strength: 11
-#     user2 = new UserModel name:'Batman', strength: 22
-#     user3 = new UserModel name:'Catwoman', strength: 33
-#     user4 = new UserModel name:'Gordan', strength: 44
-
-#     users = new UserCollection [user3, user1]
-
-#     control = oj.Table models:users, each:namify
-
-#     expect(control.rowCount).to.equal 2
-#     expect(oj.typeOf control).to.equal 'Table'
-#     expect(control.typeName).to.equal 'Table'
-
-#     contains control,
-#       "<div>#{namify user1}</div>"
-#       "<div>#{namify user3}</div>"
-
-#     expect(control.rows).to.deep.equal [
-#       namify user1
-#       namify user3
-#     ]
-
-#     # Add element
-#     users.add [user2]
-
-#     contains control,
-#       "<div>#{namify user1}</div>"
-#       "<div>#{namify user2}</div>"
-#       "<div>#{namify user3}</div>"
-
-#     expect(control.rows).to.deep.equal [
-#       namify user1
-#       namify user2
-#       namify user3
-#     ]
-
-#     # Remove element
-#     users.remove user1
-
-#     contains control,
-#       "<div>#{namify user2}</div>"
-#       "<div>#{namify user3}</div>"
-
-#     expect(control.rows).to.deep.equal [
-#       namify user2
-#       namify user3
-#     ]
-
-#     # Reset elements
-#     users.reset user4
-
-#     contains control,
-#       "<div>#{namify user4}</div>"
-
-#     expect(control.rows).to.deep.equal [
-#       namify user4
-#     ]
-
-#   it 'Table from element', ->
-#     $('body').html """
-#       <div>
-#         <div>one</div>
-#         <div>2</div>
-#         <div></div>
-#       </div>
-#     """
-
-#     $table = $('body > div')
-
-#     control = oj.Table el:$table[0]
-#     expect(oj.typeOf control).to.equal 'Table'
-#     expect(control.rowCount).to.equal 3
-
-#     expect(control.row(0)).to.equal 'one'
-#     expect(control.row(1)).to.equal '2'
-#     expect(control.row(2)).to.not.exist
-
-#     expect(control.rows).to.deep.equal ['one', '2', undefined]
+    expect(-> control.popRow()).to.throw Error
+    control.pushRow(aRow)
+    expect(control.rows).to.deep.equal [aRow]
+
+    control.pushRow(bRow)
+    expect(control.rows).to.deep.equal [aRow, bRow]
+
+  it 'moveRow', ->
+    control = oj.Table aRow,bRow,cRow
+    expect(control.rowCount).to.equal 3
+    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.rows).to.deep.equal [aRow,bRow,cRow]
+
+    # Move same position
+    control.moveRow(0,0)
+    expect(control.rows).to.deep.equal [aRow,bRow,cRow]
+
+    # Move up one
+    control.moveRow(0,1)
+    expect(control.rows).to.deep.equal [bRow,aRow,cRow]
+
+    # Move to front / down one
+    control.moveRow(1,0)
+    expect(control.rows).to.deep.equal [aRow,bRow,cRow]
+
+    # Move from beginning to end
+    control.moveRow(0,2)
+    expect(control.rows).to.deep.equal [bRow,cRow,aRow]
+
+    # Move from end to beginning
+    control.moveRow(-1,0)
+    expect(control.rows).to.deep.equal [aRow,bRow,cRow]
+
+    # Move to invalid
+    expect(-> control.moveRow(0,100)).to.throw Error
+
+    # Move not enough args
+    expect(-> control.moveRow(0)).to.throw Error
+
+
+  it 'swapRow', ->
+    control = oj.Table aRow,bRow,cRow
+    expect(control.rowCount).to.equal 3
+    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.rows).to.deep.equal [aRow,bRow,cRow]
+
+    # Swap same position
+    control.swapRow(0,0)
+    expect(control.rows).to.deep.equal [aRow,bRow,cRow]
+
+    # Swap up one
+    control.swapRow(0,1)
+    expect(control.rows).to.deep.equal [bRow,aRow,cRow]
+
+    # Swap to front / down one
+    control.swapRow(1,0)
+    expect(control.rows).to.deep.equal [aRow,bRow,cRow]
+
+    # Swap from beginning to end
+    control.swapRow(0,2)
+    expect(control.rows).to.deep.equal [cRow,bRow,aRow]
+
+    # Swap from end to beginning
+    control.swapRow(-1,0)
+    expect(control.rows).to.deep.equal [aRow,bRow,cRow]
+
+    # Swap to invalid
+    expect(-> control.swapRow(0,100)).to.throw Error
+
+    # Swap not enough args
+    expect(-> control.swapRow(0)).to.throw Error
+
+  it 'header empty', ->
+    control = oj.Table header:[]
+    expect(control.rowCount).to.equal 0
+    expect(control.columnCount).to.equal 0
+
+    expect(control.header).to.deep.equal []
+
+    contains control,
+      'class="oj-Table"'
+      '<table'
+      '</table>'
+
+    doesNotContain control,
+      '<thead'
+      '<tr'
+      '<th'
+      '</tr>'
+      '</thead>'
+
+  it 'header', ->
+    control = oj.Table header:aRow
+    expect(control.rowCount).to.equal 0
+    expect(control.columnCount).to.equal 3 # should include columns by header,body,or footer
+
+    expect(control.header).to.deep.equal aRow
+
+    contains control,
+      'class="oj-Table"'
+      '<table'
+      '<thead'
+      '<tr'
+      '<th>a1</th>'
+      '<th>a2</th>'
+      '<th>a3</th>'
+      '</tr>'
+      '</thead>'
+      '</table>'
+
+    doesNotContain control,
+      '<tbody'
+      '</tbody>'
+
+  it 'footer empty', ->
+    control = oj.Table footer:[]
+    expect(control.rowCount).to.equal 0
+    expect(control.columnCount).to.equal 0
+
+    expect(control.footer).to.deep.equal []
+
+    contains control,
+      'class="oj-Table"'
+      '<table'
+      '</table>'
+
+    doesNotContain control,
+      '<tfoot'
+      '<tr'
+      '<th'
+      '</tr>'
+      '</tfoot>'
+
+  it 'footer', ->
+    control = oj.Table footer:aRow
+    expect(control.rowCount).to.equal 0
+    expect(control.columnCount).to.equal 3 # should include columns by header,body,or footer
+    expect(control.header).to.deep.equal []
+    expect(control.footer).to.deep.equal aRow
+
+    contains control,
+      'class="oj-Table"'
+      '<table'
+      '<tfoot'
+      '<tr'
+      '<td>a1</td>'
+      '<td>a2</td>'
+      '<td>a3</td>'
+      '</tr>'
+      '</tfoot>'
+      '</table>'
+
+    doesNotContain control,
+      '<tbody'
+      '</tbody>'
+      '<thead'
+      '</thead>'
+
+  it 'header, footer, body', ->
+    control = oj.Table header:hRow, aRow, bRow, cRow, footer:fRow
+    expect(control.rowCount).to.equal 3
+    expect(control.columnCount).to.equal 3
+    expect(control.header).to.deep.equal hRow
+    expect(control.footer).to.deep.equal fRow
+    expect(control.rows).to.deep.equal [aRow,bRow,cRow]
+
+    contains control,
+      'class="oj-Table"'
+      '<table'
+
+      '<tfoot'
+      '</tfoot>'
+      '<tbody'
+      '</tbody>'
+      '<thead'
+      '</thead>'
+
+      '<tr'
+      '</tr>'
+
+      '<th>h1</th>'
+      '<th>h2</th>'
+      '<th>h3</th>'
+
+      '<td>a1</td>'
+      '<td>a2</td>'
+      '<td>a3</td>'
+      '<td>f1</td>'
+      '<td>f2</td>'
+      '<td>f3</td>'
+
+      '</table>'
+
+  it 'caption', ->
+    caption = "caption"
+    control = oj.Table caption:caption, aRow, bRow, cRow
+    expect(control.header).to.deep.equal []
+    expect(control.footer).to.deep.equal []
+    expect(control.caption).to.equal caption
+
+    contains control,
+      'class="oj-Table"'
+      '<table'
+      '<caption>caption</caption>'
+
+  it 'construct with list of objects for models (default each)', ->
+    control = oj.Table models:users3
+
+    expect(control.rowCount).to.equal 3
+    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
+
+    contains control,
+      "<td>#{user1.name}</td>"
+      "<td>#{user2.name}</td>"
+      "<td>#{user3.name}</td>"
+
+    expect(control.rows).to.deep.equal [
+      [user1.id, user1.name, user1.strength]
+      [user2.id, user2.name, user2.strength]
+      [user3.id, user3.name, user3.strength]
+    ]
+
+  it 'construct with list of backbone models (default each)', ->
+    control = oj.Table models:userModels3
+
+    expect(control.rowCount).to.equal 3
+    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
+
+    contains control,
+      "<td>#{user1.name}</td>"
+      "<td>#{user2.name}</td>"
+      "<td>#{user3.name}</td>"
+
+    expect(control.rows).to.deep.equal [
+      [user1.id, user1.name, user1.strength]
+      [user2.id, user2.name, user2.strength]
+      [user3.id, user3.name, user3.strength]
+    ]
+
+  it 'construct with backbone collection (default each)', ->
+
+    users = new UserCollection [user3, user1]
+
+    control = oj.Table models:users
+
+    expect(control.rowCount).to.equal 2
+    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
+
+    contains control,
+      "<td>#{user1.name}</td>"
+      "<td>#{user3.name}</td>"
+
+    doesNotContain control,
+      "<td>#{user2.name}</td>"
+
+    expect(control.rows).to.deep.equal [
+      [user1.id, user1.name, user1.strength]
+      [user3.id, user3.name, user3.strength]
+    ]
+
+    # Change collection
+    users.add [user2]
+
+    expect(control.rowCount).to.equal 3
+
+    contains control,
+      "<td>#{user1.name}</td>"
+      "<td>#{user2.name}</td>"
+      "<td>#{user3.name}</td>"
+
+    expect(control.rows).to.deep.equal [
+      [user1.id, user1.name, user1.strength]
+      [user2.id, user2.name, user2.strength]
+      [user3.id, user3.name, user3.strength]
+    ]
+    users.remove user1
+
+    expect(control.rowCount).to.equal 2
+
+    contains control,
+      "<td>#{user2.name}</td>"
+      "<td>#{user3.name}</td>"
+
+    doesNotContain control,
+      "<td>#{user1.name}</td>"
+
+    expect(control.rows).to.deep.equal [
+      [user2.id, user2.name, user2.strength]
+      [user3.id, user3.name, user3.strength]
+    ]
+
+    users.reset user4
+
+    contains control,
+      "<td>#{user4.name}</td>"
+
+    doesNotContain control,
+      "<td>#{user1.name}</td>"
+      "<td>#{user2.name}</td>"
+      "<td>#{user3.name}</td>"
+
+    expect(control.rows).to.deep.equal [
+      [user4.id, user4.name, user4.strength]
+    ]
+
+  it 'construct with backbone collection (manual each)', ->
+
+    users = new UserCollection [user3, user1]
+
+    control = oj.Table models:users, each: (model,td) ->
+      td model.get('name')
+      td model.get('strength')
+
+    expect(control.rowCount).to.equal 2
+    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
+
+    contains control,
+      "<td>#{user1.name}</td>"
+      "<td>#{user3.name}</td>"
+
+    doesNotContain control,
+      "<td>#{user2.name}</td>"
+
+    expect(control.rows).to.deep.equal [
+      [user1.name, user1.strength]
+      [user3.name, user3.strength]
+    ]
+
+    # Change collection
+    users.add [user2]
+
+    expect(control.rowCount).to.equal 3
+
+    contains control,
+      "<td>#{user1.name}</td>"
+      "<td>#{user2.name}</td>"
+      "<td>#{user3.name}</td>"
+
+    expect(control.rows).to.deep.equal [
+      [user1.name, user1.strength]
+      [user2.name, user2.strength]
+      [user3.name, user3.strength]
+    ]
+    users.remove user1
+
+    expect(control.rowCount).to.equal 2
+
+    contains control,
+      "<td>#{user2.name}</td>"
+      "<td>#{user3.name}</td>"
+
+    doesNotContain control,
+      "<td>#{user1.name}</td>"
+
+    expect(control.rows).to.deep.equal [
+      [user2.name, user2.strength]
+      [user3.name, user3.strength]
+    ]
+
+    users.reset user4
+
+    contains control,
+      "<td>#{user4.name}</td>"
+
+    doesNotContain control,
+      "<td>#{user1.name}</td>"
+      "<td>#{user2.name}</td>"
+      "<td>#{user3.name}</td>"
+
+    expect(control.rows).to.deep.equal [
+      [user4.name, user4.strength]
+    ]
 

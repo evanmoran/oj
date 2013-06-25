@@ -11,6 +11,8 @@ maximizeDuration = 500
 lineHeight = 21
 
 makeCSS = null
+
+# Define plugin
 module.exports = (oj, settings) ->
 
   TryEditor = type 'TryEditor',

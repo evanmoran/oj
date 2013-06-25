@@ -1,44 +1,13 @@
-# _ = require 'underscore'
 
-_plugins = require './_plugins'
-# _cssFromObject = (cssMap, isDebug = 0) ->
-#   newline = if isDebug then '\n' else ''
-#   space = if isDebug then ' ' else ''
-#   inline = !isDebug
-#   indent = isDebug
-#   css = ''
-#   for selector, styles of cssMap
-#     rules = _styleFromObject styles, inline:inline, indent:indent
-#     css += "#{selector}#{space}{#{newline}#{rules}}#{newline}"
-#   css
+# _plugins = require './_plugins'
 
-# domcss = (obj) ->
-#   css = _cssFromObject obj
-#   console.log "css: ", css
-# `window.domcss = domcss`
-###
-    h1('Welcome to OJ')
+oj.use require 'oj-markdown'
+oj.use require 'oj-mustache'
+oj.use require 'oj-ace-editor'
+oj.use require 'oj-vimeo-video'
+oj.use require 'oj-twitter-follow-button'
+# oj.use require './oj.TryEditor'
 
-    list = BulletList(
-      "Everything is Javascript",
-      "Objects create html"
-    )
-
-    list.add("Objects live edit the dom");
-    list.add("CSS works!");
-
-    css({
-      h1:{
-        color:'orange'
-      }
-    });
-
-    var btn = Button('Add item',{click:function(){
-      list.add('Event binding works!')
-    }})
-
-    btn.click()
-###
 module.exports = oj ->
 
   doctype 5
@@ -51,7 +20,9 @@ module.exports = oj ->
       link href:'styles/reset.css', rel:'stylesheet', type:'text/css'
       link href:'styles/bootstrap.css', rel:'stylesheet', type:'text/css'
       link href:'styles/jquery-ui-1.10.3.custom.css', rel:'stylesheet', type:'text/css'
-
+      style c:'oj-Table', type:'text/css', """
+        div {color:red}
+      """
       script src: 'scripts/jquery.js', type:'text/javascript'
       script src: 'scripts/underscore.js', type:'text/javascript'
       script src: 'scripts/backbone.js', type:'text/javascript'
@@ -61,82 +32,14 @@ module.exports = oj ->
 
       script src: 'scripts/jquery-ui-1.10.3.custom.js', type:'text/javascript'
       script src: 'scripts/jquery.ba-resize.min.js', type:'text/javascript'
+      script src: 'scripts/oj.AceEditor.js', type:'text/javascript'
 
       meta charset:'UTF-8'
       meta 'http-equiv':"X-UA-Compatible", content:'IE=edge,chrome=1'
 
     body ->
 
-      div 'Outer', ->
-
-        div 'Class none'
-
-        div c:'c1', 'Class 1'
-
-        div c:'c1 c2', 'Class 1 & 2'
-
-      table style:{width:'1000px', border:'1px solid black'}, ->
-
-        tr ->
-          td('asdf')
-          td('asdf')
-          td 'asdf', colspan:4, style:backgroundColor:'red'
-
-        tr ->
-          td('asdf')
-          td('asdf')
-          td('asdf')
-          td('asdf')
-          td('asdf')
-          td('asdf')
-
-
-      BulletList(
-        new CheckBox()
-        2
-        3
-      )
-
-      List(
-        new CheckBox()
-        2
-        3
-      )
-
-      # Table(
-      #   [1,td]
-      #   [5,6,7]
-      #   []
-      # )
-
-
-
-      css
-        div:
-          color:'red'
-
-          '@media tablet':
-            color:'green'
-
-          '@media phone':
-            color:'purple'
-            '.c2':
-              border:'1px solid black'
-
-          '&:nth-child(even)':
-            fontSize:'20px'
-
-
-
-
-
-
-
-
-
-
-
-
+      div 'test'
       # ae = AceEditor()
       #   model: code
       #   key: 'code'
@@ -154,9 +57,10 @@ module.exports = oj ->
 
       # domcss div:color:'red'
 
-      # t = TryEditor
-      #   js: """
-      #     div('this should work');
+      t = TryEditor
+        js: """
+          div('this should work');
+        """
 
       # `window.t = t`
       # ae2 = AceEditor
