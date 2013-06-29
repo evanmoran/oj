@@ -15,7 +15,7 @@ makeCSS = null
 # Define plugin
 module.exports = (oj, settings) ->
 
-  TryEditor = type 'TryEditor',
+  TryEditor = createType 'TryEditor',
     base: ModelKeyView
     constructor: ->
       {options, args} = oj.argumentsUnion arguments
