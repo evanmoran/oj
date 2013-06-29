@@ -438,7 +438,7 @@ _bind: Helper to bind context to function
     _clone = (obj) ->
       # TODO: support cloning OJ instances
       # TODO: support options, deep: true
-      return obj unless oj.isObject obj
+      return obj unless (oj.isArray obj) or (oj.isObject obj)
       if oj.isArray obj then obj.slice() else _extend {}, obj
 
   _contains
@@ -622,6 +622,13 @@ Utility: Iteration
       unless 0 <= ixNew and ixNew < count
         throw new Error("oj.#{method}#{message} is out of bounds (#{ix} in [0,#{count-1}])")
       ixNew
+
+String Helpers
+------------------------------------------------------------------------------
+
+    _dasherize = (str) ->
+
+      out
 
 Path Helpers
 ------------------------------------------------------------------------------
@@ -850,6 +857,8 @@ Determine copy source.propName to dest.propName
 
     oj.copyProperty = (dest, source, propName) ->
       info = Object.getOwnPropertyDescriptor source, propName
+      if info.value?
+        info.value = _clone info.value
       Object.defineProperty dest, propName, info
 
 _argumentsStack
@@ -1061,6 +1070,7 @@ options:
 * dom - Compile to dom
 * css - Compile to css
 * cssMap - Record css as a javascript object
+* styles -- Output css as style tags
 * debug - Keep all source including comments
 * ignore:{html:1} - Map of tags to ignore while compiling
 
@@ -1080,6 +1090,7 @@ Define method
         dom: true
         css: true
         cssMap: false
+        styles: false
         debug: false
         ignore: {}
 
@@ -1135,19 +1146,19 @@ Define method
 
       out
 
-_styleKeyFromCamalCase
+_dasherize
 -----------------------------------------------------------------------------
-Convert style keys from oj camal case to css default
+Convert from camal case or space seperated to dashes
 
-    _styleKeyFromCamalCase = (key) ->
-      out = ""
-      # Loop over characters in key looking for camal case
-      for c in key
-        if _isCapitalLetter c
-          out += "-#{c.toLowerCase()}"
-        else
-          out += c
-      out
+    _dasherize = (str) ->
+      _decamelize(str).replace /[ _]/g, '-'
+
+_decamelize
+-----------------------------------------------------------------------------
+Convert from camal case to underscore case
+
+    _decamelize = (str) ->
+      str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
 
 _styleFromObject:
 -----------------------------------------------------------------------------
@@ -1189,7 +1200,7 @@ Convert object to string form
 
   Allow keys to be camal case
 
-        k = _styleKeyFromCamalCase kFancy
+        k = _dasherize kFancy
 
   Collect css result for this key
 
@@ -1550,9 +1561,9 @@ Recursive helper for compiling that wraps indention
     # Allow attributes to alias c to class and use arrays instead of space seperated strings
     _attributeCMeansClassAndAllowsArrays = (attr) ->
       # Convert to c and class from arrays to strings
-      if attr?.c? and oj.isArray(attr.c)
+      if oj.isArray(attr?.c)
         attr.c = attr.c.join ' '
-      if attr?.class? and oj.isArray(attr.class)
+      if oj.isArray(attr?.class)
         attr.class = attr.class.join ' '
 
       # Move c to class
@@ -1991,6 +2002,19 @@ oj.View
         inserted: ->
           @_isInserted = true
 
+    oj.View.css = (def) ->
+      oj.View.styles.push _setObject {}, ".oj-#{@typeName}", def
+      return
+
+    oj.View.theme = (name, def) ->
+      def = _setObject {}, ".oj-#{@typeName}.theme-#{_dasherize name}", def
+      @type.themes.push _setObject {}, (_dasherize name), def
+      @type.styles.push def
+      return
+
+    oj.View.styles = []
+    oj.View.themes = []
+
 oj.CollectionView
 ------------------------------------------------------------------------------
 
@@ -2366,7 +2390,6 @@ $items: list of `<li>` elements (readonly)
 ### Methods
 
       methods:
-
 
 #### Accessor Methods
 
