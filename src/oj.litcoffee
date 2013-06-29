@@ -1700,12 +1700,12 @@ Recursive helper for compiling that wraps indention
         delete args[key]
       value
 
-oj.type
+oj.createType
 ------------------------------------------------------------------------------
 
-    oj.type = (name, args = {}) ->
-      throw 'oj.type: string expected for first argument' unless oj.isString name
-      throw 'oj.type: object expected for second argument' unless oj.isObject args
+    oj.createType = (name, args = {}) ->
+      throw 'oj.createType: string expected for first argument' unless oj.isString name
+      throw 'oj.createType: object expected for second argument' unless oj.isObject args
 
       args.methods ?= {}
       args.properties ?= {}
@@ -1842,7 +1842,7 @@ oj.enum
 oj.View
 ------------------------------------------------------------------------------
 
-    oj.View = oj.type 'View',
+    oj.View = oj.createType 'View',
 
       # Views are special objects map properties together. This is a union of arguments
       # With the remaining arguments becoming a list
@@ -2018,7 +2018,7 @@ oj.View
 oj.CollectionView
 ------------------------------------------------------------------------------
 
-    oj.CollectionView = oj.type 'CollectionView',
+    oj.CollectionView = oj.createType 'CollectionView',
       base: oj.View
 
       constructor: (options) ->
@@ -2077,7 +2077,7 @@ oj.ModelView
 ------------------------------------------------------------------------------
 Model view base class
 
-    oj.ModelView = oj.type 'ModelView',
+    oj.ModelView = oj.createType 'ModelView',
       base: oj.View
 
       constructor: (options) ->
@@ -2119,7 +2119,7 @@ oj.ModelKeyView
 ------------------------------------------------------------------------------
 Model key view base class
 
-    oj.ModelKeyView = oj.type 'ModelKeyView',
+    oj.ModelKeyView = oj.createType 'ModelKeyView',
       # Inherit ModelView to handle model and bindings
       base: oj.ModelView
 
@@ -2166,7 +2166,7 @@ oj.TextBox
 ------------------------------------------------------------------------------
 TextBox control
 
-    oj.TextBox = oj.type 'TextBox',
+    oj.TextBox = oj.createType 'TextBox',
 
       base: oj.ModelKeyView
 
@@ -2203,7 +2203,7 @@ oj.CheckBox
 ------------------------------------------------------------------------------
 CheckBox control
 
-    oj.CheckBox = oj.type 'CheckBox',
+    oj.CheckBox = oj.createType 'CheckBox',
       base: oj.ModelKeyView
 
       constructor: ->
@@ -2234,7 +2234,7 @@ oj.TextArea
 ------------------------------------------------------------------------------
 TextArea control
 
-    oj.TextArea = oj.type 'TextArea',
+    oj.TextArea = oj.createType 'TextArea',
       base: oj.ModelKeyView
 
       constructor: ->
@@ -2263,7 +2263,7 @@ oj.ListBox
 ------------------------------------------------------------------------------
 ListBox control
 
-    oj.ListBox = oj.type 'ListBox',
+    oj.ListBox = oj.createType 'ListBox',
       base: oj.ModelKeyView
 
       constructor: ->
@@ -2300,7 +2300,7 @@ oj.Button
 ------------------------------------------------------------------------------
 Button control
 
-    oj.Button = oj.type 'Button',
+    oj.Button = oj.createType 'Button',
       base: oj.View
 
       constructor: (args) ->
@@ -2322,7 +2322,7 @@ oj.List
 ------------------------------------------------------------------------------
 List control with model bindings and live editing
 
-    oj.List = oj.type 'List',
+    oj.List = oj.createType 'List',
       base: oj.CollectionView
 
       constructor: ->
@@ -2558,7 +2558,7 @@ oj.NumberList
 ------------------------------------------------------------------------------
 NumberList is a `List` specialized with `<ol>` and `<li>` tags
 
-    oj.NumberList = oj.type 'NumberList',
+    oj.NumberList = oj.createType 'NumberList',
       base: oj.List
       constructor: ->
         args = [{tagName:'ol', itemTagName:'li'}, arguments...]
@@ -2568,7 +2568,7 @@ oj.BulletList
 ------------------------------------------------------------------------------
 BulletList is a `List` specialized with `<ul>` and `<li>` tags
 
-    oj.BulletList = oj.type 'BulletList',
+    oj.BulletList = oj.createType 'BulletList',
       base: oj.List
       constructor: ->
         args = [{tagName:'ul', itemTagName:'li'}, arguments...]
@@ -2578,7 +2578,7 @@ oj.Table
 ------------------------------------------------------------------------------
 Table control
 
-    oj.Table = oj.type 'Table',
+    oj.Table = oj.createType 'Table',
 
 Inherit and construct
 

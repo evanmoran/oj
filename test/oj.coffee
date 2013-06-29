@@ -53,7 +53,7 @@ describe 'oj', ->
     # assert.isObject oj2.CheckBox, 'extend should extend objects (CheckBox)'
 
   it 'isOJ', ->
-    Empty = oj.type 'Empty', {}
+    Empty = oj.createType 'Empty', {}
     empty = new Empty()
     empty2 = Empty()
     assert.equal (oj.isOJ empty), true, 'new case}'
@@ -63,7 +63,7 @@ describe 'oj', ->
     assert.equal (oj.typeOf {}), 'object', '{} case}'
     assert.equal (oj.typeOf {a:1}), 'object', '{a:1} case}'
 
-    Empty = oj.type 'Empty', {}
+    Empty = oj.createType 'Empty', {}
     empty = new Empty()
     empty2 = Empty()
     assert.equal (oj.typeOf Empty), 'function', 'oj type case'

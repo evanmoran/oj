@@ -1,4 +1,4 @@
-# oj.type.coffee
+# oj.createType.coffee
 # ==============================================================================
 
 path = require 'path'
@@ -6,10 +6,10 @@ fs = require 'fs'
 oj = require '../lib/oj.js'
 oj.extend this
 
-describe 'oj.type', ->
+describe 'oj.createType', ->
 
   _parentConstructor = null
-  Parent = oj.type 'Parent',
+  Parent = oj.createType 'Parent',
     constructor: ->
 
       expect(typeof @).to.equal 'object'
@@ -49,7 +49,7 @@ describe 'oj.type', ->
       set: (v) -> @_parentProp = v
 
   _childConstructor = null
-  Child = oj.type 'Child',
+  Child = oj.createType 'Child',
     base: Parent
 
     constructor: ->
@@ -93,7 +93,7 @@ describe 'oj.type', ->
       set: (v) -> @_childProp = v
 
   _grandChildConstructor = null
-  GrandChild = oj.type 'GrandChild',
+  GrandChild = oj.createType 'GrandChild',
     base: Child
 
     constructor: ->
@@ -133,31 +133,31 @@ describe 'oj.type', ->
       set: (v) -> @_grandChildProp = v
 
   it 'exists', ->
-    assert oj.type != null, 'oj.type is null'
-    oj.type.should.be.a 'function'
+    assert oj.createType != null, 'oj.createType is null'
+    oj.createType.should.be.a 'function'
 
 
-  it 'empty type', ->
-    Empty = oj.type 'Empty', {}
+  it 'empty createType', ->
+    Empty = oj.createType 'Empty', {}
     empty = new Empty()
     expect(empty.type).to.equal Empty
     expect(empty.typeName).to.equal 'Empty'
     expect(empty.properties).to.deep.equal []
     expect(empty.methods).to.deep.equal []
 
-  it 'empty type without new', ->
-    Empty = oj.type 'Empty', {}
+  it 'empty createType without new', ->
+    Empty = oj.createType 'Empty', {}
     empty = Empty()
     expect(empty.type).to.equal Empty
     expect(empty.typeName).to.equal 'Empty'
     expect(empty.properties).to.deep.equal []
     expect(empty.methods).to.deep.equal []
 
-  it 'simple type', ->
+  it 'simple createType', ->
 
     # Fixing current date for unit test consistency
     currentDate = new Date(2013, 1,1)
-    User = oj.type 'User',
+    User = oj.createType 'User',
       constructor: (args) ->
         @set args
 
@@ -185,9 +185,9 @@ describe 'oj.type', ->
     expect(user.birthDate).to.equal birthDate
     expect(user.age()).to.equal 67
 
-  it 'simple type with default', ->
+  it 'simple createType with default', ->
 
-    User = oj.type 'User',
+    User = oj.createType 'User',
       constructor: (args) ->
         @set args
 
@@ -199,7 +199,7 @@ describe 'oj.type', ->
     expect(user.nameWithDefault).to.equal 'Joseph'
 
   it 'simple types have get and set', ->
-    T = oj.type 'T',
+    T = oj.createType 'T',
       constructor: (args) ->
         @set args
       properties:
@@ -241,74 +241,74 @@ describe 'oj.type', ->
     expect(getAll.prop1).to.equal 111
     expect(getAll.prop2).to.equal 222
 
-  it 'base type', ->
+  it 'base createType', ->
     parent = new Parent()
     expect(parent.properties).to.deep.equal ["parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]
     expect(parent.methods).to.deep.equal ['method', 'parentMethod', 'superMethod']
 
-  it 'base type without new', ->
+  it 'base createType without new', ->
     parent = Parent()
     expect(parent.typeName).to.equal 'Parent'
     expect(parent.value).to.equal 'Parent.value'
     expect(parent.method()).to.equal 'Parent.method'
 
-  it 'base type constructor', ->
+  it 'base createType constructor', ->
     parent = new Parent('Parent.constructor')
     expect(_parentConstructor).to.equal 'Parent.constructor'
 
-  it 'base type constructor without new', ->
+  it 'base createType constructor without new', ->
     parent = Parent('Parent.constructor')
     expect(_parentConstructor).to.equal 'Parent.constructor'
 
-  it 'base type value property', ->
+  it 'base createType value property', ->
     parent = new Parent()
     expect(parent.value).to.equal 'Parent.value'
 
-  it 'base type readonly property', ->
+  it 'base createType readonly property', ->
     parent = new Parent()
     expect(parent.readOnly).to.equal 'Parent.readOnly'
     parent.readOnly = 'DoesNotWork'
     expect(parent.readOnly).to.equal 'Parent.readOnly'
 
-  it 'base type readwrite property', ->
+  it 'base createType readwrite property', ->
     parent = new Parent()
     expect(parent.readWrite).to.equal 'Parent.readWriteDefault'
     parent.readWrite = 'Worked'
     expect(parent.readWrite).to.equal 'Parent.readWriteWorked'
 
-  it 'base type methods', ->
+  it 'base createType methods', ->
     parent = new Parent()
     expect(parent.method()).to.equal 'Parent.method'
     expect(parent.parentMethod()).to.equal 'Parent.parentMethod'
 
-  it 'base type class methods', ->
+  it 'base createType class methods', ->
     expect(Parent.method()).to.equal 'Parent.method'
     expect(Parent.parentMethod()).to.equal 'Parent.parentMethod'
 
-  it 'base type class value', ->
+  it 'base createType class value', ->
     expect(Parent.value).to.equal 'Parent.value'
     expect(Parent.parentValue).to.equal 'Parent.parentValue'
 
-  it 'base type class property', ->
+  it 'base createType class property', ->
     expect(Parent.prop).to.equal 'Parent.prop'
     Parent.prop = 'Worked'
     expect(Parent.prop).to.equal 'Parent.propWorked'
 
-  it 'base type value', ->
+  it 'base createType value', ->
       parent = new Parent()
       expect(parent.method()).to.equal 'Parent.method'
 
-  it 'inherited type', ->
+  it 'inherited createType', ->
     child = new Child()
     expect(child.properties).to.deep.equal ["childReadOnly", "childReadWrite", "childValue", "parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]
     expect(child.methods).to.deep.equal ['childMethod', 'method', 'parentMethod', 'superMethod']
 
-  it 'inherited type with constructor', ->
+  it 'inherited createType with constructor', ->
     child = new Child('Child.constructor', 'Child.constructor')
     expect(_childConstructor).to.equal 'Child.constructor'
     expect(_parentConstructor).to.equal 'Child.constructor'
 
-  it 'inherited type without new', ->
+  it 'inherited createType without new', ->
     child = Child()
     expect(child.type).to.equal Child
     expect(child.typeName).to.equal 'Child'
@@ -316,12 +316,12 @@ describe 'oj.type', ->
     expect(child.value).to.equal 'Child.value'
     expect(child.method()).to.equal 'Child.method'
 
-  it 'inherited type without new, with constructor', ->
+  it 'inherited createType without new, with constructor', ->
     child = Child('Child.constructor', 'Child.constructor')
     expect(_childConstructor).to.equal 'Child.constructor'
     expect(_parentConstructor).to.equal 'Child.constructor'
 
-  it 'inherited type value property', ->
+  it 'inherited createType value property', ->
     child = new Child()
     expect(child.type).to.equal Child
     expect(child.typeName).to.equal 'Child'
@@ -329,7 +329,7 @@ describe 'oj.type', ->
     expect(child.childValue).to.equal 'Child.childValue'
     expect(child.parentValue).to.equal 'Parent.parentValue'
 
-  it 'inherited type readonly property', ->
+  it 'inherited createType readonly property', ->
     child = new Child()
     expect(child.readOnly).to.equal 'Child.readOnly'
     child.readOnly = 'DoesNotWork'
@@ -343,33 +343,33 @@ describe 'oj.type', ->
     child.childReadOnly = 'DoesNotWork'
     expect(child.childReadOnly).to.equal 'Child.childReadOnly'
 
-  it 'inherited type readwrite property', ->
+  it 'inherited createType readwrite property', ->
     child = new Child()
     expect(child.readWrite).to.equal 'Child.readWriteDefault'
     child.readWrite = 'Worked'
     expect(child.readWrite).to.equal 'Child.readWriteWorked'
 
-  it 'inherited type class methods inherit', ->
+  it 'inherited createType class methods inherit', ->
     expect(Child.method()).to.equal 'Child.method'
     expect(Child.parentMethod()).to.equal 'Parent.parentMethod'
     expect(Child.childMethod()).to.equal 'Child.childMethod'
 
-  it 'inherited type methods inherit', ->
+  it 'inherited createType methods inherit', ->
     child = new Child()
     expect(child.method()).to.equal 'Child.method'
     expect(child.childMethod()).to.equal 'Child.childMethod'
     expect(child.parentMethod()).to.equal 'Parent.parentMethod'
 
-  it 'inherited type methods call super', ->
+  it 'inherited createType methods call super', ->
     child = new Child()
     expect(child.superMethod()).to.equal 'Parent.superMethod.Child.superMethod'
 
-  it 'inherited type class value', ->
+  it 'inherited createType class value', ->
     expect(Child.value).to.equal 'Child.value'
     expect(Child.parentValue).to.equal 'Parent.parentValue'
     expect(Child.childValue).to.equal 'Child.childValue'
 
-  it 'inherited type class property', ->
+  it 'inherited createType class property', ->
     expect(Child.prop).to.equal 'Child.prop'
     Child.prop = 'Worked'
     expect(Child.prop).to.equal 'Child.propWorked'
@@ -382,18 +382,18 @@ describe 'oj.type', ->
     Child.childProp = 'Worked'
     expect(Child.childProp).to.equal 'Child.childPropWorked'
 
-  it 'deeply inherited type', ->
+  it 'deeply inherited createType', ->
     grandChild = new GrandChild()
     expect(grandChild.properties).to.deep.equal ["childReadOnly", "childReadWrite", "childValue", "grandChildReadOnly", "grandChildReadWrite", "grandChildValue", "parentReadOnly", "parentReadWrite", "parentValue", "readOnly", "readWrite", "value"]
     expect(grandChild.methods).to.deep.equal ['childMethod', 'grandChildMethod', 'method', 'parentMethod', 'superMethod']
 
-  it 'deeply inherited type with constructor', ->
+  it 'deeply inherited createType with constructor', ->
     grandChild = new GrandChild('GrandChild.constructor', 'GrandChild.constructor')
     expect(_grandChildConstructor).to.equal 'GrandChild.constructor'
     expect(_parentConstructor).to.equal 'GrandChild.constructor'
     expect(_childConstructor).to.equal 'GrandChild.constructor'
 
-  it 'deeply inherited type without new', ->
+  it 'deeply inherited createType without new', ->
     grandChild = GrandChild()
     expect(grandChild.type).to.equal GrandChild
     expect(grandChild.typeName).to.equal 'GrandChild'
@@ -402,13 +402,13 @@ describe 'oj.type', ->
     expect(grandChild.childValue).to.equal 'Child.childValue'
     expect(grandChild.parentValue).to.equal 'Parent.parentValue'
 
-  it 'deeply inherited type without new, with constructor', ->
+  it 'deeply inherited createType without new, with constructor', ->
     grandChild = GrandChild('GrandChild.constructor', 'GrandChild.constructor')
     expect(_grandChildConstructor).to.equal 'GrandChild.constructor'
     expect(_childConstructor).to.equal 'GrandChild.constructor'
     expect(_parentConstructor).to.equal 'GrandChild.constructor'
 
-  it 'deeply inherited type value property', ->
+  it 'deeply inherited createType value property', ->
     grandChild = new GrandChild()
     expect(grandChild.type).to.equal GrandChild
     expect(grandChild.typeName).to.equal 'GrandChild'
@@ -416,7 +416,7 @@ describe 'oj.type', ->
     expect(grandChild.grandChildValue).to.equal 'GrandChild.grandChildValue'
     expect(grandChild.parentValue).to.equal 'Parent.parentValue'
 
-  it 'deeply inherited type readonly property', ->
+  it 'deeply inherited createType readonly property', ->
     grandChild = new GrandChild()
     expect(grandChild.readOnly).to.equal 'GrandChild.readOnly'
     grandChild.readOnly = 'DoesNotWork'
@@ -426,33 +426,33 @@ describe 'oj.type', ->
     grandChild.grandChildReadOnly = 'DoesNotWork'
     expect(grandChild.grandChildReadOnly).to.equal 'GrandChild.grandChildReadOnly'
 
-  it 'deeply inherited type readwrite property', ->
+  it 'deeply inherited createType readwrite property', ->
     grandChild = new GrandChild()
     expect(grandChild.readWrite).to.equal 'GrandChild.readWriteDefault'
     grandChild.readWrite = 'Worked'
     expect(grandChild.readWrite).to.equal 'GrandChild.readWriteWorked'
 
-  it 'deeply inherited type methods correctly inherit', ->
+  it 'deeply inherited createType methods correctly inherit', ->
     grandChild = new GrandChild()
     expect(grandChild.method()).to.equal 'GrandChild.method'
     expect(grandChild.childMethod()).to.equal 'Child.childMethod'
     expect(grandChild.parentMethod()).to.equal 'Parent.parentMethod'
 
-  it 'deeply inherited type methods call super', ->
+  it 'deeply inherited createType methods call super', ->
     grandChild = new GrandChild()
     expect(grandChild.superMethod()).to.equal 'Parent.superMethod.Child.superMethod.GrandChild.superMethod'
 
-  it 'deeply inherited type class method', ->
+  it 'deeply inherited createType class method', ->
     expect(GrandChild.method()).to.equal 'GrandChild.method'
     expect(GrandChild.parentMethod()).to.equal 'Parent.parentMethod'
     expect(GrandChild.grandChildMethod()).to.equal 'GrandChild.grandChildMethod'
 
-  it 'deeply inherited type class value', ->
+  it 'deeply inherited createType class value', ->
     expect(GrandChild.value).to.equal 'GrandChild.value'
     expect(GrandChild.parentValue).to.equal 'Parent.parentValue'
     expect(GrandChild.grandChildValue).to.equal 'GrandChild.grandChildValue'
 
-  it 'deeply inherited type class property', ->
+  it 'deeply inherited createType class property', ->
     expect(GrandChild.prop).to.equal 'GrandChild.prop'
     GrandChild.prop = 'Worked'
     expect(GrandChild.prop).to.equal 'GrandChild.propWorked'
@@ -465,19 +465,19 @@ describe 'oj.type', ->
     GrandChild.grandChildProp = 'Worked'
     expect(GrandChild.grandChildProp).to.equal 'GrandChild.grandChildPropWorked'
 
-  it 'deeply inherited type calls constructor minimally', ->
+  it 'deeply inherited createType calls constructor minimally', ->
     _increment = 0
-    P = oj.type 'P',
+    P = oj.createType 'P',
       constructor: ->
         _increment++
 
-    C = oj.type 'C',
+    C = oj.createType 'C',
       base: P
       constructor: ->
         C.base.constructor.apply @, arguments
         _increment++
 
-    GC = oj.type 'GC',
+    GC = oj.createType 'GC',
       base: C
       constructor: ->
         GC.base.constructor.apply @, arguments
@@ -494,19 +494,19 @@ describe 'oj.type', ->
     gc = new GC()
     expect(_increment).to.equal 3
 
-  it 'deeply inherited type calls constructor minimally without new', ->
+  it 'deeply inherited createType calls constructor minimally without new', ->
     _increment = 0
-    P = oj.type 'P',
+    P = oj.createType 'P',
       constructor: ->
         _increment++
 
-    C = oj.type 'C',
+    C = oj.createType 'C',
       base: P
       constructor: ->
         C.base.constructor.apply @, arguments
         _increment++
 
-    GC = oj.type 'GC',
+    GC = oj.createType 'GC',
       base: C
       constructor: ->
         GC.base.constructor.apply @, arguments
@@ -524,10 +524,10 @@ describe 'oj.type', ->
     expect(_increment).to.equal 3
 
 
-  it 'inherited type automatically creates constructor calling base', ->
+  it 'inherited createType automatically creates constructor calling base', ->
     # P constructor
     _increment = 0
-    P = oj.type 'P',
+    P = oj.createType 'P',
       constructor: (v) ->
         if v?
           @prop = v
@@ -535,7 +535,7 @@ describe 'oj.type', ->
       properties:
         prop: 24
 
-    C = oj.type 'C',
+    C = oj.createType 'C',
       base: P
       # Purposely don't create a constructor because the default constructor
       # should be automatically implemented to call base.constructor
