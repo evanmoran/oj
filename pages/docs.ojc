@@ -184,11 +184,7 @@ data = [
             Name of tag for each item (String, [read-write](#read-write))
           """
          ,
-          h:'itemsEl', id:'List-itemsEl', d:"""
-            Helper to get all item elements ([DOMElement], [read-only](#read-only)))
-          """
-         ,
-          h:'$itemsEl', id:'List-$itemsEl', d:"""
+          h:'$items', id:'List-$items', d:"""
             Helper to get all item jquery elements ([jQueryElement], [read-only](#read-only)))
           """
         ]
@@ -210,11 +206,7 @@ data = [
                 }
           """
         ,
-          h:'itemEl(index)', id:'List-itemEl', d:"""
-            Helper to get an item's containing element
-          """
-        ,
-          h:'$itemEl(index)', id:'List-$itemEl', d:"""
+          h:'$item(index)', id:'List-$item', d:"""
             Helper to get an item's containing element wrapped by jquery
           """
         ,
@@ -296,7 +288,7 @@ data = [
 
               Table(
                 [1,2,3],
-                [4,5,6],
+                [4,5,6]
               );
         """
         name 'Table(rows..., properties)'
@@ -342,107 +334,139 @@ data = [
             Use this whenever you set [models](#models) to specify which part of the model to render.
           """
          ,
-          h:'rowsEl', id:'Table-rowsEl', d:"""
-            Helper to get all row elements ([DOMElement], [read-only](#read-only)))
+          h:'$trs', id:'Table-$trs', d:"""
+            Accessor to all row `<tr>` elements ([read-only](#read-only))
           """
          ,
-          h:'$rowsEl', id:'Table-$rowsEl', d:"""
-            Helper to get all row jquery elements ([jQueryElement], [read-only](#read-only)))
+          h:'$ths', id:'Table-$ths', d:"""
+            Accessor to all `<th>` elements ([read-only](#read-only))
+          """
+
+         ,
+          h:'$table', id:'Table-$table', d:"""
+            Accessor to `<table>` element ([read-only](#read-only))
+          """
+         ,
+          h:'$thead', id:'Table-$thead', d:"""
+            Accessor to `<thead>` element ([read-only](#read-only))
+          """
+         ,
+          h:'$tbody', id:'Table-$tbody', d:"""
+            Accessor to `<tbody>` element ([read-only](#read-only))
+          """
+         ,
+          h:'$tfoot', id:'Table-$tfoot', d:"""
+            Accessor to `<tfoot>` element ([read-only](#read-only))
+          """
+         ,
+          h:'$caption', id:'Table-$caption', d:"""
+            Accessor to `<caption>` element ([read-only](#read-only))
+          """
+         ,
+          h:'$colgroup', id:'Table-$colgroup', d:"""
+            Accessor to `<colgroup>` element ([read-only](#read-only))
+          """
+         ,
+          h:'$theadTR', id:'Table-$theadTR', d:"""
+            Accessor to `<tr>` element in `<thead>` ([read-only](#read-only))
+          """
+         ,
+          h:'$tfootTR', id:'Table-$tfootTR', d:"""
+            Accessor to `<tr>` element in `<tfoot>` ([read-only](#read-only))
           """
         ]
         methods [
 
-          h:'row(array, oj)', id:'List-item', d:"""
-            Get or set the item at `index`
+          h:'row(rx, ojArray)', id:'Table-row', d:"""
+            Get or set the row at `index`
             `index` may be negative to access elements at the end.
 
-            When `view` is specified the item is set to the oj view
-            When `view` is omitted the item value is returned
-            How this value is returned is handled by [ojValue](jquery-ojValue)
-            a included jQuery plugin.
+            When `ojArray` is specified the row cells are set to the specified oj views.
 
-                list.item(2)              // get item
-                list.item(2, 'hello')     // set item to 'hello'
-                list.item(2, function(){  // Set item to a TextBox
-                  TextBox 'goodbye'
-                }
-          """
-        ,
-          h:'itemEl(index)', id:'List-itemEl', d:"""
-            Helper to get an item's containing element
-          """
-        ,
-          h:'$itemEl(index)', id:'List-$itemEl', d:"""
-            Helper to get an item's containing element wrapped by jquery
-          """
-        ,
-          h:'add(index, oj)', id:'List-add', d:"""
-            Add item at `index`
-            `index` may be negative to access elements at the end.
-            `oj` may be any oj view or object.
+            When `ojArray` is omitted the row values are returned.
 
-                list = List('a','b');      // ['a','b']
-                list.add(1, 'c');          // ['a','c','b']
-                list.add(-1, 'd');         // ['a','c','b','d']
+            How this value is returned is handled by [ojValue](jquery-ojValue) jQuery plugin.
+
           """
         ,
-          h:'remove(index)', id:'List-remove', d:"""
-            Remove item at index
-            `index` may be negative to access elements at the end.
+          h:'cell(rx, cx, oj)', id:'Table-cell', d:"""
+            Get or set the cell at row index `rx`, column index `cx`
 
-                list = List('a','b','c');  // ['a','b','c']
-                list.remove(1);            // ['a','c']
-                list.remove(-1);           // ['a']
+            `rx` and `cx` may be negative to access elements at the end.
+
+            When `oj` is specified the cell is set to the value of the oj view.
+
+            When `oj` is omitted the cell value is returned.
+
+            How this value is returned is handled by [ojValue](jquery-ojValue) jQuery plugin.
           """
         ,
-          h:'push(oj)', id:'List-push', d:"""
-            Add a new last item
-
-                list = List('a','b');      // ['a','b']
-                list.push('c');            // ['a','b','c']
+          h:'clear()', id:'Table-clear', d:"""
+            Remove everything in the table: rows, headers, footers, and captions.
           """
         ,
-          h:'pop()', id:'List-pop', d:"""
-            Remove the last item
-
-                list = List('a','b');      // ['a','b']
-                list.pop();                // ['a']
+          h:'clearBody()', id:'Table-clearBody', d:"""
+            Remove all rows in body
           """
         ,
-          h:'shift(oj)', id:'List-shift', d:"""
-            Remove the first item
-
-                list = List('a','b');      // ['a','b']
-                list.shift();              // ['b']
+          h:'clearHeader()', id:'Table-clearHeader', d:"""
+            Remove the header
           """
         ,
-          h:'unshift(oj)', id:'List-unshift', d:"""
-            Add a new first item
-
-                list = List('a','b');      // ['a','b']
-                list.unshift('c');         // ['c','a','b']
+          h:'clearFooter()', id:'Table-clearFooter', d:"""
+            Remove the footer
           """
         ,
-          h:'clear(oj)', id:'List-clear', d:"""
-            Remove all items
+          h:'addRow(rx, ojArray)', id:'Table-addRow', d:"""
+            Add row at index `rx`
 
-                list = List('a','b');      // ['a','b']
-                list.clear();              // []
+            `rx` may be negative to access elements at the end.
+
+            `ojArray` is an array of any oj views or objects.
           """
         ,
-          h:'move(index, index2)', id:'List-move', d:"""
-            Move item from `index` to `index2`
-
-            list = List('a','b','c');      // ['a','b','c']
-                list.move(2,0);            // ['c','b','a']
+          h:'removeRow(rx)', id:'Table-removeRow', d:"""
+            Remove item at index `rx`
           """
         ,
-          h:'swap(index, index2)', id:'List-swap', d:"""
-            Swap items at `index` to `index2`
+          h:'pushRow(ojArray)', id:'Table-pushRow', d:"""
+            Add a new last row
 
-            list = List('a','b','c');      // ['a','b','c']
-                list.swap(1,2);            // ['a','c','b']
+            `ojArray` is an array of oj views or objects.
           """
+        ,
+          h:'popRow()', id:'Table-popRow', d:"""
+            Remove the last row
+
+                myTable = Table([1,2,3],[4,5,6],[7,8,9]);
+                myTable.popRow();
+          """
+        ,
+          h:'shiftRow()', id:'Table-shiftRow', d:"""
+            Remove the first row and return it.
+          """
+        ,
+          h:'unshiftRow(ojArray)', id:'Table-unshiftRow', d:"""
+            Add a new first row
+            `ojArray` is an array of oj views or objects.
+          """
+        ,
+          h:'moveRow(rx, rx2)', id:'Table-moveRow', d:"""
+            Move row from index `rx` to `rx2`
+          """
+        ,
+          h:'swapRow(rx, rx2)', id:'Table-swapRow', d:"""
+            Swap row at index `rx` to `rx2`
+          """
+        ,
+          h:'$tr(rx)', id:'Table-$tr', d:"""
+            Accessor to `<tr>` at row index `rx`
+          """
+        ,
+          h:'$td(rx,cx)', id:'Table-$tr', d:"""
+            Accessor to `<td>` at row index `rx`, column index `cx`
+          """
+
         ]
 
     ]
