@@ -2041,6 +2041,10 @@ oj.CollectionView
             @make() if @isConstructed
             return
 
+        collection:
+          get: -> @models
+          set: (v) -> @models = v
+
         models:
           get: -> @_models
           set: (v) ->
