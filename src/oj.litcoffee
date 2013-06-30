@@ -1237,7 +1237,7 @@ precicely what must be serialized with no adjustment.
 _flattenCSSMap
 -----------------------------------------------------------------------------
 Take an OJ object definition of CSS and simplify it to the form:
-'@media query': 'rule': 'stylesMap'
+`'plugin' -> '@media query' -> 'selector' ->'rulesMap'`
 
 This method is the heart of `_cssFromObject`
 
@@ -1245,12 +1245,13 @@ Nested definitions, media definitions and comma definitions are resolved.
 
     _flattenCSSMap = (cssMap) ->
       flatMap = {}
-      _flattenCSSMap_ cssMap, flatMap, [''], ['']
+      for plugin,cssMap_ of cssMap
+        _flattenCSSMap_ cssMap_, flatMap, [''], [''], plugin
       flatMap
 
   Recursive helper with accumulators for flatMap (output)
 
-    _flattenCSSMap_ = (cssMap, flatMapAcc, selectorsAcc, mediasAcc) ->
+    _flattenCSSMap_ = (cssMap, flatMapAcc, selectorsAcc, mediasAcc, plugin) ->
 
   Built in media helpers
 
@@ -1321,7 +1322,7 @@ Nested definitions, media definitions and comma definitions are resolved.
   Recurse through objects after calculating the next selectors
 
 
-          _flattenCSSMap_ rules, flatMapAcc, selectorsNext, mediasNext
+          _flattenCSSMap_ rules, flatMapAcc, selectorsNext, mediasNext, plugin
 
   (2) Base Case: Record our selector when `rules` is a value
 
@@ -1333,7 +1334,7 @@ Nested definitions, media definitions and comma definitions are resolved.
 
   Record the rule deeply in `flatMapAcc`
 
-          _setObject flatMapAcc, mediaWithAnds, selectorWithCommas, selector, rules
+          _setObject flatMapAcc, plugin, mediaWithAnds, selectorWithCommas, selector, rules
 
       return
 
@@ -1356,33 +1357,35 @@ debug:true will output newlines
       flatMap = _flattenCSSMap cssMap
 
       css = ''
-      for media, selectorMap of flatMap
+
+      for plugin, mediaMap of flatMap
+        for media, selectorMap of mediaMap
 
   Serialize media query
 
-        if media
-          media = media.replace /,/g, ",#{space}"
-          css += "#{media}#{space}{#{newline}"
+          if media
+            media = media.replace /,/g, ",#{space}"
+            css += "#{media}#{space}{#{newline}"
 
-        for selector,styles of selectorMap
-          indent = if debug and media then '\t' else ''
+          for selector,styles of selectorMap
+            indent = if debug and media then '\t' else ''
 
   Serialize selector
 
-          selector = selector.replace /,/g, ",#{newline}"
-          css += "#{indent}#{selector}#{space}{#{newline}"
+            selector = selector.replace /,/g, ",#{newline}"
+            css += "#{indent}#{selector}#{space}{#{newline}"
 
   Serialize style rules
 
-          indentRule = if debug then indent + '\t' else indent
+            indentRule = if debug then indent + '\t' else indent
 
-          rules = _styleFromObject styles, inline:inline, indent:indentRule
-          css += "#{rules}#{indent}}#{newline}"
+            rules = _styleFromObject styles, inline:inline, indent:indentRule
+            css += "#{rules}#{indent}}#{newline}"
 
   End media query
 
-        if media != ''
-          css += "}#{newline}"
+          if media != ''
+            css += "}#{newline}"
 
       css
 
@@ -1489,8 +1492,9 @@ Recursive helper for compiling that wraps indention
 
         # Extend options.css with rules
         for selector,styles of attributes
-          options.css[selector] ?= styles
-          _extend options.css[selector], styles
+          options.css['oj'] ?= {}
+          options.css['oj'][selector] ?= {}
+          _extend options.css['oj'][selector], styles
 
       # Compile to html if requested
       if not options.ignore[tag]
@@ -1644,12 +1648,7 @@ Recursive helper for compiling that wraps indention
         options = {}
 
       # Create html only
-      _extend options,
-        dom: false
-        js: false
-        html: true
-        css: false
-
+      _extend options, dom:0, js:0, html:1, css:0
       (oj.compile options, ojml).html
 
     # oj.toCSS
@@ -1662,13 +1661,8 @@ Recursive helper for compiling that wraps indention
         ojml = options
         options = {}
 
-      # Create html only
-      _extend options,
-        dom: false
-        js: false
-        html: false
-        css: true
-
+      # Create css only
+      _extend options, dom:0, js:0, html:0, css:1
       (oj.compile options, ojml).css
 
     # _inherit
@@ -1891,28 +1885,28 @@ oj.View
               @_$el = null
             # Generate the element from ojml
             else
-              {dom:@_el, cssMap:@cssMap} = oj.compile css:0, cssMap:1, dom:1, html:0, v
+              {dom:@_el} = oj.compile css:0, cssMap:0, dom:1, html:0, v
             return
 
         # Get and cache jquery-enabled element (readonly)
         $el: get: -> @_$el ? (@_$el = $ @el)
-
-        # Get all attributes (readonly)
-        attributes: get: ->
-          out = {}
-          $.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
-          out
 
         # Get and set id of view from attribute
         id:
           get: -> @$el.attr 'id'
           set: (v) -> @$el.attr 'id', v
 
-        # CSS generated for this instance
-        cssMap:
-          get: -> @_cssMap ? {}
-          set: (v) ->
-            @_cssMap = v
+        # Get all currently set attributes (readonly)
+        attributes: get: ->
+          out = {}
+          $.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
+          out
+
+        # Get all currently set themes (readwrite)
+        themes: get: ->
+          out = {}
+          $.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
+          out
 
         # Determine if this view has been fully constructed (readonly)
         isConstructed: get: -> @_isConstructed ? false
@@ -1931,6 +1925,7 @@ oj.View
           attr = {}
           attr[name] = value
           @addAttributes attr
+          return
 
         # Add attributes and apply the oj magic with jquery binding
         addAttributes: (attributes) ->
@@ -1971,6 +1966,16 @@ oj.View
             @removeAttribute k
           return
 
+        # Add a single theme
+        addTheme: (name) ->
+          @$el.addClass "theme-#{name}"
+          return
+
+        # Remove a single theme
+        removeTheme: (name) ->
+          @$el.removeClass "theme-#{name}"
+          return
+
         # emit: Emit instance as a tag function would do
         emit: -> oj._argumentsAppend @; return
 
@@ -1985,7 +1990,7 @@ oj.View
         toCSS: (debug) -> _cssFromObject @cssMap, debug
 
         # Convert
-        toCSSMap: -> @cssMap
+        toCSSMap: -> @type.cssMap
 
         # Convert View to string (for debugging)
         toString: -> @toHTML()
@@ -2003,16 +2008,23 @@ oj.View
           @_isInserted = true
 
     oj.View.css = (def) ->
-      oj.View.styles.push _setObject {}, ".oj-#{@typeName}", def
+      # TODO: Support def being a raw css string
+      cssMap = _setObject {}, ".oj-#{@typeName}", def
+      @cssMap["oj-#{@typeName}"] ?= {}
+      _extend @cssMap["oj-#{@typeName}"], cssMap
       return
 
     oj.View.theme = (name, def) ->
-      def = _setObject {}, ".oj-#{@typeName}.theme-#{_dasherize name}", def
-      @type.themes.push _setObject {}, (_dasherize name), def
-      @type.styles.push def
+      throw new Error("oj.#{@typeName}.theme: string expected for first argument (theme name)") unless oj.isString name
+
+      @cssMap["oj-#{@typeName}"] ?= {}
+      dashName = _dasherize name
+      cssMap = _setObject {}, ".oj-#{@typeName}.theme-#{dashName}", def
+      _extend @cssMap["oj-#{@typeName}"], cssMap
+      @themes.push dashName
       return
 
-    oj.View.styles = []
+    oj.View.cssMap = {}
     oj.View.themes = []
 
 oj.CollectionView
@@ -2056,11 +2068,11 @@ oj.CollectionView
 
             # Bind events if collection
             if oj.isFunction @_models?.on
-              @_models.on 'add', @collectionAdded, @
-              @_models.on 'remove', @collectionRemoved, @
-              @_models.on 'change', @collectionChanged, @
+              @_models.on 'add', @collectionModelAdded, @
+              @_models.on 'remove', @collectionModelRemoved, @
+              @_models.on 'change', @collectionModelChanged, @
+              @_models.on 'destroy', @collectionModelDestroyed, @
               @_models.on 'reset', @collectionReset, @
-              @_models.on 'destroy', @collectionDestroyed, @
 
             @make() if @isConstructed
 
@@ -2071,11 +2083,11 @@ oj.CollectionView
         make: -> throw new Error("oj.#{@typeName}: `make` method not implemented by custom view")
 
         # Override these events to minimally update on change
-        collectionAdded: (model, collection) -> @make()
-        collectionRemoved: (model, collection, options) -> @make()
+        collectionModelAdded: (model, collection) -> @make()
+        collectionModelRemoved: (model, collection, options) -> @make()
+        collectionModelChanged: (model, collection, options) -> # Do nothing
+        collectionModelDestroyed: (collection, options) -> @make()
         collectionReset: (collection, options) -> @make()
-        collectionChanged: (model, collection, options) -> # Do nothing
-        collectionDestroyed: (collection, options) -> @make()
 
 oj.ModelView
 ------------------------------------------------------------------------------
@@ -2447,21 +2459,21 @@ make: Remake view from property data
 
 #### CollectionView Events
 
-collectionAdded: Model add occurred, add the item
+collectionModelAdded: Model add occurred, add the item
 
-        collectionAdded: (m, c) ->
+        collectionModelAdded: (m, c) ->
           ix = c.indexOf m
           item = @_itemFromModel m
           @add ix, item
           return
 
-collectionRemoved: Model remove occured, delete the item
+collectionModelRemoved: Model remove occured, delete the item
 
-        collectionRemoved: (m, c, o) ->
+        collectionModelRemoved: (m, c, o) ->
           @remove o.index
           return
 
-collectionRemoved: On add
+collectionModelRemoved: On add
 
         collectionReset: ->
           @make()
@@ -2823,14 +2835,14 @@ make: Remake everything
 #### CollectionView Events
 
         # On add minimally create the missing model
-        collectionAdded: (m, c) ->
+        collectionModelAdded: (m, c) ->
           rx = c.indexOf m
           row = @_rowFromModel m
           @_addRowTR rx, oj -> oj.tr row
           return
 
         # On add minimally create the missing model
-        collectionRemoved: (m, c, o) ->
+        collectionModelRemoved: (m, c, o) ->
           @removeRow o.index
           return
 

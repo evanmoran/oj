@@ -15,7 +15,7 @@ OJ Simplifies:
 oj.use require 'oj-markdown'
 
 _template = require './_template'
-{renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
+{renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderEvents:events, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
 
 # _snippet = require './_snippet'
 # _editor = require './_editor'
@@ -63,7 +63,7 @@ data = [
 
       For simple tag creation OJ provides a series of [tag functions](#tags), one for every tag (`<div>`, `<span>`, `<ul>`, `<table>`, `<a>`, etc), to build up structure of your site and help create the collection and form types you are using. These tag functions allow you to create html structure, css, and bind jquery events simultaneously.
 
-     To truly master OJ it is encouraged to create your own custom types; [List](#List) and [Table](#Table) are going to get you quite far, but it is much easier to think in terms of `ChatWindow` or `FriendList` then to manually manipulate several things at once by hand. To this end OJ provides a [type creation function](#type) and some inheritable [base types](#base-types) to help you create types of your own. With these base types model binding is quite easy.
+     To truly master OJ it is encouraged to create your own custom types; [List](#List) and [Table](#Table) are going to get you quite far, but it is much easier to think in terms of `ChatWindow` or `FriendList` then to manually manipulate several things at once by hand. To this end OJ provides a [type creation function](#createType) and some inheritable [base types](#base-types) to help you create types of your own. With these base types model binding is quite easy.
 
      For server side use of oj a [command-line tool](#command-line) called `oj` can be [installed](#install) with node's package manager `npm`. The tools purpose is to combine [oj file types](#file-types) together into `html` files. It supports watch for debugging and magnification of html, javascript, and css for production. **Important Note:** This tool is _not_ a web server. It is quite capable as a static site generator, but for more complex scenarios an [express plugin](http://expressjs.com/) is [in the works](https://github.com/ojjs/oj/issues/1).
 
@@ -157,14 +157,18 @@ data = [
             Number of items (Number, [read-only](#read-only)))
           """
          ,
-          h:'models', id:'List-models', d:"""
-            Inherited from [CollectionView.models](#CollectionView-models)
+          h:'collection', id:'List-collection', d:"""
+            Inherited from [CollectionView.collection](#CollectionView-collection)
 
-            The models for the view. This can be an Array or a Backbone.Collection
+            The collection for the view. This can be an Array or a Backbone.Collection
 
             When Backbone is used changes to the collection will cause the view
             to be automatically redrawn. This is done minimally so adds and removes
-            cause fewest redraws redraws possible.
+            cause fewest redraws possible.
+          """
+         ,
+          h:'models', id:'List-models', d:"""
+            Alias for `collection` property
           """
          ,
           h:'each', id:'List-each', d:"""
@@ -316,14 +320,18 @@ data = [
             Number of columns (Number, [read-only](#read-only)))
           """
          ,
-          h:'models', id:'Table-models', d:"""
-            Inherited from [CollectionView.models](#CollectionView-models)
+          h:'collection', id:'Table-collection', d:"""
+            Inherited from [CollectionView.collection](#CollectionView-collection)
 
-            The models for the view. This can be an Array or a Backbone.Collection
+            The collection for the view. This can be an Array or a Backbone.Collection
 
             When Backbone is used changes to the collection will cause the view
             to be automatically redrawn. This is done minimally so adds and removes
-            cause fewest redraws redraws possible.
+            cause fewest redraws possible.
+          """
+         ,
+          h:'models', id:'Table-models', d:"""
+            Alias for `collection` property
           """
          ,
           h:'each', id:'Table-each', d:"""
@@ -437,9 +445,6 @@ data = [
         ,
           h:'popRow()', id:'Table-popRow', d:"""
             Remove the last row
-
-                myTable = Table([1,2,3],[4,5,6],[7,8,9]);
-                myTable.popRow();
           """
         ,
           h:'shiftRow()', id:'Table-shiftRow', d:"""
@@ -558,7 +563,7 @@ data = [
     ]
   ,
     h: 'Creating Types', id: 'creating-types', d: """
-      The point of OJ is creating types that better abstract the web. To do this OJ includes a function called [oj.type](#type).
+      The point of OJ is creating types that better abstract the web. To do this OJ includes a function called [oj.createType](#createType).
 
       ### Features
 
@@ -575,17 +580,23 @@ data = [
 
     """
     items: [
-      h:'oj.type', id:'type', d: ->
+      h:'oj.createType', id:'createType', d: ->
 
         markdown """
           This function creates new type constructors. is a big part of why OJ types are so easy to create and use. Generally you should create new types when the component is well understood and often when it has an analogous model.
         """
 
-        name 'type(name, options)'
+        name 'createType(name, options)'
 
         arguments_ [
           h:'name', id:'Type-argument-name', d:"""
-            The type that made this instance
+            The string name of the type you want to create.
+          """
+        ,
+          h:'options', id:'Type-argument-options', d:"""
+            An object that specifies `properties`, `methods`, `constructor`, and an inheritance `base` type.
+
+            See more information below:
           """
         ]
 
@@ -617,7 +628,7 @@ data = [
           ### Example
 
               # Define type user
-              User = oj.type 'User',
+              User = oj.createType 'User',
                 properties:
                   name: null
                   birthDate: null
@@ -661,7 +672,7 @@ data = [
       h:'Type Interface', id:'Type', d: ->
 
         markdown """
-          All types created by [oj.type](#type) have the following methods and properties.
+          All types created by [oj.createType](#createType) have the following methods and properties.
         """
         properties [
           h:'type', id:'Type-type', d:"""
@@ -765,7 +776,7 @@ data = [
         markdown """
           This object is the basis of much of the functionality of OJ. It emits creation events so that objects act like [oj.tag](#tag). It creates the root element of your object and gives convenient access to it through [el](#View-el). It provides an [attributes](#View-attributes) property and related methods to let you set and get attributes.
 
-          All types created using [oj.type](#type) behave this way.
+          All types created using [oj.createType](#createType) behave this way.
 
               var textbox = TextBox({value:'my text'});
 
@@ -774,7 +785,7 @@ data = [
               var textbox = TextBox();
               textbox.value = 'my text';
 
-          (Note: because [oj.type](#type) removes the need to use `new`, so in the above example it wasn't necessary to call `new TextBox()`. See [oj.type](#type) if you want to learn more about why this was done.)
+          (Note: because [oj.createType](#createType) removes the need to use `new`, so in the above example it wasn't necessary to call `new TextBox()`. See [oj.createType](#createType) if you want to learn more about why this was done.)
 
           Any options that don't map to properties will be passed through to the root element as attributes. This lets this work as you would expect:
 
@@ -859,8 +870,6 @@ data = [
 
         ]
 
-
-
         ###
     # Key used to access model
     key: null
@@ -888,18 +897,62 @@ data = [
             The key part of the model-key that partially binds a model. Both key and model are required.
           """
         ]
+        events [
+          # TODO: Include params to these event methods
+          h:'modelChanged(...)', id:'ModelKeyView-modelChanged', d:"""
+            Overridable event method called when the model is changed
+
+            When overriding be sure to call the base method
+          """
+        ,
+          h:'viewChanged(...)', id:'CollectionView-viewChanged', d:"""
+            Call this event method to when the view changes. This will cause the model to be updated automatically.
+          """
+        ]
     ,
       h:'oj.CollectionView', id:'CollectionView', d: ->
 
         inherits h:'View', id:'View'
 
         properties [
-          h:'model', id:'ModelView-model', d:"""
-            Bind a model to this view
+          h:'collection', id:'CollectionView-collection', d:"""
+            The inherited collection property for the view. This can be an Array or a Backbone.Collection.
+
+            When Backbone is used changes the CollectionView automatically binds to changes in the collection and calls the following methods:
+
+            * `collectionModelAdded`
+            * `collectionModelRemoved`
+            * `collectionModelChanged`
+            * `collectionModelDestroyed`
+            * `collectionReset`
+
+            When implementing a oj.CollectionView these event methods should be overriden to correctly update state as the collection changes.
           """
         ,
-          h:'attributes', id:'View-attributes', d:"""
-            Accessor to root element attributes. jQuery events will be bound.
+          h:'models', id:'CollectionView-models', d:"""
+            Alias for `collection` property.
+          """
+        ]
+        events [
+          # TODO: Include params to these event methods
+          h:'collectionModelAdded(...)', id:'CollectionView-collectionModelAdded', d:"""
+            Overridable event method called when a model is added to the collection
+          """
+        ,
+          h:'collectionModelRemoved(...)', id:'CollectionView-collectionModelRemoved', d:"""
+            Overridable event method called when a model is removed from the collection
+          """
+        ,
+          h:'collectionModelChanged(...)', id:'CollectionView-collectionModelChanged', d:"""
+            Overridable event method called when a model changes
+          """
+        ,
+          h:'collectionModelDestroyed(...)', id:'CollectionView-collectionModelDestroyed', d:"""
+            Overridable event method called when a model is destroyed
+          """
+        ,
+          h:'collectionReset()', id:'CollectionView-collectionReset', d:"""
+            Overridable event method called when the entire collection is remade
           """
         ]
 

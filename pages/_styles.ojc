@@ -17,6 +17,7 @@ module.exports = ->
   functionLinkColor = linkColor
   methodLinkColor = '#a64d09'
   propertyLinkColor = '#b3820a'
+  eventLinkColor = '#a64d09'
   optionLinkColor = propertyLinkColor
   argumentLinkColor = propertyLinkColor
 
@@ -79,6 +80,10 @@ module.exports = ->
 
     'a.method':
       color: methodLinkColor
+      fontFamily: familyMonospace
+
+    'a.event':
+      color: eventLinkColor
       fontFamily: familyMonospace
 
     'a.property':

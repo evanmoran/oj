@@ -83,7 +83,7 @@ data = [
 
         Button('Add Item', {
           click: function(){
-            myList.add('Item added!');
+            myList.push('Item added!');
           }
         });
 

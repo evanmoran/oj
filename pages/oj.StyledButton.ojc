@@ -1,0 +1,19 @@
+module.exports = (oj, settings) ->
+
+  StyledButton = createType 'StyledButton',
+    base: oj.Button
+    constructor: ->
+      {options, args} = oj.argumentsUnion arguments
+
+      StyledButton.base.constructor.apply @, [options,args...]
+
+  StyledButton.css
+    border:'1px solid purple'
+    color:'purple'
+    fontSize:'20px'
+
+  StyledButton.theme 'ruby',
+    border:'1px solid red'
+    color:'red'
+
+  {StyledButton: StyledButton}

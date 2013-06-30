@@ -19,6 +19,10 @@ module.exports =
     div 'methods:', c:'code-subheading method'
     contentCodeItems methods, 'method'
 
+  renderEvents: (events) ->
+    div 'events:', c:'code-subheading event'
+    contentCodeItems events, 'event'
+
   renderArguments: (args) ->
     div 'arguments:', c:'code-subheading argument'
     contentCodeItems args, 'argument'

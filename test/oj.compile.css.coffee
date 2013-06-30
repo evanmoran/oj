@@ -300,3 +300,33 @@ describe 'oj.compile.css', ->
 
     cssTest ojml, '.c1{color:red}@media only screen and (max-width: 767px){.c1{color:blue}}@media only screen and (min-width: 768px) and (max-width: 959px){.c1{color:purple}}'
     cssTest ojml, '.c1 {\n\tcolor:red;\n}\n@media only screen and (max-width: 767px) {\n\t.c1 {\n\t\tcolor:blue;\n\t}\n}\n@media only screen and (min-width: 768px) and (max-width: 959px) {\n\t.c1 {\n\t\tcolor:purple;\n\t}\n}\n', debug:true
+
+  it 'createType with css', ->
+    FancyButton = oj.createType 'FancyButton',
+      base:oj.Button
+    FancyButton.css
+      border:'1px solid purple'
+      color:'orange'
+
+    ojml = ->
+      FancyButton 'My button'
+
+    cssTest ojml, '.oj-FancyButton{border:1px solid purple;color:orange}'
+
+    cssTest ojml, '.oj-FancyButton {\n\tborder:1px solid purple;\n\tcolor:orange;\n}\n', debug:true
+
+  it 'createType with css and theme', ->
+    FancyButton = oj.createType 'FancyButton',
+      base:oj.Button
+    FancyButton.css
+      border:'1px solid purple'
+      color:'orange'
+    FancyButton.theme 'bluejay',
+      color:'blue'
+
+    ojml = ->
+      FancyButton 'My button'
+
+    cssTest ojml, '.oj-FancyButton{border:1px solid purple;color:orange}.oj-FancyButton.theme-bluejay{color:blue}'
+
+    cssTest ojml, '.oj-FancyButton {\n\tborder:1px solid purple;\n\tcolor:orange;\n}\n.oj-FancyButton.theme-bluejay {\n\tcolor:blue;\n}\n', debug:true
