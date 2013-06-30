@@ -6,8 +6,6 @@ _styles = require './_styles'
 _snippet = require './_snippet'
 _examples = require './_examples'
 
-# _editor = require './_editor'
-
 _template = require './_template'
 
 module.exports = ->

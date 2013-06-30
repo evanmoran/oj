@@ -13,6 +13,7 @@ cssTest = (ojml, css, options) ->
   options = _.defaults {}, options,
     html:true
     css:true
+    styles:false
     dom:false
     debug:false
 
@@ -22,6 +23,22 @@ cssTest = (ojml, css, options) ->
     expect(r.css).to.equal css
   else
     expect(r.css).to.not.exist
+
+stylesTest = (ojml, styles, options) ->
+  options = _.defaults {}, options,
+    html:true
+    css:false
+    styles:true
+    dom:false
+    debug:false
+
+  r = oj.compile options, ojml
+
+  if not (options.styles == false)
+    expect(r.styles).to.be.a 'string'
+    expect(r.styles).to.equal styles
+  else
+    expect(r.styles).to.not.exist
 
 cssTestException = (ojml, exception, options = {}) ->
   expect(-> oj.compile options, ojml).to.throw exception
@@ -330,3 +347,31 @@ describe 'oj.compile.css', ->
     cssTest ojml, '.oj-FancyButton{border:1px solid purple;color:orange}.oj-FancyButton.theme-bluejay{color:blue}'
 
     cssTest ojml, '.oj-FancyButton {\n\tborder:1px solid purple;\n\tcolor:orange;\n}\n.oj-FancyButton.theme-bluejay {\n\tcolor:blue;\n}\n', debug:true
+
+  it 'output css to <style> tags', ->
+    ojml = ->
+      oj.css
+        '.c1,.c2':
+            color:'red'
+
+    stylesTest ojml, '<style class="oj-style">.c1,.c2{color:red}</style>'
+    stylesTest ojml, '<style class="oj-style">\n.c1,\n.c2 {\n\tcolor:red;\n}\n\n</style>\n', debug:true
+
+  it 'output css to <style> tags with plugin', ->
+
+    FancyButton = oj.createType 'FancyButton',
+      base:oj.Button
+    FancyButton.css
+      border:'1px solid purple'
+      color:'orange'
+    FancyButton.theme 'bluejay',
+      color:'blue'
+
+    ojml = ->
+      FancyButton 'My button'
+      oj.css
+        '.c1,.c2':
+            color:'red'
+
+    stylesTest ojml, '<style class="oj-FancyButton-style">.oj-FancyButton{border:1px solid purple;color:orange}.oj-FancyButton.theme-bluejay{color:blue}</style><style class="oj-style">.c1,.c2{color:red}</style>'
+    stylesTest ojml, '<style class="oj-FancyButton-style">\n.oj-FancyButton {\n\tborder:1px solid purple;\n\tcolor:orange;\n}\n.oj-FancyButton.theme-bluejay {\n\tcolor:blue;\n}\n\n</style>\n<style class="oj-style">\n.c1,\n.c2 {\n\tcolor:red;\n}\n\n</style>\n', debug:true

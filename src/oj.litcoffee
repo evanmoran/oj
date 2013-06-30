@@ -1100,25 +1100,32 @@ Define method
       acc = _clone options
       acc.html = if options.html then [] else null    # html accumulator
       acc.dom = if options.dom and document? then (document.createElement 'OJ') else null
-      acc.css = if options.css || options.cssMap then {} else null
+      acc.css = if options.css or options.cssMap or options.styles then {} else null
       acc.indent = ''                                 # indent counter
       acc.types = [] if options.dom                   # remember types if making dom
       acc.tags = {}                                   # remember what tags were used
       _compileAny ojml, acc
 
-      # Generate cssMap
+      if acc.css?
+        flatCSSMap = _flattenCSSMap acc.css
+
+      # Output cssMap if necessary
       if options.cssMap
-        cssMap = acc.css
+        cssMap = flatCSSMap
 
-      # Generate css
+      # Generate css if necessary
       if options.css
-        css = _cssFromObject acc.css, options.debug
+        css = _cssFromObject flatCSSMap, debug: options.debug, tags:0
 
-      # Generate HTML
+      # Generate style tags if necessary
+      if options.styles
+        styles = _cssFromObject flatCSSMap, debug: options.debug, tags:1
+
+      # Generate HTML if necessary
       if options.html
         html = acc.html.join ''
 
-      # Generate dom
+      # Generate dom if necessary
       if options.dom
 
         # Remove the <oj> wrapping from the dom element
@@ -1138,11 +1145,11 @@ Define method
         # Single elements are returned themselves not as a list
         # Reasoning: The common cases don't have multiple elements <html>,<body>
         # or the complexity doesn't matter because insertion is abstracted for you
-        # In short it is easier to check for isArray dom, then _isArray dom && dom.length > 0
+        # In short it is easier to check for isArray dom, then isArray dom && dom.length > 0
         else if dom.length == 1
           dom = dom[0]
 
-      out = html:html, dom:dom, css:css, cssMap:cssMap, types:acc.types, tags:acc.tags
+      out = html:html, dom:dom, css:css, cssMap:cssMap, styles:styles, types:acc.types, tags:acc.tags
 
       out
 
@@ -1239,7 +1246,7 @@ _flattenCSSMap
 Take an OJ object definition of CSS and simplify it to the form:
 `'plugin' -> '@media query' -> 'selector' ->'rulesMap'`
 
-This method is the heart of `_cssFromObject`
+This method vastly simplifies `_cssFromObject`
 
 Nested definitions, media definitions and comma definitions are resolved.
 
@@ -1340,13 +1347,17 @@ Nested definitions, media definitions and comma definitions are resolved.
 
 _cssFromObject:
 -----------------------------------------------------------------------------
-Convert css selectors and rules to a string
+Convert flattened css selectors and rules to a string
 
 Supports nested objections, comma seperated rules, and @media queries
 
 debug:true will output newlines
+tags:true will output the css in `<style>` tags
 
-    _cssFromObject = (cssMap, debug = 0) ->
+    _cssFromObject = (flatCSSMap, options = {}) ->
+
+      debug = options.debug ? 0
+      tags = options.tags ? 0
 
   Deterine what output characters are needed
 
@@ -1354,11 +1365,12 @@ debug:true will output newlines
       space = if debug then ' ' else ''
       inline = !debug
 
-      flatMap = _flattenCSSMap cssMap
-
       css = ''
+      for plugin, mediaMap of flatCSSMap
 
-      for plugin, mediaMap of flatMap
+        if tags
+          css += "<style class=\"#{plugin}-style\">#{newline}"
+
         for media, selectorMap of mediaMap
 
   Serialize media query
@@ -1380,12 +1392,15 @@ debug:true will output newlines
             indentRule = if debug then indent + '\t' else indent
 
             rules = _styleFromObject styles, inline:inline, indent:indentRule
-            css += "#{rules}#{indent}}#{newline}"
+            css += rules + indent + '}' + newline
 
   End media query
 
           if media != ''
-            css += "}#{newline}"
+            css += '}' + newline
+
+        if tags
+          css += "#{newline}</style>#{newline}"
 
       css
 
@@ -1987,7 +2002,7 @@ oj.View
         toDOM: -> @el
 
         # Convert
-        toCSS: (debug) -> _cssFromObject @cssMap, debug
+        toCSS: (debug) -> _cssFromObject (_flattenCSSMap @cssMap), debug:debug,tags:0
 
         # Convert
         toCSSMap: -> @type.cssMap
