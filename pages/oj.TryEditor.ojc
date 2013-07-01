@@ -39,7 +39,6 @@ module.exports = (oj, settings) ->
       # Create element
       @el = oj =>
         div =>
-          makeCSS()
 
           div c:'oj-TryEditor-resizer', ->
             div c:'oj-TryEditor-gripper ui-resizable-s'
@@ -462,35 +461,34 @@ module.exports = (oj, settings) ->
         # Make the editor resizable
         if oj.isClient
 
-          $.resize.throttleWindow = false
-          $.resize.delay = 100
+          if $.resize?
+            $.resize.throttleWindow = false
+            $.resize.delay = 100
 
-          # Detect when the window resizes
-          $(window).resize =>
-            @windowResized window.innerWidth, window.innerHeight
+            # Detect when the window resizes
+            $(window).resize =>
+              @windowResized window.innerWidth, window.innerHeight
 
-          @$resizer.resizable
-            minHeight: @minHeight
-            minWidth: @minWidth
-            handles:'s'
+          if @$resizer?.resizable?
+            @$resizer.resizable
+              minHeight: @minHeight
+              minWidth: @minWidth
+              handles:'s'
 
-          @$el.resize (e,ui) =>
-            @updateFrame()
+            @$el.resize (e,ui) =>
+              @updateFrame()
 
-          @$resizer.resize (e,ui) =>
-            h = $(e.currentTarget).height()
-            if @width < phoneWidth
-              # manually cap min height
-              if h / 2 > @minHeight
-                @height = h / 2
-            else
-              @height = h
-            @updateFrame()
+            @$resizer.resize (e,ui) =>
+              h = $(e.currentTarget).height()
+              if @width < phoneWidth
+                # manually cap min height
+                if h / 2 > @minHeight
+                  @height = h / 2
+              else
+                @height = h
+              @updateFrame()
 
-  return TryEditor: TryEditor
-
-makeCSS = ->
-  css
+  TryEditor.css
 
     '.oj-TryEditor':
       border: "#{editorBorderWidth}px solid #{editorBorderColor}"
@@ -605,3 +603,5 @@ makeCSS = ->
       height: '12px'
       backgroundImage: 'url(media/try_gripper.png)'
       zIndex: 101
+
+  return TryEditor: TryEditor
