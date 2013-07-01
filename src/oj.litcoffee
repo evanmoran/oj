@@ -8,26 +8,61 @@ oj function
 
 Convert ojml to dom
 
-    oj = module.exports = ->
-      # Prevent oj method from propagating
+    oj = ->
+
+   Prevent oj function from emitting
+
       oj._argumentsPush()
+
+  oj function acts like a tag method that doesn't emit
+
       ojml = oj.emit.apply @, arguments
+
       oj._argumentsPop()
       ojml
 
-Emit arguments as if it was an oj tag function
+oj.emit
+-------------------------------------------------------------------------------
+Emit arguments as a tag would.
+Used by plugins to group multiple elements as if it is a single tag.
 
     oj.emit = ->
       ojml = oj.tag 'oj', arguments...
 
-Keep a reference to ourselves for templates to see
+
+Export Model to NodeJS or globally
+-------------------------------------------------------------------------------
+
+  Remember root context
+
+    root = @
+
+  Define oj version
+
+    oj.version = '0.0.14'
+
+  Detect if this is client or server-side
+
+    oj.isClient = not process?.versions?.node
+
+  Export as a module in node
+
+    if typeof module != 'undefined'
+      exports = module.exports = oj
+
+  Export globally if not in node
+
+    else
+      root['oj'] = oj
+
+  Reference ourselves for template files to see
 
     oj.oj = oj
 
 oj.load
 -------------------------------------------------------------------------------
-Load the page specified. Currently this is how OJ begins onload.
-TODO: Support loading multiple pages dynamically.
+Load the page specified generating necessary html, css, and client side events.
+TODO: Static server side support for loading any generated pages dynamically.
 TODO: Support Backbone routes to trigger page changes.
 
     oj.load = (page) ->
@@ -42,15 +77,14 @@ TODO: Support Backbone routes to trigger page changes.
         {dom,types} = oj.compile dom:1, html:0, css:0, styles:1, ignore:bodyOnly, (require page)
 
         if not dom?
-          console.error 'oj: dom failed to compile'
+          throw new Error 'oj: dom failed to compile'
           return
 
   Find body element
 
         body = document.getElementsByTagName 'body'
         if body.length == 0
-          console.error 'oj: <body> was not found'
-          return
+          throw new Error('oj: <body> was not found')
         body = body[0]
 
   Clear body and insert dom elements
@@ -83,7 +117,6 @@ Enlist in onload action.
         _onLoadQueue.loaded = true
         while (f = _onLoadQueue.queue.shift())
           f()
-        _onLoadQueue = queue:[], loaded:true
 
   Call load if already loaded
 
@@ -103,7 +136,8 @@ Generate a unique oj id
     oj.id = (len, chars) ->
       'oj' + oj.guid len, chars
 
-## oj.guid
+oj.guid
+-----------------------------------------------------------------------------
 
     _randomInteger = (min, max) ->
       return null if min == null or max == null or min > max
@@ -133,88 +167,6 @@ Generate a unique oj id
         rand = Math.floor(rand / base)
 
       output
-
-
-Register require.extension for .oj files in node
--------------------------------------------------------------------------------
-
-TODO: Consider moving this to server.litcoffee
-TODO: Compile.ojlc files as literate coffee-script
-
-    if require.extensions
-
-      coffee = require 'coffee-script'
-
-      stripBOM = (c) -> if c.charCodeAt(0) == 0xFEFF then (c.slice 1) else c
-
-      wrapJS = (code) ->
-        "(function(){with(oj.sandbox){#{code}}}).call(this);"
-
-      wrapCSMessage = (message, filepath) ->
-        "#{oj.codes?.red}coffee-script error in #{filepath}: #{message}#{oj.codes?.reset}"
-      wrapJSMessage = (message, filepath) ->
-        "#{oj.codes?.red}javascript error in #{filepath}: #{message}#{oj.codes?.reset}"
-
-      compileJS = (module, code, filepath) ->
-        code = wrapJS code
-        global.oj = oj
-        module._compile code, filepath
-        delete global.oj
-
-  Compile .oj files as javascript
-
-      require.extensions['.oj'] = (module, filepath) ->
-        code = stripBOM fs.readFileSync filepath, 'utf8'
-        try
-          compileJS module, code, filepath
-        catch eJS
-          eJS.message = wrapJSMessage eJS.message, filepath
-          throw eJS
-
-  Compile .ojc files as coffee-script
-
-      require.extensions['.ojc'] = (module, filepath) ->
-        code = stripBOM fs.readFileSync filepath, 'utf8'
-
-        # Compile in coffee-script
-        try
-          code = coffee.compile code, bare: true
-        catch eCoffee
-          eCoffee.message = wrapCSMessage eCoffee.message, filepath
-          throw eCoffee
-
-        # Compile javascript
-        try
-          compileJS module, code, filepath
-
-        catch eJS
-          eJS.message = wrapJSMessage eJS.message, filepath
-          throw eJS
-
-Export Model to NodeJS or globally
--------------------------------------------------------------------------------
-
-  Remember root context
-
-    root = @
-
-  Define oj version
-
-    oj.version = '0.0.14'
-
-  Detect if this is the client or server
-
-    oj.isClient = not process?.versions?.node
-
-  Export as a module in NodeJS
-
-    if typeof module != 'undefined'
-      exports = module.exports = oj
-
-  Export globally if not in NodeJS
-
-    else
-      root['oj'] = oj
 
 Type Helpers
 ------------------------------------------------------------------------------
@@ -307,7 +259,6 @@ oj.isObject: Determine if object is a vanilla object type
 Utility: Helpers
 ------------------------------------------------------------------------------
 
-    oj.__ = _ = {}
     _isCapitalLetter = (c) -> !!(c.match /[A-Z]/)
     _identity = (v) -> v
     _has = (obj, key) -> ObjP.hasOwnProperty.call(obj, key)

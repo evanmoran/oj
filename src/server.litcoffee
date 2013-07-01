@@ -53,6 +53,58 @@ Export Server Side OJ
       cyan: '\u001b[36m'
       gray: '\u001b[37m'
 
+
+Register require.extension for .oj and .ojc file types
+-------------------------------------------------------------------------------
+TODO: Compile.ojlc files as literate coffee-script
+
+    if require.extensions
+
+      coffee = require 'coffee-script'
+
+      stripBOM = (c) -> if c.charCodeAt(0) == 0xFEFF then (c.slice 1) else c
+      wrapJS = (code) ->
+        "(function(){with(oj.sandbox){#{code}}}).call(this);"
+      wrapCSMessage = (message, filepath) ->
+        "#{oj.codes?.red}coffee-script error in #{filepath}: #{message}#{oj.codes?.reset}"
+      wrapJSMessage = (message, filepath) ->
+        "#{oj.codes?.red}javascript error in #{filepath}: #{message}#{oj.codes?.reset}"
+      compileJS = (module, code, filepath) ->
+        code = wrapJS code
+        global.oj = oj
+        module._compile code, filepath
+        delete global.oj
+
+  Compile .oj files as javascript
+
+      require.extensions['.oj'] = (module, filepath) ->
+        code = stripBOM fs.readFileSync filepath, 'utf8'
+        try
+          compileJS module, code, filepath
+        catch eJS
+          eJS.message = wrapJSMessage eJS.message, filepath
+          throw eJS
+
+  Compile .ojc files as coffee-script
+
+      require.extensions['.ojc'] = (module, filepath) ->
+        code = stripBOM fs.readFileSync filepath, 'utf8'
+
+        # Compile in coffee-script
+        try
+          code = coffee.compile code, bare: true
+        catch eCoffee
+          eCoffee.message = wrapCSMessage eCoffee.message, filepath
+          throw eCoffee
+
+        # Compile javascript
+        try
+          compileJS module, code, filepath
+
+        catch eJS
+          eJS.message = wrapJSMessage eJS.message, filepath
+          throw eJS
+
 Commands
 ==============================================================================
 
