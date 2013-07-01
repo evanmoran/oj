@@ -17,7 +17,6 @@ Convert ojml to dom
   oj function acts like a tag method that doesn't emit
 
       ojml = oj.emit.apply @, arguments
-
       oj._argumentsPop()
       ojml
 
@@ -29,10 +28,8 @@ Used by plugins to group multiple elements as if it is a single tag.
     oj.emit = ->
       ojml = oj.tag 'oj', arguments...
 
-
 Export Model to NodeJS or globally
 -------------------------------------------------------------------------------
-
   Remember root context
 
     root = @
@@ -138,6 +135,7 @@ Generate a unique oj id
 
 oj.guid
 -----------------------------------------------------------------------------
+Generate a unique guid
 
     _randomInteger = (min, max) ->
       return null if min == null or max == null or min > max
@@ -256,7 +254,7 @@ oj.isObject: Determine if object is a vanilla object type
 
     oj.isObject = (obj) -> (oj.typeOf obj) == 'object'
 
-Utility: Helpers
+Utility Helpers
 ------------------------------------------------------------------------------
 
     _isCapitalLetter = (c) -> !!(c.match /[A-Z]/)
@@ -366,7 +364,6 @@ _bind: Helper to bind context to function
 
     _clone = (obj) ->
       # TODO: support cloning OJ instances
-      # TODO: support options, deep: true
       return obj unless (oj.isArray obj) or (oj.isObject obj)
       if oj.isArray obj then obj.slice() else _extend {}, obj
 
@@ -418,9 +415,8 @@ _setObject: Set object deeply and ensure each part is an object
 
       obj
 
-Utility: Iteration
+Functional Helpers
 ------------------------------------------------------------------------
-
   _each
 
     _breaker = {}
@@ -538,11 +534,9 @@ Utility: Iteration
     _uniqueSortedUnion = (arr, arr2) ->
       _uniqueSort (arr.concat arr2)
 
-  _splitAndTrim
 
-    _splitAndTrim = (str, seperator, limit) ->
-      r = str.split seperator, limit
-      oj._map r, (v) -> v.trim()
+Indexing Helpers
+-----------------------------------------------------------------------------
 
   _boundOrThrow: Bound index to allow negatives, throw when out of range
 
@@ -553,17 +547,34 @@ Utility: Iteration
       ixNew
 
 String Helpers
-------------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+  _splitAndTrim: Split string by seperator and trim the resulting values
+
+    _splitAndTrim = (str, seperator, limit) ->
+      r = str.split seperator, limit
+      oj._map r, (v) -> v.trim()
+
+  _dasherize: Convert from camal case or space seperated to dashes
 
     _dasherize = (str) ->
+      _decamelize(str).replace /[ _]/g, '-'
 
-      out
+  _decamelize: Convert from camal case to underscore case
+
+    _decamelize = (str) ->
+      str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
 
 Path Helpers
 ------------------------------------------------------------------------------
-A simplified form of  github.com/joyent/node/lib/path.js
+Used to implement require client side. These methods are simplified versions of
+the node `path` library: github.com/joyent/node/lib/path.js
 
-    pathNormalizeArray = (parts, allowAboveRoot) ->
+    _pathSplitRe = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/
+    _pathSplit = (filename) ->
+      result = _pathSplitRe.exec filename
+      [result[1] or '', result[2] or '', result[3] or '', result[4] or '']
+    _pathNormalizeArray = (parts, allowAboveRoot) ->
       up = 0
       i = parts.length - 1
       while i >= 0
@@ -577,17 +588,10 @@ A simplified form of  github.com/joyent/node/lib/path.js
           parts.splice i, 1
           up--
         i--
-
       if allowAboveRoot
         while up--
           parts.unshift '..'
-
       parts
-
-    pathSplitRe = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/
-    pathSplit = (filename) ->
-      result = pathSplitRe.exec filename
-      [result[1] or '', result[2] or '', result[3] or '', result[4] or '']
 
     oj._pathResolve = ->
       resolvedPath = ''
@@ -600,7 +604,7 @@ A simplified form of  github.com/joyent/node/lib/path.js
         resolvedPath = path + '/' + resolvedPath
         resolvedAbsolute = path.charAt(0) == '/'
         i--
-      resolvedPath = pathNormalizeArray(resolvedPath.split('/').filter((p) ->
+      resolvedPath = _pathNormalizeArray(resolvedPath.split('/').filter((p) ->
         return !!p
       ), !resolvedAbsolute).join('/')
 
@@ -609,35 +613,28 @@ A simplified form of  github.com/joyent/node/lib/path.js
     oj._pathNormalize = (path) ->
       isAbsolute = path.charAt(0) == '/'
       trailingSlash = path.substr(-1) == '/'
-
-      # Normalize the path
-      path = pathNormalizeArray(path.split('/').filter((p) ->
+      path = _pathNormalizeArray(path.split('/').filter((p) ->
         !!p
       ), !isAbsolute).join('/')
-
       if !path and !isAbsolute
         path = '.'
-
       if path and trailingSlash
         path += '/'
-
       (if isAbsolute then '/' else '') + path
 
     oj._pathJoin = ->
-      paths = Array.prototype.slice.call arguments, 0
+      paths = ArrayP.slice.call arguments, 0
       oj._pathNormalize(paths.filter((p, index) ->
         p and typeof p == 'string'
       ).join('/'))
 
     oj._pathDirname = (path) ->
-      result = pathSplit path
+      result = _pathSplit path
       root = result[0]
       dir = result[1]
       if !root and !dir
-        # No dirname whatsoever
         return '.'
       if dir
-        # It has a dirname, strip trailing slash
         dir = dir.substr 0, dir.length - 1
       root + dir
 
@@ -1081,20 +1078,6 @@ Define method
       out = html:html, dom:dom, css:css, cssMap:cssMap, styles:styles, types:acc.types, tags:acc.tags
 
       out
-
-_dasherize
------------------------------------------------------------------------------
-Convert from camal case or space seperated to dashes
-
-    _dasherize = (str) ->
-      _decamelize(str).replace /[ _]/g, '-'
-
-_decamelize
------------------------------------------------------------------------------
-Convert from camal case to underscore case
-
-    _decamelize = (str) ->
-      str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
 
 _styleFromObject:
 -----------------------------------------------------------------------------
