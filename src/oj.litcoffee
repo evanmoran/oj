@@ -761,7 +761,7 @@ oj.removeProperty
 
 Validate input
 
-      throw 'oj.addProperty: string expected for second argument' unless oj.isString propName
+      throw new Error('oj.addProperty: string expected for second argument') unless oj.isString propName
 
 Remove property
 
@@ -773,7 +773,7 @@ oj.isProperty
     # Determine if the specified key is was defined by addProperty
 
     oj.isProperty = (obj, propName) ->
-      throw 'oj.isProperty: string expected for second argument' unless oj.isString propName
+      throw new Error('oj.isProperty: string expected for second argument') unless oj.isString propName
 
       Object.getOwnPropertyDescriptor(obj, propName).get?
 
@@ -872,10 +872,12 @@ Styles have smart mappings:
 
           len = oj._argumentsTop().length
 
-          # Call the argument it will auto append to oj._argumentsTop() which is ojml
+  Call the argument it will auto append to oj._argumentsTop() which is ojml
+
           r = arg()
 
-          # Use return value if oj._argumentsTop() weren't changed
+  Use return value if oj._argumentsTop() weren't changed
+
           if len == oj._argumentsTop().length and r?
             oj._argumentsAppend r
 
@@ -1970,19 +1972,28 @@ oj.View
         inserted: ->
           @_isInserted = true
 
-    oj.View.css = (def) ->
-      # TODO: Support def being a raw css string
-      cssMap = _setObject {}, ".oj-#{@typeName}", def
-      @cssMap["oj-#{@typeName}"] ?= {}
-      _extend @cssMap["oj-#{@typeName}"], cssMap
+  oj.View.css: set view's css with css object mapping, or raw css string
+
+    oj.View.css = (css) ->
+      throw new Error("oj.#{@typeName}.css: object or string expected for first argument") unless oj.isString(css) or oj.isObject(css)
+      if oj.isString css
+        @cssMap["oj-#{@typeName}"] ?= ""
+        @cssMap["oj-#{@typeName}"] += css
+      else
+        @cssMap["oj-#{@typeName}"] ?= {}
+        cssMap = _setObject {}, ".oj-#{@typeName}", css
+        _extend @cssMap["oj-#{@typeName}"], cssMap
       return
 
-    oj.View.theme = (name, def) ->
+  oj.View.theme: create a View specific theme with css object mapping
+
+    oj.View.theme = (name, css) ->
       throw new Error("oj.#{@typeName}.theme: string expected for first argument (theme name)") unless oj.isString name
+      throw new Error("oj.#{@typeName}.css: object expected for second argument") unless oj.isObject(css)
 
       @cssMap["oj-#{@typeName}"] ?= {}
       dashName = _dasherize name
-      cssMap = _setObject {}, ".oj-#{@typeName}.theme-#{dashName}", def
+      cssMap = _setObject {}, ".oj-#{@typeName}.theme-#{dashName}", css
       _extend @cssMap["oj-#{@typeName}"], cssMap
       @themes.push dashName
       return
