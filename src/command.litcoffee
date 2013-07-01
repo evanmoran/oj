@@ -29,7 +29,6 @@ command.coffee
         usage()
 
       options = _.pick commander, 'args', 'debug', 'minify', 'output', 'recurse', 'modules', 'verbose', 'watch'
-      console.log "options: ", options
 
   Execute command through oj module api
 

@@ -24,19 +24,22 @@ Keep a reference to ourselves for templates to see
 
     oj.oj = oj
 
-oj.begin
+oj.load
 -------------------------------------------------------------------------------
+Load the page specified. Currently this is how OJ begins onload.
+TODO: Support loading multiple pages dynamically.
+TODO: Support Backbone routes to trigger page changes.
 
-    oj.begin = (page) ->
+    oj.load = (page) ->
 
-  Defer dom manipulation until the page has loaded
+  Defer dom manipulation until the page is ready
 
-      _readyOrLoad ->
+      jQuery ->
 
   Compile only the body and below
 
         bodyOnly = html:1, doctype:1, head:1, link:1, script:1
-        {dom,types} = oj.compile dom:1, html:0, css:0, ignore:bodyOnly, (require page)
+        {dom,types} = oj.compile dom:1, html:0, css:0, styles:1, ignore:bodyOnly, (require page)
 
         if not dom?
           console.error 'oj: dom failed to compile'
@@ -63,59 +66,34 @@ oj.begin
         for t in types
           t.inserted()
 
-  Trigger events bound through oj.ready
+  Trigger events bound through onload
 
-        oj.ready()
+        oj.onload()
 
-_readyOrLoad
+oj.onload
 -------------------------------------------------------------------------------
-Helper method that loads with either ready or onload (whichever exists)
+Enlist in onload action.
 
-    _readyOrLoad = (fn) ->
-
-  Use jquery ready if it exists
-
-      if jQuery?
-        jQuery fn
-
-  Use onload
-
-      else
-        # Add onload if it hasn't happened yet
-        if document.readyState != "complete"
-          prevOnLoad = window.onload
-          window.onload = ->
-            prevOnLoad?()
-            fn()
-
-  Call the function immediately if onload already happened
-
-        else
-          fn()
-      return
-
-oj.ready
--------------------------------------------------------------------------------
-
-    _readyQueue = queue:[], loaded:false
-    oj.ready = (f) ->
+    _onLoadQueue = queue:[], loaded:false
+    oj.onload = (f) ->
 
   Call everything if no arguments
 
       if oj.isUndefined f
-        _readyQueue.loaded = true
-        while (f = _readyQueue.queue.shift())
+        _onLoadQueue.loaded = true
+        while (f = _onLoadQueue.queue.shift())
           f()
+        _onLoadQueue = queue:[], loaded:true
 
   Call load if already loaded
 
-      else if _readyQueue.loaded
+      else if _onLoadQueue.loaded
         f()
 
   Queue function for later
 
       else
-        _readyQueue.queue.push f
+        _onLoadQueue.queue.push f
       return
 
 oj.id
@@ -1397,8 +1375,12 @@ Placeholder functions for server side minification
 
         if media != ''
           css += '}' + newline
+      try
+        css = oj._minifyCSS css, options
+      catch eCSS
+        throw new Error "css minification error: #{eCSS.message}\nCould not minify:\n#{css}"
 
-      oj._minifyCSS css, options
+      css
 
 _cssFromPluginObject:
 -----------------------------------------------------------------------------
@@ -3217,8 +3199,3 @@ jquery plugins
             return
 
           get:null
-
-
-
-
-

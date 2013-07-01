@@ -295,9 +295,9 @@ This is not a public API so it seemed to horrible.
       # Catch the messages thrown by compiling ojml
       try
         # Compile
-        results = oj.compile debug:isDebug, minify:isMinify, html:1, css:0, cssMap:1, dom:0, ojml
+        results = oj.compile debug:isDebug, minify:isMinify, html:1, css:0, styles:1, dom:0, ojml
         html = results.html
-        cssMap = results.cssMap
+        styleHtml = results.styles
       catch eCompile
         error "runtime error in #{filePath}: #{eCompile.message}"
         return
@@ -329,15 +329,9 @@ This is not a public API so it seemed to horrible.
       html = _insertAt html, scriptIndex, scriptHtml
 
       # Insert styles before </head> or after <html> or at the beginning
-      if cssMap
-        try
-          styleHtml = _minifyAndWrapCSSInStyleTags cssMap, filePath, isDebug
-          styleIndex = html.lastIndexOf '</head>'
-          html = _insertAt html, styleIndex, styleHtml
-        catch eCSS
-          error "cssMap minification error #{filePath}: #{eCSS.message}"
-          error "generated cssMap: #{cssMap}"
-          return
+      styleIndex = html.lastIndexOf '</head>'
+      html = _insertAt html, styleIndex, styleHtml
+
       # Create directory
       dirOut = path.dirname fileOut
       if mkdirp.sync dirOut
@@ -982,10 +976,10 @@ This is not a public API so it seemed to horrible.
 
     # ###_minifyAndWrapCSSInStyleTags
     # Wrap css in script tags and possibly minify it
-    _minifyAndWrapCSSInStyleTags = (cssMap, filePath, isDebug, structureOff) ->
-      css_ = minifyCSSUnless isDebug, filePath, cssMap, structure:structureOff
-      newline = if isDebug then '\n' else ''
-      "<style>#{newline}#{css_}#{newline}</style>"
+    # _minifyAndWrapCSSInStyleTags = (cssMap, filePath, isDebug, structureOff) ->
+    #   css_ = minifyCSSUnless isDebug, filePath, cssMap, structure:structureOff
+    #   newline = if isDebug then '\n' else ''
+    #   "<style>#{newline}#{css_}#{newline}</style>"
 
     # ###_requireCacheToString
     # Output html from cache and file
@@ -1117,7 +1111,7 @@ This is not a public API so it seemed to horrible.
 
     require = RR('#{path.join clientDir, clientFile}');
     oj = require('oj');
-    oj.begin('#{clientFile}');
+    oj.load('#{clientFile}');
 
     }).call(this);
 
