@@ -1087,8 +1087,8 @@ Define method
       # Default options to compile everything
       options = _defaults {}, options,
         html: true
-        dom: true
-        css: true
+        dom: false
+        css: false
         cssMap: false
         styles: false
         debug: false
@@ -1107,19 +1107,19 @@ Define method
       _compileAny ojml, acc
 
       if acc.css?
-        flatCSSMap = _flattenCSSMap acc.css
+        pluginCSSMap = _flattenCSSMap acc.css
 
       # Output cssMap if necessary
       if options.cssMap
-        cssMap = flatCSSMap
+        cssMap = pluginCSSMap
 
       # Generate css if necessary
       if options.css
-        css = _cssFromObject flatCSSMap, debug: options.debug, tags:0
+        css = _cssFromPluginObject pluginCSSMap, debug: options.debug, tags:0
 
       # Generate style tags if necessary
       if options.styles
-        styles = _cssFromObject flatCSSMap, debug: options.debug, tags:1
+        styles = _cssFromPluginObject pluginCSSMap, debug: options.debug, tags:1
 
       # Generate HTML if necessary
       if options.html
@@ -1246,7 +1246,7 @@ _flattenCSSMap
 Take an OJ object definition of CSS and simplify it to the form:
 `'plugin' -> '@media query' -> 'selector' ->'rulesMap'`
 
-This method vastly simplifies `_cssFromObject`
+This method vastly simplifies `_cssFromPluginObject`
 
 Nested definitions, media definitions and comma definitions are resolved.
 
@@ -1345,19 +1345,76 @@ Nested definitions, media definitions and comma definitions are resolved.
 
       return
 
-_cssFromObject:
+_cssFromMediaObject:
 -----------------------------------------------------------------------------
-Convert flattened css selectors and rules to a string
+Convert css from a flattened rule object. The rule object is of the form:
+mediaQuery => selector => rulesObject
+
+Placeholder functions for server side minification
+
+    oj._minifyJS = (js,options) -> js
+    oj._minifyCSS = (css,options) -> css
+
+    _cssFromMediaObject = (mediaMap, options = {}) ->
+
+      debug = options.debug ? 0
+      tags = options.tags ? 0
+      minify = options.minify ? 0
+
+  Deterine what output characters are needed
+
+      newline = if debug then '\n' else ''
+      space = if debug then ' ' else ''
+      inline = !debug
+
+  Build css for media => selector =>  rules
+
+      css = ''
+      for media, selectorMap of mediaMap
+
+  Serialize media query
+
+        if media
+          media = media.replace /,/g, ",#{space}"
+          css += "#{media}#{space}{#{newline}"
+
+        for selector,styles of selectorMap
+          indent = if debug and media then '\t' else ''
+
+  Serialize selector
+
+          selector = selector.replace /,/g, ",#{newline}"
+          css += "#{indent}#{selector}#{space}{#{newline}"
+
+  Serialize style rules
+
+          indentRule = if debug then indent + '\t' else indent
+
+          rules = _styleFromObject styles, inline:inline, indent:indentRule
+          css += rules + indent + '}' + newline
+
+  End media query
+
+        if media != ''
+          css += '}' + newline
+
+      oj._minifyCSS css, options
+
+_cssFromPluginObject:
+-----------------------------------------------------------------------------
+Convert flattened css selectors and rules to a string. Plugin objects are of the form:
+pluginName => mediaQuery => selector => rulesObject
 
 Supports nested objections, comma seperated rules, and @media queries
 
 debug:true will output newlines
 tags:true will output the css in `<style>` tags
 
-    _cssFromObject = (flatCSSMap, options = {}) ->
+    _cssFromPluginObject = (flatCSSMap, options = {}) ->
 
       debug = options.debug ? 0
       tags = options.tags ? 0
+      minify = options.minify ? 0
 
   Deterine what output characters are needed
 
@@ -1367,37 +1424,12 @@ tags:true will output the css in `<style>` tags
 
       css = ''
       for plugin, mediaMap of flatCSSMap
-
         if tags
           css += "<style class=\"#{plugin}-style\">#{newline}"
 
-        for media, selectorMap of mediaMap
+  Serialize CSS with potential minification
 
-  Serialize media query
-
-          if media
-            media = media.replace /,/g, ",#{space}"
-            css += "#{media}#{space}{#{newline}"
-
-          for selector,styles of selectorMap
-            indent = if debug and media then '\t' else ''
-
-  Serialize selector
-
-            selector = selector.replace /,/g, ",#{newline}"
-            css += "#{indent}#{selector}#{space}{#{newline}"
-
-  Serialize style rules
-
-            indentRule = if debug then indent + '\t' else indent
-
-            rules = _styleFromObject styles, inline:inline, indent:indentRule
-            css += rules + indent + '}' + newline
-
-  End media query
-
-          if media != ''
-            css += '}' + newline
+        css += _cssFromMediaObject mediaMap, options
 
         if tags
           css += "#{newline}</style>#{newline}"
@@ -2002,7 +2034,7 @@ oj.View
         toDOM: -> @el
 
         # Convert
-        toCSS: (debug) -> _cssFromObject (_flattenCSSMap @cssMap), debug:debug,tags:0
+        toCSS: (debug) -> _cssFromPluginObject (_flattenCSSMap @cssMap), debug:debug,tags:0
 
         # Convert
         toCSSMap: -> @type.cssMap
@@ -3174,7 +3206,7 @@ jquery plugins
           set: ($el, args) ->
 
             # Compile ojml for each one to separate references
-            {dom,types} = oj.compile {dom:1,html:0}, args...
+            {dom,types} = oj.compile {dom:1,html:0,css:0}, args...
 
             # Append to the dom
             $el[jqName] dom

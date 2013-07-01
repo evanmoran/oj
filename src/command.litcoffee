@@ -15,11 +15,12 @@ command.coffee
       commander.version(oj.version)
         .usage('[options] <file> <dir> ...')
         .option('-d, --debug', 'Turn on debug output (default: false)', false)
+        .option('-m, --minify', 'Turn on minification (default: false)', false)
         .option('-o, --output <dir>', 'Directory to output all files to (default: .)', process.cwd())
         .option('-r, --recurse', 'Recurse into directories (default: off)', false)
-        .option('-m, --modules <modules>', 'List of modules to include', [])
         .option('-v, --verbose <level>', 'Turn on verbose level 0-3 (default: 1)', 1)
         .option('-w, --watch', 'Turn on watch mode (default: off)', false)
+        # .option('--modules <modules>', 'List of modules to include', [])
         .parse(process.argv)
 
   No arguments shows usage
@@ -27,7 +28,8 @@ command.coffee
       if not _.isArray(commander.args) or commander.args.length == 0
         usage()
 
-      options = _.pick commander, 'args', 'debug', 'output', 'recurse', 'modules', 'verbose', 'watch'
+      options = _.pick commander, 'args', 'debug', 'minify', 'output', 'recurse', 'modules', 'verbose', 'watch'
+      console.log "options: ", options
 
   Execute command through oj module api
 

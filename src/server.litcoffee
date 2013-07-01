@@ -53,7 +53,6 @@ Export Server Side OJ
       cyan: '\u001b[36m'
       gray: '\u001b[37m'
 
-
 Commands
 ==============================================================================
 
@@ -217,7 +216,8 @@ This is not a public API so it seemed to horrible.
       throw new Error('oj: file not found') unless isFile filePath
 
       # Default some values
-      isDebug = options.debug or false
+      isDebug = options.debug ? false
+      isMinify = options.minify ? false
       includedModules = options.modules or []
       includedModules = includedModules.concat ['oj']
       rootDir = options.root or path.dirname filePath
@@ -295,9 +295,9 @@ This is not a public API so it seemed to horrible.
       # Catch the messages thrown by compiling ojml
       try
         # Compile
-        results = oj.compile debug:isDebug, html:true, css:true, dom:false, ojml
+        results = oj.compile debug:isDebug, minify:isMinify, html:1, css:0, cssMap:1, dom:0, ojml
         html = results.html
-        css = results.css
+        cssMap = results.cssMap
       catch eCompile
         error "runtime error in #{filePath}: #{eCompile.message}"
         return
@@ -329,14 +329,14 @@ This is not a public API so it seemed to horrible.
       html = _insertAt html, scriptIndex, scriptHtml
 
       # Insert styles before </head> or after <html> or at the beginning
-      if css
+      if cssMap
         try
-          styleHtml = _minifyAndWrapCSSInStyleTags css, filePath, isDebug
+          styleHtml = _minifyAndWrapCSSInStyleTags cssMap, filePath, isDebug
           styleIndex = html.lastIndexOf '</head>'
           html = _insertAt html, styleIndex, styleHtml
         catch eCSS
-          error "css minification error #{filePath}: #{eCSS.message}"
-          error "generated css: #{css}"
+          error "cssMap minification error #{filePath}: #{eCSS.message}"
+          error "generated cssMap: #{cssMap}"
           return
       # Create directory
       dirOut = path.dirname fileOut
@@ -729,29 +729,43 @@ This is not a public API so it seemed to horrible.
     # Code minification
     # ------------------------------------------------------------------------------
 
-    minifyJS = (filename, js, options = {}) ->
-      verbose 4, "minified #{filename}" if filename
-      js = uglifyjs js, options
+    oj._minifyJS = (js, options = {}) ->
+      if options.debug
+        js
+      else if options.minify
+        uglifyjs js
+      else
+        # TODO: Implement fast minify
+        js
 
-    minifyJSUnless = (isDebug, filename, js, options) ->
+    minifyJSUnless = (isDebug, filename, js) ->
       return js if isDebug
-      return minifyJS filename, js, options
+      verbose 4, "minified #{filename}" if filename
+      oj._minifyJS js
 
-    minifySimpleJS = (js, options = {}) ->
+    minifySimpleJS = (js, options) ->
       js = js.replace /\n/g, ''
       js.replace /\s\s+/g, ' '
+      js
 
-    minifySimpleJSUnless = (isDebug, js, options) ->
+    minifySimpleJSUnless = (isDebug, js) ->
       return js if isDebug
-      return minifySimpleJS js, options
+      return minifySimpleJS js
 
-    minifyCSS = (filename, css, structureOff = false) ->
+    oj._minifyCSS = (css, options = {}) ->
+      if options.debug
+        css
+      else if options.minify
+        # true means apply structural changes
+        csso.justDoIt css, true
+      else
+        # TODO: Implement fast minify
+        css
+
+    minifyCSSUnless = (isDebug, filename, css) ->
       verbose 4, "minified #{filename}" if filename
-      css = csso.justDoIt css, structureOff
-
-    minifyCSSUnless = (isDebug, filename, css, structureOff) ->
       return css if isDebug
-      return minifyCSS filename, css, structureOff
+      return oj._minifyCSS css
 
     # Requiring
     # ------------------------------------------------------------------------------
@@ -968,8 +982,8 @@ This is not a public API so it seemed to horrible.
 
     # ###_minifyAndWrapCSSInStyleTags
     # Wrap css in script tags and possibly minify it
-    _minifyAndWrapCSSInStyleTags = (css, filePath, isDebug, structureOff) ->
-      css_ = minifyCSSUnless isDebug, filePath, css, structureOff
+    _minifyAndWrapCSSInStyleTags = (cssMap, filePath, isDebug, structureOff) ->
+      css_ = minifyCSSUnless isDebug, filePath, cssMap, structure:structureOff
       newline = if isDebug then '\n' else ''
       "<style>#{newline}#{css_}#{newline}</style>"
 
