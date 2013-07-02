@@ -1,8 +1,6 @@
 
 oj.use require 'oj-ace-editor'
-
 oj.use require 'oj-markdown'
-
 oj.use require 'oj-vimeo-video'
 
 require 'underscore'
@@ -15,7 +13,6 @@ module.exports = oj ->
   html lang:'en', ->
 
     head ->
-
       title 'Demo'
 
       link href:'styles/reset.css', rel:'stylesheet', type:'text/css'
@@ -26,9 +23,11 @@ module.exports = oj ->
       script src: 'scripts/ace/ace.js', type:'text/javascript'
 
     body ->
+      div 'asdf'
       TryEditor 'asdf'
 
-
+      oj.onload ->
+        console.log 'loaded!'
 
 
 

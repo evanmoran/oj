@@ -490,13 +490,12 @@ module.exports = (oj, settings) ->
 
   TryEditor.css
 
-    '.oj-TryEditor':
-      border: "#{editorBorderWidth}px solid #{editorBorderColor}"
-      boxShadow: '2px 2px 4px RGBA(0,0,0,0.15)'
-      display:'block'
-      position:'relative'
-      zIndex:20
-      backgroundColor: 'white'
+    border: "#{editorBorderWidth}px solid #{editorBorderColor}"
+    boxShadow: '2px 2px 4px RGBA(0,0,0,0.15)'
+    display:'block'
+    position:'relative'
+    zIndex:20
+    backgroundColor: 'white'
 
     '.oj-TryEditor-seperator':
       position:'absolute'

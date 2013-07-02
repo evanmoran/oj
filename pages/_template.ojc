@@ -7,6 +7,7 @@ _styles = require './_styles'
 
 module.exports = _template = (parts) ->
   doctype 5
+
   html ->
     head ->
       meta name:'viewport', content:'width=device-width'
@@ -21,8 +22,6 @@ module.exports = _template = (parts) ->
           script src: "scripts/#{s}", type:'text/javascript'
 
       parts.head?()
-
-      _styles()
 
     body ->
       parts.body?()
@@ -49,6 +48,7 @@ module.exports = _template = (parts) ->
           footer c:'gg100', ->
             _footer()
 
+  _styles()
   orangeSize = '75px'
   css
     '.orange-corner':
