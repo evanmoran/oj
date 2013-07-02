@@ -10,23 +10,12 @@ Convert ojml to dom
 
     oj = ->
 
-   Prevent oj function from emitting
-
-      oj._argumentsPush()
-
   oj function acts like a tag method that doesn't emit
 
+      oj._argsPush()
       ojml = oj.emit.apply @, arguments
-      oj._argumentsPop()
+      oj._argsPop()
       ojml
-
-oj.emit
--------------------------------------------------------------------------------
-Emit arguments as a tag would.
-Used by plugins to group multiple elements as if it is a single tag.
-
-    oj.emit = ->
-      ojml = oj.tag 'oj', arguments...
 
 Export Model to NodeJS or globally
 -------------------------------------------------------------------------------
@@ -98,6 +87,14 @@ Enlist in onload action.
       else
         _onLoadQueue.queue.push f
       return
+
+oj.emit
+-------------------------------------------------------------------------------
+Emit arguments as a tag would.
+Used by plugins to group multiple elements as if it is a single tag.
+
+    oj.emit = ->
+      ojml = oj.tag 'oj', arguments...
 
 oj.id
 -----------------------------------------------------------------------------
@@ -760,39 +757,39 @@ Determine copy source.propName to dest.propName
         info.value = _clone info.value
       Object.defineProperty dest, propName, info
 
-_argumentsStack
+_argsStack
 ------------------------------------------------------------------------------
 Abstraction to wrap global arguments stack. This makes me sad but it is necessary for div -> syntax
 
   Stack of results
 
-    _argumentsStack = []
+    _argsStack = []
 
   Result is top of the stack
 
-    oj._argumentsTop = ->
-      if _argumentsStack.length
-        _argumentsStack[_argumentsStack.length-1]
+    oj._argsTop = ->
+      if _argsStack.length
+        _argsStack[_argsStack.length-1]
       else
         null
 
   Push scope onto arguments
 
-    oj._argumentsPush = (args = []) ->
-      _argumentsStack.push args
+    oj._argsPush = (args = []) ->
+      _argsStack.push args
       return
 
   Pop scope from arguments
 
-    oj._argumentsPop = ->
-      if _argumentsStack.length
-        return _argumentsStack.pop()
+    oj._argsPop = ->
+      if _argsStack.length
+        return _argsStack.pop()
       null
 
   Append argument
 
-    oj._argumentsAppend = (arg) ->
-      top = oj._argumentsTop()
+    oj._argsAppend = (arg) ->
+      top = oj._argsTop()
       top?.push arg
       return
 
@@ -834,7 +831,7 @@ Styles have smart mappings:
 
   Push arguments to build up children tags
 
-      oj._argumentsPush ojml
+      oj._argsPush ojml
 
   Loop over attributes
 
@@ -843,28 +840,28 @@ Styles have smart mappings:
           continue
         else if oj.isFunction arg
 
-          len = oj._argumentsTop().length
+          len = oj._argsTop().length
 
-  Call the argument it will auto append to oj._argumentsTop() which is ojml
+  Call the argument it will auto append to oj._argsTop() which is ojml
 
           r = arg()
 
-  Use return value if oj._argumentsTop() weren't changed
+  Use return value if oj._argsTop() weren't changed
 
-          if len == oj._argumentsTop().length and r?
-            oj._argumentsAppend r
+          if len == oj._argsTop().length and r?
+            oj._argsAppend r
 
         else
-          oj._argumentsAppend arg
+          oj._argsAppend arg
 
   Pop to restore previous context
 
-      oj._argumentsPop()
+      oj._argsPop()
 
   Append the final result to your parent's arguments
   if there exists an argument to append to
 
-      oj._argumentsAppend ojml
+      oj._argsAppend ojml
 
       ojml
 
@@ -1235,7 +1232,7 @@ _styleTagFromMediaObject:
     oj._styleTagFromMediaObject = (plugin, mediaMap, options) ->
       newline = if options?.debug then '\n' else ''
       css = _cssFromMediaObject mediaMap, options
-      "<style class=\"#{_styleClassFromPlugin plugin}\">#{newline}#{css}#{newline}</style>"
+      "<style class=\"#{_styleClassFromPlugin plugin}\">#{newline}#{css}</style>"
 
 _cssFromMediaObject:
 -----------------------------------------------------------------------------
@@ -1779,11 +1776,11 @@ oj.createType
 
       Out
 
-    # argumentsUnion:
+    # unionArguments:
     # Take arguments and tranform them into options and args.
     # options is a union of all items in `arguments` that are objects
     # args is a concat of all arguments that aren't objects in the same order
-    oj.argumentsUnion = (argList) ->
+    oj.unionArguments = (argList) ->
       obj = {}
       list = []
       for v in argList
@@ -1943,7 +1940,7 @@ oj.View
           return
 
         # emit: Emit instance as a tag function would do
-        emit: -> oj._argumentsAppend @; return
+        emit: -> oj._argsAppend @; return
 
         # Convert View to html
         toHTML: (options) ->
@@ -2162,7 +2159,7 @@ TextBox control
       base: oj.ModelKeyView
 
       constructor: ->
-        {options, args} = oj.argumentsUnion arguments
+        {options, args} = oj.unionArguments arguments
 
         @el = oj =>
           oj.input type:'text',
@@ -2198,7 +2195,7 @@ CheckBox control
       base: oj.ModelKeyView
 
       constructor: ->
-        {options, args} = oj.argumentsUnion arguments
+        {options, args} = oj.unionArguments arguments
 
         @el = oj =>
           oj.input type:'checkbox',
@@ -2229,7 +2226,7 @@ TextArea control
       base: oj.ModelKeyView
 
       constructor: ->
-        {options, args} = oj.argumentsUnion arguments
+        {options, args} = oj.unionArguments arguments
 
         @el = oj =>
           oj.textarea
@@ -2258,7 +2255,7 @@ ListBox control
       base: oj.ModelKeyView
 
       constructor: ->
-        {options, args} = oj.argumentsUnion arguments
+        {options, args} = oj.unionArguments arguments
 
         @el = oj =>
           oj.select change: => @viewChanged(); return
@@ -2295,7 +2292,7 @@ Button control
       base: oj.View
 
       constructor: (args) ->
-        {options, args} = oj.argumentsUnion arguments
+        {options, args} = oj.unionArguments arguments
 
         # Label is first argument
         options.label ?= if args.length > 0 then args[0] else ''
@@ -2318,7 +2315,7 @@ List control with model bindings and live editing
 
       constructor: ->
         # console.log "List constructor: ", arguments
-        {options, args} = oj.argumentsUnion arguments
+        {options, args} = oj.unionArguments arguments
 
         # tagName is write-once
         @_tagName = oj.argumentShift options, 'tagName'
@@ -2577,7 +2574,7 @@ Inherit and construct
 
       constructor: ->
         # console.log "Table constructor: ", arguments
-        {options, args} = oj.argumentsUnion arguments
+        {options, args} = oj.unionArguments arguments
 
         # Generate el
         @el = oj =>
@@ -3053,6 +3050,21 @@ option.first:true means return only the first get, otherwise it is returned as a
 
           $els
 
+
+
+    _triggerTypes = (types) ->
+      type.inserted() for type in types
+      return
+
+    _insertStyles = (cssMap, options) ->
+      for plugin, mediaMap of cssMap
+        # Skip global css if options.global is true
+        continue if plugin == 'oj-style' and not options?.global
+        # Create <style> tag for the plugin
+        if $('.' + _styleClassFromPlugin plugin).length == 0
+          $('head').append oj._styleTagFromMediaObject plugin, mediaMap
+      return
+
 jQuery.fn.oj
 -----------------------------------------------------------------------------
 
@@ -3064,17 +3076,16 @@ jQuery.fn.oj
           return $el[0].oj
 
         # Compile ojml
-        {dom,types} = oj.compile {dom:1,html:0,css:0}, args...
+        {dom,types,cssMap} = oj.compile {dom:1,html:0,cssMap:1}, args...
+
+        _insertStyles cssMap, global:0
 
         # Reset content and append to dom
         $el.html ''
         dom = [dom] unless oj.isArray dom
-        for d in dom
-          $el.append d
+        $el.append(d) for d in dom
 
-        # Call inserted event on all types
-        for t in types
-          t.inserted()
+        _triggerTypes types
 
         return
 
@@ -3089,7 +3100,7 @@ Replace body with ojml. Global css is rebuild when using this method.
 
   Compile only the body and below
 
-      bodyOnly = html:1, '!DOCTYPE':1, head:1, body:1, meta:1, title:'deep', link:1, script:1
+      bodyOnly = html:1, '!DOCTYPE':1, head:1, meta:1, title:'deep', link:1, script:1
 
       try
         {dom,types,cssMap} = oj.compile dom:1, html:0, css:0, cssMap:1, ignore:bodyOnly, ojml
@@ -3099,25 +3110,11 @@ Replace body with ojml. Global css is rebuild when using this method.
 
   Clear body and insert dom elements
 
-      $body = $('body')
-      $body.html('')
-      if dom?
-        $body.append(dom)
+      $('body').replaceWith(dom) if dom?
 
-  Insert styles if missing
+      _insertStyles cssMap, global:1
 
-      for plugin,mediaMap of cssMap
-        c = _styleClassFromPlugin plugin
-        if $('.' + c).length == 0
-          styleTag = oj._styleTagFromMediaObject plugin, mediaMap
-          $('head').append styleTag
-        else
-          console.log "not adding style: ", plugin
-
-  Trigger inserted event for types
-
-      for t in types
-        t.inserted()
+      _triggerTypes types
 
 jQuery.fn.ojValue
 -----------------------------------------------------------------------------
@@ -3132,6 +3129,7 @@ Get the first value of the selected contents
         # Parse the text to turn it into bool, number, or string
         when 'dom-text'
           text = oj.parse child.nodeValue
+
         # Get elements as oj instances or elements
         when 'dom-element'
           if (inst = _getInstanceOnElement child)?
@@ -3171,13 +3169,14 @@ jQuery plugins
           set: ($el, args) ->
 
             # Compile ojml for each one to separate references
-            {dom,types} = oj.compile {dom:1,html:0,css:0}, args...
+            {dom,types,cssMap} = oj.compile {dom:1,html:0,css:0,cssMap:1}, args...
+
+            _insertStyles cssMap, global:0
 
             # Append to the dom
             $el[jqName] dom
 
-            for t in types
-              t.inserted()
+            _triggerTypes types
 
             return
 

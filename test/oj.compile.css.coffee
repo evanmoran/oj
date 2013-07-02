@@ -371,7 +371,7 @@ describe 'oj.compile.css', ->
             color:'red'
 
     stylesTest ojml, '<style class="oj-style">.c1,.c2{color:red}</style>'
-    stylesTest ojml, '<style class="oj-style">\n.c1,\n.c2 {\n\tcolor:red;\n}\n\n</style>', debug:true
+    stylesTest ojml, '<style class="oj-style">\n.c1,\n.c2 {\n\tcolor:red;\n}\n</style>', debug:true
 
   it 'output css to <style> tags with plugin', ->
 
@@ -391,4 +391,4 @@ describe 'oj.compile.css', ->
 
     stylesTest ojml, '<style class="oj-FancyButton-style">.oj-FancyButton{border:1px solid purple;color:orange}.oj-FancyButton.theme-bluejay{color:blue}</style><style class="oj-style">.c1,.c2{color:red}</style>'
 
-    stylesTest ojml, '<style class="oj-FancyButton-style">\n.oj-FancyButton {\n\tborder:1px solid purple;\n\tcolor:orange;\n}\n.oj-FancyButton.theme-bluejay {\n\tcolor:blue;\n}\n\n</style><style class="oj-style">\n.c1,\n.c2 {\n\tcolor:red;\n}\n\n</style>', debug:true
+    stylesTest ojml, '<style class="oj-FancyButton-style">\n.oj-FancyButton {\n\tborder:1px solid purple;\n\tcolor:orange;\n}\n.oj-FancyButton.theme-bluejay {\n\tcolor:blue;\n}\n</style><style class="oj-style">\n.c1,\n.c2 {\n\tcolor:red;\n}\n</style>', debug:true

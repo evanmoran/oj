@@ -380,11 +380,11 @@ This is not a public API so it seemed to horrible.
       html = _insertAt html, scriptIndex, scriptHtml
 
       # Insert styles before </head> or after <html> or at the beginning
-      styleIndex = html.lastIndexOf '</head>'
+      styleIndex = html.indexOf '</head>'
       styleHTML = ''
       for plugin,mediaMap of results.cssMap
         styleHTML += oj._styleTagFromMediaObject plugin, mediaMap, options
-      _insertAt html, styleIndex, styleHTML
+      html = _insertAt html, styleIndex, styleHTML
 
       # Create directory
       dirOut = path.dirname fileOut
