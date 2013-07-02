@@ -228,6 +228,16 @@ describe 'oj.compile.html', ->
     expected = '<!DOCTYPE html>'
     compileTest ojml, expected, ignore: {}
 
+    ojml = oj ->
+      oj.doctype()
+      oj.html ->
+        oj.head()
+        oj.body ->
+          oj.div 'test'
+
+    expected = '<!DOCTYPE html><html><head></head><body><div>test</div></body></html>'
+    compileTest ojml, expected, ignore: {}
+
     ojml = oj.doctype 5
     expected = '<!DOCTYPE html>'
     compileTest ojml, expected, ignore: {}
@@ -251,5 +261,3 @@ describe 'oj.compile.html', ->
     ojml = oj.doctype('HTML 4.01 Frameset')
     expected = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">'
     compileTest ojml, expected, ignore: {}
-
-

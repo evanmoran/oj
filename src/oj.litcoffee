@@ -70,12 +70,12 @@ TODO: Support Backbone routes to trigger page changes.
 
   Compile only the body and below
 
-        bodyOnly = html:1, doctype:1, head:1, link:1, script:1
-        {dom,types} = oj.compile dom:1, html:0, css:0, styles:1, ignore:bodyOnly, (require page)
+        bodyOnly = html:1, '!DOCTYPE':1, head:'deep', body:1
 
-        if not dom?
-          throw new Error 'oj: dom failed to compile'
-          return
+        try
+          {dom,types} = oj.compile dom:1, html:0, css:0, styles:1, ignore:bodyOnly, (require page)
+        catch eCompile
+          throw new Error("oj: dom failed to compile with error: #{eCompile.message}")
 
   Find body element
 
@@ -90,6 +90,7 @@ TODO: Support Backbone routes to trigger page changes.
         if not oj.isArray dom
           dom = [dom]
         for d in dom
+          continue unless d?
           body.appendChild d
 
   Trigger inserted event for types
@@ -950,30 +951,26 @@ Method to define doctypes based on short names
 
   Define helper variables
 
-    dhp = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01'
+    dhp = 'HTML PUBLIC "-//W3C//DTD HTML 4.01'
     w3 = '"http://www.w3.org/TR/html4/'
-    strict5 = '<!DOCTYPE html>'
-    strict4 = dhp+'//EN" '+w3+'strict.dtd">'
+    strict5 = 'html'
+    strict4 = dhp+'//EN" '+w3+'strict.dtd"'
 
   Define possible arguments
 
-    doctypes =
+    _doctypes =
       '5': strict5
       'HTML 5': strict5
       '4': strict4
       'HTML 4.01 Strict': strict4
-      'HTML 4.01 Frameset': dhp+' Frameset//EN" '+w3+'frameset.dtd">'
-      'HTML 4.01 Transitional': dhp+' Transitional//EN" '+w3+'loose.dtd">'
+      'HTML 4.01 Frameset': dhp+' Frameset//EN" '+w3+'frameset.dtd"'
+      'HTML 4.01 Transitional': dhp+' Transitional//EN" '+w3+'loose.dtd"'
 
-  Define the method
+  Define the method passing through to !DOCTYPE tag function
 
-    oj.doctype = (type = 5) ->
-      ojml = doctypes[type]
-
-  Emit as a tag would
-
-      oj._argumentsAppend ojml
-      ojml
+    oj.doctype = (typeOrValue = '5') ->
+      value = _doctypes[typeOrValue] ? typeOrValue
+      oj['!DOCTYPE'](value)
 
 oj.extend (context)
 ------------------------------------------------------------------------------
@@ -1364,6 +1361,10 @@ Recursive helper for compiling that wraps indention
       method ojml, options
       options.indent = i
 
+_compileAny
+-----------------------------------------------------------------------------
+Recursive helper for compiling any type
+
     # Compile ojml or any type
     pass = ->
     _compileAny = (ojml, options) ->
@@ -1418,41 +1419,44 @@ Recursive helper for compiling that wraps indention
 
       return
 
-    # Supported events from jquery
-    jqueryEvents = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
+_compileTag
+-----------------------------------------------------------------------------
+Recursive helper for compiling ojml tags
 
-    # Compile ojml tag (an array)
     _compileTag = (ojml, options) ->
 
-      # Empty list compiles to nothing
+  Empty list compiles to undefined
+
       return if ojml.length == 0
 
-      # Get tag
+  Get tag name, allowing the tag parameter to be 'table' (tag name) or table (function) or Table (object)
+
       tag = ojml[0]
       tagType = typeof tag
-
-      # Allow ojml's tag parameter to be 'table' or table or Table
       tag = if (tagType == 'function' or tagType == 'object') and _getTagName(tag)? then _getTagName(tag) else tag
-
-      # Fail if we couldn't find a string by now
       throw new Error('oj.compile: tag name is missing') unless oj.isString(tag) and tag.length > 0
 
-      # Create oj object if tag is capitalized
+  Record tag as encountered
+
+      options.tags[tag] = true
+
+  Instance oj object if tag is capitalized
+
       if _isCapitalLetter tag[0]
         return _compileDeeper _compileAny, (new oj[tag] ojml.slice(1)), options
 
-      # Record tag
-      options.tags[tag] = true
+  Gather attributes if present
 
-      # Get attributes (optional)
       attributes = null
       if oj.isObject ojml[1]
         attributes = ojml[1]
 
-      # Remaining arguments are children of this tag
+  Gather children if present
+
       children = if attributes then ojml.slice 2 else ojml.slice 1
 
-      # Compile to css if requested
+  Compile to css if requested
+
       if options.css and tag == 'css'
 
         # Extend options.css with rules
@@ -1461,10 +1465,23 @@ Recursive helper for compiling that wraps indention
           options.css['oj'][selector] ?= {}
           _extend options.css['oj'][selector], styles
 
-      # Compile to html if requested
+  Compile DOCTYPE as special case because it is not really an element
+  It has attributes with spaces and cannot be created by dom manipulation
+  In this way it is HTML generation only.
+
+      if tag == '!DOCTYPE'
+        throw new Error('oj.compile: doctype expects string as first argument') unless oj.isString ojml[1]
+        if not options.ignore[tag]
+          if options.html
+            options.html.push "<#{tag} #{ojml[1]}>"
+          # options.dom is purposely ignored
+        return
+
       if not options.ignore[tag]
 
         events = _attributesProcessedForOJ attributes
+
+  Compile to dom if requested
 
         # Add dom element with attributes
         if options.dom and document?
@@ -1492,25 +1509,29 @@ Recursive helper for compiling that wraps indention
           # Bind events
           _attributesBindEventsToDOM events, el
 
+  Compile to html if requested
+
         # Add tag with attributes
         if options.html
           attr = (_attributesFromObject attributes) ? ''
           space = if attr == '' then '' else ' '
           options.html.push "<#{tag}#{space}#{attr}>"
 
+  Recurse through children if this tag isn't ignored deeply
 
-      # Compile your children if necessary
-      for child in children
-        # Skip intention if there is only one child
-        if options.debug && children.length > 1
-          options.html?.push "\n\t#{options.indent}"
-        _compileDeeper _compileAny, child, options
+      if options.ignore[tag] != 'deep'
+        for child in children
+          # Skip intention if there is only one child
+          if options.debug and children.length > 1
+            options.html?.push "\n\t#{options.indent}"
+          _compileDeeper _compileAny, child, options
 
-      # Skip intention if there is only one child
-      if options.debug && children.length > 1
+      # Skip indention if there is only one child
+      if options.debug and children.length > 1
         options.html?.push "\n#{options.indent}"
 
-      # End html tag if you have children or your tag closes
+  End html tag if you have children or your tag closes
+
       if not options.ignore[tag]
         # Close tag if html
         if options.html and (children.length > 0 or oj.tag.isClosed(tag))
@@ -1544,18 +1565,15 @@ Recursive helper for compiling that wraps indention
         delete attr.c
       return
 
-    # Allow attributes to take class as an array of strings
-    _attributeClassAllowsArrays = (attr) ->
-      if oj.isArray attr?.class
-        attr.class = attr.join ' '
-      return
-
     # Omit falsy values except for zero
     _attributeOmitFalsyValues = (attr) ->
       if oj.isObject attr
         # Filter out falsy except for 0
         for k,v of attr
           delete attr[k] if v == null or v == undefined or v == false
+
+    # Supported events from jquery
+    jqueryEvents = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
 
     # Filter out jquery events
     _attributesFilterOutEvents = (attr) ->

@@ -9,7 +9,7 @@ async = require 'async'
 oj = require '../lib/oj.js'
 oj.extend this
 
-compileDOM = (ojml, tag, childrenCount, html, options) ->
+compileDOM = (ojml, tag, html, options) ->
   options = _.defaults {}, options,
     html:true
     css:false
@@ -17,14 +17,19 @@ compileDOM = (ojml, tag, childrenCount, html, options) ->
     debug:false
   r = oj.compile options, ojml
   if options.dom
+    console.log "found dom: oj.compile.dom.coffee:20"
     if _.isArray r.dom
+      console.log "found array dom: oj.compile.dom.coffee:22"
       for d,ix in r.dom
         expect(oj.typeOf(d)).to.equal 'dom-element'
-        expect(d.tagName).to.equal tag[ix].toUpperCase()
+        if tag?
+          expect(d.tagName).to.equal tag[ix].toUpperCase()
         expect(d.outerHTML).to.equal html[ix]
     else
+      console.log "didn't find array dom: oj.compile.dom.coffee:29"
       expect(oj.typeOf(r.dom)).to.equal 'dom-element'
-      expect(r.dom.tagName).to.equal tag.toUpperCase()
+      if tag?
+        expect(r.dom.tagName).to.equal tag.toUpperCase()
       expect(r.dom.outerHTML).to.equal html
   else
     expect(r.dom).to.not.exist
@@ -60,17 +65,17 @@ describe 'oj.compile.dom', ->
 
   it 'div string', ->
     ojml = oj.div 'test'
-    compileDOM ojml, 'div', 0, '<div>test</div>'
+    compileDOM ojml, 'div', '<div>test</div>'
 
   it 'div number', ->
     ojml = oj.div 42
-    compileDOM ojml, 'div', 0, '<div>42</div>'
+    compileDOM ojml, 'div', '<div>42</div>'
 
   it 'div boolean', ->
     ojml = oj.div false
-    compileDOM ojml, 'div', 0, '<div>false</div>'
+    compileDOM ojml, 'div', '<div>false</div>'
     ojml = oj.div true
-    compileDOM ojml, 'div', 0, '<div>true</div>'
+    compileDOM ojml, 'div', '<div>true</div>'
 
   it 'values', ->
     compileDOMText '', ''
@@ -95,78 +100,78 @@ describe 'oj.compile.dom', ->
 
   it 'span', ->
     ojml = oj.span 'test'
-    compileDOM ojml, 'span', 0, '<span>test</span>'
+    compileDOM ojml, 'span', '<span>test</span>'
 
   it 'opened', ->
     ojml = oj.hr()
-    compileDOM ojml, 'hr', 0, '<hr />'
+    compileDOM ojml, 'hr', '<hr />'
 
   it 'closed', ->
     ojml = oj.div()
-    compileDOM ojml, 'div', 0, '<div></div>'
+    compileDOM ojml, 'div', '<div></div>'
 
   it 'nested divs', ->
     ojml = oj.div oj.div 'test'
-    compileDOM ojml, 'div', 1, '<div><div>test</div></div>'
+    compileDOM ojml, 'div', '<div><div>test</div></div>'
 
   it 'attributes empty', ->
     ojml = oj.div {}, ->
-    compileDOM ojml, 'div', 0, '<div></div>'
+    compileDOM ojml, 'div', '<div></div>'
 
   it 'attributes class', ->
     ojml = oj.div class: 'c1', ->
-    compileDOM ojml, 'div', 0, '<div class="c1"></div>'
+    compileDOM ojml, 'div', '<div class="c1"></div>'
 
   it 'attributes class with c', ->
     ojml = oj.div c: 'c1', ->
-    compileDOM ojml, 'div', 0, '<div class="c1"></div>'
+    compileDOM ojml, 'div', '<div class="c1"></div>'
 
   it 'attributes id', ->
     ojml = oj.div id: 'id1', ->
-    compileDOM ojml, 'div', 0, '<div id="id1"></div>'
+    compileDOM ojml, 'div', '<div id="id1"></div>'
 
   it 'attributes string', ->
     ojml = oj.div attr: 'str', ->
-    compileDOM ojml, 'div', 0, '<div attr="str"></div>'
+    compileDOM ojml, 'div', '<div attr="str"></div>'
     ojml = oj.div attr: '', ->
-    compileDOM ojml, 'div', 0, '<div attr=""></div>'
+    compileDOM ojml, 'div', '<div attr=""></div>'
 
   it 'attributes boolean', ->
     ojml = oj.div attr: true
     # js-dom has a bug where this should be: <div attr></div>
-    compileDOM ojml, 'div', 0, '<div attr=""></div>'
+    compileDOM ojml, 'div', '<div attr=""></div>'
     ojml = oj.div attr: false
-    compileDOM ojml, 'div', 0, '<div></div>'
+    compileDOM ojml, 'div', '<div></div>'
 
   it 'attributes undefined', ->
     ojml = oj.div attr: undefined
-    compileDOM ojml, 'div', 0, '<div></div>'
+    compileDOM ojml, 'div', '<div></div>'
 
   it 'attributes null', ->
     ojml = oj.div attr: null
-    compileDOM ojml, 'div', 0, '<div></div>'
+    compileDOM ojml, 'div', '<div></div>'
 
   it 'attributes multiple', ->
     ojml = oj.div class: 'c1', id: 'id1', ->
-    compileDOM ojml, 'div', 0, '<div class="c1" id="id1"></div>'
+    compileDOM ojml, 'div', '<div class="c1" id="id1"></div>'
 
   it 'attributes style string', ->
     ojml = oj.div style: 'text-align:center; color:red', ->
-    compileDOM ojml, 'div', 0, '<div style="text-align:center; color:red"></div>'
+    compileDOM ojml, 'div', '<div style="text-align:center; color:red"></div>'
 
   it 'attributes style object', ->
     ojml = oj.div style: {'text-align':'center', color: 'red'}, ->
-    compileDOM ojml, 'div', 0, '<div style="color:red;text-align:center"></div>'
+    compileDOM ojml, 'div', '<div style="color:red;text-align:center"></div>'
 
   it 'attributes style object with fancy keys', ->
     ojml = oj.div style: {textAlign:'center', color: 'red'}, ->
-    compileDOM ojml, 'div', 0, '<div style="color:red;text-align:center"></div>'
+    compileDOM ojml, 'div', '<div style="color:red;text-align:center"></div>'
 
   it 'simple nested', ->
     ojml = oj.div ->
       oj.span 'a1'
     expected = '<div><span>a1</span></div>'
-    compileDOM ojml, 'div', 0, expected, debug: false
+    compileDOM ojml, 'div', expected, debug: false
 
   it 'nested', ->
     ojml = oj.div style: {'text-align':'center', color: 'red'}, ->
@@ -174,7 +179,7 @@ describe 'oj.compile.dom', ->
         oj.div 'b1'
       oj.div 'a2'
     expected = '<div style="color:red;text-align:center"><div>a1<div>b1</div></div><div>a2</div></div>'
-    compileDOM ojml, 'div', 2, expected, debug: false
+    compileDOM ojml, 'div', expected, debug: false
 
   # Debug should have no effect on dom creation
   it 'nested with debug printing', ->
@@ -183,21 +188,21 @@ describe 'oj.compile.dom', ->
         oj.div 'b1'
       oj.div 'a2'
     expected = '<div style="color:red;text-align:center"><div>a1<div>b1</div></div><div>a2</div></div>'
-    compileDOM ojml, 'div', 2, expected, debug: true
+    compileDOM ojml, 'div', expected, debug: true
 
   it '<html><body>', ->
     ojml = oj.html ->
       oj.body ->
         oj.div 'a1'
     expected = '<html><body><div>a1</div></body></html>'
-    compileDOM ojml, 'html', 1, expected, debug: false
+    compileDOM ojml, 'html', expected, debug: false
 
   it '<html><body> with debug printing', ->
     ojml = oj.html ->
       oj.body ->
         oj.div 'a1'
     expected = '<html><body><div>a1</div></body></html>'
-    compileDOM ojml, 'html', 1, expected, debug: true
+    compileDOM ojml, 'html', expected, debug: true
 
   it '<html><head><body>', ->
       ojml = oj.html ->
@@ -219,7 +224,31 @@ describe 'oj.compile.dom', ->
       oj.body ->
         oj.div 'a1'
     expected = '<body><div>a1</div></body>'
-    compileDOM ojml, 'body', 0, expected, ignore: {html:1, doctype:1, head:1, link:1, script:1}
+    compileDOM ojml, 'body', expected, ignore: {html:1, doctype:1, head:1, link:1, script:1}
 
+  # Note: DOCTYPE is completely unsupported through dom creation because it is not really an element
+  # The unit test should ignore it.
+  it 'doctype', ->
+    ojml = oj ->
+      oj.doctype()
+      oj.html()
 
+    expected = '<html></html>'
+    compileDOM ojml, null, expected, ignore: {}
 
+    ojml = oj ->
+      oj.doctype 5
+      oj.html()
+
+    expected = '<html></html>'
+    compileDOM ojml, null, expected, ignore: {}
+
+    ojml = oj ->
+      oj.doctype('HTML 4.01 Transitional')
+      oj.html ->
+        oj.head()
+        oj.body ->
+          oj.div 'test'
+
+    expected = '<html><head></head><body><div>test</div></body></html>'
+    compileDOM ojml, null, expected, ignore: {}
