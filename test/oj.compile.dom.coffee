@@ -17,16 +17,13 @@ compileDOM = (ojml, tag, html, options) ->
     debug:false
   r = oj.compile options, ojml
   if options.dom
-    console.log "found dom: oj.compile.dom.coffee:20"
     if _.isArray r.dom
-      console.log "found array dom: oj.compile.dom.coffee:22"
       for d,ix in r.dom
         expect(oj.typeOf(d)).to.equal 'dom-element'
         if tag?
           expect(d.tagName).to.equal tag[ix].toUpperCase()
         expect(d.outerHTML).to.equal html[ix]
     else
-      console.log "didn't find array dom: oj.compile.dom.coffee:29"
       expect(oj.typeOf(r.dom)).to.equal 'dom-element'
       if tag?
         expect(r.dom.tagName).to.equal tag.toUpperCase()

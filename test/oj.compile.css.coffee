@@ -27,18 +27,18 @@ cssTest = (ojml, css, options) ->
 stylesTest = (ojml, styles, options) ->
   options = _.defaults {}, options,
     html:true
-    css:false
-    styles:true
+    cssMap:true
     dom:false
     debug:false
 
   r = oj.compile options, ojml
+  expect(r.cssMap).to.be.an 'object'
 
-  if not (options.styles == false)
-    expect(r.styles).to.be.a 'string'
-    expect(r.styles).to.equal styles
-  else
-    expect(r.styles).to.not.exist
+  stylesHTML = ""
+  for plugin, mediaMap of r.cssMap
+    stylesHTML += oj._styleTagFromMediaObject plugin, mediaMap, options
+
+  expect(stylesHTML).to.equal styles
 
 cssTestException = (ojml, exception, options = {}) ->
   expect(-> oj.compile options, ojml).to.throw exception
@@ -89,6 +89,22 @@ describe 'oj.compile.css', ->
     #     color: 'red'
     # cssTest ojml, '.c1,.c2{color:red}'
     # cssTest ojml, '.c1,\n.c2 {\n\tcolor:red;\n}\n.c2 {\n\tcolor:red;\n}\n',debug:true
+
+  it 'multiple intersecting definitions', ->
+    ojml = ->
+      oj.css
+        p:
+            color:'red'
+      oj.css
+        p:
+            fontSize:'10px'
+      oj.css
+        '@media monitor':
+          p:
+            backgroundColor:'orange'
+
+    cssTest ojml, 'p{background-color:orange;color:red;font-size:10px}'
+    cssTest ojml, 'p {\n\tbackground-color:orange;\n\tcolor:red;\n\tfont-size:10px;\n}\n', debug:true
 
   it 'single comma seperated definition', ->
     ojml = oj.css
@@ -355,7 +371,7 @@ describe 'oj.compile.css', ->
             color:'red'
 
     stylesTest ojml, '<style class="oj-style">.c1,.c2{color:red}</style>'
-    stylesTest ojml, '<style class="oj-style">\n.c1,\n.c2 {\n\tcolor:red;\n}\n\n</style>\n', debug:true
+    stylesTest ojml, '<style class="oj-style">\n.c1,\n.c2 {\n\tcolor:red;\n}\n\n</style>', debug:true
 
   it 'output css to <style> tags with plugin', ->
 
@@ -374,4 +390,5 @@ describe 'oj.compile.css', ->
             color:'red'
 
     stylesTest ojml, '<style class="oj-FancyButton-style">.oj-FancyButton{border:1px solid purple;color:orange}.oj-FancyButton.theme-bluejay{color:blue}</style><style class="oj-style">.c1,.c2{color:red}</style>'
-    stylesTest ojml, '<style class="oj-FancyButton-style">\n.oj-FancyButton {\n\tborder:1px solid purple;\n\tcolor:orange;\n}\n.oj-FancyButton.theme-bluejay {\n\tcolor:blue;\n}\n\n</style>\n<style class="oj-style">\n.c1,\n.c2 {\n\tcolor:red;\n}\n\n</style>\n', debug:true
+
+    stylesTest ojml, '<style class="oj-FancyButton-style">\n.oj-FancyButton {\n\tborder:1px solid purple;\n\tcolor:orange;\n}\n.oj-FancyButton.theme-bluejay {\n\tcolor:blue;\n}\n\n</style><style class="oj-style">\n.c1,\n.c2 {\n\tcolor:red;\n}\n\n</style>', debug:true
