@@ -68,35 +68,7 @@ TODO: Support Backbone routes to trigger page changes.
 
       jQuery ->
 
-  Compile only the body and below
-
-        bodyOnly = html:1, '!DOCTYPE':1, head:'deep', body:1
-
-        try
-          {dom,types} = oj.compile dom:1, html:0, css:0, styles:1, ignore:bodyOnly, (require page)
-        catch eCompile
-          throw new Error("oj: dom failed to compile with error: #{eCompile.message}")
-
-  Find body element
-
-        body = document.getElementsByTagName 'body'
-        if body.length == 0
-          throw new Error('oj: <body> was not found')
-        body = body[0]
-
-  Clear body and insert dom elements
-
-        body.innerHTML = ''
-        if not oj.isArray dom
-          dom = [dom]
-        for d in dom
-          continue unless d?
-          body.appendChild d
-
-  Trigger inserted event for types
-
-        for t in types
-          t.inserted()
+        $.ojBody (require page)
 
   Trigger events bound through onload
 
@@ -1015,7 +987,6 @@ Define method
         dom: false
         css: false
         cssMap: false
-        styles: false
         debug: false
         ignore: {}
 
@@ -1025,7 +996,7 @@ Define method
       acc = _clone options
       acc.html = if options.html then [] else null    # html accumulator
       acc.dom = if options.dom and document? then (document.createElement 'OJ') else null
-      acc.css = if options.css or options.cssMap or options.styles then {} else null
+      acc.css = if options.css or options.cssMap then {} else null
       acc.indent = ''                                 # indent counter
       acc.types = [] if options.dom                   # remember types if making dom
       acc.tags = {}                                   # remember what tags were used
@@ -1041,10 +1012,6 @@ Define method
       # Generate css if necessary
       if options.css
         css = _cssFromPluginObject pluginCSSMap, debug: options.debug, tags:0
-
-      # Generate style tags if necessary
-      if options.styles
-        styles = _cssFromPluginObject pluginCSSMap, debug: options.debug, tags:1
 
       # Generate HTML if necessary
       if options.html
@@ -1074,7 +1041,7 @@ Define method
         else if dom.length == 1
           dom = dom[0]
 
-      out = html:html, dom:dom, css:css, cssMap:cssMap, styles:styles, types:acc.types, tags:acc.tags
+      out = html:html, dom:dom, css:css, cssMap:cssMap, types:acc.types, tags:acc.tags
 
       out
 
@@ -1256,6 +1223,20 @@ Nested definitions, media definitions and comma definitions are resolved.
 
       return
 
+_styleClassFromPlugin:
+-----------------------------------------------------------------------------
+
+    _styleClassFromPlugin = (plugin) ->
+      "#{plugin}-style"
+
+_styleTagFromMediaObject:
+-----------------------------------------------------------------------------
+
+    oj._styleTagFromMediaObject = (plugin, mediaMap, options) ->
+      newline = if options?.debug then '\n' else ''
+      css = _cssFromMediaObject mediaMap, options
+      "<style class=\"#{_styleClassFromPlugin plugin}\">#{newline}#{css}#{newline}</style>"
+
 _cssFromMediaObject:
 -----------------------------------------------------------------------------
 Convert css from a flattened rule object. The rule object is of the form:
@@ -1314,6 +1295,8 @@ Placeholder functions for server side minification
         throw new Error "css minification error: #{eCSS.message}\nCould not minify:\n#{css}"
 
       css
+
+
 
 _cssFromPluginObject:
 -----------------------------------------------------------------------------
@@ -1620,9 +1603,9 @@ Recursive helper for compiling ojml tags
         else
           console.error "oj: jquery is missing when binding a '#{ek}' event"
 
-    # oj.toHTML
-    # ------------------------------------------------------------------------------
-    # Make oj directly to HTML. It will ignore all event bindings
+oj.toHTML
+-------------------------------------------------------------------------------
+Make ojml directly to HTML ignoring event bindings and css.
 
     oj.toHTML = (options, ojml) ->
       # Options is optional
@@ -1634,9 +1617,9 @@ Recursive helper for compiling ojml tags
       _extend options, dom:0, js:0, html:1, css:0
       (oj.compile options, ojml).html
 
-    # oj.toCSS
-    # ------------------------------------------------------------------------------
-    # Make oj directly to css. It will ignore all event bindings and html
+oj.toCSS
+-------------------------------------------------------------------------------
+Compile ojml directly to css ignoring event bindings and html.
 
     oj.toCSS = (options, ojml) ->
       # Options is optional
@@ -3039,7 +3022,6 @@ Include a plugin of OJ with `settings`
         # Add to sandbox
         oj.addProperty oj.sandbox, name, value:value, writable: false
 
-
 _jqueryExtend(fn)
 -----------------------------------------------------------------------------
 
@@ -3071,7 +3053,7 @@ option.first:true means return only the first get, otherwise it is returned as a
 
           $els
 
-jquery.oj
+jQuery.fn.oj
 -----------------------------------------------------------------------------
 
     jQuery.fn.oj = _jqueryExtend
@@ -3099,7 +3081,45 @@ jquery.oj
       get: ($el) ->
         $el[0].oj
 
-jquery.ojValue
+jQuery.ojBody ojml
+-----------------------------------------------------------------------------
+Replace body with ojml. Global css is rebuild when using this method.
+
+    jQuery.ojBody = (ojml) ->
+
+  Compile only the body and below
+
+      bodyOnly = html:1, '!DOCTYPE':1, head:1, body:1, meta:1, title:'deep', link:1, script:1
+
+      try
+        {dom,types,cssMap} = oj.compile dom:1, html:0, css:0, cssMap:1, ignore:bodyOnly, ojml
+
+      catch eCompile
+        throw new Error("oj: dom failed to compile with error: #{eCompile.message}")
+
+  Clear body and insert dom elements
+
+      $body = $('body')
+      $body.html('')
+      if dom?
+        $body.append(dom)
+
+  Insert styles if missing
+
+      for plugin,mediaMap of cssMap
+        c = _styleClassFromPlugin plugin
+        if $('.' + c).length == 0
+          styleTag = oj._styleTagFromMediaObject plugin, mediaMap
+          $('head').append styleTag
+        else
+          console.log "not adding style: ", plugin
+
+  Trigger inserted event for types
+
+      for t in types
+        t.inserted()
+
+jQuery.fn.ojValue
 -----------------------------------------------------------------------------
 Get the first value of the selected contents
 
@@ -3124,7 +3144,7 @@ Get the first value of the selected contents
       set: null
       get: _jqGetValue
 
-jquery.ojValues
+jQuery.fn.ojValues
 -----------------------------------------------------------------------------
 Get values as an array of the selected element's contents
 
@@ -3133,7 +3153,7 @@ Get values as an array of the selected element's contents
       set: null
       get: _jqGetValue
 
-jquery plugins
+jQuery plugins
 -----------------------------------------------------------------------------
 
     plugins =

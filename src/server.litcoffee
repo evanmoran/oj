@@ -347,9 +347,8 @@ This is not a public API so it seemed to horrible.
       # Catch the messages thrown by compiling ojml
       try
         # Compile
-        results = oj.compile debug:isDebug, minify:isMinify, html:1, css:0, styles:1, dom:0, ojml
+        results = oj.compile debug:isDebug, minify:isMinify, html:1, css:0, cssMap:1, dom:0, ojml
         html = results.html
-        styleHtml = results.styles
       catch eCompile
         error "runtime error in #{filePath}: #{eCompile.message}"
         return
@@ -382,7 +381,10 @@ This is not a public API so it seemed to horrible.
 
       # Insert styles before </head> or after <html> or at the beginning
       styleIndex = html.lastIndexOf '</head>'
-      html = _insertAt html, styleIndex, styleHtml
+      styleHTML = ''
+      for plugin,mediaMap of results.cssMap
+        styleHTML += oj._styleTagFromMediaObject plugin, mediaMap, options
+      _insertAt html, styleIndex, styleHTML
 
       # Create directory
       dirOut = path.dirname fileOut
