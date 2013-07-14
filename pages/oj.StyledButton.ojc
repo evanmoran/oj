@@ -3,7 +3,7 @@ module.exports = (oj, settings) ->
   StyledButton = createType 'StyledButton',
     base: oj.Button
     constructor: ->
-      {options, args} = oj.argumentsUnion arguments
+      {options, args} = oj.unionArguments arguments
 
       StyledButton.base.constructor.apply @, [options,args...]
 

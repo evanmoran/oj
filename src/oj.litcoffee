@@ -1246,9 +1246,9 @@ Placeholder functions for server side minification
 
     _cssFromMediaObject = (mediaMap, options = {}) ->
 
-      debug = options.debug ? 0
+      debug = 0 #options.debug ? 0
       tags = options.tags ? 0
-      minify = options.minify ? 0
+      minify = 1 #options.minify ? 0
 
   Deterine what output characters are needed
 
@@ -1937,6 +1937,13 @@ oj.View
         # Remove a single theme
         removeTheme: (name) ->
           @$el.removeClass "theme-#{name}"
+          return
+
+        # Clear all themes
+        clearThemes: (name) ->
+          @$el.removeClass "theme-#{name}"
+          classes = @$el.attr('class').split(' ')
+          _each classes, (v) ->
           return
 
         # emit: Emit instance as a tag function would do
@@ -3050,14 +3057,13 @@ option.first:true means return only the first get, otherwise it is returned as a
 
           $els
 
-
-
     _triggerTypes = (types) ->
-      type.inserted() for type in types
+      for type in types
+        type.inserted()
       return
 
-    _insertStyles = (cssMap, options) ->
-      for plugin, mediaMap of cssMap
+    _insertStyles = (pluginMap, options) ->
+      for plugin, mediaMap of pluginMap
         # Skip global css if options.global is true
         continue if plugin == 'oj-style' and not options?.global
         # Create <style> tag for the plugin
@@ -3100,7 +3106,7 @@ Replace body with ojml. Global css is rebuild when using this method.
 
   Compile only the body and below
 
-      bodyOnly = html:1, '!DOCTYPE':1, head:1, meta:1, title:'deep', link:1, script:1
+      bodyOnly = html:1, '!DOCTYPE':1, body:1, head:1, meta:1, title:'deep', link:1, script:1
 
       try
         {dom,types,cssMap} = oj.compile dom:1, html:0, css:0, cssMap:1, ignore:bodyOnly, ojml
@@ -3110,7 +3116,7 @@ Replace body with ojml. Global css is rebuild when using this method.
 
   Clear body and insert dom elements
 
-      $('body').replaceWith(dom) if dom?
+      $('body').html(dom) if dom?
 
       _insertStyles cssMap, global:1
 

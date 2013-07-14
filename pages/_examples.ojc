@@ -694,6 +694,15 @@ module.exports = [
 
 
 
+###
+TwitterFollowButton 'evanmoran',
+  size:'large'
+  showCount:true
+  showUsername:true
+  showTailoring:true
+
+###
+
 
 
 

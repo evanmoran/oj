@@ -23,69 +23,139 @@ module.exports = _template = (parts) ->
 
       parts.head?()
 
+
     body ->
-      parts.body?()
-      div c:'orange-corner left'
-      div c:'orange-corner right'
+      # Absolute position of right and header
+      header ->
+        _header()
 
-      div c:'all gg', ->
-        parts?.all?()
+      div c:'gg', ->
+        div c:'fixed row', ->
+          div c:'toc-right o75 gg25 hide-phone', ->
+            parts?.toc?()
 
-        div c:'row', ->
-          header c:'gg100', ->
-            _header()
-
-          div c:'middle gg100', ->
-              parts?.middle?()
+      div c:'gg', ->
+        div c:'relative row', ->
+          div c:'body gg100', ->
+            parts?.body?()
 
             div c:'row', ->
-              div c:'left gg25', ->
-                parts?.left?()
+              div c:'toc-above gg25 show-phone', ->
+                parts?.toc?()
 
-              div c:'right gg75', ->
-                parts?.right?()
+              div c:'content gg75', ->
+                parts?.content?()
 
           footer c:'gg100', ->
             _footer()
 
   _styles()
-  orangeSize = '75px'
+  orangeSize = '50px'
   css
-    '.orange-corner':
+
+    '.fixed':
+      position:'fixed'
+      marginTop: '62px'
+      zIndex: 600
+      '@media phone':
+        marginTop: '85px'
+
+    '.relative':
+      position:'relative'
+      # marginTop: '55px'
+      '@media phone':
+        marginTop: '62px'
+
+    '.hide-phone':
+      '@media phone':
+        display:'none'
+
+    '.show-phone':
+      '@media phone':
+        display:'block'
+      '@media tablet':
+        display:'none'
+      '@media monitor':
+        display:'none'
+
+    header:
+      position:'fixed'
+      height:'55px'
+      width:'100%'
+      boxShadow: '2px 2px 2px RGBA(0,0,0,0.1)'
+      backgroundColor:'white'
+      zIndex:1000
+      '@media phone':
+        height:'72px'
+
+    '.header-contents':
+      height: '55px'
+      paddingTop: '16px'
+      float:'none !important'
+      marginLeft:'auto !important'
+      marginRight:'auto !important'
+      display: 'block'
+      '@media phone':
+        textAlign:'center'
+        paddingTop:'6px'
+
+    '.header-logo':
+      background: 'url(media/oj_logo_small.png) no-repeat 0 center'
+      display:'inline-block'
+      width: '32px'
+      height: '22px'
+      verticalAlign: 'middle'
+      marginLeft:'91px'
+      '@media phone':
+        marginLeft:'auto'
+        marginRight:'auto'
+        display:'block'
+        textAlign:'center'
+
+    '.header-options':
+      display:'inline-block'
+      marginLeft: '44px'
+      '@media phone':
+        marginTop: '14px'
+        textAlign: 'center'
+        display: 'block'
+
+    '.header-option':
+      fontFamily: 'Helvetica, Arial, Tahoma'
+      color: '#E98C00'
+      fontSize: '20px'
+      fontWeight: '100'
+      verticalAlign: 'middle'
+      '&:not(:first-child)':
+        marginLeft: '44px'
+      '@media phone':
+        marginTop: '30px'
+
+    '.header-orange-corner':
       width: orangeSize
       height: orangeSize
       position: 'absolute'
       top: '0px'
       backgroundSize: 'contain'
-    '.orange-corner.left':
+
+    '.header-orange-corner.left':
       backgroundImage:'url(media/orange_left.png)'
       left:'0px'
 
-    '.orange-corner.right':
+    '.header-orange-corner.right':
       backgroundImage:'url(media/orange_right.png)'
       right:'0px'
 
 _header = ->
 
-  div c:'row', ->
-    div c:'gg25', ->
+    div c:'header-contents', ->
       a c:'header-logo', href: 'index.html'
-
-    div c:'gg75', (->
-      a 'Learn', c:'header-option', href:'learn.html'
-      a 'Docs', c:'header-option', href:'docs.html'
-      a 'Try', c:'header-option', href:'try.html'
-    ), style:
-      margin: '20px 0'
-
-  css
-    header:
-      marginBottom: '0px !important'
-
-    '.header-logo':
-      width: '100%'
-      height: '50px'
-      background: 'url(media/oj_logo.png) no-repeat center'
-      display:'inline-block'
+      div c:'header-options', ->
+        a 'Learn', c:'header-option', href:'learn.html'
+        a 'Docs', c:'header-option', href:'docs.html'
+        a 'Try', c:'header-option', href:'try.html'
+    div c:'header-orange-corner left'
+    div c:'header-orange-corner right'
 
 _footer = ->
+  footer()

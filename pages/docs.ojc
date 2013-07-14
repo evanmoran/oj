@@ -27,11 +27,11 @@ module.exports = ->
       'jquery.ba-resize.min.js'
     ]
 
-    left: ->
-      renderTOC data
-
-    right: ->
+    content: ->
       renderContent data
+
+    toc: ->
+      renderTOC data
 
     body: ->
     head: ->

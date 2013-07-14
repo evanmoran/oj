@@ -268,8 +268,8 @@ This is not a public API so it seemed to horrible.
       throw new Error('oj: file not found') unless isFile filePath
 
       # Default some values
-      isDebug = options.debug ? false
-      isMinify = options.minify ? false
+      isDebug = false # options.debug ? false
+      isMinify = true # options.minify ? false
       includedModules = options.modules or []
       includedModules = includedModules.concat ['oj']
       rootDir = options.root or path.dirname filePath

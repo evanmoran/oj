@@ -12,13 +12,16 @@ lineHeight = 21
 
 makeCSS = null
 
+SCRIPT = 'scr' + 'ipt'
+TEXTJ = 'text="text/javascript"'
+
 # Define plugin
 module.exports = (oj, settings) ->
 
   TryEditor = createType 'TryEditor',
     base: ModelKeyView
     constructor: ->
-      {options, args} = oj.argumentsUnion arguments
+      {options, args} = oj.unionArguments arguments
 
       # Create editor (readonly)
       @_editor = new AceEditor
@@ -52,19 +55,15 @@ module.exports = (oj, settings) ->
             @editor.emit() # oj-TryEditor-input-editor
           div c:'oj-TryEditor-outputs', ->
             div c:'oj-TryEditor-console'
-            iframe c:'oj-TryEditor-output-iframe'
+            iframe()
             div c:'oj-TryEditor-bar', ->
               div c:'oj-TryEditor-bar-maximize', title:'Maximize'
           div c:'oj-TryEditor-seperator'
-
-      if args.length > 0
-        @value = args[0]
 
       # Remember some references to keep stuff reasonable
       @$inputs = @$ '.oj-TryEditor-inputs'
       @$input = @$ '.oj-TryEditor-input-editor'
       @$outputs = @$ '.oj-TryEditor-outputs'
-      @$output = @$ '.oj-TryEditor-output-iframe'
       @$seperator = @$ '.oj-TryEditor-seperator'
       @$resizer = @$ '.oj-TryEditor-resizer'
       @$console = @$ '.oj-TryEditor-console'
@@ -74,11 +73,15 @@ module.exports = (oj, settings) ->
       @$csButton = @$ '.oj-TryEditor-bar-state.cs'
       @$maximizeButton = @$ '.oj-TryEditor-bar-maximize'
 
-      @js = oj.argumentShift(options,'js') if options.js?
-      @cs = oj.argumentShift(options,'cs') if options.cs?
+      # Set value from argument
+      if args.length > 0
+        @value = args[0]
+
       @state = oj.argumentShift(options, 'state') ? 'js'
 
-      @value = oj.argumentShift(options,'js') if options.value?
+      @js = oj.argumentShift(options,'js') if options.js?
+      @cs = oj.argumentShift(options,'cs') if options.cs?
+      @value = oj.argumentShift(options,'value') if options.value?
 
       @minWidth = oj.argumentShift(options, 'minWidth') ? 400
       @minHeight = oj.argumentShift(options, 'minHeight') ? (lineHeight * 1 + 2 * editorPadding)
@@ -109,15 +112,18 @@ module.exports = (oj, settings) ->
       lineCount:
         get: -> @_lineCount
         set: (v) ->
+          @_lineCount = v
           # Set lineCount to 'fit' and it will automatically figure it out
+          lineCount = 1
           if v == 'fit' and @value?
             # Fit to whichever is bigger @cs or @js
-            @_lineCount = Math.max (@cs?.split(/\r\n|\r|\n/)?.length) || 1, (@js?.split(/\r\n|\r|\n/)?.length || 1)
-          else
-            @_lineCount = v
+            lineCount = Math.max (@cs?.split(/\r\n|\r|\n/)?.length) || 1, (@js?.split(/\r\n|\r|\n/)?.length || 1)
+
+          else if oj.isNumber v
+            lineCount = v
 
           # Adjust height to lineCount
-          @height = @_lineCount * lineHeight + editorPadding * 2
+          @height = lineCount * lineHeight + editorPadding * 2
 
       # split ratio from 0-1
       split:
@@ -132,7 +138,12 @@ module.exports = (oj, settings) ->
       # Accessor to editor.value
       value:
         get: -> @editor.value
-        set: (v) -> @editor.value = v
+        set: (v) ->
+          @editor.value = v
+          if @state == 'js'
+            @_js = v
+          else
+            @_cs = v
 
       # Adjust the js value
       js:
@@ -245,7 +256,7 @@ module.exports = (oj, settings) ->
       $inputs: null
       $input: null
       $outputs: null
-      $output: null
+      $output: get: -> @$ '.oj-TryEditor-outputs > iframe'
       $seperator: null
       $resizer: null
       $console: null
@@ -254,6 +265,8 @@ module.exports = (oj, settings) ->
       $jsButton: null
       $csButton: null
       $maximizeButton: null
+
+      _scriptTagsLast: null
 
     methods:
       toggleState: ->
@@ -350,6 +363,7 @@ module.exports = (oj, settings) ->
       # Positioning can only happen once inserted
       inserted: ->
         TryEditor.base.inserted.apply @
+
         @lineCount = @lineCount
 
         # Maximize instantly if it defaulted that way
@@ -377,76 +391,35 @@ module.exports = (oj, settings) ->
         return unless @isInserted
         code = @value
 
-        # Compile coffee script to javascript
+        # Compile coffee SCRIPT to javascript
         if @state == 'cs'
           try
             code = CoffeeScript.compile code, bare:true
           catch eCoffee
             # Set console message
-            @consoleError "<b>coffee-script error:</b> #{eCoffee.message}"
+            @consoleError "CoffeeScript Error: #{eCoffee.message}"
             return
 
-        # Compile oj into ojml
-        wrapjs = "oj(function(){with(oj){#{code}}})"
+        # Compile the code to check for errors
         try
-          ojml = eval wrapjs
-        catch eRuntime
-          @consoleError "<b>runtime error:</b> #{eRuntime.message}"
-          return
-
-        # Compile the ojml into dom, html and css
-        try
-          results = oj.compile debug:1, html:1, dom:1, css:1, ojml
-
-
-          # For simplicity wrap html, body, head around content if none of those tags exist
-          if not results.tags.html? and not results.tags.head? and not results.tags.body?
-            wrapjs = """oj(function(){with(oj){
-              html(function(){
-                head();
-                body(function(){
-                  #{code}
-                });
-              })
-            }})
-            """
-            ojml = eval wrapjs
-            results = oj.compile debug:1, html:1, dom:1, css:1, ojml
-
-          # Error if html, head, body are missing after all of this
-          if not results.tags.html?
-            @consoleError '<b>validation error</b>: <html> tag is missing'
-            return
-          if not results.tags.head?
-            @consoleError '<b>validation error</b>: <head> tag is missing'
-            return
-          if not results.tags.body?
-            @consoleError '<b>validation error</b>: <body> tag is missing'
-            return
+          results = oj.compile html:1,css:1, eval("oj(function(){#{code}});")
 
         catch eCompile
-          @consoleError "<b>oj error:</b> #{eCompile.message}"
-          throw eCompile
+          @consoleError "#{eCompile.toString()}"
+          return
 
-        # Update html
-        @html = results.html
-        @css = results.css
+        # Calculate what scripts the plugins need.
+        scriptTags = _calculateScripts code, _pluginScripts
 
-        # Append html to iframe
-        @$output.contents().find('html').replaceWith($(results.dom))
-
-        # Inserted types must be alerted. This is done automatically
-        # by the oj jquery plugin on insertion but for the editor
-        # we do it more automatically so we have access to html,css
-        # generated parts
-        for t in results.types
-          t.inserted()
-
-        # Append style to iframe
-        @$output.contents().find('head').append("<style>#{results.css}</style>")
+        # If they change replace the iframe, otherwise just update it.
+        # This is necessary because iframe creating is amazingly slow
+        if scriptTags == @_scriptTagsLast
+          _updateIFRAME @$output, code
+        else
+          @_scriptTagsLast = scriptTags
+          _replaceIFRAME @$outputs, @$output, scriptTags, code
 
         @consoleSuccess()
-
 
       _bindEvents: ->
 
@@ -456,7 +429,6 @@ module.exports = (oj, settings) ->
 
         # Bind popout button
         @$maximizeButton.click => @maximize = !@maximize
-
 
         # Make the editor resizable
         if oj.isClient
@@ -529,7 +501,7 @@ module.exports = (oj, settings) ->
       position:'relative'
       zIndex:40
 
-    '.oj-TryEditor-output-iframe':
+    '.oj-TryEditor-outputs > iframe':
       width:'100%'
       height:'100%'
       position:'absolute'
@@ -538,7 +510,7 @@ module.exports = (oj, settings) ->
 
     '.oj-TryEditor-console':
       position: 'absolute'
-      color:'darkorange'
+      color:'red'
       backgroundColor: 'RGBA(255,255,255,0.8)'
       textAlign: 'left'
       fontSize: '16px'
@@ -604,3 +576,140 @@ module.exports = (oj, settings) ->
       zIndex: 101
 
   return TryEditor: TryEditor
+
+_pluginScripts =
+  Backbone: ["<#{SCRIPT} src=\"scripts/underscore.js\" #{TEXTJ}></#{SCRIPT}>\n", "<#{SCRIPT} src=\"scripts/backbone.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+  AceEditor: [
+    "<#{SCRIPT} src=\"scripts/ace/ace.js\" #{TEXTJ}></#{SCRIPT}>\n"
+    "<#{SCRIPT} src=\"scripts/oj.AceEditor.js\" #{TEXTJ}></#{SCRIPT}>\n"
+  ]
+  VimeoVideo: ["<#{SCRIPT} src=\"scripts/oj.VimeoVideo.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+  TwitterFollowButton: ["<#{SCRIPT} src=\"scripts/oj.TwitterFollowButton.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+  # Bootstrap: ["<#{SCRIPT} src=\"scripts/oj.Bootstrap.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+
+# _foundScripts: Plugins found in code as array
+# scriptMap takes PluginName: ['<SCRIPT>','<SCRIPT>']
+# code is the source being executed
+_foundScripts = (code,pluginScripts) ->
+  out = []
+  for plugin,v of pluginScripts
+    if code.indexOf(plugin) != -1
+      out.push plugin
+  out.sort()
+
+_arraysEqual = (a, b) ->
+  return true if a == b
+  return false if a == null || b == null
+  return false if a.length != b.length
+  for v,i in a
+    return false if a[i] != b[i]
+  true
+
+_calculateScripts = (code,pluginScripts) ->
+  out = ""
+
+  # Always use:
+  out += "<#{SCRIPT} src=\"scripts/jquery.js\" #{TEXTJ}></#{SCRIPT}>\n"
+  out += "<#{SCRIPT} src=\"scripts/oj.js\" #{TEXTJ}></#{SCRIPT}>\n"
+
+  foundScripts = _foundScripts code, _pluginScripts
+
+  for plugin in foundScripts
+    for s in pluginScripts[plugin]
+      out += s
+  out
+
+_scriptTagWithUpdater = ->
+  """
+  <#{SCRIPT} class="updater">
+  (function(){
+    // Allow editor to rebuild iframe at will
+    var _code = null;
+    document.rebuild = function(code){
+      if (code == _code)
+        return;
+      $('script.build').remove()
+      $('head').append("<scr"+"ipt class='build'>"+code+"</scr"+"ipt>");
+    };
+    // Allow dom manipulation within the iframe
+    document.oj = oj;
+    document.$ = $;
+  })(this);
+  </#{SCRIPT}>
+  """
+
+_scriptTagForCodeBody = (code) ->
+  """
+  // Start onready
+  $(function(){try{with(oj){
+
+  // Insert code into body
+  $.ojBody(function(){
+
+  #{code}
+
+  });
+
+  // Handle errors
+  }} catch(e) {
+
+    // Error style
+    var errorStyle = {style:{color:'red', fontSize:'16px', fontFamily:'sans-serif'}};
+
+    // Report error
+    $('body').oj([oj.div, errorStyle, e.toString()]);
+  }});
+  """
+
+_scriptTagForCode = (code) ->
+  """
+  <#{SCRIPT} class="build">
+
+  #{_scriptTagForCodeBody code}
+
+  </#{SCRIPT}>
+  """
+_replaceIFRAME = ($iframeParent, $iframe, scriptTags, code) ->
+  html = """
+    <head>
+    #{scriptTags}
+    #{_scriptTagWithUpdater()}
+    #{_scriptTagForCode code}
+    </head>
+    <body>
+    </body>
+  """
+
+  # Recreate iframe
+  $iframe.remove()
+  iframe = document.createElement 'iframe'
+  $iframeParent.append iframe
+  doc = iframe.contentWindow or iframe.contentDocument
+  if doc.document
+    doc = doc.document
+  doc.open()
+  doc.write(html)
+  doc.close()
+
+# Updates by calling document.rebuild which was setup by the updater
+_updateIFRAME = ($iframe, code) ->
+  if $iframe.contents() and $iframe.contents()[0] and oj.isFunction $iframe.contents()[0].rebuild
+
+    $html = $iframe.contents().find('html')
+    $body = $iframe.contents().find('body')
+
+    # Remove style tag to allow css to be recreated.
+    doc$ = $iframe.contents()[0].$
+    doc$('style.oj-style').remove()
+
+    # Remake everything
+    $iframe.contents()[0].rebuild _scriptTagForCodeBody code
+
+    # Clear twitter follow button loaded flag. This is used within the plugin
+    # to prevent unecessary ajax requests. Because the editor constantly remakes
+    # every keypress it is nice to avoid spamming twitter servers
+    docOJ = $iframe.contents()[0].oj
+    if (typeof docOJ != 'undefined' and typeof docOJ.TwitterFollowButton != 'undefined')
+      docOJ.TwitterFollowButton._loaded = false
+
+

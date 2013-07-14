@@ -30,7 +30,7 @@ module.exports = ->
       'jquery.ba-resize.min.js'
     ]
 
-    middle: ->
+    body: ->
 
       TryEditor
         cs:"""
@@ -55,8 +55,6 @@ module.exports = ->
 
     head: ->
       _styles()
-
-    body: ->
 
 ###
 

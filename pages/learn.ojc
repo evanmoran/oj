@@ -1,37 +1,189 @@
 
-oj.use require 'oj-markdown'
-
+_plugins = require './_plugins'
+siteCSS = require './_styles'
 _template = require './_template'
-_content = require './_content'
-# _snippet = require './_snippet'
-# _editor = require './_editor'
+
+{renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderEvents:events, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
 
 module.exports = ->
 
   _template
 
-    title: 'Learn OJ -- Unified Templating'
+    title: 'Learn OJ - Unified templating'
 
     styles: [
       'reset.css'
       'gg.css'
-    ]
+      'jquery-ui-1.10.3.custom.css'
 
+    ]
     scripts: [
       'jquery.js'
       'underscore.js'
       'backbone.js'
       'coffee-script.js'
       'ace/ace.js'
+      'jquery.ba-resize.min.js'
+      'jquery-ui-1.10.3.custom.js'
     ]
 
-    left: ->
-      _content.renderTOC data
+    content: ->
+      renderContent data
 
-    right: ->
-      _content.renderContent data
-
+    toc: ->
+      renderTOC data
 
 data = [
-  h: 'What is OJ?', id: 'what-is-oj', d: ->
+  h: 'What is OJ?', id: 'intro', d: ->
+    p ''
+
+    markdown """
+
+      OJ stands for *Object JavaScript*. It is a JavaScript library ([oj.js](docs.html/#download)) that allows you to define objects that are able to **create** and **live edit** the web. The creation side replaces the needs to use other HTML and CSS templating tools. The live editing side, lets those same objects that created the HTML structure to directly manipulate the DOM using the object oriented syntax of properties and methods. For example [CheckBox](docs.html#CheckBox) can be checked and unchecked with the [value](docs.html#CheckBox-value) property, and [BulletList](docs.html#BulletList) lets you [add](docs.html#List-add), [count](docs.html#List-count), and [move](docs.html#List-move) items.
+
+      > Simple things should be simple. Complex things should be possible. <br> --Alan Kay
+
+      Making objects is what OJ is about. Think of them as building blocks. Everything else -- tag functions, CSS creation, event binding, two-way model binding -- all of it is to make OJ objects easier to create and use.
+
+      My hope is by providing the simple objects, OJ increases what is possible.
+
+      ## Using an OJ Object
+
+      *So you say OJ lets you create and live edit the DOM. What the heck does that mean?*
+
+      Imagine you have a list object called [BulletList](docs.html#BulletList). In OJ this object can create itself with all the html, css and js goodness necessary to make it work. Behold!
+      """
+
+    TryEditor lineCount:5,
+      js: """
+        BulletList(0,1,2);
+
+
+      """
+
+    p (->
+      markdown """(These examples are all live editable. Change them to see what happens!)"""), style: textAlign: 'center'
+
+    p 'OK, great. We have a list, but now I want to live edit it. Say I want to add more items or change the order of those items. In OJ, objects not only can create themselves but once made they can edit themselves too:'
+
+    TryEditor
+      js: """
+        var myList = BulletList(0,1,2);
+
+        Button('Add Item', {
+          click: function(){
+            myList.push('Item added!');
+          }
+        });
+
+        Button('Move First Item', {
+          click: function(){
+            myList.move(0, myList.count-1)
+          }
+        });
+      """
+
+    markdown """
+      Above we create a [BulletList](docs.html#BulletList) object with three items (0,1,2) and assign it to the value `myList`. This is not just a function but is actually a constructor that returns a new [BulletList](docs.html#BulletList) instance. Next we add a [Button](docs.html#Button) that when clicked creates a new List item.
+
+      Try clicking the button. The click event is bound for you. Try switching between JS (JavaScript) and CS (Coffee-Script). The OJ library was designed to work well in both.
+
+      Finally the third button uses the built in [List.move](docs.html#List-move) function to move the first item to the end of the list.
+    """
+
+    markdown """
+
+      ## Dependencies and Supported Browsers
+
+      Now you may say. "That is nice and all, but why should I care because jQuery can do this?" Well, you are right. jQuery *can* do it quite well; in fact OJ depends on jQuery 2.0 for this very reason. OJ uses jQuery selectors, DOM manipulation, and event binding to ensure this stuff works cross-platform.
+
+      As you probably know, jQuery 2.0 is the version of jQuery made for "modern" browsers, specifically IE9 and above. It took a lot of soul searching, but this version requirement also holds for OJ. The reason is primarily to allow OJ objects to use first-class properties (a feature that works IE9+). For example CheckBox values can be set with assignment instead of a function call:
+
+    """
+    TryEditor
+      js: """
+        // Define a checkbox
+        var cb = CheckBox(true, {click:
+          function(){
+            cb.$el.ojAfter(function(){
+              div('The value is ' + cb.value);
+            });
+          }
+        });
+
+        // value is a smart property
+        // that updates the DOM live
+        // and triggers model changes.
+        cb.value = true;
+    """
+
+    h2 'Frameworks and Model Binding'
+
+    markdown """
+      OJ was originally meant to be framework agnostic in the way Backbone is. At its heart OJ is about creating really powerful Views, in the MVC sense. It doesn't create Models. It doesn't create Controllers or Routing or page navigation. Instead it tries to do only one thing well: making views with objects.
+
+      This is all still true. OJ makes Views. Period. The only compromise is OJ now can recognize and bind to Backbone-like models and collections (anything that supports the on,off,trigger event syntax). In a sense, OJ is the View to Backbones Model.
+
+      When Backbone was originally conceived it brilliantly left Views as an exercise to the reader. The thing is there were too many ways to do templating. Back in 2010 they couldn't know which would stick. Models were a big deal, and Backbone was intended to abstract what could be abstracted well and leave the rest for later.
+
+    """
+    TryEditor
+      js: """
+        // Define backbone User model
+        var User = Backbone.Model.extend();
+
+        // Create a user model
+        user = new User({name:'Thomas'});
+
+        // Define TextBox bound to the model
+        TextBox({model:user, key:'name'});
+
+        // Define a TextArea bound to the model
+        TextArea({model:user, key:'name'});
+
+        // Define css to make them align
+        css({'textarea, input':{
+          width: 200,
+          margin: 10,
+          display:'block',
+          border: '1px solid red'
+        }});
+
+      """
+      cs: """
+
+      """
+    p (->
+      markdown """(Since they are bound to the same model, typing in one box changes the other. Try it!)"""), style: textAlign: 'center'
+
+    # br()
+    # p 'This object makes a VimeoVideo:'
+    # TryEditor
+    #   lineCount: 8
+    #   js: """
+    #     VimeoVideo(24715531, {
+    #       width:250,
+    #       height:150,
+    #       autoplay:false
+    #     });
+    #   """
+    #   cs: """
+    #     VimeoVideo 24715531,
+    #       width:250
+    #       height:150
+    #       autoplay:false
+    #   """
+
+
+      # cs:"""
+      #   div 'asdf'
+      # """
+
+    # * Creating means client or server side html/css/js generation. It is about creating objects tis about templating. Server-side generation.
+    # * The same
+
+    # These objects can be anything a TwitterFollowButton:
+    # """
+
+
 ]

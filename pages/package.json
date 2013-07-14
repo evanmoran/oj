@@ -10,6 +10,8 @@
     "oj-ace-editor":"latest",
     "oj-vimeo-video":"latest",
     "oj-bootstrap":"latest",
+    "oj-twitter-follow-button":"latest",
+    "oj-facebook-like-button":"latest",
     "underscore": "latest"
   }
 }
