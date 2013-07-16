@@ -14,17 +14,16 @@ module.exports = ->
     styles: [
       'reset.css'
       'gg.css'
-      'jquery-ui-1.10.3.custom.css'
 
     ]
     scripts: [
       'jquery.js'
+      'jquery.event.drag.js'
+      'jquery.ba-resize.min.js'
       'underscore.js'
       'backbone.js'
       'coffee-script.js'
       'ace/ace.js'
-      'jquery.ba-resize.min.js'
-      'jquery-ui-1.10.3.custom.js'
     ]
 
     content: ->
@@ -34,12 +33,24 @@ module.exports = ->
       renderTOC data
 
 data = [
-  h: 'What is OJ?', id: 'intro', d: ->
+  h: 'Introduction', id: 'intro', d: ->
     p ''
 
     markdown """
 
-      OJ stands for *Object JavaScript*. It is a JavaScript library ([oj.js](docs.html/#download)) that allows you to define objects that are able to **create** and **live edit** the web. The creation side replaces the needs to use other HTML and CSS templating tools. The live editing side, lets those same objects that created the HTML structure to directly manipulate the DOM using the object oriented syntax of properties and methods. For example [CheckBox](docs.html#CheckBox) can be checked and unchecked with the [value](docs.html#CheckBox-value) property, and [BulletList](docs.html#BulletList) lets you [add](docs.html#List-add), [count](docs.html#List-count), and [move](docs.html#List-move) items.
+      OJ is a JavaScript library that creates smart objects to abstract the creation and manipulation of the web. The creation side replaces the needs to use other HTML and CSS templating tools. The live editing side, lets those same objects that created the HTML structure to directly manipulate the DOM using the object oriented syntax of properties and methods.
+
+      For example a TextBox object makes a ... yeah a box you can put text in. Its value property directly changes and accesses what is inside.
+
+      A Button object creates a button.
+      """
+
+    TryEditor lineCount:2, js: """
+      var tb = TextBox('Awesome');
+    """
+
+    markdown """
+      For example [CheckBox](docs.html#CheckBox) can be checked and unchecked with the [value](docs.html#CheckBox-value) property, and [BulletList](docs.html#BulletList) lets you [add](docs.html#List-add), [count](docs.html#List-count), and [move](docs.html#List-move) items.
 
       > Simple things should be simple. Complex things should be possible. <br> --Alan Kay
 

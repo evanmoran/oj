@@ -44,7 +44,7 @@ module.exports = (oj, settings) ->
         div =>
 
           div c:'oj-TryEditor-resizer', ->
-            div c:'oj-TryEditor-gripper ui-resizable-s'
+            div c:'oj-TryEditor-gripper'
 
           div c:'oj-TryEditor-inputs', =>
             div c:'oj-TryEditor-bar', ->
@@ -78,10 +78,8 @@ module.exports = (oj, settings) ->
         @value = args[0]
 
       @state = oj.argumentShift(options, 'state') ? 'js'
-
       @js = oj.argumentShift(options,'js') if options.js?
       @cs = oj.argumentShift(options,'cs') if options.cs?
-      @value = oj.argumentShift(options,'value') if options.value?
 
       @minWidth = oj.argumentShift(options, 'minWidth') ? 400
       @minHeight = oj.argumentShift(options, 'minHeight') ? (lineHeight * 1 + 2 * editorPadding)
@@ -123,8 +121,8 @@ module.exports = (oj, settings) ->
             lineCount = v
 
           # Adjust height to lineCount
-          @height = lineCount * lineHeight + editorPadding * 2
-
+          @height = lineCount * lineHeight + editorPadding * 2 + 4
+          return
       # split ratio from 0-1
       split:
         get: -> @_split
@@ -140,10 +138,10 @@ module.exports = (oj, settings) ->
         get: -> @editor.value
         set: (v) ->
           @editor.value = v
-          if @state == 'js'
-            @_js = v
-          else
+          if @state == 'cs'
             @_cs = v
+          else
+            @_js = v
 
       # Adjust the js value
       js:
@@ -165,7 +163,6 @@ module.exports = (oj, settings) ->
             @$jsButton.addClass 'selected'
             @$csButton.removeClass 'selected'
           else
-            @$jsButton.addClass('selected')
             @editor.mode = 'ojc'
             @$jsButton.removeClass 'selected'
             @$csButton.addClass 'selected'
@@ -208,9 +205,6 @@ module.exports = (oj, settings) ->
             # Disable scrolling
             $('body').css
               overflow:'hidden'
-
-            if oj.isClient
-              @$resizer.resizable 'disable'
 
             @$el.animate({top:0, height:'100%'}, {
               progress: =>
@@ -362,9 +356,10 @@ module.exports = (oj, settings) ->
 
       # Positioning can only happen once inserted
       inserted: ->
-        TryEditor.base.inserted.apply @
+        TryEditor.base.inserted.apply @, arguments
 
         @lineCount = @lineCount
+        @editor.height = @height
 
         # Maximize instantly if it defaulted that way
         d = maximizeDuration
@@ -372,8 +367,8 @@ module.exports = (oj, settings) ->
         @maximize = @maximize
         maximizeDuration = d
 
-        @updateFrame()
-        @recompile()
+        # For perf reasons briefly delay frame update
+        setTimeout (=> @updateFrame()), 50
 
       consoleError: (message) ->
         if @isConstructed
@@ -441,15 +436,11 @@ module.exports = (oj, settings) ->
             $(window).resize =>
               @windowResized window.innerWidth, window.innerHeight
 
-          if @$resizer?.resizable?
-            @$resizer.resizable
-              minHeight: @minHeight
-              minWidth: @minWidth
-              handles:'s'
-
+            # Resizing root updates the frame layout
             @$el.resize (e,ui) =>
               @updateFrame()
 
+            # Resizing the resizer updates the frame layout
             @$resizer.resize (e,ui) =>
               h = $(e.currentTarget).height()
               if @width < phoneWidth
@@ -460,6 +451,29 @@ module.exports = (oj, settings) ->
                 @height = h
               @updateFrame()
 
+          if @$resizer?.drag?
+            _$resizer = @$resizer
+            _$gripper = @$gripper
+            @$resizer.drag()
+              .drag("start", ( ev, dd ) ->
+                dd.width = $(this).width()
+                dd.height = $(this).height()
+                _$gripper.css(style:height:'100%')
+                return
+              )
+              .drag("end", ( ev, dd ) ->
+                _$gripper.css(style:height:'12px')
+                return
+              )
+              .drag(
+                (ev, dd ) ->
+                  $(this).css(
+                    height: Math.max( lineHeight, dd.height + dd.deltaY )
+                  )
+                  return
+                handle:'.oj-TryEditor-gripper'
+              )
+
   TryEditor.css
 
     border: "#{editorBorderWidth}px solid #{editorBorderColor}"
@@ -467,7 +481,7 @@ module.exports = (oj, settings) ->
     display:'block'
     position:'relative'
     zIndex:20
-    backgroundColor: 'white'
+    backgroundColor: '#FEFAF3'
 
     '.oj-TryEditor-seperator':
       position:'absolute'
@@ -570,9 +584,12 @@ module.exports = (oj, settings) ->
       bottom: '2px'
       right: '2px'
       left: 'auto'
-      width: '12px'
+      width: '100%'
       height: '12px'
+      cursor:'s-resize'
       backgroundImage: 'url(media/try_gripper.png)'
+      backgroundRepeat: 'no-repeat'
+      backgroundPosition: 'bottom right'
       zIndex: 101
 
   return TryEditor: TryEditor
@@ -584,6 +601,7 @@ _pluginScripts =
     "<#{SCRIPT} src=\"scripts/oj.AceEditor.js\" #{TEXTJ}></#{SCRIPT}>\n"
   ]
   VimeoVideo: ["<#{SCRIPT} src=\"scripts/oj.VimeoVideo.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+  GitHubButton: ["<#{SCRIPT} src=\"scripts/oj.GitHubButton.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   TwitterFollowButton: ["<#{SCRIPT} src=\"scripts/oj.TwitterFollowButton.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   # Bootstrap: ["<#{SCRIPT} src=\"scripts/oj.Bootstrap.js\" #{TEXTJ}></#{SCRIPT}>\n"]
 

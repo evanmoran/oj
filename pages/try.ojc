@@ -17,17 +17,16 @@ module.exports = ->
     styles: [
       'reset.css'
       'gg.css'
-      'jquery-ui-1.10.3.custom.css'
     ]
 
     scripts: [
       'jquery.js'
+      'jquery.event.drag.js'
+      'jquery.ba-resize.min.js'
       'underscore.js'
       'backbone.js'
       'coffee-script.js'
       'ace/ace.js'
-      'jquery-ui-1.10.3.custom.js'
-      'jquery.ba-resize.min.js'
     ]
 
     body: ->

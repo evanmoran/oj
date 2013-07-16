@@ -1,3 +1,5 @@
+markdown = require 'oj-markdown'
+
 # From content format, create
 module.exports =
   renderTOC: (data) ->

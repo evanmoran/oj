@@ -18,6 +18,8 @@ _plugins = require './_plugins'
 _template = require './_template'
 _content = require './_content'
 
+fontFamilySansSerif = 'Helvetica, Arial, sans-serif'
+
 # _snippet = require './_snippet'
 # _editor = require './_editor'
 
@@ -30,33 +32,408 @@ module.exports = ->
     styles: [
       'reset.css'
       'gg.css'
-      'jquery-ui-1.10.3.custom.css'
     ]
 
     scripts: [
       'jquery.js'
+      'jquery.event.drag.js'
+      'jquery.ba-resize.min.js'
       'underscore.js'
       'backbone.js'
       'coffee-script.js'
       'ace/ace.js'
-      'jquery.ba-resize.min.js'
-      'jquery-ui-1.10.3.custom.js'
     ]
 
-    content: ->
-      div """
-Lorem ipsum dolor sit amet, an vim eius ludus, vis ne velit inermis suscipit. Natum tractatos et per, sit an amet alterum. Eam ad congue latine, et nam prima semper scripta, te elitr bonorum salutandi sit. Quo quidam iracundia at, ex alia consul soluta eum.
+    body: ->
 
-Vis ludus possim ne. Iudico persius an cum, vis eu quot partem aliquando, ex ullamcorper vituperatoribus vix. Ad quo praesent quaerendum, magna utinam ex vix. Te habeo rebum iriure qui. Duo ne elit duis dolor, pro in consul gloriatur, mea errem appareat conceptam ei. Et his persius probatus deseruisse.
+      img c:'logo', src:'media/oj_logo_big.png'
 
-Ex veniam recteque ocurreret pro, utamur singulis suavitate at nam. Vim an sint nihil, ut vis wisi nostrum, nec ea noluisse reprimique. Iuvaret persequeris no quo, ius commune percipitur ei. Ut qui facer nominavi, ex nibh lorem intellegat vel, ne possim accusamus hendrerit eam. Elit iriure offendit est et. Ex nec nostrum molestiae, no vis esse consequat, graece mediocrem ut est.
+      css
+        '.logo':
+          marginLeft:'auto'
+          marginRight:'auto'
+          marginTop: '55px'
+          display:'block'
+          position:'relative'
 
-Mea cu sumo etiam, vim ei eros solum tempor. Eam graeci atomorum ex, prima tritani nam ne. Ut iusto postea argumentum nec, iriure appellantur ius ut. At pri eripuit ocurreret signiferumque, posse populo everti ut vel. Sit nibh scripserit an.
+      h1 c:'subtitle', ->
+        span 'Unified templating for the people. '
+        i('Thirsty people.')
 
-Veniam constituto scriptorem has ex. No vocibus probatus eum, iudicabit referrentur mea at. Illum inimicus no eum. No virtute placerat referrentur nec. Eum falli noster an.
+      css
+        '.subtitle':
+          textAlign:'center'
+          marginTop: '20px'
+          display:'block'
+          position:'relative'
+          borderBottom:'0'
+          color:'#E69927'
+          fontFamily: fontFamilySansSerif
+          fontWeight: 'lighter'
+
+      editor = TryEditor c:'editor', lineCount:16
+
+      css
+        '.editor':
+          marginTop: '55px'
+
+      dots = BulletList c:'dots', models:[
+        {
+          js:"""
+            // Create tags
+
+            h1('Header')
+
+            p('A paragraph')
+
+            ul(function(){
+              li('Item 1');
+              li('Item 2');
+              li('Item 3');
+            });
+          """
+          cs:"""
+            # Create tags
+
+            h1 'Header'
+
+            p 'A paragraph'
+
+            ul ->
+              li 'Item 1'
+              li 'Item 2'
+              li 'Item 3'
+          """
+        }
+        {
+          js:"""
+            // Create css
+            css({
+              '.red':{color:'#e00'},
+              '.big':{fontSize:'30px'}
+            });
+
+            // Show it works
+            div({'class':'red'},
+              'This class is red');
+
+            div({'class':'big'},
+              'This class is big');
+
+            div({'class':'big red'},
+              'This class is big and red');
+          """
+          cs:"""
+            # Create css
+            css
+              '.red': color: '#e00'
+              '.big': fontSize: '30px'
 
 
-      """
+            # Show it works
+            div 'class':'red',
+              'This class is red'
 
-    toc: ->
-      div 'toc here'
+            div 'class':'big',
+              'This class is big'
+
+            div 'class':'big red',
+              'This class is big and red'
+          """
+        }
+        {
+          js:"""
+            // Create attributes
+
+            div('This is inline-styled!', {
+              style:{
+                width:200,
+                textAlign:'center',
+                backgroundColor:'#fdd',
+              }
+            });
+          """
+          cs:"""
+            # Create attributes
+
+            div 'This is inline-styled!',
+              style:
+                width:200
+                textAlign:'center'
+                backgroundColor:'#fdd'
+          """
+        }
+        {
+          js:"""
+            // Create jQuery events
+
+            div('Click me!', {click: function(){
+              alert('It works!')
+            }});
+          """
+          cs:"""
+            # Create jQuery events
+
+            div 'Click me!', click: ->
+              alert 'It works!'
+          """
+        }
+        {
+          js:"""
+            // Create a table
+
+            var myTable = Table(
+              ['Apple', 'Red'],
+              ['Grape', 'Purple'],
+              ['Banana', 'Yellow']
+            );
+            br()
+
+            // Retrieve values
+
+            div(myTable.rowCount + ' rows');
+            div(myTable.cell(1,0) + ' is (1,0)');
+            div(JSON.stringify(myTable.row(2)));
+          """
+          cs:"""
+            # Create a table
+
+            myTable = Table(
+              ['Apple', 'Red']
+              ['Grape', 'Purple']
+              ['Banana', 'Yellow']
+            )
+            br()
+
+            # Retrieve values
+
+            div myTable.rowCount + ' rows'
+            div myTable.cell(1,0) + ' is (1,0)'
+            div JSON.stringify myTable.row(2)
+          """
+        }
+        {
+          js:"""
+            // VimeoVideo plugin
+
+            VimeoVideo(24715531);
+          """
+          cs:"""
+            # VimeoVideo plugin
+
+            VimeoVideo 24715531
+          """
+        }
+        {
+          js:"""
+            // AceEditor plugin
+            var myEditor = AceEditor(
+              '<p>This is html</p>', {
+              mode:'html',
+              theme:'tomorrow'
+            });
+
+            // Change theme with a list box
+            ListBox({options:[
+                'tomorrow',
+                'solarized_light',
+                'solarized_dark'
+              ],
+              change:function(){
+                myEditor.theme = this.value;
+              }
+            });
+          """
+          cs:"""
+            # AceEditor plugin
+            myEditor = AceEditor(
+              '<p>This is html</p>'
+              mode:'html'
+              theme:'tomorrow'
+            )
+
+            # Change theme with a list box
+            ListBox options:[
+                'tomorrow',
+                'solarized_light'
+                'solarized_dark'
+              ],
+              change: ->
+                myEditor.theme = @value
+          """
+        }
+        {
+          js:"""
+            // Twitter plugin
+
+            TwitterFollowButton('evanmoran')
+          """
+          cs:"""
+            # Twitter plugin
+
+            TwitterFollowButton 'evanmoran'
+          """
+        }
+        {
+          js:"""
+            // GitHub plugin
+
+            GitHubButton('evanmoran')
+
+            GitHubButton('ojjs', 'oj');
+
+            GitHubButton('ojjs', 'oj', {type:'fork'});
+          """
+          cs:"""
+            # GitHub plugin
+
+            GitHubButton 'evanmoran'
+
+            GitHubButton 'ojjs', 'oj'
+
+            GitHubButton 'ojjs', 'oj', type:'fork'
+          """
+        }
+      ], each: (model) ->
+        div c:'dot', 'data-js': model.js, 'data-cs':model.cs
+
+      css
+        'ul.dots':
+          listStyleType:'none'
+          width:'' + (dots.count * 20) + 'px'
+          margin:'0 auto 30px'
+          'li':
+            display:'inline-block'
+            margin:'10px 0 0 0'
+            '&:not(:first-child)':
+              marginLeft:'10px'
+          '.dot':
+            width:'11px'
+            height:'11px'
+            display:'inline-block'
+            position:'relative'
+            background:'url(media/dot_empty.png) no-repeat left top'
+            cursor:'pointer'
+            '&.filled':
+              background:'url(media/dot_filled.png) no-repeat left top'
+
+      onload ->
+
+        selectDot = ($dot, fade) ->
+          js = $dot.attr('data-js')
+          cs = $dot.attr('data-cs')
+          editor.set {js:js, cs:cs}
+          $('ul.dots .dot').removeClass 'filled'
+          $dot.addClass 'filled'
+
+        selectDotWithFade = ($dot) ->
+          editor.$el.fadeOut 300, ->
+            selectDot $dot
+            editor.$el.fadeIn(300)
+
+
+        # Select first dot
+        setTimeout (->
+          selectDot $('ul.dots .dot').first()
+          ), 50
+
+        _keepAnimatedDots = true
+        nextDot = ->
+          setTimeout (->
+            if _keepAnimatedDots
+              # Get elements as array repeating the first
+              dotEls = $('ul.dots .dot').get()
+              prevEl = $('ul.dots .dot').last().get(0)
+              for dotEl in dotEls
+                if $(prevEl).hasClass('filled')
+                  selectDotWithFade $(dotEl)
+                  break
+                prevEl = dotEl
+              nextDot()
+          ), 7000
+
+        # Animate dots
+        nextDot()
+
+        # Clicking a dot changes selects it and prevents animation
+        $('ul.dots .dot').click (e) ->
+          _keepAnimatedDots = false
+          selectDotWithFade $(e.target)
+
+        editor.$el.click (e) ->
+          _keepAnimatedDots = false
+
+        # Animate changing the dot
+        setTimeout
+
+      div c:'row', ->
+
+        div c:'gg50', ->
+
+          BulletList c:'bullets',
+            ->
+              markdown """A library written entirely in JavaScript"""
+            ->
+              markdown """Abstracts the web into view objects <br>that *create* and *change* websites"""
+            'Unifies templating of HTML, CSS and JS'
+            ->
+              markdown """Backbone support built-in with <br>two-way model and collection binding"""
+
+        div c:'gg50', ->
+
+          BulletList c:'bullets',
+            ->
+              markdown """Includes the simple smart objects:<br>[List](docs.html#List), [Table](docs.html#Table), [Button](docs.html#Button), and [form elements](docs.html#form-types)"""
+
+            ->
+              markdown """A growing collection of plugins: <br>[VimeoVideo](docs.html#VimeoVideo), [AceEditor](docs.html#AceEditor), [and more!](docs.html#plugins)"""
+            ->
+              markdown """DOM manipulation client-side <br>HTML and CSS creation server-side"""
+
+            ->
+              markdown """Node server-side support <br>(in progress)"""
+
+
+        css
+          '.bullets':
+
+            '> li':
+              background:'url(media/oj_bullet.png) no-repeat left top'
+              listStyleType:'none'
+              margin: '20px 0 10px 0'
+              padding:'0 0 0 35px'
+              minHeight: '50px'
+              fontFamily: fontFamilySansSerif
+              fontSize: '18px'
+              color: '#666666'
+              fontWeight:'lighter'
+              p:
+                fontFamily: 'Helvetica, Arial, sans-serif'
+                fontSize: '18px'
+                color: '#666666'
+                fontWeight:'lighter'
+
+      div c:'row', ->
+        a c:'button yellow gg50', 'Learn More', href:'learn.html'
+        a c:'button orange gg50', 'Download oj.js', href:'docs.html#download'
+
+        css
+          '.button':
+            height:'34px'
+            borderRadius:'10px'
+            textAlign:'center'
+            fontSize:'22px'
+            fontWeight:'lighter'
+            fontFamily: fontFamilySansSerif
+            color:'white'
+            backgroundColor:'#FF9B00'
+            '&.yellow':
+              backgroundColor:'#FFC000'
+            paddingTop: '11px'
+
+      footer c:'gg100', ->
+        GitHubButton c:'github-star-button', 'ojjs', 'oj', type:'watch', showCount:false, size:'large', width: 130
+
+        TwitterFollowButton c:'twitter-follow-button', 'evanmoran', showCount: false, size:'large'
+
+        span 'Copyright 2013 Evan Moran', style:'float':'right'
