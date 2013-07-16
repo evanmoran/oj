@@ -1246,9 +1246,9 @@ Placeholder functions for server side minification
 
     _cssFromMediaObject = (mediaMap, options = {}) ->
 
-      debug = 0 #options.debug ? 0
+      debug = options.debug ? 0
       tags = options.tags ? 0
-      minify = 1 #options.minify ? 0
+      minify = options.minify ? 0
 
   Deterine what output characters are needed
 
@@ -1292,8 +1292,6 @@ Placeholder functions for server side minification
         throw new Error "css minification error: #{eCSS.message}\nCould not minify:\n#{css}"
 
       css
-
-
 
 _cssFromPluginObject:
 -----------------------------------------------------------------------------
@@ -1781,14 +1779,14 @@ oj.createType
     # options is a union of all items in `arguments` that are objects
     # args is a concat of all arguments that aren't objects in the same order
     oj.unionArguments = (argList) ->
-      obj = {}
-      list = []
+      options = {}
+      args = []
       for v in argList
         if oj.isObject v
-          obj = _extend obj, v
+          options = _extend options, v
         else
-          list.push v
-      options: obj, args: list
+          args.push v
+      options: options, args: args
 
 oj.enum
 ------------------------------------------------------------------------
@@ -2298,16 +2296,34 @@ Button control
     oj.Button = oj.createType 'Button',
       base: oj.View
 
-      constructor: (args) ->
+      constructor: ->
         {options, args} = oj.unionArguments arguments
 
         # Label is first argument
-        options.label ?= if args.length > 0 then args[0] else ''
+        title = ''
+        if args.length > 0
+          title = args[0]
+
+        # Label is specified as option
+        if options.title?
+          title = oj.argumentShift(options, 'title')
 
         @el = oj =>
-          oj.button options.label
+          oj.button(title)
 
         oj.Button.base.constructor.apply @, [options]
+        @title = title
+      properties:
+        title:
+          get: -> @_title ? ''
+          set: (v) -> @$el.oj (@_title = v); return
+
+      methods:
+        click: ->
+          if arguments.length > 0
+            @$el.click(arguments...)
+          else
+            @$el.click()
 
 oj.Link
 ------------------------------------------------------------------------------
@@ -2871,7 +2887,7 @@ cell: Get or set value at row rx, column cx
           if ojml?
             @$td(rx, cx).oj ojml
           else
-            @td(rx, cx).ojValue()
+            @$td(rx, cx).ojValue()
 
 #### Manipulation Methods
 
