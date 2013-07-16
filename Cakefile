@@ -22,6 +22,19 @@ PAGES_DIR = path.join CAKE_DIR, 'pages'
 LIB_DIR = path.join CAKE_DIR, 'lib'
 DOCS_DIR = path.join CAKE_DIR, 'docs'
 SRC_DIR = path.join CAKE_DIR, 'src'
+GIT_DIR = path.join CAKE_DIR, '..'
+
+PLUGINS = [
+  'oj.AceEditor'
+  'oj.Bootstrap'
+  'oj.FacebookLikeButton'
+  'oj.GitHubButton'
+  # 'oj.GooglePlusButton'
+  'oj.TwitterFollowButton'
+  'oj.VimeoVideo'
+  'oj.markdown'
+  'oj.mustache'
+]
 
 # Tasks
 # ------------------------------------------------------------------------------
@@ -29,6 +42,7 @@ SRC_DIR = path.join CAKE_DIR, 'src'
 task "build", "Build everything and run tests", ->
   invoke "build:js"
   invoke "build:docs"
+  invoke "copy:plugins"
   invoke "test"
 
 task "build:js", "Compile coffee script files", ->
@@ -36,8 +50,18 @@ task "build:js", "Compile coffee script files", ->
   launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/server.litcoffee']
   launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/command.litcoffee']
 
-task "build:js:watch", "Watch compile coffee script files", ->
-  launch 'coffee', ['--compile', '--lint', '-o', LIB_DIR, '--watch', 'src']
+task "build:js", "Compile coffee script files", ->
+  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/oj.litcoffee']
+  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/server.litcoffee']
+  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/command.litcoffee']
+
+task "copy:plugins", "Prepair scripts", ->
+  for plugin in PLUGINS
+    pluginSource = path.join GIT_DIR, plugin, 'src', (plugin + '.js')
+    pluginDest = path.join WWW_DIR, 'scripts', (plugin + '.js')
+    # console.log "pluginSource: ", pluginSource
+    # console.log "pluginDest: ", pluginDest
+    launch 'cp', [pluginSource, pluginDest]
 
 task "ddd", "Build debug www", ->
   launch 'oj', ['--recursive', '--verbose', '1', '--debug', '--output', WWW_DIR, PAGES_DIR]
