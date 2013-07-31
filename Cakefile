@@ -50,10 +50,10 @@ task "build:js", "Compile coffee script files", ->
   launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/server.litcoffee']
   launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/command.litcoffee']
 
-task "build:js", "Compile coffee script files", ->
-  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/oj.litcoffee']
-  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/server.litcoffee']
-  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/command.litcoffee']
+task "build:js:watch", "Watch coffee script files", ->
+  launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/oj.litcoffee']
+  launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/server.litcoffee']
+  launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/command.litcoffee']
 
 task "copy:plugins", "Prepair scripts", ->
   for plugin in PLUGINS
