@@ -1,0 +1,228 @@
+# plugins.ojc
+
+_plugins = require './_plugins'
+_template = require './_template'
+
+{renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderEvents:events, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
+
+md = markdown
+
+module.exports = ->
+
+  _template
+
+    title: 'OJ Plugins - Unified Templating'
+
+    styles: [
+      'reset.css'
+      'gg.css'
+    ]
+
+    scripts: [
+      'jquery.js'
+      'jquery.event.drag.js'
+      'jquery.ba-resize.min.js'
+      'underscore.js'
+      'backbone.js'
+      'coffee-script.js'
+      'ace/ace.js'
+    ]
+
+    content: ->
+      renderContent data
+
+    toc: ->
+      renderTOC data
+
+    body: ->
+    head: ->
+
+data = [
+    h: 'Introducing Plugins', id: 'introduction', d: """
+
+      To me it all comes down to this quote:
+
+      > Simple things should be simple,<br>complex things should be possible.<br>
+      > -- [Alan Kay](http://en.wikipedia.org/wiki/Alan_Kay)
+
+      OJ is all about making simple, self-contained objects. Everything in OJ was make to keep things simple. Simple to the user of the plugin, and simple to the plugin creator.
+
+      **It is my hope that together we can increase what is possible.**
+
+      This list of plugins is not meant to be a complete list, or to fully document each plugin. Instead it is intending to provide a quick start guide to the most broadly used plugins.
+
+      Pull requests with new plugins are very welcome!
+
+    """
+,
+  h: 'Social Plugins', id: 'social-plugins', d: ->
+
+      md """
+        Social plugins for following, liking, and upvoting.
+      """
+    items: [
+      h: 'TwitterFollowButton', id: 'TwitterFollowButton', d: ->
+        md """
+        """
+    ,
+      h: 'GitHubButton', id: 'GitHubButton', d: ->
+        md """
+        """
+    ]
+,
+  h: 'Media Plugins', id: 'social-plugins', d: ->
+
+      md """
+        Media plugins help you embed media elements like video, sound and music.
+      """
+    # items: [
+    #   h: 'VimeoVideo', id: 'VimeoVideo', d: ->
+    #     md """
+    #     """
+    #     TryEditor lineCount: 8, js:"""
+    #       VimeoVideo(24715531);
+    #     """, cs: """
+    #       VimeoVideo 24715531
+    #     """
+
+    #     md """
+    #       Full usage:
+    #     """
+    #     TryEditor js:"""
+    #       VimeoVideo({
+    #         video: 24715531,
+    #         showTitle: true,
+    #         showByline: true,
+    #         showPortrait: true,
+    #         color: 'purple',
+    #         autoplay: false,
+    #         loop: false
+    #       });
+
+    #     """, cs: """
+    #     """
+    # ]
+,
+  h: 'Form Plugins', id: 'social-plugins', d: ->
+
+      md """
+        Form plugins mimic and extend built-in form objects like [TextBox](docs.html#TextBox). These usually have two-way model binding and are intended to take input from a user.
+      """
+    items: [
+      h: 'AceEditor', id: 'AceEditor', d: ->
+        md """
+          Each argument is a line of code:
+        """
+
+        TryEditor lineCount: 10, js:"""
+          AceEditor(
+            '// JavaScript code',
+            'function myFunction {',
+            '\\treturn true;',
+            '}'
+          );
+        """
+
+        md """
+          Usage:
+        """
+
+        TryEditor js:"""
+AceEditor(
+  '// JavaScript code',
+  'function myFunction {',
+  '\\treturn true;',
+  '}', {
+
+  // Basic settings
+  readOnly: false,
+
+  width: 310,
+  height: '100%',
+
+  fontSize: 16,
+  tabSize: 4,
+
+  // Set language and coloring
+  mode: 'javascript',
+  theme: 'solarized_dark',
+
+  useSoftTabs:true,
+    // Turn tabs to spaces
+    // Default: false
+
+  behaviorsEnabled:true,
+    // Enable code completio
+    // Default: true
+
+  // Show a line where word
+  // wrapping happens
+  showPrintMargin:true,
+  wrapLimit: 24,
+    // 'auto' (limit to buffer)
+    // 'off' (no limit)
+    // <integer> (specific limit)
+
+  // Show a 'fold' arrow to let
+  // users collapse code sections
+  showFoldWidgets:true,
+    // Default: false
+  foldStyle:'markbegin',
+    // Default: 'markbegin'
+    // 'markbegin'
+    // 'markbeginend'
+    // 'manual'
+    fadeFoldWidgets:false,
+    // Default: false
+
+  // Show Guide lines for indenting
+  showIndentGuides:true,
+    // Default: true
+
+  // Show invisible characters
+  showInvisibles:true,
+    // Default: false
+
+  // Show line number gutter
+  showGutter:true,
+    // Default: false
+
+  highlightSelectedWord:true,
+    // Default: true
+
+  highlightActiveLine:true,
+    // Default: true
+
+  selectionStyle:'text',
+    // Default: 'line'
+    // 'text' (stop at text)
+    // 'line' (stop at line)
+
+  animatedScroll:true,
+    // Default: false
+
+  hScrollBarAlwaysVisible:false,
+    // Default: false
+
+  vScrollBarAlwaysVisible:false,
+    // Default: false
+
+});        """
+
+    ]
+,
+  h: 'Creation Plugins', id: 'creation-plugins', d: ->
+
+      md """
+        These plugins improve how you write content. Sometimes it is nice not to use tags directly, hense the [markdown](#markdown) plugin. Or you need to inverface with legacy templating code, hense the [mustache](mustache) plugin.
+      """
+    items: [
+      h: 'markdown', id: 'markdown', d: ->
+        md """
+        """
+    ,
+      h: 'mustache', id: 'mustache', d: ->
+        md """
+        """
+    ]
+]

@@ -51,13 +51,19 @@ data = [
 
       For simple tag creation OJ provides a series of [tag functions](#tags), one for every tag (`<div>`, `<span>`, `<ul>`, `<table>`, `<a>`, etc), to build up structure of your site and help create the collection and form types you are using. These tag functions allow you to create html structure, css, and bind jquery events simultaneously.
 
-     To truly master OJ it is encouraged to create your own custom types; [List](#List) and [Table](#Table) are going to get you quite far, but it is much easier to think in terms of `ChatWindow` or `FriendList` then to manually manipulate several things at once by hand. To this end OJ provides a [type creation function](#createType) and some inheritable [base types](#base-types) to help you create types of your own. With these base types, model binding is quite easy.
+     To truly master OJ it is encouraged to create your own custom types; [List](#List) and [Table](#Table) are going to get you quite far, but it is much easier to think in terms of `ChatWindow` or `FriendList` then to manually manipulate several things at once by hand. To this end OJ provides a [type creation function](#createType) and some inheritable [base types](#base-types) to help you create types of your own. With these base types model binding is quite easy.
 
      For server side use of oj a [command-line tool](#command-line) called `oj` can be [installed](#install) with node's package manager `npm`. The tools purpose is to combine [oj file types](#file-types) together into `html` files. It supports watch for debugging and magnification of html, javascript, and css for production. **Important Note:** This tool is _not_ a web server. It is quite capable as a static site generator, but for more complex scenarios an [express plugin](http://expressjs.com/) is [in the works](https://github.com/ojjs/oj/issues/1).
 
       As always contributions are most welcome. Feel free to send [pull requests](https://github.com/ojjs/oj) or to report bugs and feature requests as [issues](https://github.com/ojjs/oj/issues).
 
       """
+    ,
+      h: 'Download', id: 'download', d: ->
+        a href:'https://github.com/ojjs/oj/raw/master/lib/oj.js', ->
+          Button 'Download OJ', c:'download-button'
+        # a href:'https://github.com/ojjs/oj/raw/master/lib/oj.js', ->
+        #   Button 'Download OJ Minified', c:'download-button'
     ,
       h: 'License', id: 'license', d: """
         Copyright (c) 2013 Evan Moran <br>
@@ -515,7 +521,7 @@ data = [
 
 
         md """
-          A build-in OJ type that creates and manipulates a checkbox form element. The `value` property can be set in the first argument, or in the `options` object.
+          An build-in OJ type that creates and manipulates a checkbox form element. The `value` property can be set in the first argument, or in the `options` object.
 
 
         """
@@ -541,38 +547,7 @@ data = [
           ### Example
               var myTextBox = TextBox('Default text');
         """
-    ,
-      h:'oj.Button', id:'Button', d: ->
 
-
-        md """
-          A build-in OJ type that creates and manipulates a button element. The `label` property can set the button text.
-
-        """
-        name 'Button(label, properties)'
-
-        inherits h:'View', id:'View'
-
-        properties [
-          h:'label', id:'Button-label', d:"""
-            The text of the button ([read-write](#read-write)).
-          """
-        ]
-
-        methods [
-          h:'click(fn)', id:'Button-click', d:"""
-            A pass through method to jQuery click event.
-
-            Like the jQuery function, calling with a `fn` will bind that function to the click event. Calling without an argument will cause the button click event to be triggered.
-          """
-        ]
-
-        md """
-          ### Example
-              var myButton = Button('Default text': click:function(){alert('hello')}
-
-              myButton.click()
-        """
     ]
   ,
     h: 'Creating Types', id: 'creating-types', d: """
@@ -640,68 +615,45 @@ data = [
 
           ### Example
 
-              // Create a User type
-              var User = oj.createType('User', {
+              # Define type user
+              User = oj.createType 'User',
+                properties:
+                  name: null
+                  birthDate: null
+                methods:
+                  # Calculate age from @birthDate
+                  age: ->
+                    today = new Date()
+                    age = today.getFullYear() - @birthDate.getFullYear()
+                    m = today.getMonth() - @birthDate.getMonth()
+                    if m < 0 or (m == 0 and today.getDate() < @birthDate.getDate())
+                      age--
+                    age
 
-                constructor: function(props){
-                  // Built in method to set all
-                  // properties by name
-                  this.set(props);
-                },
+              # Create a user
+              user = new User name:'Kelly', birthDate: new Date(1969, 0, 1)
 
-                // Create properties
-                properties: {
-                  name: null,
-                  birthDate: null,
+              # Manipulate the user
 
-                  // The age property is calculated
-                  // automatically from birthDate
-                  age: {
-                    get: function(){
-                      var today = new Date();
+              user.name               # => 'Kelly'
+              user.birthDate          # => Date(1969, 0, 1)
 
-                      var age = today.getFullYear() -
-                        this.birthDate.getFullYear();
+              user.name = 'Ted'       # => name is set to 'Ted'
 
-                      var month = today.getMonth() -
-                        this.birthDate.getMonth();
+              # List properties
 
-                      var birthDateIsAfterToday = (
-                        month == 0 && (
-                          today.getDate() <
-                           this.birthDate.getDate()
-                        )
-                      );
-                      if (birthDateIsAfterToday)
-                        age--;
-                      return age;
-                    }
-                  }
-                },
+              user.properties         # => ['name', 'birthDate']
+              user.has('birthDate')   # => true
+              user.has('fakeProp')    # => false
 
-                // Create methods
-                methods: {
-                  isEighteen: function(){
-                    return this.age >= 18;
-                  }
-                }
-              });
+              # List methods
 
-              // Create the user named Batman
-              var user = new User({
-                name:'Batman',
-                birthDate:new Date(1974,2,1)
-              });
+              user.methods            # => ['age']
+              user.can('age')         # => true
+              user.can('fakeMethod')  # => false
 
-              // Show that the age property works
-              div(user.name + ' is ' +
-                user.age + ' years old.');
-
-              div(user.name + ' is eighteen: ',
-                function(){
-                  strong(user.isEighteen())
-                }
-              );
+              user.type               # => User
+              user.typeName           # => 'User'
 
         """
     ,

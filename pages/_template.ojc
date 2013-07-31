@@ -56,7 +56,8 @@ module.exports = _template = (parts) ->
     '.fixed':
       position:'fixed'
       marginTop: '62px'
-      zIndex: 600
+      zIndex: 100
+      height: '40px'
       '@media phone':
         marginTop: '85px'
 
@@ -152,8 +153,10 @@ _header = ->
       a c:'header-logo', href: 'index.html'
       div c:'header-options', ->
         a 'Learn', c:'header-option', href:'learn.html'
-        a 'Docs', c:'header-option', href:'docs.html'
         a 'Try', c:'header-option', href:'try.html'
+        a 'Docs', c:'header-option', href:'docs.html'
+        a 'Plugins', c:'header-option', href:'plugins.html'
+        a 'Download', c:'header-option', href:'download.html'
     div c:'header-orange-corner left'
     div c:'header-orange-corner right'
 

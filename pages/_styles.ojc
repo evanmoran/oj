@@ -4,8 +4,9 @@ module.exports = ->
   # ---------------------------------------------------------------------------
 
   # Colors
-  h1Color = '#666'
+  h1Color = '#444'
   textColor = '#444'
+  strongTextColor = '#000'
   h2Color = textColor
   backgroundColor = '#fff'
   codeColor = '#444'
@@ -15,6 +16,7 @@ module.exports = ->
   borderColor = '#ffd272'
   typeLinkColor = linkColor
   functionLinkColor = linkColor
+  tocSectionColor = '#C76200'
   methodLinkColor = '#a64d09'
   propertyLinkColor = '#b3820a'
   eventLinkColor = '#a64d09'
@@ -23,8 +25,7 @@ module.exports = ->
 
   # Fonts
   familyMonospace = 'Inconsolata, Consolas, Courier New, monospace'
-  familySanSarifLight = 'Helvetica, Arial, sans-serif'
-  familySanSarif = 'Lucida Grande, Tahoma'
+  familySanSarif = 'Helvetica, Arial, sans-serif'
 
   # Styles
   # ---------------------------------------------------------------------------
@@ -33,7 +34,7 @@ module.exports = ->
     h1:
       fontFamily: familySanSarif
       fontSize: '25px'
-      fontWeight: 'lighter'
+      fontWeight: '100'
       marginTop: '40px'
       marginBottom: '12px'
       paddingBottom: '6px'
@@ -46,15 +47,15 @@ module.exports = ->
     h2:
       fontFamily: familySanSarif
       fontSize: '22px'
-      fontWeight: 'lighter'
-      margin: '25px 0 10px 0'
+      fontWeight: '100'
+      margin: '32px 0 15px 0'
       color: h2Color
       textDecoration: 'none'
 
     h3:
       fontFamily: familySanSarif
       fontSize: '16px'
-      fontWeight: 'lighter'
+      fontWeight: '100'
       marginTop: '22px'
       marginBottom: '14px'
       color: '#222'
@@ -109,9 +110,15 @@ module.exports = ->
     p:
       color: textColor
       fontFamily: familySanSarif
-      fontSize: '14px'
-      margin: '16px 0'
+      fontSize: '16px'
+      fontWeight: 'lighter'
+      margin: '16px 0 8px 0'
       lineHeight: '24px'
+
+    'p strong':
+      color: strongTextColor
+      fontFamily: familySanSarif
+      fontWeight: 400
 
     ul:
       marginBottom: '16px'
@@ -123,13 +130,16 @@ module.exports = ->
       fontSize: '14px'
       lineHeight: '20px'
 
+    '.oj-TryEditor':
+      marginBottom: '30px'
+
     '.code-heading':
       color: '#222'
       fontFamily: familyMonospace
       fontSize: '19px'
 
     '.code-subheading':
-      fontFamily: familySanSarifLight
+      fontFamily: familySanSarif
       fontSize: '14px'
       fontStyle: 'italic'
       fontWeight: 'lighter'
@@ -191,21 +201,23 @@ module.exports = ->
       fontSize: '14px'
 
     '.toc-section':
-      padding: '0 8px'
       display:'block'
-      color: '#E78B00'
+      color: tocSectionColor
       textTransform: 'uppercase'
       fontFamily: familySanSarif
-      fontSize: '16px'
+      margin:'0 0 10px 0'
+      fontSize: '14px'
       textAlign: 'right'
-      margin:'0 '
+      fontWeight: 'lighter'
 
     '.toc-item':
       display:'block'
-      fontSize: '14px'
+      fontFamily: familySanSarif
+      fontSize: '13px'
+      fontWeight: 'lighter'
       textAlign: 'right'
-      padding: '2px 8px'
-      marginRight: '10px'
+      margin:'0 0 4px 0'
+      color: linkColor
 
     '.toc-items':
       marginBottom: '10px'

@@ -1,27 +1,11 @@
-
-###
-Alan kay. The goal is increases the power of code with less code.
-"[Reducing] the amount of code needed to make systems by a factor of 100, 1000, 10,000, or more."
-http://mythz.servicestack.net/blog/2013/02/27/the-deep-insights-of-alan-kay/
-
-OJ Simplifies:
-  * No class or ids. You can still have them but they probably unnecessary.
-     * Unnecessary naming sucks
-
-  * Significantly
-
-###
+# index.ojc
 
 _plugins = require './_plugins'
 
-# siteCSS = require './_styles'
 _template = require './_template'
 _content = require './_content'
 
 fontFamilySansSerif = 'Helvetica, Arial, sans-serif'
-
-# _snippet = require './_snippet'
-# _editor = require './_editor'
 
 module.exports = ->
 
@@ -80,12 +64,13 @@ module.exports = ->
       dots = BulletList c:'dots', models:[
         {
           js:"""
-            // Create tags
-
+            // Create header
             h1('Header')
 
+            // Create paragraph
             p('A paragraph')
 
+            // Create bulleted list
             ul(function(){
               li('Item 1');
               li('Item 2');
@@ -93,12 +78,13 @@ module.exports = ->
             });
           """
           cs:"""
-            # Create tags
-
+            # Create header
             h1 'Header'
 
+            # Create paragraph
             p 'A paragraph'
 
+            # Create bulleted list
             ul ->
               li 'Item 1'
               li 'Item 2'
@@ -110,10 +96,10 @@ module.exports = ->
             // Create css
             css({
               '.red':{color:'#e00'},
-              '.big':{fontSize:'30px'}
+              '.big':{fontSize:'25px'}
             });
 
-            // Show it works
+            // Show the css works
             div({'class':'red'},
               'This class is red');
 
@@ -127,10 +113,10 @@ module.exports = ->
             # Create css
             css
               '.red': color: '#e00'
-              '.big': fontSize: '30px'
+              '.big': fontSize: '25px'
 
 
-            # Show it works
+            # Show the css works
             div 'class':'red',
               'This class is red'
 
@@ -143,8 +129,7 @@ module.exports = ->
         }
         {
           js:"""
-            // Create attributes
-
+            // Create div with inline style
             div('This is inline-styled!', {
               style:{
                 width:200,
@@ -154,8 +139,7 @@ module.exports = ->
             });
           """
           cs:"""
-            # Create attributes
-
+            # Create div with inline style
             div 'This is inline-styled!',
               style:
                 width:200
@@ -166,14 +150,12 @@ module.exports = ->
         {
           js:"""
             // Create jQuery events
-
             div('Click me!', {click: function(){
               alert('It works!')
             }});
           """
           cs:"""
             # Create jQuery events
-
             div 'Click me!', click: ->
               alert 'It works!'
           """
@@ -181,7 +163,6 @@ module.exports = ->
         {
           js:"""
             // Create a table
-
             var myTable = Table(
               ['Apple', 'Red'],
               ['Grape', 'Purple'],
@@ -190,14 +171,12 @@ module.exports = ->
             br()
 
             // Retrieve values
-
             div(myTable.rowCount + ' rows');
             div(myTable.cell(1,0) + ' is (1,0)');
             div(JSON.stringify(myTable.row(2)));
           """
           cs:"""
             # Create a table
-
             myTable = Table(
               ['Apple', 'Red']
               ['Grape', 'Purple']
@@ -206,7 +185,6 @@ module.exports = ->
             br()
 
             # Retrieve values
-
             div myTable.rowCount + ' rows'
             div myTable.cell(1,0) + ' is (1,0)'
             div JSON.stringify myTable.row(2)
@@ -214,19 +192,17 @@ module.exports = ->
         }
         {
           js:"""
-            // VimeoVideo plugin
-
+            // Create a vimeo video
             VimeoVideo(24715531);
           """
           cs:"""
-            # VimeoVideo plugin
-
+            # Create a vimeo video
             VimeoVideo 24715531
           """
         }
         {
           js:"""
-            // AceEditor plugin
+            // Create an AceEditor
             var myEditor = AceEditor(
               '<p>This is html</p>', {
               mode:'html',
@@ -245,7 +221,7 @@ module.exports = ->
             });
           """
           cs:"""
-            # AceEditor plugin
+            # Create an AceEditor
             myEditor = AceEditor(
               '<p>This is html</p>'
               mode:'html'
@@ -264,19 +240,17 @@ module.exports = ->
         }
         {
           js:"""
-            // Twitter plugin
-
+            // Create a Twitter follow button
             TwitterFollowButton('evanmoran')
           """
           cs:"""
-            # Twitter plugin
-
+            # Create a Twitter follow button
             TwitterFollowButton 'evanmoran'
           """
         }
         {
           js:"""
-            // GitHub plugin
+            // Create GitHub buttons
 
             GitHubButton('evanmoran')
 
@@ -285,7 +259,7 @@ module.exports = ->
             GitHubButton('ojjs', 'oj', {type:'fork'});
           """
           cs:"""
-            # GitHub plugin
+            # Create Github buttons
 
             GitHubButton 'evanmoran'
 

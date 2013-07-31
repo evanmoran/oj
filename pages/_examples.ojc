@@ -690,6 +690,82 @@ module.exports = [
 
   """
 
+,
+  name: 'Creating an Email type (Without View Support)'
+  cs: """
+  """
+  js: """
+    // Create a Email type
+    Email = oj.createType('Email', {
+
+      // Constructor sets address prop
+      constructor: function(addr){
+        this.address = addr;
+      },
+
+      // Create properties
+      properties: {
+
+        // Address holds the full email
+        address: 'user@example.com',
+
+        // username comes from address
+        username: {
+          get: function(){
+            if (!this.isValid())
+              return null;
+            return this.address.split(
+              '@')[0];
+          }
+        },
+
+        // domain comes from address
+        domain: {
+          get: function(){
+            if (!this.isValid())
+              return null;
+            return this.address.split(
+              '@')[1];
+          }
+        }
+      },
+      methods:{
+        // Create methods
+        isValid: function(){
+          // '@' is before '.'
+          return !!this.address.match(
+            /.+@.+\..+/);
+        }
+      }
+
+    });
+
+    // Create a valid email
+    var email1 = new Email('evan@ojjs.org')
+    h2(email1.address);
+    Table(
+      ['isValid:',   email1.isValid()],
+      ['Username:', email1.username],
+      ['Domain:',   email1.domain]
+    );
+
+    // Create an invalid email
+    var email2 = new Email('evan@gmail')
+
+    h2(email2.address);
+    // Show the properties of email
+    Table(
+      ['isValid:',   email2.isValid()],
+      ['Username:', email2.username],
+      ['Domain:',   email2.domain]
+    );
+  """
+
+
+
+
+
+
 ]
 
 
