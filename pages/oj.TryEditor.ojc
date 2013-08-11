@@ -578,6 +578,8 @@ module.exports = (oj, settings) ->
       float: 'right'
       zIndex: 101
       cursor:'pointer'
+      '@media phone':
+        display:'none'
 
     '.oj-TryEditor-gripper':
       position:'absolute'
@@ -712,13 +714,20 @@ _replaceIFRAME = ($iframeParent, $iframe, scriptTags, code) ->
 # Updates by calling document.rebuild which was setup by the updater
 _updateIFRAME = ($iframe, code) ->
   if $iframe.contents() and $iframe.contents()[0] and oj.isFunction $iframe.contents()[0].rebuild
-
     $html = $iframe.contents().find('html')
     $body = $iframe.contents().find('body')
 
-    # Remove style tag to allow css to be recreated.
+    # Remove any generated style tags to allow css to be recreated.
     doc$ = $iframe.contents()[0].$
-    doc$('style.oj-style').remove()
+    $styles = doc$('style')
+    $styles.each ->
+      $this = $(@)
+      cls = $this.attr('class')
+      if cls.match(/^oj-.*-style$/)
+        $this.remove();
+
+    # Clear body as we want the body to black if the code doesn't generate anything
+    doc$('body').html('')
 
     # Remake everything
     $iframe.contents()[0].rebuild _scriptTagForCodeBody code

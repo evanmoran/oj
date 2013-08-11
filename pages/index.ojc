@@ -389,7 +389,7 @@ module.exports = ->
 
       div c:'row', ->
         a c:'button yellow gg50', 'Learn More', href:'learn.html'
-        a c:'button orange gg50', 'Download oj.js', href:'docs.html#download'
+        a c:'button orange gg50', 'Download oj.js', href:'download.html'
 
         css
           '.button':
@@ -403,6 +403,10 @@ module.exports = ->
             backgroundColor:'#FF9B00'
             '&.yellow':
               backgroundColor:'#FFC000'
+
+            '&.orange':
+              '@media phone':
+                marginTop:'15px'
             paddingTop: '11px'
 
       footer c:'gg100', ->

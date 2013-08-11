@@ -50,7 +50,7 @@ module.exports = _template = (parts) ->
             _footer()
 
   _styles()
-  orangeSize = '50px'
+  orangeSize = '42px'
   css
 
     '.fixed':
@@ -81,7 +81,7 @@ module.exports = _template = (parts) ->
 
     header:
       position:'fixed'
-      height:'55px'
+      height:'45px'
       width:'100%'
       boxShadow: '2px 2px 2px RGBA(0,0,0,0.1)'
       backgroundColor:'white'
@@ -90,15 +90,15 @@ module.exports = _template = (parts) ->
         height:'72px'
 
     '.header-contents':
-      height: '55px'
-      paddingTop: '16px'
+      height: '45px'
       float:'none !important'
       marginLeft:'auto !important'
       marginRight:'auto !important'
       display: 'block'
       '@media phone':
         textAlign:'center'
-        paddingTop:'6px'
+        paddingTop:'10px'
+        height: '30px'
 
     '.header-logo':
       background: 'url(media/oj_logo_small.png) no-repeat 0 center'
@@ -116,19 +116,22 @@ module.exports = _template = (parts) ->
     '.header-options':
       display:'inline-block'
       marginLeft: '44px'
+      paddingTop: '12px'
       '@media phone':
-        marginTop: '14px'
+        marginLeft: '0px'
         textAlign: 'center'
         display: 'block'
 
     '.header-option':
       fontFamily: 'Helvetica, Arial, Tahoma'
       color: '#E98C00'
-      fontSize: '20px'
+      fontSize: '18px'
       fontWeight: '100'
       verticalAlign: 'middle'
       '&:not(:first-child)':
         marginLeft: '44px'
+        '@media phone':
+          marginLeft: '20px'
       '@media phone':
         marginTop: '30px'
 
