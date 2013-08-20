@@ -42,6 +42,7 @@ PLUGINS = [
 task "build", "Build everything and run tests", ->
   invoke "build:js"
   invoke "build:docs"
+  invoke "copy:libs"
   invoke "copy:plugins"
   invoke "test"
 
@@ -55,7 +56,12 @@ task "build:js:watch", "Watch coffee script files", ->
   launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/server.litcoffee']
   launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/command.litcoffee']
 
-task "copy:plugins", "Prepair scripts", ->
+task "copy:libs", "Copy Library files to WWW", ->
+  libSource = path.join LIB_DIR, 'oj.js'
+  libDest = path.join WWW_DIR, 'scripts', 'oj.js'
+  launch 'cp', [libSource, libDest]
+
+task "copy:plugins", "Copy Plugins to WWW", ->
   for plugin in PLUGINS
     pluginSource = path.join GIT_DIR, plugin, 'src', (plugin + '.js')
     pluginDest = path.join WWW_DIR, 'scripts', (plugin + '.js')
