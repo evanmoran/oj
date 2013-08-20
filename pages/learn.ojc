@@ -36,7 +36,7 @@ module.exports = ->
 
 data = [
 
-  h: 'The High Level', id: 'crash-course', d: ->
+  h: 'Crash Course', id: 'crash-course', d: ->
       md """
         OJ stands for *Object JavaScript*. It is a JavaScript library with a singular goal: to make objects that encapsulate website **creation** and **manipulation**.
       """
@@ -62,14 +62,14 @@ data = [
         """, cs: """
         """
         md """
-          **Go ahead. Click the button. All the examples are live compiling!**
+          **Go ahead. Click the button. All the examples live compile!**
 
         """
     ,
       h: 'Manipulation', id: 'manipulation', d: ->
         md """
 
-          OK, imagine you created a website with these OJ **building blocks**. Now what? Well you probably want to change things.
+          OK, imagine you created a website with these OJ *building blocks*. Now what? Well you probably want to change things.
 
           In OJ, direct DOM manipulation is built into the objects themselves. The *very same* object you used to create the website will remember its root DOM element and provide methods and properties to change itself.
 
@@ -102,20 +102,20 @@ data = [
 
           """
         md """
-          ** What are you waiting for? Click the button!**
+          ** What are you waiting for? Click the button! Change some code.**
         """
     ,
       h: 'The Dream', id: 'the-dream', d: ->
 
         md """
 
-          The dream is that your code will just work. Objects will have no dependencies and will encapsulate away the way they look (HTML/CSS) and behave (JavaScript).
+          The dream is that your code will "just work". Objects will abstract how things look and behave so you don't have to.
 
-          The dream is that your code will be much easier to write and maintain. Use the built-in objects or make your own. We are all making the same components and it is time to easily share them.
+          The dream is that your code will be much easier to write and maintain. Simple, clear abstractions make maintenance easy.
 
-          The dream is you won't have to remember obscure HTML syntax. Do you really want to know that in `<table>` tags `<tfoot>` tags *must* come before `<tbody>`. The [Table](docs.html#Table) object understands this so you don't have to.
+          The dream is that the same code works on the server and client. With Node.js you can build your site on the Server (command-line or Express), and the very same code will work dynamically on the client. All examples work in both.
 
-          The dream is that the same code works on the server and client. With Node.js you can build your site on the Server command-line, and the very same code will work dynamically on the client. All examples work in both.
+          The dream is you won't have to remember obscure HTML syntax. Did you know that in `<table>` tags `<tfoot>` *must* come before `<tbody>`? It is true. The [Table](docs.html#Table) object understands this so you don't have to.
 
           The dream is together we can abstract everything away. OJ is [open source](https://github.com/ojjs/oj), and there are a [growing collection of plugins](plugins.html) to build upon.
 
@@ -172,47 +172,58 @@ data = [
 
     ]
  ,
-  h: 'The Low Level', id: 'the-basics', d: ->
+  h: 'The Basics', id: 'the-basics', d: ->
     md """
-      Now it may seem like OJ objects are doing a lot of magic. Let me assure you they are pretty elegant. Let's start from the beginning and see how they are made.
+      Now it may seem like OJ objects are doing a lot of magic. Let me assure you they are pretty elegant under the covers. Let's start from the beginning and see how they are made.
     """
   items: [
-      h: 'HTML Tags', id: 'html-tags', d: ->
+      h: 'Creating HTML', id: 'creating-html', d: ->
 
         md """
-          Every html `<tag>` has an analogous tag function by the same name. For example, `<div>` has:
+          Every html `<tag>` has an analogous tag function by the same name. For example, `<div>` has `oj.div`:
         """
         TryEditor lineCount:2, js: """
-            oj.div('This is a div');
+            div('This is a div');
+          """, cs: """
+            div 'This is a div'
           """
 
-        md """Attributes are just `Object` arguments. This defines an `href` attributes on an anchor tag:"""
+        md """`Object` arguments. This defines an `href` attributes on an anchor tag:"""
         TryEditor js: """
             a('Link to oj.js',
-              {href:'http://ojjs.org'});
+              {href: 'http://ojjs.org'});
           """, cs:"""
+            a 'Link to oj.js',
+              href: 'http://ojjs.org'
           """
 
-        md """Order doesn't matter for attributes. Add as many as you need and the attribute objects will be unioned. For example, this `<div>` has both an id and an inline style:"""
+        md """Order doesn't matter for attributes. Add as many as you need and the attribute objects will be unioned. For example, this `<div>` has both an `id` and an inline `style` attribute:"""
         TryEditor js: """
             div({id:"id-42"},
               'A div with id and style',
               {style:"color:purple"});
           """, cs:"""
+            div id:"id-42",
+              'A div with id and style',
+              style:"color:purple"
           """
 
-        md """To make life easier, style attributes can be set with objects and support `camelCase` in addition to `dashed-case`:"""
+        md """To make life easier, style attributes can be set with `camelCase` in addition to `dashed-case`:"""
         TryEditor js: """
-            div('A div with styling', {
-              style:{
-                color:'green',
-                fontSize:'30px'
-              }
-            });
+          div('A div with styling', {
+            style:{
+              fontSize:'25px',
+              color:'royalblue'
+            }
+          });
           """, cs:"""
+            div 'A div with styling',
+              style:
+                fontSize:'25px'
+                color:'royalblue'
           """
     ,
-      h: 'CSS Styles', id: 'css-styles', d: ->
+      h: 'Creating CSS', id: 'creating-css', d: ->
 
         md """
           Like tag functions, css is defined by its own function `oj.css`. It accepts an object of objects:
@@ -220,12 +231,17 @@ data = [
 
         TryEditor js:"""
             css({
-              'div':{
+              div:{
                 color:'red'
             }});
 
             div('This div is red');
           """, cs:"""
+            css
+              div:
+                color:'red'
+
+            div 'This div is red'
           """
 
         md """
@@ -240,12 +256,220 @@ data = [
             div({'class':'big'},
               'This div is big');
           """, cs:"""
+            css
+              '.big':
+                fontSize:'25px'
+
+            div 'class':'big',
+              'This div is big'
           """
+
+        md """
+          For convenience, the `class` attribute can abbreviated as `c`. This is the only abbreviation in OJ -- I trully hated to do this, but classes are just too commonly used, and in JavaScript it is unfortunate that "class" must be quoted in object literals:
+        """
+        TryEditor js:"""
+            css({
+              '.big':{
+                fontSize:'25px'
+              },
+              '.red':{
+                color:'red'
+              }
+            });
+
+            // c means class and can handle Arrays
+            div({c:['big','red']},
+              'This div is big and red');
+          """, cs:"""
+            css
+              '.big':
+                fontSize:'25px'
+              '.red':
+                color:'red'
+
+            div 'c':['big','red'],
+              'This div is big and red';
+          """
+
+        md """
+          Nesting tags can be done a couple ways. The most powerful is to use a function:
+        """
+        TryEditor js: """
+            ul(function(){
+              li('Item 1');
+              li('Item 2');
+              li('Item 3');
+              li('Item 4');
+              li('Item 5');
+            });
+          """, cs: """
+            ul ->
+              li 'Item 1'
+              li 'Item 2'
+              li 'Item 3'
+              li 'Item 4'
+              li 'Item 5'
+          """
+
+        md """
+          For most people the function notation seems verbose at first. It is very much worth it because it allows structure to be created through code. Here is the same structure generated with a `for` loop:
+        """
+        TryEditor lineCount:6, js: """
+            ul(function(){
+              for (var n = 1; n <= 5; n++)
+                li('Item ' + n);
+            });
+          """, cs: """
+            ul ->
+              for n in [1..5]
+                li 'Item ' + n
+          """
+
+        md """
+          Just to show the power. Here is [FizzBuzz](http://imranontech.com/2007/01/24/using-fizzbuzz-to-find-developers-who-grok-coding/):
+        """
+        TryEditor lineCount:14, js: """
+            ul(function(){
+              for(var n = 1; n <= 15; n++) {
+
+                // Calculate item
+                var item = '';
+                if(n % 3 === 0)
+                  item += 'Fizz';
+                if(n % 5 === 0)
+                  item += 'Buzz';
+
+                // Output item
+                li(item || n);
+              }
+            });
+          """, cs:"""
+            ul ->
+              for n in [1..15]
+
+                # Calculate item
+                item = '';
+                if n % 3 == 0
+                  item += 'Fizz'
+                if n % 5 == 0
+                  item += 'Buzz'
+
+                # Output item
+                li item || n
+          """
+
+        md """
+          As a hit for later OJ objects act just like tag functions. Nest them at will:
+        """
+        TryEditor lineCount:14, js: """
+          var users = [
+            'evanmoran',
+            'savinola',
+            'iamthelawton'
+          ];
+
+          ul(function(){
+            for(var n = 0; n < users.length; n++)
+              li(function(){
+                TwitterFollowButton(users[n])
+              });
+          });
+          """, cs:"""
+            users = [
+              'evanmoran',
+              'savinola',
+              'iamthelawton'
+            ]
+
+            ul ->
+              for n in [0..users.length-1]
+                li ->
+                  TwitterFollowButton users[n]
+
+          """
+
     ,
-      h: 'JS Events', id: 'js-events', d: ->
+      h: 'Creating JS', id: 'creating-js', d: ->
 
+        md """
+          OJ tag functions have built-in support for jQuery events. If any event is passed as an attribute it will be automatically bound. Here `oj.div` function binds `click`, `mouseenter` and `mouseleave` events:
+        """
 
+        TryEditor js: """
+          p('Click or hover me', {
+            click:function(){
+              alert('Click works');
+            },
+            mouseenter:function(e){
+              $(this).css('color','royalblue')
+            },
+            mouseleave:function(e){
+              $(this).css('color','black')
+            }
+          });
+        """, cs: """
+          p 'Click or hover me',
+            click: ->
+              alert 'Click works'
 
+            mouseenter: (e) ->
+              $(@).css 'color','royalblue'
+
+            mouseleave: (e) ->
+              $(@).css 'color', 'black'
+
+        """
+
+        md """
+          The full list of attributes that bind events are:
+
+          * click
+          * dblclick
+          * change
+          * focus
+          * focusout
+          * hover
+          * scroll
+          * submit
+          * resize (window tags only)
+          * keydown / keyup
+          * mouseenter / mouseleave
+          * mousedown / mouseup
+
+          Here is an example of `keydown` / `keyup`:
+        """
+        TryEditor js: """
+          input({
+            placeholder:'Type here...',
+            keyup:function(e){
+              $('.status').html(
+                'KEYUP code ' + e.keyCode);
+            },
+            keydown:function(e){
+              $('.status').html(
+                'KEYDOWN code ' + e.keyCode);
+            }
+          });
+
+          br();
+
+          div({c:'status'});
+        """, cs: """
+          input
+            placeholder:'Type here...'
+
+            keyup:(e) ->
+              $('.status').html(
+                'KEYUP code ' + e.keyCode)
+
+            keydown:(e) ->
+              $('.status').html(
+                'KEYDOWN code ' + e.keyCode)
+
+          br()
+
+          div c:'status'
+        """
 
         # p 'OK, great. We have a list, but now I want to live edit it. Say I want to add more items or change the order of those items. In OJ, objects not only can create themselves but once made they can edit themselves too:'
 
@@ -305,10 +529,45 @@ data = [
   ,
     h: 'Partials & Templates', id: 'partials-and-templates', d: ->
       md """
-
+        It is important that websites we create are modular. Partials and Templates are a common templating concepts that are very easy to express in OJ directly. Much of the power of OJ comes from the fact that everything is just JavaScript.
       """
     items: [
       h: 'Partials', id: 'partials', d: ->
+        md """
+          Partials are functions. Here is a function to make twitter follow links:
+        """
+        TryEditor js: """
+          input({
+            placeholder:'Type here...',
+            keyup:function(e){
+              $('.status').html(
+                'KEYUP code ' + e.keyCode);
+            },
+            keydown:function(e){
+              $('.status').html(
+                'KEYDOWN code ' + e.keyCode);
+            }
+          });
+
+          br();
+
+          div({c:'status'});
+        """, cs: """
+          input
+            placeholder:'Type here...'
+
+            keyup:(e) ->
+              $('.status').html(
+                'KEYUP code ' + e.keyCode)
+
+            keydown:(e) ->
+              $('.status').html(
+                'KEYDOWN code ' + e.keyCode)
+
+          br()
+
+          div c:'status'
+        """
     ,
       h: 'Templates', id: 'templates', d: ->
 

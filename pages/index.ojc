@@ -190,6 +190,34 @@ module.exports = ->
             div JSON.stringify myTable.row(2)
           """
         }
+
+        {
+          js:"""
+            // Solve FizzBuzz!
+            ul(function(){
+              for(var n = 1; n <= 15; n++) {
+                var item = '';
+                if(n % 3 === 0)
+                  item += 'Fizz';
+                if(n % 5 === 0)
+                  item += 'Buzz';
+
+                li(item || n);
+              }
+            });
+          """, cs:"""
+            # Solve FizzBuzz!
+            ul ->
+              for n in [1..15]
+                item = '';
+                if n % 3 == 0
+                  item += 'Fizz'
+                if n % 5 == 0
+                  item += 'Buzz'
+
+                li item || n
+          """
+        }
         {
           js:"""
             // Create a vimeo video

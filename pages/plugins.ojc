@@ -128,86 +128,87 @@ data = [
         """
 
         TryEditor js:"""
-AceEditor(
-  '// JavaScript code',
-  'function myFunction {',
-  '\\treturn true;',
-  '}', {
+          AceEditor(
+            '// JavaScript code',
+            'function myFunction {',
+            '\treturn true;',
+            '}', {
 
-  // Basic settings
-  readOnly: false,
+            // Basic settings
+            readOnly: false,
 
-  width: 310,
-  height: '100%',
+            width: 310,
+            height: 300,
 
-  fontSize: 16,
-  tabSize: 4,
+            fontSize: 16,
+            tabSize: 4,
 
-  // Set language and coloring
-  mode: 'javascript',
-  theme: 'solarized_dark',
+            // Set language and coloring
+            mode: 'javascript',
+            theme: 'solarized_light',
 
-  useSoftTabs:true,
-    // Turn tabs to spaces
-    // Default: false
+            useSoftTabs:true,
+              // Turn tabs to spaces
+              // Default: false
 
-  behaviorsEnabled:true,
-    // Enable code completio
-    // Default: true
+            behaviorsEnabled:true,
+              // Enable code completio
+              // Default: true
 
-  // Show a line where word
-  // wrapping happens
-  showPrintMargin:true,
-  wrapLimit: 24,
-    // 'auto' (limit to buffer)
-    // 'off' (no limit)
-    // <integer> (specific limit)
+            // Show a line where word
+            // wrapping happens
+            showPrintMargin:true,
+            wrapLimit: 24,
+              // 'auto' (limit to buffer)
+              // 'off' (no limit)
+              // <integer> (specific limit)
 
-  // Show a 'fold' arrow to let
-  // users collapse code sections
-  showFoldWidgets:true,
-    // Default: false
-  foldStyle:'markbegin',
-    // Default: 'markbegin'
-    // 'markbegin'
-    // 'markbeginend'
-    // 'manual'
-    fadeFoldWidgets:false,
-    // Default: false
+            // Show a 'fold' arrow to let
+            // users collapse code sections
+            showFoldWidgets:true,
+              // Default: false
+            foldStyle:'markbegin',
+              // Default: 'markbegin'
+              // 'markbegin'
+              // 'markbeginend'
+              // 'manual'
+              fadeFoldWidgets:false,
+              // Default: false
 
-  // Show Guide lines for indenting
-  showIndentGuides:true,
-    // Default: true
+            // Show Guide lines for indenting
+            showIndentGuides:true,
+              // Default: true
 
-  // Show invisible characters
-  showInvisibles:true,
-    // Default: false
+            // Show invisible characters
+            showInvisibles:true,
+              // Default: false
 
-  // Show line number gutter
-  showGutter:true,
-    // Default: false
+            // Show line number gutter
+            showGutter:true,
+              // Default: false
 
-  highlightSelectedWord:true,
-    // Default: true
+            highlightSelectedWord:true,
+              // Default: true
 
-  highlightActiveLine:true,
-    // Default: true
+            highlightActiveLine:true,
+              // Default: true
 
-  selectionStyle:'text',
-    // Default: 'line'
-    // 'text' (stop at text)
-    // 'line' (stop at line)
+            selectionStyle:'text',
+              // Default: 'line'
+              // 'text' (stop at text)
+              // 'line' (stop at line)
 
-  animatedScroll:true,
-    // Default: false
+            animatedScroll:true,
+              // Default: false
 
-  hScrollBarAlwaysVisible:false,
-    // Default: false
+            hScrollBarAlwaysVisible:false,
+              // Default: false
 
-  vScrollBarAlwaysVisible:false,
-    // Default: false
+            vScrollBarAlwaysVisible:false,
+              // Default: false
 
-});        """
+          });
+        """
 
     ]
 ,

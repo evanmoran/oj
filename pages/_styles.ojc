@@ -41,6 +41,13 @@ module.exports = ->
       color: h1Color
       borderBottom:'2px solid #FFD36B'
 
+      # Anchor url should show this item with spacing
+      '&:before':
+        display:'block'
+        content:"' '"
+        height:'70px'
+        margin:'-70px 0 0'
+
     'h1:first-child':
       marginTop: '20px'
 
@@ -51,6 +58,13 @@ module.exports = ->
       margin: '32px 0 15px 0'
       color: h2Color
       textDecoration: 'none'
+
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
 
     h3:
       fontFamily: familySanSarif
@@ -132,6 +146,9 @@ module.exports = ->
 
     '.oj-TryEditor':
       marginBottom: '30px'
+
+    # '.anchor-point':
+    #   marginTop: '10px'
 
     '.code-heading':
       color: '#222'

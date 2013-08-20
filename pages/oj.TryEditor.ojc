@@ -396,12 +396,12 @@ module.exports = (oj, settings) ->
             return
 
         # Compile the code to check for errors
-        try
-          results = oj.compile html:1,css:1, eval("oj(function(){#{code}});")
+        # try
+        #   results = oj.compile html:1,css:1, eval("oj(function(){#{code}});")
 
-        catch eCompile
-          @consoleError "#{eCompile.toString()}"
-          return
+        # catch eCompile
+        #   @consoleError "#{eCompile.toString()}"
+        #   return
 
         # Calculate what scripts the plugins need.
         scriptTags = _calculateScripts code, _pluginScripts
@@ -625,6 +625,13 @@ _arraysEqual = (a, b) ->
     return false if a[i] != b[i]
   true
 
+_escapeCode = (str) ->
+  # Escape Quotes
+  # str.replace /"/g, '\\"'
+  # Add line continuations on newlines
+  # str.replace /\n/g, "\\\n"
+  str
+
 _calculateScripts = (code,pluginScripts) ->
   out = ""
 
@@ -645,11 +652,22 @@ _scriptTagWithUpdater = ->
   (function(){
     // Allow editor to rebuild iframe at will
     var _code = null;
+    document.showError = function(err){
+      // Error style
+      var errorStyle = {style:{color:'red', fontSize:'16px', fontFamily:'sans-serif'}};
+
+      // Report error
+      $('body').oj([oj.div, errorStyle, err.toString()]);
+    };
     document.rebuild = function(code){
       if (code == _code)
         return;
       $('script.build').remove()
+      try {
       $('head').append("<scr"+"ipt class='build'>"+code+"</scr"+"ipt>");
+      } catch(eAppend) {
+        document.showError(eAppend);
+      }
     };
     // Allow dom manipulation within the iframe
     document.oj = oj;
@@ -659,6 +677,7 @@ _scriptTagWithUpdater = ->
   """
 
 _scriptTagForCodeBody = (code) ->
+
   """
   // Start onready
   $(function(){try{with(oj){
@@ -672,12 +691,7 @@ _scriptTagForCodeBody = (code) ->
 
   // Handle errors
   }} catch(e) {
-
-    // Error style
-    var errorStyle = {style:{color:'red', fontSize:'16px', fontFamily:'sans-serif'}};
-
-    // Report error
-    $('body').oj([oj.div, errorStyle, e.toString()]);
+    document.showError(e);
   }});
   """
 
@@ -723,7 +737,7 @@ _updateIFRAME = ($iframe, code) ->
     $styles.each ->
       $this = $(@)
       cls = $this.attr('class')
-      if cls.match(/^oj-.*-style$/)
+      if oj.isString(cls) and cls.match(/^oj-.*style$/)
         $this.remove();
 
     # Clear body as we want the body to black if the code doesn't generate anything
