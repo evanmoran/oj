@@ -1551,7 +1551,7 @@ Recursive helper for compiling ojml tags
           delete attr[k] if v == null or v == undefined or v == false
 
     # Supported events from jquery
-    jqueryEvents = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
+    jqueryEvents = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
 
     # Filter out jquery events
     _attributesFilterOutEvents = (attr) ->
@@ -1852,10 +1852,25 @@ oj.View
         # Get and cache jquery-enabled element (readonly)
         $el: get: -> @_$el ? (@_$el = $ @el)
 
-        # Get and set id of view from attribute
+        # Get and set id attribute of view
         id:
           get: -> @$el.attr 'id'
           set: (v) -> @$el.attr 'id', v
+
+        # # Get and set class attribute of view
+        # class:
+        #   get: -> @$el.attr 'class'
+        #   set: (v) ->
+        #     # Join arrays with spaces
+        #     if oj.isArray v
+        #       v = v.join ' '
+        #     @$el.attr 'class', v
+        #     return
+
+        # # Alias for class
+        # c:
+        #   get: -> @class
+        #   set: (v) -> @class = v; return
 
         # Get all currently set attributes (readonly)
         attributes: get: ->
@@ -1897,10 +1912,8 @@ oj.View
           # Add attributes as object
           if oj.isObject attr
             for k,v of attr
-
-              # Wrap k in quotes if it has whitespace
               if k == 'class'
-                @$el.addClass v
+                @addClass v
 
               # Boolean attributes have no value
               else if v == true
@@ -1927,14 +1940,24 @@ oj.View
             @removeAttribute k
           return
 
+        # Add a single class
+        addClass: (name) ->
+          @$el.addClass name
+          return
+
+        # Remove a single class
+        removeClass: (name) ->
+          @$el.removeClass name
+          return
+
         # Add a single theme
         addTheme: (name) ->
-          @$el.addClass "theme-#{name}"
+          @addClass "theme-#{name}"
           return
 
         # Remove a single theme
         removeTheme: (name) ->
-          @$el.removeClass "theme-#{name}"
+          @removeClass "theme-#{name}"
           return
 
         # Clear all themes
@@ -3098,7 +3121,9 @@ jQuery.fn.oj
           return $el[0].oj
 
         # Compile ojml
+        `with (oj) {`
         {dom,types,cssMap} = oj.compile {dom:1,html:0,cssMap:1}, args...
+        `}`
 
         _insertStyles cssMap, global:0
 
@@ -3128,7 +3153,7 @@ Replace body with ojml. Global css is rebuild when using this method.
         {dom,types,cssMap} = oj.compile dom:1, html:0, css:0, cssMap:1, ignore:bodyOnly, ojml
 
       catch eCompile
-        throw new Error("oj: dom failed to compile with error: #{eCompile.message}")
+        throw new Error("oj: dom compile error: #{eCompile.message}")
 
   Clear body and insert dom elements
 
