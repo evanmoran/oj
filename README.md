@@ -1,179 +1,17 @@
+
 oj
 ================================================================================
 
-Unified web templating for the people. Thirsty people.
+Unified web templating for the people. *Thirsty people.*
 
-### Goals of OJ
-* Live the dream of 100% shared code on client and server
-* Never need HTML, CSS or JS files again.
-* Commandline tool for easy server-side integration
-* Abstract web elements with built-in OJ objects and functions
-* Abstract your own Views with OJ objects and functions
-* Compatible with jQuery events and DOM manipulation
-* Compatible with Backbone models and views
-* Compatible with Express 3 (but doesn't require it)
-* Fully unit tested
+[ojjs.org/docs](http://ojjs.org/docs)
+
+[ojjs.org/learn](http://ojjs.org/learn)
+
+[ojjs.org/download](http://ojjs.org/download)
 
 
-Introduction
-================================================================================
-
-
-
-A function for every tag:
-
-    p "This is a paragraph"            p("This is a paragraph")
-
-
-
-
-Documentation
-================================================================================
-
-The newest documentation can be found at [ojjs.org](http://ojjs.org).
-
-Functions
---------------------------------------------------------------------------------
-
-OJ defines a function for every tag in HTML. For example: 'html', 'body', 'div', 'span', and so on. They all have the same interface.
-
-### oj.<tag>
-
-    <tag> name [attributes], [content, content, ...]
-        name: String defining the tag name to serialize
-              If name starts with an '_' it is serialized verbatum. Otherwise it is constructed as an full OJ object and attributes are passed to the constructor
-        attributes: Object defining attributes to serialize into the tag
-        content: recursively defined ojml
-
-
-OJ Objects
---------------------------------------------------------------------------------
-
-
-
-### oj.Table
-
-    oj.Table properties, row1, row2, ...
-
-    properties        Object to configure Table
-      header          Array option to set header at once
-      footer          Array option to set footer at once
-      rows            Array of arrays option to set all rows at once
-
-    row1, ...         Array of elements defining row1, row2, etc.
-                      Rows also accept functions that return arrays
-
-Example:
-
-    table = oj.Table                         # oj.Table is equivalent to new oj.Table
-      c: 'c123'                              # c is an alias for 'class'
-      id: 'id123'
-      header: ['h1', 'h2', 'h3']
-      footer: ['f1', 'f2', 'f3']
-      [1,2,3]
-      [4,5,6]
-
-    table.html()
-
-      # =>
-      # <table class='c123', id='id123'>
-      #   <thead>
-      #     <th> <td>h1</td> <td>h2</td> <td>h3</td> </th>
-      #   </thead>
-      #   <tbody>
-      #     <tr> <td>1</td> <td>2</td> <td>3</td> </tr>
-      #     <tr> <td>4</td> <td>5</td> <td>6</td> </tr>
-      #   </tbody
-      #   <tfoot>
-      #     <th> <td>f1</td> <td>f2</td> <td>f3</td> </th>
-      #   </tfoot>
-      # </table>
-
-    table.addRow [7,8,9]                # add a row to the end
-    table.removeRow 1                   # remove row index 1
-
-    table.id = null                     # clear the id
-    table.header = null                 # clear the header
-    table.footer = null                 # clear the footer
-
-    table.html()
-
-      # =>
-      # <table class='c123'>
-      #   <tbody>
-      #     <tr> <td>1</td> <td>2</td> <td>3</td> </tr>
-      #     <tr> <td>4</td> <td>5</td> <td>6</td> </tr>
-      #     <tr> <td>7</td> <td>8</td> <td>9</td> </tr>
-      #   </tbody
-      # </table>
-
-### oj.List
-
-    oj.List properties, item1, item2, ...
-
-    properties        Object that configures List and common options
-
-      ordered:        Boolean property that indicates if the list is ordered.
-                      Defaults to false (bullet list), true means number list
-
-    style options
-      style:          Inline style
-      css:            css generated from selector
-
-    behavior options
-
-`List` has two specializations for convenience:
-
-1. `BulletList` is the same as: `List ordered: false`
-
-2. `NumberList` is the same as: `List ordered: true`
-
-Example:
-
-    list = oj.List class: 'c123', ordered: true
-      'a'
-      'b'
-      'c'
-
-    list.html()           # =>  <ol class='c123'><li>a</li><li>b</li><li>c</li></ol>
-    list.ordered = false
-    list.html()           # =>  <ul class='c123'><li>a</li><li>b</li><li>c</li></ul>
-
-
-### oj.Link
-
-    oj.Link properties, item1, item2, ...
-
-    properties        Object that configures Link and common options
-                      Defaults to false (bullet list), true means number list
-      url:            String defining the url path.
-      href:           Alias to url
-
-    style options
-      style:          Inline style
-      css:            css generated from selector
-
-    behavior options
-
-### oj.Markdown
-
-    oj.Markdown properties, markdown1, markdown2, ...
-
-    properties        Object that defines options
-    (none so far)
-
-### oj.Image
-### oj.CheckBox
-### oj.ListBox
-### oj.TextBox
-### oj.Form
-
-OJ Custom Objects
-------------------------------------------------------------------
-
-OJ defines smart structured objects to help you abstract your website structure. These objects can do a great deal for normal views, but sometimes you want to make your own smart objects. These methods will help you create OJ compatible objects for yourself.
-
-_Hint:_ Generally we have found smaller building blocks are are better. So don't create an OJ object called `ProfilePage`. It would be better to create separate controls for displaying `UserPicture`, `UserLink`, `SettingsList`, and then in the `ProfilePage` view use these parts to build the page up from the model.
+<!--
 
 OJML
 ------------------------------------------------------------------
@@ -307,3 +145,4 @@ Example: Table
                                     <tr> <td>3</td> <td>4</td> </tr>
                                   </tbody>
                                 </table>
+ -->
