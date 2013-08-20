@@ -28,6 +28,18 @@ describe 'oj.CheckBox', ->
     expect(control.id).to.equal id
     expect(control.attributes.id).to.equal id
 
+  # it 'construct with class', ->
+  #   cls = 'my-class'
+  #   control = oj.CheckBox class:cls
+  #   expect(control.class).to.equal cls
+  #   expect(control.attributes.class).to.equal cls
+
+  #   cls2 = 'my-class2'
+  #   cls3 = 'my-class3'
+  #   control.class = [cls2,cls3]
+  #   expect(control.classes).to.deep.equal cls
+
+
   it 'construct with name', ->
     name = 'my-name'
     control = oj.CheckBox name:name
