@@ -25,7 +25,7 @@ Export Model to NodeJS or globally
 
   Define oj version
 
-    oj.version = '0.0.14'
+    oj.version = '0.1.0'
 
   Detect if this is client or server-side
 
