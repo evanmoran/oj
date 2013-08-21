@@ -14,7 +14,6 @@ command.coffee
 
       commander.version(oj.version)
         .usage('[options] <file> <dir> ...')
-        .option('-d, --debug', 'Turn on debug output (default: false)', false)
         .option('-m, --minify', 'Turn on minification (default: false)', false)
         .option('-o, --output <dir>', 'Directory to output all files to (default: .)', process.cwd())
         .option('-r, --recurse', 'Recurse into directories (default: off)', false)
@@ -28,7 +27,7 @@ command.coffee
       if not _.isArray(commander.args) or commander.args.length == 0
         usage()
 
-      options = _.pick commander, 'args', 'debug', 'minify', 'output', 'recurse', 'modules', 'verbose', 'watch'
+      options = _.pick commander, 'args', 'minify', 'output', 'recurse', 'modules', 'verbose', 'watch'
 
   Execute command through oj module api
 

@@ -67,7 +67,7 @@ describe 'oj.CheckBox', ->
     expect(control.value).to.equal true
     expect(htmlDiv).to.equal '<div class="test"></div>'
 
-    htmlDiv2 = oj.toHTML ->
+    htmlDiv2 = oj.toHTML minify:true, ->
       oj.div c:'test2', ->
         control.emit()
 

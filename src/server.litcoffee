@@ -268,8 +268,8 @@ This is not a public API so it seemed to horrible.
       throw new Error('oj: file not found') unless isFile filePath
 
       # Default some values
-      isDebug = false # options.debug ? false
-      isMinify = true # options.minify ? false
+      isMinify = options.minify ? false
+
       includedModules = options.modules or []
       includedModules = includedModules.concat ['oj']
       rootDir = options.root or path.dirname filePath
@@ -320,7 +320,7 @@ This is not a public API so it seemed to horrible.
         # Require user defined modules
         for m in includedModules
           if isNodeModule m
-            _buildNativeCacheFromModuleList cache.native, [m], options.debug
+            _buildNativeCacheFromModuleList cache.native, [m], isMinify
           else
             verbose 3, "including #{m}"
             require m
@@ -347,7 +347,7 @@ This is not a public API so it seemed to horrible.
       # Catch the messages thrown by compiling ojml
       try
         # Compile
-        results = oj.compile debug:isDebug, minify:isMinify, html:1, css:0, cssMap:1, dom:0, ojml
+        results = oj.compile minify:isMinify, html:1, css:0, cssMap:1, dom:0, ojml
         html = results.html
       catch eCompile
         error "runtime error in #{filePath}: #{eCompile.message}"
@@ -355,12 +355,12 @@ This is not a public API so it seemed to horrible.
 
       # Build cache
       verbose 3, "caching #{filePath} (#{_length modules} files)"
-      cache = _buildRequireCache modules, cache, isDebug
+      cache = _buildRequireCache modules, cache, isMinify
 
       # Serialize cache
       cacheLength = _length(cache.files) + _length(cache.modules) + _length(cache.native)
       verbose 3, "serializing #{filePath} (#{cacheLength} files)"
-      scriptHtml = _requireCacheToString cache, filePath, isDebug
+      scriptHtml = _requireCacheToString cache, filePath, isMinify
 
       if !results.tags.html
         error "validation error #{filePath}: <html> tag is missing"
@@ -778,42 +778,20 @@ This is not a public API so it seemed to horrible.
     # ------------------------------------------------------------------------------
 
     oj._minifyJS = (js, options = {}) ->
-      if options.debug
-        js
-      else if options.minify
+
+      if options.filename
+        verbose 4, "minified #{options.filename}"
+
+      if options.minify
         uglifyjs js
       else
-        # TODO: Implement fast minify
         js
 
-    minifyJSUnless = (isDebug, filename, js) ->
-      return js if isDebug
-      verbose 4, "minified #{filename}" if filename
-      oj._minifyJS js
-
-    minifySimpleJS = (js, options) ->
-      js = js.replace /\n/g, ''
-      js.replace /\s\s+/g, ' '
-      js
-
-    minifySimpleJSUnless = (isDebug, js) ->
-      return js if isDebug
-      return minifySimpleJS js
-
     oj._minifyCSS = (css, options = {}) ->
-      if options.debug
-        css
-      else if options.minify
-        # true means apply structural changes
-        csso.justDoIt css, true
+      if options.minify
+        csso.justDoIt css, true # true means apply structural changes
       else
-        # TODO: Implement fast minify
         css
-
-    minifyCSSUnless = (isDebug, filename, css) ->
-      verbose 4, "minified #{filename}" if filename
-      return css if isDebug
-      return oj._minifyCSS css
 
     # Requiring
     # ------------------------------------------------------------------------------
@@ -922,7 +900,7 @@ This is not a public API so it seemed to horrible.
         return y if y
 
     # Load all modules by reading them if they are missing
-    _buildRequireCache = (modules, cache, isDebug) ->
+    _buildRequireCache = (modules, cache, isMinify) ->
       for fileLocation, data of modules
 
         # Read code if it is missing
@@ -931,7 +909,7 @@ This is not a public API so it seemed to horrible.
           # data.code = stripBOM readFileSync fileLocation
 
         # Save code to _fileCache
-        _buildFileCache cache.files, fileLocation, data.code, isDebug
+        _buildFileCache cache.files, fileLocation, data.code, isMinify
 
         # Generate possible node_module paths given this file
         modulePrefixes = nodeModulePaths fileLocation
@@ -951,7 +929,7 @@ This is not a public API so it seemed to horrible.
           cache.modules[pathComponents.modulesDir][pathComponents.moduleName] = pathComponents.moduleMain
 
         # Build cache.native given source code in _fileCache
-        _buildNativeCache cache.native, data.code, isDebug
+        _buildNativeCache cache.native, data.code, isMinify
 
         # Store complete
         verbose 4, "stored #{fileLocation}"
@@ -966,19 +944,19 @@ This is not a public API so it seemed to horrible.
       return cache
 
     # ###_buildFileCache: build file cache
-    _buildFileCache = (_filesCache, fileName, code, isDebug) ->
+    _buildFileCache = (_filesCache, fileName, code, isMinify) ->
       # Minify code if necessary and cache it
-      _filesCache[fileName] = minifyJSUnless isDebug, fileName, code
+      _filesCache[fileName] = oj._minifyJS code, {filename:fileName, minify: isMinify}
 
     # build native module cache given moduleNameList
     pass = 1
 
-    _buildNativeCache = (nativeCache, code, isDebug) ->
+    _buildNativeCache = (nativeCache, code, isMinify) ->
       # Get moduleName references from code
       moduleNameList = _getRequiresInSource code
-      _buildNativeCacheFromModuleList nativeCache, moduleNameList, isDebug
+      _buildNativeCacheFromModuleList nativeCache, moduleNameList, isMinify
 
-    _buildNativeCacheFromModuleList = (nativeCache, moduleNameList, isDebug) ->
+    _buildNativeCacheFromModuleList = (nativeCache, moduleNameList, isMinify) ->
 
       # Loop over modules and add them to native cache
       while moduleName = moduleNameList.shift()
@@ -988,7 +966,7 @@ This is not a public API so it seemed to horrible.
 
         # OJ is built in
         if moduleName == 'oj'
-          nativeCache.oj = _ojModuleCode isDebug
+          nativeCache.oj = _ojModuleCode isMinify
 
         # Do nothing if unsupported
         # Error checking happens earlier and missing modules at this stage are intentional
@@ -997,7 +975,7 @@ This is not a public API so it seemed to horrible.
 
         else if isNodeModule moduleName
           # Get code
-          codeModule = _nativeModuleCode moduleName, isDebug
+          codeModule = _nativeModuleCode moduleName, isMinify
 
           # Cache it
           nativeCache[moduleName] = codeModule
@@ -1010,17 +988,17 @@ This is not a public API so it seemed to horrible.
       null
 
     # ojModuleCode: Get code for oj
-    _ojModuleCode = (isDebug) ->
+    _ojModuleCode = (isMinify) ->
       code = readFileSync path.join __dirname, "../lib/oj.js"
       # Minify code if not debugging
-      minifyJSUnless isDebug, 'oj', code
+      oj._minifyJS code, filename:'oj', minify:isMinify
 
     # nativeModuleCode: Get code for native module
-    _nativeModuleCode = (moduleName, isDebug) ->
-      verbose 3, "found #{moduleName}" if isDebug
+    _nativeModuleCode = (moduleName, isMinify) ->
+      verbose 3, "found #{moduleName}"
       code = readFileSync path.join __dirname, "../modules/#{moduleName}.js"
       # Minify code if not debugging
-      minifyJSUnless isDebug, moduleName, code
+      oj._minifyJS code, filename:moduleName, minify:isMinify
 
     # Templating
     # ==============================================================================
@@ -1028,16 +1006,9 @@ This is not a public API so it seemed to horrible.
     # Code generation
     # ------------------------------------------------------------------------------
 
-    # ###_minifyAndWrapCSSInStyleTags
-    # Wrap css in script tags and possibly minify it
-    # _minifyAndWrapCSSInStyleTags = (cssMap, filePath, isDebug, structureOff) ->
-    #   css_ = minifyCSSUnless isDebug, filePath, cssMap, structure:structureOff
-    #   newline = if isDebug then '\n' else ''
-    #   "<style>#{newline}#{css_}#{newline}</style>"
-
     # ###_requireCacheToString
     # Output html from cache and file
-    _requireCacheToString = (cache, filePath, isDebug) ->
+    _requireCacheToString = (cache, filePath, isMinify) ->
       # Example:
       #   filePath: /User/name/project/www/file.oj
       #   commonDir: /User/name/project
@@ -1101,7 +1072,7 @@ This is not a public API so it seemed to horrible.
       #     M = Module cache
 
       # Client side function to run module and cache result
-      _run = minifySimpleJSUnless isDebug, """
+      _run = oj._minifyJS """
       function run(f){
           if(R[f] != null)
             return R[f];
@@ -1112,10 +1083,10 @@ This is not a public API so it seemed to horrible.
           F[f](mo,eo);
           return R[f] = mo.exports;
         }
-    """
+    """, minify:isMinify
 
       # Client side function to find module
-      _find = minifySimpleJSUnless isDebug, """
+      _find = oj._minifyJS """
       function find(m,f){
           var r, dir, dm, ext, ex, i;
 
@@ -1144,7 +1115,7 @@ This is not a public API so it seemed to horrible.
           }
           throw new Error("module not found (" + m + ")");
         }
-      """
+      """, minify:isMinify
 
       return """
     <script>

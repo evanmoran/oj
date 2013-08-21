@@ -30,7 +30,7 @@ compileTest = (ojml, html, options = {}) ->
     html:true
     css:true
     dom:false
-    debug:false
+    minify:true
     body:false
 
   r = oj.compile options, ojml
@@ -162,7 +162,7 @@ describe 'oj.compile.html', ->
     ojml = oj.div ->
       oj.span 'a1'
     expected = '<div><span>a1</span></div>'
-    compileTest ojml, expected, debug: false
+    compileTest ojml, expected, minify: true
 
   it 'nested', ->
     ojml = oj.div style: {'text-align':'center', color: 'red'}, ->
@@ -170,7 +170,7 @@ describe 'oj.compile.html', ->
         oj.div 'b1'
       oj.div 'a2'
     expected = '<div style="color:red;text-align:center"><div>a1<div>b1</div></div><div>a2</div></div>'
-    compileTest ojml, expected, debug: false
+    compileTest ojml, expected, minify: true
 
   it 'nested with debug printing', ->
     ojml = oj.div style: {'text-align':'center', color: 'red'}, ->
@@ -178,21 +178,21 @@ describe 'oj.compile.html', ->
         oj.div 'b1'
       oj.div 'a2'
     expected = '<div style="color:red;text-align:center">\n\t<div>\n\t\ta1\n\t\t<div>b1</div>\n\t</div>\n\t<div>a2</div>\n</div>'
-    compileTest ojml, expected, debug: true
+    compileTest ojml, expected, minify: false
 
   it '<html><body>', ->
     ojml = oj.html ->
       oj.body ->
         oj.div 'a1'
     expected = '<html><body><div>a1</div></body></html>'
-    compileTest ojml, expected, debug: false
+    compileTest ojml, expected, minify: true
 
   it '<html><body> with debug printing', ->
     ojml = oj.html ->
       oj.body ->
         oj.div 'a1'
     expected = '<html><body><div>a1</div></body></html>'
-    compileTest ojml, expected, debug: true
+    compileTest ojml, expected, minify: false
 
   it '<html><head><body>', ->
       ojml = oj.html ->
@@ -203,7 +203,7 @@ describe 'oj.compile.html', ->
           # css should be ignored in structure
           oj.css '.selector':color:'red'
       expected = '<html><head><script src="script.js" type="text/javascript"></script></head><body><div>a1</div></body></html>'
-      compileTest ojml, expected, debug: false
+      compileTest ojml, expected, minify: true
 
   it '<html><head><body> with debug printing', ->
     ojml = oj.html ->
@@ -212,7 +212,7 @@ describe 'oj.compile.html', ->
       oj.body ->
         oj.div 'a1'
     expected = '<html>\n\t<head><script src="script.js" type="text/javascript"></script></head>\n\t<body><div>a1</div></body>\n</html>'
-    compileTest ojml, expected, debug: true
+    compileTest ojml, expected, minify: false
 
   it '<html><head><body> with ignore', ->
     ojml = oj.html ->

@@ -965,7 +965,7 @@ options:
 * css - Compile to css
 * cssMap - Record css as a javascript object
 * styles -- Output css as style tags
-* debug - Keep all source including comments
+* minify - Minify js and css
 * ignore:{html:1} - Map of tags to ignore while compiling
 
 Define method
@@ -984,7 +984,7 @@ Define method
         dom: false
         css: false
         cssMap: false
-        debug: false
+        minify: false
         ignore: {}
 
       # Always ignore oj and css tags
@@ -1008,7 +1008,7 @@ Define method
 
       # Generate css if necessary
       if options.css
-        css = _cssFromPluginObject pluginCSSMap, debug: options.debug, tags:0
+        css = _cssFromPluginObject pluginCSSMap, minify: options.minify, tags:0
 
       # Generate HTML if necessary
       if options.html
@@ -1230,7 +1230,7 @@ _styleTagFromMediaObject:
 -----------------------------------------------------------------------------
 
     oj._styleTagFromMediaObject = (plugin, mediaMap, options) ->
-      newline = if options?.debug then '\n' else ''
+      newline = if options?.minify then '' else '\n'
       css = _cssFromMediaObject mediaMap, options
       "<style class=\"#{_styleClassFromPlugin plugin}\">#{newline}#{css}</style>"
 
@@ -1246,15 +1246,14 @@ Placeholder functions for server side minification
 
     _cssFromMediaObject = (mediaMap, options = {}) ->
 
-      debug = options.debug ? 0
-      tags = options.tags ? 0
       minify = options.minify ? 0
+      tags = options.tags ? 0
 
   Deterine what output characters are needed
 
-      newline = if debug then '\n' else ''
-      space = if debug then ' ' else ''
-      inline = !debug
+      newline = if minify then '' else '\n'
+      space = if minify then '' else ' '
+      inline = minify
 
   Build css for media => selector =>  rules
 
@@ -1268,7 +1267,7 @@ Placeholder functions for server side minification
           css += "#{media}#{space}{#{newline}"
 
         for selector,styles of selectorMap
-          indent = if debug and media then '\t' else ''
+          indent = if (!minify) and media then '\t' else ''
 
   Serialize selector
 
@@ -1277,7 +1276,7 @@ Placeholder functions for server side minification
 
   Serialize style rules
 
-          indentRule = if debug then indent + '\t' else indent
+          indentRule = if (!minify) then indent + '\t' else indent
 
           rules = _styleFromObject styles, inline:inline, indent:indentRule
           css += rules + indent + '}' + newline
@@ -1300,20 +1299,19 @@ pluginName => mediaQuery => selector => rulesObject
 
 Supports nested objections, comma seperated rules, and @media queries
 
-debug:true will output newlines
+minify:false will output newlines
 tags:true will output the css in `<style>` tags
 
     _cssFromPluginObject = (flatCSSMap, options = {}) ->
 
-      debug = options.debug ? 0
-      tags = options.tags ? 0
       minify = options.minify ? 0
+      tags = options.tags ? 0
 
   Deterine what output characters are needed
 
-      newline = if debug then '\n' else ''
-      space = if debug then ' ' else ''
-      inline = !debug
+      newline = if minify then '' else '\n'
+      space = if minify then '' else ' '
+      inline = minify
 
       css = ''
       for plugin, mediaMap of flatCSSMap
@@ -1390,10 +1388,10 @@ Recursive helper for compiling any type
           # OJ type
           if oj.isOJ ojml
             options.types?.push ojml
-            options.html?.push ojml.toHTML()
-            options.dom?.appendChild ojml.toDOM()
+            options.html?.push ojml.toHTML(options)
+            options.dom?.appendChild ojml.toDOM(options)
             if options.css?
-              _extend options.css, ojml.toCSSMap()
+              _extend options.css, ojml.toCSSMap(options)
 
       return
 
@@ -1500,12 +1498,12 @@ Recursive helper for compiling ojml tags
       if options.ignore[tag] != 'deep'
         for child in children
           # Skip intention if there is only one child
-          if options.debug and children.length > 1
+          if !options.minify and children.length > 1
             options.html?.push "\n\t#{options.indent}"
           _compileDeeper _compileAny, child, options
 
       # Skip indention if there is only one child
-      if options.debug and children.length > 1
+      if (!options.minify) and children.length > 1
         options.html?.push "\n#{options.indent}"
 
   End html tag if you have children or your tag closes
@@ -1972,13 +1970,13 @@ oj.View
 
         # Convert View to html
         toHTML: (options) ->
-          @el.outerHTML + (if options?.debug then '\n' else '')
+          @el.outerHTML + (if options?.minify then '' else '\n')
 
         # Convert View to dom (for compiling)
         toDOM: -> @el
 
         # Convert
-        toCSS: (debug) -> _cssFromPluginObject (_flattenCSSMap @cssMap), debug:debug,tags:0
+        toCSS: (options) -> _cssFromPluginObject (_flattenCSSMap @cssMap), _extend({}, minify:options.minify, tags:0)
 
         # Convert
         toCSSMap: -> @type.cssMap

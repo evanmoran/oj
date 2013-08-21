@@ -77,7 +77,6 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
             
             <div class="content"><div class='highlight'><pre>  commander.version(oj.version)
     .usage(<span class="string">'[options] &lt;file&gt; &lt;dir&gt; ...'</span>)
-    .option(<span class="string">'-d, --debug'</span>, <span class="string">'Turn on debug output (default: false)'</span>, <span class="literal">false</span>)
     .option(<span class="string">'-m, --minify'</span>, <span class="string">'Turn on minification (default: false)'</span>, <span class="literal">false</span>)
     .option(<span class="string">'-o, --output &lt;dir&gt;'</span>, <span class="string">'Directory to output all files to (default: .)'</span>, process.cwd())
     .option(<span class="string">'-r, --recurse'</span>, <span class="string">'Recurse into directories (default: off)'</span>, <span class="literal">false</span>)
@@ -115,7 +114,7 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
             <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> <span class="keyword">not</span> _.isArray(commander.args) <span class="keyword">or</span> commander.args.length == <span class="number">0</span>
     usage()
 
-  options = _.pick commander, <span class="string">'args'</span>, <span class="string">'debug'</span>, <span class="string">'minify'</span>, <span class="string">'output'</span>, <span class="string">'recurse'</span>, <span class="string">'modules'</span>, <span class="string">'verbose'</span>, <span class="string">'watch'</span></pre></div></div>
+  options = _.pick commander, <span class="string">'args'</span>, <span class="string">'minify'</span>, <span class="string">'output'</span>, <span class="string">'recurse'</span>, <span class="string">'modules'</span>, <span class="string">'verbose'</span>, <span class="string">'watch'</span></pre></div></div>
             
         </li>
         
