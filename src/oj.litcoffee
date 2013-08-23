@@ -2244,6 +2244,39 @@ CheckBox control
               @$el.removeAttr 'checked'
             return
 
+oj.Text
+------------------------------------------------------------------------------
+Text control
+
+    oj.Text = oj.createType 'Text',
+      base: oj.ModelKeyView
+
+      constructor: ->
+        {options, args} = oj.unionArguments arguments
+
+        # Get tag name if provided
+        @_tagName = oj.argumentShift options, 'tagName'
+
+        @el = oj =>
+          oj[@tagName]()
+
+        # Value can be set by argument
+        @value = args[0] if args.length > 0
+
+        oj.Text.base.constructor.call @, options
+
+      properties:
+
+value: text value of this object (readwrite)
+
+        value:
+          get: -> @$el.ojValue()
+          set: (v) -> @$el.oj(v); return
+
+tagName: name of root tag (writeonce)
+
+        tagName: get: -> @_tagName ? 'div'
+
 oj.TextArea
 ------------------------------------------------------------------------------
 TextArea control
