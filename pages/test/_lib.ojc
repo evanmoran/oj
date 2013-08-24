@@ -1,4 +1,0 @@
-# _ = require 'underscore'
-
-module.exports = () ->
-  div 'hi'
