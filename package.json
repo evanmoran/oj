@@ -1,6 +1,6 @@
 {
   "name": "oj",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "lib/server",
   "description": "A unified templating language for the people. Thirsty people.",
   "homepage": "http://ojjs.org",

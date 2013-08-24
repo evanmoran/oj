@@ -131,7 +131,7 @@
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>oj.version = <span class="string">'0.1.1'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>oj.version = <span class="string">'0.1.2'</span></pre></div></div>
             
         </li>
         
@@ -6739,7 +6739,7 @@ when it changes it must trigger viewChanged</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    <span class="property">@value</span> = args[<span class="number">0</span>] <span class="keyword">if</span> args.length &gt; <span class="number">0</span>
+            <div class="content"><div class='highlight'><pre>    <span class="property">@value</span> = oj.argumentShift(options, <span class="string">'value'</span>) || args.join(<span class="string">'\n'</span>);
 
     oj.TextArea.base.constructor.call @, options
 
@@ -9006,7 +9006,7 @@ option.first:true means return only the first get, otherwise it is returned as a
     {dom,types,cssMap} = oj.compile dom:<span class="number">1</span>, html:<span class="number">0</span>, css:<span class="number">0</span>, cssMap:<span class="number">1</span>, ignore:bodyOnly, ojml
 
   <span class="keyword">catch</span> eCompile
-    <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">"oj: dom compile error: <span class="subst">#{eCompile.message}</span>"</span>)</pre></div></div>
+    <span class="keyword">throw</span> <span class="keyword">new</span> Error(<span class="string">"oj.compile: <span class="subst">#{eCompile.message}</span>"</span>)</pre></div></div>
             
         </li>
         

@@ -292,15 +292,94 @@ data = [
   h: 'Creation Plugins', id: 'creation-plugins', d: ->
 
       md """
-        These plugins improve how you write content. Sometimes it is nice not to use tags directly, hense the [markdown](#markdown) plugin. Or you need to inverface with legacy templating code, hense the [mustache](mustache) plugin.
+        These plugins improve how you write content. Sometimes it is nice not to use tags directly, hence the [markdown](#markdown) plugin. Or you need to interface with legacy templating code, hense the [mustache](mustache) plugin.
       """
     items: [
       h: 'markdown', id: 'markdown', d: ->
         md """
+          *Author*: [Christopher Jeffrey](https://github.com/chjj)
+
+          This plugin is a minimal wrapping of Christopher's excellent [marked](https://github.com/chjj/marked) JavaScript library. Show your love by starring his repo:
+        """
+
+        GitHubButton 'chjj', 'marked'
+        br()
+        md """
+          Usage:
+        """
+        TryEditor lineCount:8, js:"""
+          markdown(
+            '# Markdown',
+            'Markdown just *works*.',
+            "* It's",
+            '* <u>Pretty</u>',
+            '* **Nice**'
+          );
+        """, cs:"""
+          markdown \"\"\"
+            # Markdown
+            Markdown just *works*.
+            * It's
+            * <u>Pretty</u>
+            * **Nice**
+          \"\"\"
+        """
+        md """
+          Abbreviation:
+        """
+        TryEditor lineCount:8, js:"""
+          md(
+            '## Short and Sweet'
+          );
+        """, cs:"""
+          md \"\"\"
+            '## Short and Sweet'
+          \"\"\"
         """
     ,
       h: 'mustache', id: 'mustache', d: ->
+
         md """
+          *Maintainers*: [Nathan Stott](https://github.com/nrstott) and [Michael Jackson](https://github.com/mjijackson)
+
+          This plugin wraps the main [mustache](https://github.com/chjj/marked) JavaScript library. Show that you care by starring the official repo:
         """
+        GitHubButton 'janl', 'mustache.js'
+        br()
+
+        md """
+          Usage:
+        """
+        TryEditor js:"""
+          mustache(
+            "<b>Hello {{name}}</b>",
+            {name:'Evan'}
+          );
+        """, cs: """
+          mustache(
+            "<b>Hello {{name}}</b>",
+            name:'Evan'
+          )
+        """
+
+        md """
+          JSON will be combined:
+        """
+
+        TryEditor js:"""
+          mustache(
+            {name:'Evan'},
+            "{{name}}'s strength is ",
+            {strength:'9000'},
+            "over {{strength}}!"
+          );
+        """, cs: """
+          mustache
+            {name:'Evan'}
+            "{{name}}'s strength is "
+            {strength:'9000'}
+            "over {{strength}}!"
+        """
+
     ]
 ]
