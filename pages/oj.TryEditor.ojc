@@ -605,6 +605,10 @@ _pluginScripts =
   VimeoVideo: ["<#{SCRIPT} src=\"scripts/oj.VimeoVideo.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   GitHubButton: ["<#{SCRIPT} src=\"scripts/oj.GitHubButton.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   TwitterFollowButton: ["<#{SCRIPT} src=\"scripts/oj.TwitterFollowButton.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+  markdown: ["<#{SCRIPT} src=\"scripts/oj.markdown.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+  md: ["<#{SCRIPT} src=\"scripts/oj.markdown.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+  marked: ["<#{SCRIPT} src=\"scripts/oj.marked.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+  mustache: ["<#{SCRIPT} src=\"scripts/oj.mustache.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   # Bootstrap: ["<#{SCRIPT} src=\"scripts/oj.Bootstrap.js\" #{TEXTJ}></#{SCRIPT}>\n"]
 
 # _foundScripts: Plugins found in code as array

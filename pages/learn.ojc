@@ -60,6 +60,10 @@ data = [
             }
           });
         """, cs: """
+          # Create a button
+          oj.Button 'Click me',
+            click: ->
+              alert 'Events work!'
         """
         md """
           **Go ahead. Click the button. All the examples live compile!**
@@ -529,7 +533,7 @@ data = [
   ,
     h: 'Partials & Templates', id: 'partials-and-templates', d: ->
       md """
-        It is important that websites we create are modular. Partials and Templates are a common templating concepts that are very easy to express in OJ directly. Much of the power of OJ comes from the fact that everything is just JavaScript.
+        It is very helpful to think in terms of modular and reusable parts. OJ objects are one way to do this, while Partials & Templates are the other.
       """
     items: [
       h: 'Partials', id: 'partials', d: ->

@@ -388,7 +388,7 @@ module.exports = ->
               markdown """Includes the simple smart objects:<br>[List](docs.html#List), [Table](docs.html#Table), [Button](docs.html#Button), and [form elements](docs.html#form-types)"""
 
             ->
-              markdown """A growing collection of plugins: <br>[VimeoVideo](docs.html#VimeoVideo), [AceEditor](docs.html#AceEditor), [and more!](docs.html#plugins)"""
+              markdown """A growing collection of plugins: <br>[VimeoVideo](plugins.html#VimeoVideo), [AceEditor](plugins.html#AceEditor), [and more!](plugins.html)"""
             ->
               markdown """DOM manipulation client-side <br>HTML and CSS creation server-side"""
 

@@ -55,6 +55,43 @@ data = [
 
     """
 ,
+  h: 'Media Plugins', id: 'social-plugins', d: ->
+
+      md """
+        Media plugins help you embed media elements like video, sound and music.
+      """
+    items: [
+      h: 'VimeoVideo', id: 'VimeoVideo', d: ->
+        md """
+        """
+        TryEditor lineCount: 8, js:"""
+          VimeoVideo(24715531);
+        """, cs: """
+          VimeoVideo 24715531
+        """
+        md """
+          Usage:
+        """
+        TryEditor lineCount: 8, js:"""
+          VimeoVideo({
+            video: 24715531,
+            color: '#ff0000',
+            showTitle: true,
+            showByline: true,
+            showPortrait: true,
+            autoplay: false
+          });
+        """, cs: """
+          VimeoVideo
+            video: 24715531
+            color: '#ff0000'
+            showTitle: true
+            showByline: true
+            showPortrait: true
+            autoplay: false
+        """
+    ]
+,
   h: 'Social Plugins', id: 'social-plugins', d: ->
 
       md """
@@ -62,46 +99,86 @@ data = [
       """
     items: [
       h: 'TwitterFollowButton', id: 'TwitterFollowButton', d: ->
+
+        TryEditor lineCount: 3, js:"""
+            TwitterFollowButton('evanmoran');
+          """, cs: """
+            TwitterFollowButton 'evanmoran'
+          """
         md """
+          Usage:
         """
+        TryEditor js:"""
+            TwitterFollowButton({
+              username:'evanmoran',
+              showCount: true,
+              showUsername: true,
+              showTailoring: true,
+              size:'large'
+            });
+          """, cs: """
+            TwitterFollowButton
+              username:'evanmoran'
+              showCount: true
+              showUsername: true
+              showTailoring: true
+              size:'large'
+          """
     ,
       h: 'GitHubButton', id: 'GitHubButton', d: ->
+
+        md 'Follow Button:'
+        TryEditor lineCount: 3, js:"""
+            GitHubButton('evanmoran');
+          """, cs: """
+            GitHubButton 'evanmoran'
+          """
+        md 'Star Button:'
+        TryEditor lineCount: 3, js:"""
+            GitHubButton('ojjs','oj');
+          """, cs: """
+            GitHubButton 'ojjs','oj'
+          """
+        md 'Fork Button:'
+        TryEditor lineCount: 3, js:"""
+            GitHubButton('ojjs','oj', {
+              type:'fork'
+            });
+          """, cs: """
+            GitHubButton 'ojjs','oj',
+              type:'fork'
+          """
         md """
+          All Properties:
         """
-    ]
-,
-  h: 'Media Plugins', id: 'social-plugins', d: ->
+        TryEditor js:"""
+          GitHubButton({
+            username:'ojjs',
+            repo:'oj',
+            type:'star',
+              // 'fork', 'star', or 'follow'
+              // Default: 'follow'
+            size:'large',
+              // 'small', 'large'
+              // Default: 'small'
+            showCount:true,
+            width: 400
+          });
+          """, cs: """
+            GitHubButton
+              username:'ojjs'
+              repo:'oj'
+              type:'star'
+                # 'fork', 'star', or 'follow'
+                # Default: 'follow'
+              size:'large'
+                # 'small' 'large'
+                # Default: 'small'
+              showCount:true
+              width: 400
+          """
+      ]
 
-      md """
-        Media plugins help you embed media elements like video, sound and music.
-      """
-    # items: [
-    #   h: 'VimeoVideo', id: 'VimeoVideo', d: ->
-    #     md """
-    #     """
-    #     TryEditor lineCount: 8, js:"""
-    #       VimeoVideo(24715531);
-    #     """, cs: """
-    #       VimeoVideo 24715531
-    #     """
-
-    #     md """
-    #       Full usage:
-    #     """
-    #     TryEditor js:"""
-    #       VimeoVideo({
-    #         video: 24715531,
-    #         showTitle: true,
-    #         showByline: true,
-    #         showPortrait: true,
-    #         color: 'purple',
-    #         autoplay: false,
-    #         loop: false
-    #       });
-
-    #     """, cs: """
-    #     """
-    # ]
 ,
   h: 'Form Plugins', id: 'social-plugins', d: ->
 
