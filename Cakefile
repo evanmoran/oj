@@ -70,16 +70,16 @@ task "copy:plugins", "Copy Plugins to WWW", ->
     launch 'cp', [pluginSource, pluginDest]
 
 task "ddd", "Build debug www", ->
-  launch 'oj', ['--recursive', '--verbose', '1', '--debug', '--output', WWW_DIR, PAGES_DIR]
+  launch 'oj', ['--recursive', '--verbose', '2', '--output', WWW_DIR, PAGES_DIR]
 
 task "ddd:watch", "Watch debug www", ->
-  launch 'oj', ['--recursive', '--watch', '--verbose', '1', '--debug', '--output', WWW_DIR, PAGES_DIR]
+  launch 'oj', ['--recursive', '--watch', '--verbose', '2', '--output', WWW_DIR, PAGES_DIR]
 
 task "www", "Build www", ->
-  launch 'oj', ['--recursive', '--output', WWW_DIR, PAGES_DIR]
+  launch 'oj', ['--recursive', '--minify', '--output', WWW_DIR, PAGES_DIR]
 
 task "www:watch", "Watch build www", ->
-  launch 'oj', ['--watch', '--recursive', '-o', WWW_DIR, PAGES_DIR]
+  launch 'oj', ['--recursive', '--minify', '--watch', '--output', WWW_DIR, PAGES_DIR]
 
 task "watch", "Watch all build targets", ->
   invoke 'build:js:watch'
