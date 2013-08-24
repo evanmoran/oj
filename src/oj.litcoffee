@@ -25,7 +25,7 @@ Export Model to NodeJS or globally
 
   Define oj version
 
-    oj.version = '0.1.1'
+    oj.version = '0.1.2'
 
   Detect if this is client or server-side
 
@@ -2294,7 +2294,7 @@ TextArea control
             change: => @viewChanged(); return
 
         # Value can be set by argument
-        @value = args[0] if args.length > 0
+        @value = oj.argumentShift(options, 'value') || args.join('\n');
 
         oj.TextArea.base.constructor.call @, options
 
@@ -3184,7 +3184,7 @@ Replace body with ojml. Global css is rebuild when using this method.
         {dom,types,cssMap} = oj.compile dom:1, html:0, css:0, cssMap:1, ignore:bodyOnly, ojml
 
       catch eCompile
-        throw new Error("oj: dom compile error: #{eCompile.message}")
+        throw new Error("oj.compile: #{eCompile.message}")
 
   Clear body and insert dom elements
 
