@@ -12,6 +12,7 @@ async = require 'async'
 crypto = require 'crypto'
 http = require 'http'
 https = require 'https'
+uglify = require 'uglify-js'
 
 # Paths
 # ------------------------------------------------------------------------------
@@ -20,6 +21,7 @@ CAKE_DIR = __dirname
 WWW_DIR = path.join CAKE_DIR, 'www'
 PAGES_DIR = path.join CAKE_DIR, 'pages'
 LIB_DIR = path.join CAKE_DIR, 'lib'
+VERSIONS_DIR = path.join CAKE_DIR, 'versions'
 DOCS_DIR = path.join CAKE_DIR, 'docs'
 SRC_DIR = path.join CAKE_DIR, 'src'
 GIT_DIR = path.join CAKE_DIR, '..'
@@ -42,6 +44,7 @@ PLUGINS = [
 task "build", "Build everything and run tests", ->
   invoke "build:js"
   invoke "build:docs"
+  invoke "build:version"
   invoke "copy:libs"
   invoke "copy:plugins"
   invoke "test"
@@ -55,6 +58,38 @@ task "build:js:watch", "Watch coffee script files", ->
   launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/oj.litcoffee']
   launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/server.litcoffee']
   launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/command.litcoffee']
+
+
+releaseText = (name, version) ->
+  """
+    //
+    // #{name} v#{version}
+    // http://ojjs.org
+    //
+    // Copyright 2013, Evan Moran
+    // Released under the MIT License
+    //\n
+  """
+
+task "build:version", "Build and minifiy current version of oj.js to /versions directory", ->
+
+  version = require('./package.json').version
+
+  # Get oj.js code and remove first line
+  code = loadSync path.join LIB_DIR, 'oj.js'
+  endOfFirstLine = code.indexOf('\n') + 1
+  code = code.slice endOfFirstLine
+
+  # Minify it
+  minifiedCode = uglify code
+
+  # Add release notice
+  code = releaseText('oj.js', version) + code
+  minifiedCode = releaseText('oj.min.js', version) + minifiedCode
+
+  # Save the files to versions/<version#>/oj.js
+  saveSync path.join(VERSIONS_DIR, version, 'oj.js'), code
+  saveSync path.join(VERSIONS_DIR, version,'oj.min.js'), minifiedCode
 
 task "copy:libs", "Copy Library files to WWW", ->
   libSource = path.join LIB_DIR, 'oj.js'
@@ -89,16 +124,8 @@ task "build:docs", "Build documentation", ->
   launch 'docco', [SRC_DIR + '/server.litcoffee', '--output', DOCS_DIR]
   launch 'docco', [SRC_DIR + '/command.litcoffee', '--output', DOCS_DIR]
 
-#   invoke 'build:groc'
-
-# task "build:groc", "Build groc documentation", ->
-#   launch 'groc', ['--out', 'docs', 'src/*.coffee']
-
-# task "build:docco", "Build docco documentation", ->
-#   launch 'docco', ['src/*.coffee']
-
-# task "view:docs", "Open documentation in a browser", ->
-#   launch 'open', ['docs/oj.html']
+task "view:docs", "Open documentation in a browser", ->
+  launch 'open', ['docs/oj.html']
 
 # task "docs", "Build and view docs", ->
 #   invoke 'build:docs'
@@ -235,9 +262,25 @@ save = (filepath, data, cb) ->
     # Write file into directory
     fs.writeFile filepath, data, cb
 
+# save: save file to path
+saveSync = (filepath, data) ->
+
+  dir = path.dirname filepath
+
+  # Ensure directory exists
+  mkdirSync dir
+
+  # Write file into directory
+  console.log "data.slice(0,1000): ", data.slice(0,1000)
+  fs.writeFileSync filepath, data
+
 # load: load a file into a string
 load = (filepath, cb) ->
   fs.readFile filepath, "utf8", cb
+
+# loadSync: load file into a string synchronously
+loadSync = (filepath) ->
+  fs.readFileSync filepath, "utf8"
 
 # Logging
 # ------------------------------------------------------------------------------
