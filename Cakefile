@@ -60,15 +60,20 @@ task "build:js:watch", "Watch coffee script files", ->
   launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/command.litcoffee']
 
 
-releaseText = (name, version) ->
+releaseText = (version) ->
   """
     //
-    // #{name} v#{version}
+    // oj.js v#{version}
     // http://ojjs.org
     //
     // Copyright 2013, Evan Moran
     // Released under the MIT License
     //\n
+  """
+
+minifiedReleaseText = (version) ->
+  """
+    // oj.min.js v#{version} | Copyright 2013 Evan Moran | ojjs.org/license\n
   """
 
 task "build:version", "Build and minifiy current version of oj.js to /versions directory", ->
@@ -80,16 +85,18 @@ task "build:version", "Build and minifiy current version of oj.js to /versions d
   endOfFirstLine = code.indexOf('\n') + 1
   code = code.slice endOfFirstLine
 
-  # Minify it
+  # Minify
   minifiedCode = uglify code
 
   # Add release notice
-  code = releaseText('oj.js', version) + code
-  minifiedCode = releaseText('oj.min.js', version) + minifiedCode
+  code = releaseText(version) + code
+  minifiedCode = minifiedReleaseText(version) + minifiedCode
 
-  # Save the files to versions/<version#>/oj.js
+  # Save the files to versions/<version#>/oj.js and versions/latest
   saveSync path.join(VERSIONS_DIR, version, 'oj.js'), code
   saveSync path.join(VERSIONS_DIR, version,'oj.min.js'), minifiedCode
+  saveSync path.join(VERSIONS_DIR, 'latest', 'oj.js'), code
+  saveSync path.join(VERSIONS_DIR, 'latest','oj.min.js'), minifiedCode
 
 task "copy:libs", "Copy Library files to WWW", ->
   libSource = path.join LIB_DIR, 'oj.js'
