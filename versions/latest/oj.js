@@ -3353,11 +3353,11 @@
       html: 1,
       '!DOCTYPE': 1,
       body: 1,
-      head: 1,
+      head: 'deep',
       meta: 1,
       title: 'deep',
-      link: 1,
-      script: 1
+      link: 'deep',
+      script: 'deep'
     };
     try {
       _ref3 = oj.compile({

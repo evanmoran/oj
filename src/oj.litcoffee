@@ -1497,7 +1497,7 @@ Recursive helper for compiling ojml tags
 
       if options.ignore[tag] != 'deep'
         for child in children
-          # Skip intention if there is only one child
+          # Skip indention if there is only one child
           if !options.minify and children.length > 1
             options.html?.push "\n\t#{options.indent}"
           _compileDeeper _compileAny, child, options
@@ -3178,7 +3178,7 @@ Replace body with ojml. Global css is rebuild when using this method.
 
   Compile only the body and below
 
-      bodyOnly = html:1, '!DOCTYPE':1, body:1, head:1, meta:1, title:'deep', link:1, script:1
+      bodyOnly = html:1, '!DOCTYPE':1, body:1, head:'deep', meta:1, title:'deep', link:'deep', script:'deep'
 
       try
         {dom,types,cssMap} = oj.compile dom:1, html:0, css:0, cssMap:1, ignore:bodyOnly, ojml

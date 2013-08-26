@@ -1,0 +1,20 @@
+module.exports = ->
+  html ->
+
+
+    head ->
+      title 'Hello Title'
+      script src:"http://code.jquery.com/jquery-2.0.2.min.js", type:'text/javascript'
+
+      # Include oj.js
+      script src:"http://ojjs.org/download/oj/latest/oj.js", type:"text/javascript"
+
+      # Optionally include Underscore / Backbone for two-way model binding
+      script src:"https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js", type:"text/javascript"
+      script src:"https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js", type:"text/javascript"
+      script """
+          console.log('hi there');
+        """
+
+    body ->
+      div "Hello world."
