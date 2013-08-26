@@ -1002,7 +1002,7 @@
     return oj['!DOCTYPE'](value);
   };
 
-  oj.extend = function(context) {
+  oj.globalize = oj.extendInto = function(context) {
     var k, o, v;
 
     if (context == null) {
@@ -1015,7 +1015,7 @@
         o[k] = v;
       }
     }
-    delete o.extend;
+    delete o.extendInto;
     return _extend(context, o);
   };
 
