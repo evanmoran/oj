@@ -1002,7 +1002,7 @@
     return oj['!DOCTYPE'](value);
   };
 
-  oj.globalize = oj.extendInto = function(context) {
+  oj.extendGlobally = oj.extendInto = function(context) {
     var k, o, v;
 
     if (context == null) {
@@ -1011,11 +1011,10 @@
     o = {};
     for (k in oj) {
       v = oj[k];
-      if (k[0] !== '_') {
+      if (k[0] !== '_' && k !== 'extendInto' && k !== 'extendGlobally') {
         o[k] = v;
       }
     }
-    delete o.extendInto;
     return _extend(context, o);
   };
 
