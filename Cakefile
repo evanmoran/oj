@@ -19,6 +19,7 @@ uglify = require 'uglify-js'
 
 CAKE_DIR = __dirname
 WWW_DIR = path.join CAKE_DIR, 'www'
+WWW_DOWNLOAD_DIR = path.join CAKE_DIR, 'www', 'download'
 PAGES_DIR = path.join CAKE_DIR, 'pages'
 LIB_DIR = path.join CAKE_DIR, 'lib'
 VERSIONS_DIR = path.join CAKE_DIR, 'versions'
@@ -92,15 +93,27 @@ task "build:version", "Build and minifiy current version of oj.js to /versions d
   code = releaseText(version) + code
   minifiedCode = minifiedReleaseText(version) + minifiedCode
 
-  # Save the files to versions/<version#>/oj.js and versions/latest
+  # Save to versions/<version>/
   saveSync path.join(VERSIONS_DIR, version, 'oj.js'), code
   saveSync path.join(VERSIONS_DIR, version,'oj.min.js'), minifiedCode
+  # Save to versions/latest/
   saveSync path.join(VERSIONS_DIR, 'latest', 'oj.js'), code
   saveSync path.join(VERSIONS_DIR, 'latest','oj.min.js'), minifiedCode
 
+  # Save to www/download/<version>/
+  saveSync path.join(WWW_DOWNLOAD_DIR, 'oj', version, 'oj.js'), code
+  saveSync path.join(WWW_DOWNLOAD_DIR, 'oj', version,'oj.min.js'), minifiedCode
+  # Save to www/download/latest/
+  saveSync path.join(WWW_DOWNLOAD_DIR, 'oj', 'latest', 'oj.js'), code
+  saveSync path.join(WWW_DOWNLOAD_DIR, 'oj', 'latest','oj.min.js'), minifiedCode
+
 task "copy:libs", "Copy Library files to WWW", ->
-  libSource = path.join LIB_DIR, 'oj.js'
+  libSource = path.join VERSIONS_DIR, 'latest', 'oj.js'
   libDest = path.join WWW_DIR, 'scripts', 'oj.js'
+  launch 'cp', [libSource, libDest]
+
+  libSource = path.join VERSIONS_DIR, 'latest', 'oj.min.js'
+  libDest = path.join WWW_DIR, 'scripts', 'oj.min.js'
   launch 'cp', [libSource, libDest]
 
 task "copy:plugins", "Copy Plugins to WWW", ->
@@ -278,7 +291,6 @@ saveSync = (filepath, data) ->
   mkdirSync dir
 
   # Write file into directory
-  console.log "data.slice(0,1000): ", data.slice(0,1000)
   fs.writeFileSync filepath, data
 
 # load: load a file into a string
