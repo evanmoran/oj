@@ -20,6 +20,7 @@ uglify = require 'uglify-js'
 CAKE_DIR = __dirname
 WWW_DIR = path.join CAKE_DIR, 'www'
 WWW_DOWNLOAD_DIR = path.join CAKE_DIR, 'www', 'download'
+WWW_SCRIPTS_DIR = path.join CAKE_DIR, 'www', 'scripts'
 PAGES_DIR = path.join CAKE_DIR, 'pages'
 LIB_DIR = path.join CAKE_DIR, 'lib'
 VERSIONS_DIR = path.join CAKE_DIR, 'versions'
@@ -60,6 +61,8 @@ task "build:js:watch", "Watch coffee script files", ->
   launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/server.litcoffee']
   launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/command.litcoffee']
 
+  # For convenience update the site scripts/oj.js to force try editor to latest version of oj
+  launch 'coffee', ['--compile', '--watch', '-o', WWW_SCRIPTS_DIR, 'src/oj.litcoffee']
 
 releaseText = (version) ->
   """
@@ -125,16 +128,16 @@ task "copy:plugins", "Copy Plugins to WWW", ->
     launch 'cp', [pluginSource, pluginDest]
 
 task "ddd", "Build debug www", ->
-  launch 'oj', ['--recursive', '--verbose', '2', '--output', WWW_DIR, PAGES_DIR]
+  launch 'oj', ['--recurse', '--verbose', '2', '--output', WWW_DIR, PAGES_DIR]
 
 task "ddd:watch", "Watch debug www", ->
-  launch 'oj', ['--recursive', '--watch', '--verbose', '2', '--output', WWW_DIR, PAGES_DIR]
+  launch 'oj', ['--recurse', '--watch', '--verbose', '2', '--output', WWW_DIR, PAGES_DIR]
 
 task "www", "Build www", ->
-  launch 'oj', ['--recursive', '--minify', '--output', WWW_DIR, PAGES_DIR]
+  launch 'oj', ['--recurse', '--minify', '--output', WWW_DIR, PAGES_DIR]
 
 task "www:watch", "Watch build www", ->
-  launch 'oj', ['--recursive', '--minify', '--watch', '--output', WWW_DIR, PAGES_DIR]
+  launch 'oj', ['--recurse', '--minify', '--watch', '--output', WWW_DIR, PAGES_DIR]
 
 task "watch", "Watch all build targets", ->
   invoke 'build:js:watch'

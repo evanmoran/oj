@@ -591,6 +591,11 @@ This is not a public API so it seemed to horrible.
       base = path.basename filePath
       (isOJFile filePath) and base[0] != '_'and base.slice(0,2) != 'oj' and not isHiddenFile filePath
 
+    # isOJDir: Determine if path is an oj directory.
+    isOJDir = (dirPath) ->
+      base = path.basename dirPath
+      base[0] != '_'and base[0] != '.' and base != 'node_modules'
+
     # isWatchFile: Determine if file can be required and therefore is worth watching
     isWatchFile = (filePath) ->
       ext = path.extname filePath
@@ -635,11 +640,11 @@ This is not a public API so it seemed to horrible.
       (common.slice 0, ixCommon).join seperator
 
     # lsOJ
-    # Abstract if recursion happened and filters to only files that don't start with _ and end in an oj filetype (.oj, .ojc, .ojlc)
+    # Abstract if recursion happened and filters to only files / directories that don't start with _ and end in an oj filetype (.oj, .ojc, .ojlc)
 
     lsOJ = (paths, options, cb) ->
       # Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
-      options = _.extend {}, recurse: options.recurse, filter: (f) -> isOJPage f
+      options = _.extend {}, recurse: options.recurse, filterFile: ((f) -> isOJPage f), filterDir:((d) -> isOJDir d)
 
       ls paths, options, (err, results) ->
         cb err, results.files, results.directories
@@ -652,14 +657,15 @@ This is not a public API so it seemed to horrible.
 
     lsWatch = (paths, options, cb) ->
       # Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
-      options = _.extend {}, recurse: options.recurse, filter: (f) -> isWatchFile f
+      options = _.extend {}, recurse: options.recurse, filterFile: (f) -> isWatchFile f
       ls paths, options, (err, results) ->
         cb err, results.files, results.directories
       return
 
     # ls
     # List directories and files from paths asynchronously
-    # options.filter: accept those files that return true
+    # options.filterFile: accept those files that return true
+    # options.filterDir: accept those directories that return true
     # options.recurse: boolean to indicate recursion is desired
 
     ls = (paths, options, cb) ->
@@ -673,12 +679,13 @@ This is not a public API so it seemed to horrible.
       options ?= {}
       options.results ?= files:[], directories:[]
       options.recurse ?= false
-      options.filter ?= -> true # Keep everything by default
+      options.filterFile ?= -> true # Keep everything by default
+      options.filterDir ?= -> true # Keep everything by default
 
       pending = paths.length
       breakIfDone = ->
         if pending == 0
-          options.results.files = _.uniq (_.filter options.results.files, options.filter)
+          options.results.files = _.uniq (_.filter options.results.files, options.filterFile)
           options.results.directories = _.uniq options.results.directories
           cb null, options.results
         return
@@ -695,41 +702,45 @@ This is not a public API so it seemed to horrible.
 
             # Directory found
             else
-              # Store it
-              options.results.directories.push p
 
-              # List it
-              fs.readdir p, (errReadDir, paths_) ->
+              # Process director if it passes filter
+              if options.filterDir path.basename p
 
-                # Handle error
-                return cb errReadDir if errReadDir
+                # Store it
+                options.results.directories.push p
 
-                # Convert to full paths
-                paths_ = fullPaths paths_, p
+                # List it
+                fs.readdir p, (errReadDir, paths_) ->
 
-                # Track extra async calls from fs.stat
-                pending += paths_.length
+                  # Handle error
+                  return cb errReadDir if errReadDir
 
-                # Stat them and store the files
-                for p_ in paths_
-                  do(p_) ->
-                    fs.stat p_, (errStat, stat_) ->
+                  # Convert to full paths
+                  paths_ = fullPaths paths_, p
 
-                      # Handle error
-                      return cb errStat if errStat
+                  # Track extra async calls from fs.stat
+                  pending += paths_.length
 
-                      # File found
-                      if not stat_?.isDirectory()
-                        options.results.files.push p_
-                        breakIfDone --pending
+                  # Stat them and store the files
+                  for p_ in paths_
+                    do(p_) ->
+                      fs.stat p_, (errStat, stat_) ->
+
+                        # Handle error
+                        return cb errStat if errStat
+
+                        # File found
+                        if not stat_?.isDirectory()
+                          options.results.files.push p_
+                          breakIfDone --pending
+                          return
+
+                        # Recurse if necessary
+                        if options.recurse
+                          ls p_, options, -> breakIfDone --pending
+                        else
+                          breakIfDone --pending
                         return
-
-                      # Recurse if necessary
-                      if options.recurse
-                        ls p_, options, -> breakIfDone --pending
-                      else
-                        breakIfDone --pending
-                      return
 
                 breakIfDone --pending
 

@@ -25,7 +25,7 @@ Export Model to NodeJS or globally
 
   Define oj version
 
-    oj.version = '0.1.2'
+    oj.version = '0.1.3'
 
   Detect if this is client or server-side
 
@@ -941,17 +941,16 @@ Method to define doctypes based on short names
       value = _doctypes[typeOrValue] ? typeOrValue
       oj['!DOCTYPE'](value)
 
-oj.extend (context)
+oj.extendInto (context)
 ------------------------------------------------------------------------------
 Extend all OJ methods into a context. Common contexts are `global` `window`
 Methods that start with _ are not extended
 
-    oj.extend = (context = root) ->
+    oj.useGlobally = oj.extendInto = (context = root) ->
       o = {}
       for k,v of oj
-        if k[0] != '_'
+        if k[0] != '_' and k != 'extendInto' and k != 'useGlobally'
           o[k] = v
-      delete o.extend
       _extend context, o
 
 oj.compile(options, ojml)
@@ -2189,8 +2188,9 @@ TextBox control
 
         @el = oj =>
           oj.input type:'text',
-            keydown: => if @live then @viewChanged(); return
-            keyup: => if @live then @viewChanged(); return
+            # Delay change event slighty as value is updated after key presses
+            keydown: => if @live then setTimeout((=> @$el.change()),10); return
+            keyup: => if @live then setTimeout((=> @$el.change()),10); return
             change: => @viewChanged(); return
 
         # Value can be set by argument
@@ -2289,8 +2289,9 @@ TextArea control
 
         @el = oj =>
           oj.textarea
-            keydown: => if @live then @viewChanged(); return
-            keyup: => if @live then @viewChanged(); return
+            # Delay change event slighty as value is updated after key presses
+            keydown: => if @live then setTimeout((=> @$el.change()),10); return
+            keyup: => if @live then setTimeout((=> @$el.change()),10); return
             change: => @viewChanged(); return
 
         # Value can be set by argument
@@ -3084,6 +3085,11 @@ oj.use(plugin, settings)
 Include a plugin of OJ with `settings`
 
     oj.use = (plugin, settings = {}) ->
+
+      # Allow use to extend globally
+      if arguments.length == 0
+        return oj.useGlobally();
+
       throw new Error('oj.use: function expected for first argument') unless oj.isFunction plugin
       throw new Error('oj.use: object expected for second argument') unless oj.isObject settings
 
