@@ -40,10 +40,10 @@ describe 'oj', ->
   it 'should have a version equal to the package.json', ->
     expect(oj.version).to.be.a 'string'
 
-  it 'oj.extend', ->
+  it 'oj.extendInto', ->
     oj2 = {}
-    oj.extend oj2
-    assert.isUndefined oj2.extend, 'extend should not extend itself'
+    oj.extendInto oj2
+    assert.isUndefined oj2.extendInto, 'extend should not extend itself'
     assert.isUndefined oj2._, 'extend should not extend helper methods'
     assert.isFunction oj2.tag, 'extend should extend methods (tag)'
     assert.isFunction oj2.div, 'extend should extend methods (div)'

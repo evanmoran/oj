@@ -7,7 +7,7 @@ fs = require 'fs'
 async = require 'async'
 
 oj = require '../lib/oj.js'
-oj.extend this
+oj.useGlobally()
 
 cssTest = (ojml, css, options) ->
   options = _.defaults {}, options,

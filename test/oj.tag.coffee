@@ -11,7 +11,7 @@ fileModifiedTime = (filepath, cb) ->
     cb(err, data.mtime)
 
 oj = require '../lib/oj.js'
-oj.extend this
+oj.useGlobally()
 
 describe 'oj.tag', ->
 

@@ -7,7 +7,7 @@ fs = require 'fs'
 async = require 'async'
 
 oj = require '../lib/oj.js'
-oj.extend this
+oj.useGlobally()
 
 bodyWrap = (str = '') -> "<body>#{str}</body>"
 headEmpty = '<head></head>'

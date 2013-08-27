@@ -1,9 +1,10 @@
 # docs.ojc
 
 oj.use require 'oj-markdown'
+plugins = require './plugins'
 
 _template = require './_template'
-{renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderEvents:events, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
+{renderTOC, renderContent, renderProperties:properties, renderAttributes:attributes, renderMethods:methods, renderEvents:events, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
 
 md = markdown
 
@@ -61,10 +62,612 @@ data = [
     ,
       h: 'License', id: 'license', d: """
         Copyright (c) 2013 Evan Moran <br>
-        OJ may be freely distributed under the [MIT license](https://raw.github.com/ojjs/oj/master/LICENSE)
+        OJ may be freely distributed under the [MIT license](license.html)
 
       """
     ]
+  ,
+    h: 'Creating Tags', id: 'creating-tags', d: ->
+
+    items: [
+
+      h:'oj.tag', id:'tag', d: ->
+
+        md """
+          The core function that implements the individual [tag functions](#tag-functions).
+
+        """
+        name 'tag(tagName, attributes..., children...)'
+        md """
+          `tagName` is the string name of a tag such as `"div"`
+
+          `attributes` are any object that maps attribute name to value. These can be in any order after tagName. In addition attributes are smart in a couple ways:
+
+          1. Attributes named after jQuery [mouse](http://api.jquery.com/category/events/mouse-events/) or [keyboard](http://api.jquery.com/category/events/keyboard-events/) events will be bound with jQuery
+
+          1. Style attributes can be defined with an object instead of a string
+
+          1. Style attribute object keys can be written in `camalCase` and will translated to `dashed-case` for you
+
+          1. `class` may be abbreviated as `c`. This is the only abbreviation in OJ, but the class keyword makes it helpful.
+
+        """
+        h3 'Example: Create a div with oj.tag'
+
+        TryEditor js:"""
+          tag('div', 'Red div', {
+            dataValue: '42',
+            style:{
+              color: 'red'
+          }});
+        """, cs:"""
+          tag 'div', 'Red div',
+            dataValue: '42'
+            style:
+              color: 'red'
+        """
+    ,
+      h:'Tag Functions', id:'tag-functions', d: ->
+        md """
+          Since tags are a core part of OJ an `oj.<tagName>` function has been created for every tag in HTML. This includes `<div>`, `<input>`, `<button>`, etc.
+
+          These functions support all the fanciness of [oj.tag](#tag) including event binding, and style objects/camalCase.
+        """
+        h3 "Example: Using some tag functions"
+        TryEditor js:"""
+          span('span');
+
+          input({type:'text',
+            placeholder:'input'});
+
+          button('button')
+
+          input({type:'checkbox'})
+        """, cs:"""
+          span 'span'
+
+          input type:'text',
+            placeholder:'input'
+
+          button 'button'
+
+          input type:'checkbox'
+        """
+
+        h3 "Example: Nesting tags"
+        TryEditor js:"""
+          // Create bulleted list
+          ul(function(){
+            li('Item 1');
+            li('Item 2');
+            li('Item 3');
+            li('Item 4');
+            li('Item 5');
+          });
+        """, cs:"""
+          # Create bulleted list
+          ul ->
+            li 'Item 1'
+            li 'Item 2'
+            li 'Item 3'
+            li 'Item 4'
+            li 'Item 5'
+          });
+        """
+
+        h3 "Example: Creating tags with loops"
+        TryEditor js:"""
+          // Create bulleted list
+          ul(function(){
+            for(var n = 1; n <= 5; n++) {
+              li('Item ' + n);
+            }
+          });
+        """, cs:"""
+          # Create bulleted list
+          ul ->
+            for n in [1...5]
+              li 'Item ' + n
+          });
+        """
+      ]
+  ,
+    h: 'Creating CSS', id: 'Creating CSS', d: ->
+
+    items: [
+
+      h:'oj.css', id:'css', d: ->
+
+        md """
+          The function that defines all css within OJ. This function ties data like a tag function but during the compile step converts the data to CSS. Supports nested selectors, camalCase rules, nested `@media` queries.
+
+          This method can be called multiple times in any context a tag function could be called. Rules will be unioned together. If exactly the same rule is made the last called will be used.
+        """
+        name 'css(rulesObject)'
+
+        h3 'Example: Create CSS class selectors'
+
+        TryEditor js:"""
+          // Create css
+          css({
+            '.blue':{color:'royalblue'},
+            '.big':{fontSize:'25px'}
+          });
+
+          // Show the css works
+          div({'class':'blue'},
+            'This class is blue');
+
+          // class abbreviated as c
+          div({c:'big'},
+            'This class is big');
+
+          // class can take an array
+          div({c:['big', 'blue']},
+            'This class is big and blue');
+        """, cs:"""
+          # Create css
+          css
+            '.blue': color: 'royalblue'
+            '.big': fontSize: '25px'
+
+          # Show the css works
+          div 'class':'blue',
+            'This class is blue'
+
+          # class abbreviated as c
+          div c:'big',
+            'This class is big'
+
+          # class can take an array
+          div c:['big', 'blue'],
+            'This class is big and blue'
+        """
+    ]
+
+  ,
+    h: 'Form Types', id: 'form-types', d: """
+      These objects create smart form elements that two-way bind to _parts_ of a model: a model-key. Why only part of a model? The reason is controls usually only affect a single key, for example the `email` field, or `name` field might be bound to a [TextBox](#TextBox). While a  [CheckBox](#CheckBox) might bind to boolean properties `wantsTheNewsletter` or `isRegistered`. These keys can all be on the same `UserModel`, but they affect different things.
+
+      ### Example of binding a TextBox
+
+      Create a user
+
+          var UserModel = new Backbone.Model.extend();
+          var user = new UserModel({name:'Evan'});
+
+      Bind TextBox to the user's name
+
+          var TextBox({model: user, key:'name'});
+
+      Two way binding will happen automatically. If you change the model's name the TextBox will update. If you type in the TextBox the model will update.
+
+    The model-key binding syntax works on all Form Types the inherit from [ModelKeyView](#ModelKeyView).
+
+    """
+    items: [
+
+      h:'oj.Button', id:'Button', d: ->
+
+
+        md """
+          A built-in OJ type that creates and manipulates a button element. The `label` property can set the button text.
+
+        """
+        name 'Button(label, properties)'
+
+        inherits h:'View', id:'View'
+
+        properties [
+          h:'label', id:'Button-label', d:"""
+            The text of the button ([read-write](#read-write)).
+          """
+        ]
+
+        methods [
+          h:'click(fn)', id:'Button-click', d:"""
+            A pass through method to jQuery click event.
+
+            Like the jQuery function, calling with a `fn` will bind that function to the click event. Calling without an argument will cause the button click event to be triggered.
+          """
+        ]
+
+        h3 'Example: Detect click event'
+        TryEditor js:"""
+          Button('Knock Knock..', {
+            click:function(e){
+              alert("Who's there?");
+          }});
+        """, cs:"""
+          Button 'Knock Knock..',
+            click: (e) ->
+              alert "Who's there?"
+        """
+    ,
+      h:'oj.CheckBox', id:'CheckBox', d: ->
+
+        md """
+          An OJ object that creates and manipulates a CheckBox control. The `value` property can be set in the first argument, or through via `properties`.
+        """
+
+        name 'CheckBox(value, properties)'
+
+        inherits h:'ModelKeyView', id:'ModelKeyView'
+
+        properties [
+          h:'value', id:'CheckBox-value', d:"""
+            The value of the control as a boolean ([read-write](#read-write)).
+
+            True means checked. False unchecked.
+          """
+        ,
+          h:'model', id:'CheckBox-model', d:"""
+            Bind a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ,
+          h:'key', id:'CheckBox-key', d:"""
+            Bind a specific key of a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ]
+
+        h3 'Example: Detect CheckBox change event'
+        TryEditor js:"""
+          CheckBox(true, {
+            change:function(e){
+              // e is jquery event
+              // this is element
+              // this.oj is CheckBox instance
+              alert(this.oj.value);
+          }});
+        """, cs:"""
+          CheckBox true,
+            change:(e) ->
+              // e is jquery event
+              // this is element
+              // this.oj is CheckBox instance
+              alert(this.oj.value);
+          }});
+        """
+
+    ,
+      h:'oj.ListBox', id:'ListBox', d: ->
+
+        md """
+          A built-in OJ type that creates and manipulates a ListBox form element. Binding to models is supported through [ModelKeyView](#ModelKeyView), The `value` is a string that changes the list box's text. The property `options` **must** be specified so the list box knows which options to drop down.
+        """
+        name 'ListBox(value, properties)'
+
+        inherits h:'ModelKeyView', id:'ModelKeyView'
+
+        properties [
+          h:'value', id:'ListBox-value', d:"""
+            The value of the control as a string ([read-write](#read-write)).
+          """
+        ,
+          h:'options', id:'ListBox-options', d:"""
+            Array of options that the list box should be allowed to take on.
+          """
+        ,
+          h:'model', id:'ListBox-model', d:"""
+            Bind a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ,
+          h:'key', id:'ListBox-key', d:"""
+            Bind a specific key of a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+
+        ]
+
+        h3 'Example: Detecting changes in a ListBox'
+
+        TryEditor js:"""
+          ListBox('orange', {
+            options:['red','orange','purple'],
+            change:function(e){
+              // e is jquery change event
+              // this is the element
+              // this.oj is the ListBox instance
+              alert(this.oj.value);
+            }
+          });
+        """, cs:"""
+          ListBox 'orange',
+            options:['red','orange','purple']
+            change:(e) ->
+              # e is jquery change event
+              # this is the element
+              # this.oj is the ListBox instance
+              alert this.oj.value
+        """
+
+        h3 'Example: Changing ListBox options dynamically'
+        TryEditor js:"""
+          TextArea({
+            live:false,
+              //live:true will trigger change
+              //events on all key presses
+              //defaults to true
+
+            change:function(e){
+              // e is jquery change event
+              // this is element
+              // this.oj is the TextArea instance
+              alert(this.oj.value);
+          }});
+        """, cs:"""
+          TextArea change:(e) ->
+            # e is jquery change event
+            # this is element
+            # this.oj is the TextArea instance
+            alert this.oj.value
+        """
+    ,
+      h:'oj.Text', id:'Text', d: ->
+
+        md """
+          A built-in OJ type that creates and manipulates a tag such as a `<div>` or `<span>`. Generally this is done with [tag functions](#tag) but occasionally you will want to bind text to model data, or change it dynamically.
+
+          The `value` is a string that changes the text's value.
+        """
+        name 'Text(value, properties)'
+
+        inherits h:'ModelKeyView', id:'ModelKeyView'
+
+        properties [
+          h:'value', id:'Text-value', d:"""
+            The value of the tag as a string ([read-write](#read-write)).
+          """
+        ,
+          h:'model', id:'Text-model', d:"""
+            Bind a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ,
+          h:'key', id:'Text-key', d:"""
+            Bind a specific key of a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ]
+
+        h3 'Example: Changing Text automatically'
+
+        TryEditor js:"""
+          var myText = Text('Text to change');
+
+          Button('Change It!', {
+            click:function(){
+              myText.value = 'Woot';
+            }
+          });
+        """, cs:"""
+        """
+    ,
+      h:'oj.TextBox', id:'TextBox', d: ->
+
+
+        md """
+          A built-in OJ type that creates and manipulates a TextBox form element. `value` is a string that changes the text box's text. This type supports binding to models through [ModelKeyView](#ModelKeyView).
+        """
+        name 'TextBox(value, properties)'
+
+        inherits h:'ModelKeyView', id:'ModelKeyView'
+
+        properties [
+          h:'value', id:'TextBox-value', d:"""
+            The value of the control as a string ([read-write](#read-write)).
+          """
+        ,
+          h:'model', id:'TextBox-model', d:"""
+            Bind a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ,
+          h:'key', id:'TextBox-key', d:"""
+            Bind a specific key of a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ,
+          h:'live', id:'TextBox-live', d:"""
+            Change events should update "live" on keypress instead of waiting for blur event (default=true)
+          """
+        ]
+
+        h3 'Example: Detecting TextBox change event'
+        TryEditor js:"""
+          TextBox({
+            live:false,
+              //live:true will trigger change
+              //events on all key presses
+              //defaults to true
+
+            change:function(e){
+              // e is jquery change event
+              // this is element
+              // this.oj is the TextBox instance
+              alert(this.oj.value);
+          }});
+        """, cs:"""
+          TextBox change:(e) ->
+            # e is jquery change event
+            # this is element
+            # this.oj is the TextBox instance
+            alert this.oj.value
+        """
+    ,
+      h:'oj.TextArea', id:'TextArea', d: ->
+
+        md """
+          A built-in OJ type that creates and manipulates a TextArea form element. Binding to models is supported through [ModelKeyView](#ModelKeyView), The `value` is a string that changes the text box's text. For convenence arguments are joined with newline to allow simple multi-line input in JavaScript.
+        """
+        name 'TextArea(valueLine1, valueLine2,..., properties)'
+
+        inherits h:'ModelKeyView', id:'ModelKeyView'
+
+        properties [
+          h:'value', id:'TextArea-value', d:"""
+            The value of the control as a string ([read-write](#read-write)).
+          """
+        ,
+          h:'model', id:'TextArea-model', d:"""
+            Bind a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ,
+          h:'key', id:'TextArea-key', d:"""
+            Bind a specific key of a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
+          """
+        ,
+          h:'live', id:'TextArea-live', d:"""
+            Boolean value indicating if change events should update "live" on keypress instead of waiting for blur event (default=true)
+          """
+
+        ]
+
+        h3 'Example: TextArea Multi-line arguments'
+
+        TryEditor js:"""
+          var textArea = TextArea(
+            'Line 1',
+            'Line 2'
+          );
+
+          Button('Get Value', {
+            // e is jQuery event
+            click:function(e){
+              alert(textArea.value);
+            }
+          });
+        """, cs:"""
+          textArea = TextArea(
+            'Line 1'
+            'Line 2'
+          );
+
+          Button 'Get Value',
+            click: (e) ->
+              alert textArea.value
+        """
+
+        h3 'Example: Detecting TextArea change event'
+        TryEditor js:"""
+          TextArea({
+            live:false,
+              //live:true will trigger change
+              //events on all key presses
+              //defaults to true
+
+            change:function(e){
+              // e is jquery change event
+              // this is element
+              // this.oj is the TextArea instance
+              alert(this.oj.value);
+          }});
+        """, cs:"""
+          TextArea change:(e) ->
+            # e is jquery change event
+            # this is element
+            # this.oj is the TextArea instance
+            alert this.oj.value
+        """
+
+    ,
+      h:'Model Binding', id:'form-types-model-binding', d: ->
+
+        md """
+          All form controls support model binding through [ModelKeyView](#ModelKeyView).
+        """
+
+        h3 'Example: Two-way model binding on a user `name` attribute'
+        TryEditor js:"""
+          // Create Backbone UserModel
+          var User = Backbone.Model.extend();
+
+          // Create a User with name
+          var user = new User({name:'Evan'});
+
+          // Bind textbox to the user's name
+          TextBox({model:user,key:'name'});
+          br();
+
+          // Changing one changes the other
+          TextArea({model:user,key:'name'});
+          br();
+
+          CheckBox({model:user,key:'name'});
+          br();
+
+          ListBox({
+            model:user,
+            key:'name',
+            options:['','Evan','James'],
+          });
+
+        """, cs:"""
+          # Create Backbone UserModel
+          class User extends Backbone.Model
+
+          # Create a User with name
+          user = new User name:'Evan'
+
+          # Bind textbox to the user's name
+          TextBox model:user, key:'name'
+          br()
+
+          # Changing one changes the other
+          TextArea model:user, key:'name'
+          br()
+
+          CheckBox model:user, key:'name'
+          br()
+
+          ListBox model:user, key:'name',
+            options:['','Evan','James']
+        """
+
+        h3 'Example: Two-way model binding on a user `name` and `strength` attributes'
+        TryEditor js:"""
+          // Create Backbone UserModel
+          var User = Backbone.Model.extend();
+
+          // Create a User with name and strength
+          var user = new User({
+            name:'Evan',
+            strength:40
+          });
+
+          // Bind name to Text and TextBox
+          TextBox({model:user,key:'name'});
+          Text({
+            tagName:'span',
+            model:user,
+            key:'name'
+          });
+          br()
+
+          // Bind strength to TextBox and ListBox
+          TextBox({model:user,key:'strength'});
+          ListBox({
+            model:user,
+            key:'strength',
+            options:['',10,20,30,40],
+          });
+        """, cs:"""
+          # Create Backbone UserModel
+          class User extends Backbone.Model
+
+          # Create a User with name and strength
+          user = new User(
+            name:'Evan'
+            strength:40
+          )
+
+          # Bind name to Text and TextBox
+          TextBox model:user, key:'name'
+          Text model:user, key:'name',
+            tagName:'span'
+          br()
+
+          # Bind strength to TextBox and ListBox
+          TextBox model:user, key:'name'
+          ListBox model:user, key:'name',
+            options:['',10,20,30,40],
+        """
+      ]
 
   # Collection Types
   # --------------------------------------------------------------------------
@@ -198,7 +801,9 @@ data = [
         ,
           h:'add(index, oj)', id:'List-add', d:"""
             Add item at `index`
+
             `index` may be negative to access elements at the end.
+
             `oj` may be any oj view or object.
 
                 list = List('a','b');      // ['a','b']
@@ -250,15 +855,15 @@ data = [
                 list.clear();              // []
           """
         ,
-          h:'move(index, index2)', id:'List-move', d:"""
-            Move item from `index` to `index2`
+          h:'move(ix, ix2)', id:'List-move', d:"""
+            Move item from index `ix` to index `ix2`
 
             list = List('a','b','c');      // ['a','b','c']
                 list.move(2,0);            // ['c','b','a']
           """
         ,
-          h:'swap(index, index2)', id:'List-swap', d:"""
-            Swap items at `index` to `index2`
+          h:'swap(ix, ix2)', id:'List-swap', d:"""
+            Swap items at index `ix` to index `ix2`
 
             list = List('a','b','c');      // ['a','b','c']
                 list.swap(1,2);            // ['a','c','b']
@@ -368,8 +973,8 @@ data = [
         methods [
 
           h:'row(rx, ojArray)', id:'Table-row', d:"""
-            Get or set the row at `index`
-            `index` may be negative to access elements at the end.
+            Get or set the row at row index `rx`
+            `rx` may be negative to access elements at the end.
 
             When `ojArray` is specified the row cells are set to the specified oj views.
 
@@ -407,22 +1012,22 @@ data = [
             Remove the footer
           """
         ,
-          h:'addRow(rx, ojArray)', id:'Table-addRow', d:"""
+          h:'addRow(rx, ojArr)', id:'Table-addRow', d:"""
             Add row at index `rx`
 
             `rx` may be negative to access elements at the end.
 
-            `ojArray` is an array of any oj views or objects.
+            `ojArr` is an array of any oj views or objects.
           """
         ,
           h:'removeRow(rx)', id:'Table-removeRow', d:"""
             Remove item at index `rx`
           """
         ,
-          h:'pushRow(ojArray)', id:'Table-pushRow', d:"""
+          h:'pushRow(ojArr)', id:'Table-pushRow', d:"""
             Add a new last row
 
-            `ojArray` is an array of oj views or objects.
+            `ojArr` is an array of oj views or objects.
           """
         ,
           h:'popRow()', id:'Table-popRow', d:"""
@@ -433,9 +1038,9 @@ data = [
             Remove the first row and return it.
           """
         ,
-          h:'unshiftRow(ojArray)', id:'Table-unshiftRow', d:"""
+          h:'unshiftRow(ojArr)', id:'Table-unshiftRow', d:"""
             Add a new first row
-            `ojArray` is an array of oj views or objects.
+            `ojArr` is an array of oj views or objects.
           """
         ,
           h:'moveRow(rx, rx2)', id:'Table-moveRow', d:"""
@@ -458,122 +1063,7 @@ data = [
 
     ]
 
-  ,
-    h: 'Form Types', id: 'form-types', d: """
-      These objects create smart form elements that two-way bind to _parts_ of a model: a model-key. Why only part of a model? The reason is controls usually only affect a single key, for example the `email` field, or `name` field might be bound to a [TextBox](#TextBox). While a  [CheckBox](#CheckBox) might bind to boolean properties `wantsTheNewsletter` or `isRegistered`. These keys can all be on the same `UserModel`, but they affect different things.
 
-      ### Example of binding a TextBox
-
-      Create a user
-
-          var UserModel = new Backbone.Model.extend();
-          var user = new UserModel({name:'Evan'});
-
-      Bind TextBox to the user's name
-
-          var TextBox({model: user, key:'name'});
-
-      Two way binding will happen automatically. If you change the model's name the TextBox will update. If you type in the TextBox the model will update.
-
-    The model-key binding syntax works on all Form Types the inherit from [ModelKeyView](#ModelKeyView).
-
-    """
-    items: [
-      h:'oj.CheckBox', id:'CheckBox', d: ->
-
-        md """
-          An OJ object that creates and manipulates a CheckBox control. The `value` property can be set in the first argument, or through via `properties`.
-        """
-
-        name 'CheckBox(value, properties)'
-
-        inherits h:'ModelKeyView', id:'ModelKeyView'
-
-        properties [
-          h:'value', id:'CheckBox-value', d:"""
-            The value of the control as a boolean ([read-write](#read-write)).
-
-            True means checked. False unchecked.
-          """
-        ,
-          h:'model', id:'CheckBox-model', d:"""
-            Bind a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
-          """
-        ,
-          h:'key', id:'CheckBox-key', d:"""
-            Bind a specific key of a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
-          """
-        ]
-
-        md """
-          ### Example
-              var myCheckBox = CheckBox(true, click:function(){alert('click worked!');});
-
-        """
-    ,
-      h:'oj.TextBox', id:'TextBox', d: ->
-
-
-        md """
-          A build-in OJ type that creates and manipulates a checkbox form element. The `value` property can be set in the first argument, or in the `options` object.
-
-
-        """
-        name 'TextBox(value, properties)'
-
-        inherits h:'ModelKeyView', id:'ModelKeyView'
-
-        properties [
-          h:'value', id:'TextBox-value', d:"""
-            The value of the control as a string ([read-write](#read-write)).
-          """
-        ,
-          h:'model', id:'TextBox-model', d:"""
-            Bind a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
-          """
-        ,
-          h:'key', id:'TextBox-key', d:"""
-            Bind a specific key of a model to this control ([read-write](#read-write), [inherited](#ModelKeyView)).
-          """
-
-        ]
-        md """
-          ### Example
-              var myTextBox = TextBox('Default text');
-        """
-    ,
-      h:'oj.Button', id:'Button', d: ->
-
-
-        md """
-          A build-in OJ type that creates and manipulates a button element. The `label` property can set the button text.
-
-        """
-        name 'Button(label, properties)'
-
-        inherits h:'View', id:'View'
-
-        properties [
-          h:'label', id:'Button-label', d:"""
-            The text of the button ([read-write](#read-write)).
-          """
-        ]
-
-        methods [
-          h:'click(fn)', id:'Button-click', d:"""
-            A pass through method to jQuery click event.
-
-            Like the jQuery function, calling with a `fn` will bind that function to the click event. Calling without an argument will cause the button click event to be triggered.
-          """
-        ]
-
-        md """
-          ### Example
-              var myButton = Button('Default text': click:function(){alert('hello')}
-
-              myButton.click()
-        """
-    ]
   ,
     h: 'Creating Types', id: 'creating-types', d: """
       The point of OJ is creating types that better abstract the web. To do this OJ includes a function called [oj.createType](#createType).
@@ -995,15 +1485,15 @@ data = [
     ]
 
   ,
-    h: 'Static Websites', id: 'static-websites', d: """
-      OJ has the capability of building static websites on the command-line using the [oj command](#command-line). This is best for sites that don't change depending on which user loads the page. Either the pages don't change or the data to render comes from ajax requests.
+    h: 'Commandline Tool', id: 'commandline', d: """
+      OJ has the capability of building static websites on the command-line using the [oj command](#command-line). This is best for sites that don't change content upon request -- think Github Pages. This does not mean the site cannot have ajax requests and dynamic content, just that the tool isn't for building that.
 
       ### Features
 
-        * _Auto Minification:_ All javascript, css, html are minified unless `--debug` is set
-        * _Unified Templating:_ `.oj` and `.ojc` files turn into javacsript, html, and css.
-        * Files and Directories can be built, recursed upon, and watched
-        * Files are automatically minified unless `--debug` option is set.
+        * _Unified Templating:_ `.oj` and `.ojc` generate js, html, and css
+        * Built in coffee-script support: `.oj` means javascript, `.ojc` means coffee-script.
+        * _Minification:_ All js, css, html will be minified when `--minify` is set
+        * Files and Directories can be built, recursed upon, and *watched*
         * Files can be included from other files using node's `require` syntax.
         * Node modules can be included as well. Simply `require` them, and they will also be brought into the system (similar to [browserify](http://browserify.org/)).
         * Built in support for coffee-script with `.ojc` files. You don't even need to install coffee-script, it just works.
@@ -1012,7 +1502,9 @@ data = [
 
       h: 'Install', id: 'install', d: """
 
-        To use OJ on the server you will need to install the `oj` command built on top of [node.js](http://nodejs.org). For this you need to install node and its package manager `npm`. There are many ways to do this installation, but this will get you started:
+        To use OJ on the server you will need to install the `oj` command built on top of [node.js](http://nodejs.org). For this you need to install node. There are many ways to do this installation, but this will get you started:
+
+        ### Install Node
 
         Install `node` on OSX with [homebrew](http://mxcl.github.com/homebrew/):
 
@@ -1021,6 +1513,8 @@ data = [
         Install `node` on Ubuntu with apt-get:
 
             sudo apt-get install nodejs npm
+
+        ### Install OJ Command
 
         Finally install `oj` with `npm`:
 
@@ -1058,28 +1552,25 @@ data = [
 
       """
     ,
-      h: 'Command Line', id: 'command-line', d: """
-        The `oj` command builds `.oj` and `.ojc` [file types](#file-types) into html files.
-
-        ### Usage
+      h: 'Usage', id: 'command-line-usage', d: """
+        The `oj` command builds `.oj` and `.ojc` [file types](#file-types) into `.html` files.
 
             oj [options] <file> <dir> ...
 
             Options:
 
-              -h, --help               output usage information
-              -V, --version            output the version number
-              -d, --debug              Turn on debug output
-              -o, --output <dir>       Directory to output all files to
-              -r, --recurse            Recurse into directories
-              -m, --modules <modules>  List of modules to include
-              -v, --verbose <level>    Turn on verbose level 0-3
-              -w, --watch              Turn on watch mode
+              -h, --help             output usage information
+              -V, --version          output the version number
+              -m, --minify           Turn on minification (default: false)
+              -o, --output <dir>     Directory to output all files to (default: .)
+              -r, --recurse          Recurse into directories (default: off)
+              -v, --verbose <level>  Turn on verbose level 0-3 (default: 1)
+              -w, --watch            Turn on watch mode (default: off)
 
         When options are omitted these are the defaults:
 
             --output defaults to ./
-            --debug defaults to off<br>
+            --minify defaults to off<br>
             --verbose defaults to 1
 
         ### Ignored file prefixes

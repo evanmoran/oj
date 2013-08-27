@@ -17,6 +17,10 @@ module.exports =
     div 'properties:', c:'code-subheading property'
     contentCodeItems properties, 'property'
 
+  renderAttributes: (attributes) ->
+    div 'attributes:', c:'code-subheading attribute'
+    contentCodeItems attributes, 'attribute'
+
   renderMethods: (methods) ->
     div 'methods:', c:'code-subheading method'
     contentCodeItems methods, 'method'

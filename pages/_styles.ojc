@@ -68,7 +68,7 @@ module.exports = ->
 
     h3:
       fontFamily: familySanSarif
-      fontSize: '16px'
+      fontSize: '18px'
       fontWeight: '100'
       marginTop: '22px'
       marginBottom: '14px'
@@ -151,19 +151,19 @@ module.exports = ->
     #   marginTop: '10px'
 
     '.code-heading':
-      color: '#222'
+      color: '#444'
       fontFamily: familyMonospace
       fontSize: '19px'
 
     '.code-subheading':
       fontFamily: familySanSarif
-      fontSize: '14px'
+      fontSize: '16px'
       fontStyle: 'italic'
       fontWeight: 'lighter'
       color: textColor
       display: 'block'
       lineHeight: '20px'
-      marginTop: '10px'
+      marginTop: '20px'
 
     '.code-items':
       margin: '10px 0 10px 10px'
@@ -184,23 +184,34 @@ module.exports = ->
 
     '.code-item-name':
       fontFamily: familySanSarif
-      fontSize: '14px'
-      margin: '0 0 0 20px'
+      fontSize: '16px'
+      margin: '0 0 8px 2px'
       lineHeight: '20px'
-      minWidth: '100px'
+      minWidth: '135px'
       display: 'inline-block'
+      verticalAlign: 'top'
 
     '.code-item-def':
       fontFamily: familySanSarif
       fontSize: '14px'
       color: textColor
-      margin: '0 0 0 20px'
-      lineHeight: '20px'
+      lineHeight: '16px'
       display: 'inline-block'
-      width: '100%'
+      position: 'relative'
+      width: '560px'
+      '@media tablet':
+        width: '377px'
+      '@media phone':
+        width: '100%'
+        marginLeft:'20px'
 
-    '.code-item-def p':
-      margin:'0 0 10px 0'
+      '& p':
+        margin:'4px 0 10px 0'
+        lineHeight:'20px'
+
+      '& li':
+        margin:'0px 0 6px 20px'
+
 
     '.code-item-def pre':
       margin:'0 0 10px 0'

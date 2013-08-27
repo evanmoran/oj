@@ -7,7 +7,7 @@ fs = require 'fs'
 async = require 'async'
 
 oj = require '../lib/oj.js'
-oj.extend this
+oj.useGlobally()
 
 compileDOM = (ojml, tag, html, options) ->
   options = _.defaults {}, options,

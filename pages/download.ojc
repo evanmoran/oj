@@ -1,7 +1,7 @@
 # download.ojc
 
 oj.use require 'oj-markdown'
-
+plugins = require './_plugins'
 _template = require './_template'
 {renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderEvents:events, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
 
