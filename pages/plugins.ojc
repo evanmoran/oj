@@ -61,10 +61,69 @@ data = [
         Media plugins help you embed media elements like video, sound and music.
       """
     items: [
+      h: 'oj.YouTubeVideo', id: 'YouTubeVideo', d: ->
+        md """
+        """
+        TryEditor lineCount: 12, js:"""
+          YouTubeVideo('t-FUTp_oO5s');
+        """, cs: """
+          YouTubeVideo 't-FUTp_oO5s'
+        """
+        md """
+          Usage:
+        """
+        TryEditor lineCount: 22, js:"""
+          var vid = YouTubeVideo({
+            video: 't-FUTp_oO5s',
+            mute: false,
+            autoplay: false,
+              // Default false
+            volume:0.5,
+              // Number from 0-1
+              // Default: 1
+            width:300,
+            height:170
+          });
+
+          Button('Play Toggle', {click:function(){
+            vid.playToggle();
+          }});
+
+          Button('Mute Toggle', {click:function(){
+            vid.muteToggle();
+          }});
+
+          Button('Stop', {click:function(){
+            vid.stop();
+          }});
+
+        """, cs: """
+          vid = YouTubeVideo(
+            video: 't-FUTp_oO5s'
+            mute: false
+            autoplay: false
+              # Default false
+            volume:0.5,
+              # Number from 0-1
+              # Default: 1
+            width:300
+            height:170
+          )
+
+          Button 'Play Toggle',
+            click: -> vid.playToggle()
+
+          Button 'Mute Toggle',
+            click: -> vid.muteToggle()
+
+          Button 'Stop',
+            click: -> vid.stop()
+        """
+    ,
       h: 'oj.VimeoVideo', id: 'VimeoVideo', d: ->
         md """
         """
-        TryEditor lineCount: 8, js:"""
+        TryEditor lineCount: 10, js:"""
           VimeoVideo(24715531);
         """, cs: """
           VimeoVideo 24715531
@@ -72,14 +131,16 @@ data = [
         md """
           Usage:
         """
-        TryEditor lineCount: 8, js:"""
+        TryEditor lineCount: 10, js:"""
           VimeoVideo({
             video: 24715531,
             color: '#ff0000',
             showTitle: true,
             showByline: true,
             showPortrait: true,
-            autoplay: false
+            autoplay: false,
+            width:300,
+            height:178
           });
         """, cs: """
           VimeoVideo
@@ -89,6 +150,8 @@ data = [
             showByline: true
             showPortrait: true
             autoplay: false
+            width:300
+            height:178
         """
     ,
       h: 'oj.JSFiddle', id: 'JSFiddle', d: ->

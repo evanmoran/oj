@@ -603,6 +603,7 @@ _pluginScripts =
     "<#{SCRIPT} src=\"scripts/oj.AceEditor.js\" #{TEXTJ}></#{SCRIPT}>\n"
   ]
   VimeoVideo: ["<#{SCRIPT} src=\"scripts/oj.VimeoVideo.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+  YouTubeVideo: ["<#{SCRIPT} src=\"scripts/oj.YouTubeVideo.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   GitHubButton: ["<#{SCRIPT} src=\"scripts/oj.GitHubButton.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   TwitterButton: ["<#{SCRIPT} src=\"scripts/oj.TwitterButton.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   markdown: ["<#{SCRIPT} src=\"scripts/oj.markdown.js\" #{TEXTJ}></#{SCRIPT}>\n"]
@@ -755,7 +756,11 @@ _updateIFRAME = ($iframe, code) ->
     # to prevent unecessary ajax requests. Because the editor constantly remakes
     # every keypress it is nice to avoid spamming twitter servers
     docOJ = $iframe.contents()[0].oj
-    if (typeof docOJ != 'undefined' and typeof docOJ.TwitterButton != 'undefined')
+    if typeof docOJ != 'undefined' and typeof docOJ.TwitterButton != 'undefined'
       docOJ.TwitterButton._loaded = false
+
+    if typeof docOJ != 'undefined' and typeof docOJ.YouTubeVideo != 'undefined'
+      # YouTube API is already loaded. Just let the controls know.
+      docOJ.YouTubeVideo.onYouTubeIframeAPIReady();
 
 

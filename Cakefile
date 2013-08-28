@@ -45,43 +45,49 @@ LIBS =
     ]
   'oj.AceEditor':
     packageDir:path.join ROOT_DIR, 'oj.AceEditor'
-    docsUrl:'ojjs.org/plugins#oj.AceEditor'
+    docsUrl:'ojjs.org/plugins#AceEditor'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.AceEditor'
     ]
   'oj.GitHubButton':
     packageDir:path.join ROOT_DIR, 'oj.GitHubButton'
-    docsUrl:'ojjs.org/plugins#oj.GitHubButton'
+    docsUrl:'ojjs.org/plugins#GitHubButton'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.GitHubButton'
     ]
   'oj.TwitterButton':
     packageDir:path.join ROOT_DIR, 'oj.TwitterButton'
-    docsUrl:'ojjs.org/plugins#oj.TwitterButton'
+    docsUrl:'ojjs.org/plugins#TwitterButton'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.TwitterButton'
     ]
   'oj.VimeoVideo':
     packageDir:path.join ROOT_DIR, 'oj.VimeoVideo'
-    docsUrl:'ojjs.org/plugins#oj.VimeoVideo'
+    docsUrl:'ojjs.org/plugins#VimeoVideo'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.VimeoVideo'
     ]
+  'oj.YouTubeVideo':
+    packageDir:path.join ROOT_DIR, 'oj.YouTubeVideo'
+    docsUrl:'ojjs.org/plugins#YouTubeVideo'
+    outputDirs: [
+      path.join WWW_DOWNLOAD_DIR, 'oj.YouTubeVideo'
+    ]
   'oj.JSFiddle':
     packageDir:path.join ROOT_DIR, 'oj.JSFiddle'
-    docsUrl:'ojjs.org/plugins#oj.JSFiddle'
+    docsUrl:'ojjs.org/plugins#JSFiddle'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.JSFiddle'
     ]
   'oj.markdown':
     packageDir:path.join ROOT_DIR, 'oj.markdown'
-    docsUrl:'ojjs.org/plugins#oj.markdown'
+    docsUrl:'ojjs.org/plugins#markdown'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.markdown'
     ]
   'oj.mustache':
     packageDir:path.join ROOT_DIR, 'oj.mustache'
-    docsUrl:'ojjs.org/plugins#oj.mustache'
+    docsUrl:'ojjs.org/plugins#mustache'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.mustache'
     ]
@@ -90,11 +96,16 @@ LIBS =
 # Tasks
 # ------------------------------------------------------------------------------
 
-task "build", "Build everything and run tests", ->
+task "all", "Build, version, and tests", ->
   invoke "build:js"
   invoke "build:docs"
   invoke "version:libs"
   invoke "test"
+
+task "build", "Build everything", ->
+  invoke "build:js"
+  invoke "build:docs"
+  invoke "version:libs"
 
 task "build:js", "Compile coffee script files", ->
   launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/oj.litcoffee']
