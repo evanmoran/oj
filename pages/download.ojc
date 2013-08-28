@@ -37,25 +37,121 @@ module.exports = ->
     body: ->
     head: ->
 
+fontFamilySansSerif = 'Helvetica, Arial, sans-serif'
 data = [
   h: 'Download', id: 'download', d: ->
+    css
+      '.button':
+        borderRadius:'5px'
+        textAlign:'center'
+        fontSize:'16px'
+        fontWeight:'lighter'
+        fontFamily: fontFamilySansSerif
+        color:'white'
+        backgroundColor:'#FF9B00'
+        display:'inline-block'
+        '&.yellow':
+          backgroundColor:'#FFC000'
+
+        '&.orange':
+          '@media phone':
+            marginTop:'15px'
+        padding: '4px 8px'
+        margin: '10px 10px 10px 0px'
   items: [
 
-    h: 'Download', id: 'dd', d: """
+    h: "OJ", id: 'download-oj', d: ->
+      br()
+      tableRows = []
+      for lib in ['oj']
+        do(lib) ->
+          tableRows.push [
+            ->
+              span "#{lib}"
+            ->
+              a "#{lib}.js (#{oj.version})", c:'button orange', href:"http://ojjs.org/download/#{lib}/#{oj.version}/#{lib}.js"
+            ->
+              a "#{lib}.min.js (#{oj.version})", c:'button orange', href:"http://ojjs.org/download/#{lib}/#{oj.version}/#{lib}.min.js"
+          ]
 
+        Table c:'download-table', rows:tableRows
 
+  ,
+    h: 'Plugins', id: 'download-plugins', d: ->
+      plugins = [
+        'oj.VimeoVideo'
+        'oj.JSFiddle'
+        'oj.GitHubButton'
+        'oj.TwitterFollowButton'
+        'oj.AceEditor'
+        'oj.markdown'
+        'oj.mustache'
+      ]
+      br()
+      br()
 
-    """
+      tableRows = []
+
+      for plugin in plugins
+        do(plugin) ->
+          tableRows.push [
+            ->
+              span "#{plugin}"
+            ->
+              a "#{plugin}.js", c:'button yellow', href:"http://ojjs.org/download/#{plugin}/latest/#{plugin}.js"
+            ->
+              a "#{plugin}.min.js", c:'button yellow', href:"http://ojjs.org/download/#{plugin}/latest/#{plugin}.min.js"
+          ]
+      Table c:'download-table', rows:tableRows, header:['', 'DEVELOPMENT', 'PRODUCTION']
+      css
+        '.download-table':
+          '& tbody tr':
+
+            borderTop:'1px solid #ddd'
+
+          '& td, & th':
+            paddingRight:'20px'
+            fontWeight:'200'
+            fontSize:'16px'
+            textAlign:'left'
+            fontFamily: fontFamilySansSerif
+
+          '& th':
+            paddingBottom:'10px'
+
   ]
+# ,
+#   h: 'Setup', id: 'setup', d: ->
+#     md """
+#       So you want to use OJ?
+#     """
+#   items: [
+
+#     h: 'Download', id: 'dd', d: """
+#     Download
+#     """
+#   ]
 ,
-  h: 'Setup', id: 'setup', d: ->
+  h: 'Examples', id: 'setup', d: ->
+    md """
+      Here are some examples to get you started. Please let me know if they are helpful or need work!
+    """
   items: [
 
-    h: 'Download', id: 'dd', d: """
+    h: 'Client-side: Hello World', id: 'example-client-hello-world', d: ->
+      md """
+      """
+  ,
+    h: 'Client-side: Backbone', id: 'example-client-model-binding', d: ->
+  ,
+    h: 'Server-side: OJ Commandline', id: 'example-server-commandline', d: ->
+  ,
+    h: 'Server-side: Express', id: 'example-server-express', d: """
+      Express support has not been implemented yet. This is my [#1 priority](https://github.com/ojjs/oj/issues/1), and clearly once this exists OJ will be living the node dream of shared client and server code.
 
-    Download
-
+      For those interested: the reason express support is still in progress is serious caching is necessary for `require` traversal as well as minification. A simple "one function" approach would be pretty trival. It is just getting the file unification and minification that is hard. If any experts on Express want to help, please feel free to reach out.
     """
+
   ]
 ]
 

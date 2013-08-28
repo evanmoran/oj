@@ -609,6 +609,7 @@ _pluginScripts =
   md: ["<#{SCRIPT} src=\"scripts/oj.markdown.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   marked: ["<#{SCRIPT} src=\"scripts/oj.marked.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   mustache: ["<#{SCRIPT} src=\"scripts/oj.mustache.js\" #{TEXTJ}></#{SCRIPT}>\n"]
+  JSFiddle: ["<#{SCRIPT} src=\"scripts/oj.JSFiddle.js\" #{TEXTJ}></#{SCRIPT}>\n"]
   # Bootstrap: ["<#{SCRIPT} src=\"scripts/oj.Bootstrap.js\" #{TEXTJ}></#{SCRIPT}>\n"]
 
 # _foundScripts: Plugins found in code as array

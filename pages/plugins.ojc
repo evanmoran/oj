@@ -61,7 +61,7 @@ data = [
         Media plugins help you embed media elements like video, sound and music.
       """
     items: [
-      h: 'VimeoVideo', id: 'VimeoVideo', d: ->
+      h: 'oj.VimeoVideo', id: 'VimeoVideo', d: ->
         md """
         """
         TryEditor lineCount: 8, js:"""
@@ -90,6 +90,52 @@ data = [
             showPortrait: true
             autoplay: false
         """
+    ,
+      h: 'oj.JSFiddle', id: 'JSFiddle', d: ->
+        md """
+          An OJ plugin to embed a JSFiddle.
+
+          The `url` property can take either the full `http://jsfiddle.net/custom/part` url or just the `custom/part`.
+
+          The `tabs` property helps you specify the tab order.
+
+          The `style` property customizes the visuals on JSFiddle's end.
+
+          The `width` and  `height` properties are supported to customize size.
+        """
+        TryEditor lineCount: 10, js:"""
+          JSFiddle('evanmoran/vhNcD');
+        """, cs: """
+          JSFiddle 'evanmoran/vhNcD'
+        """
+        md """
+          Usage:
+        """
+        TryEditor lineCount: 20, js:"""
+          JSFiddle({
+            url:'evanmoran/v9b5v',
+            tabs:'js,html,css,result,resources',
+              // Comma seperated list
+              // Default: 'result,js,html,css,resources'
+            style:'',
+              // Enum: '' or 'presentation'
+              // Default: ''
+            width:300,
+            height:400
+          });
+        """, cs: """
+          JSFiddle(
+            url:'evanmoran/v9b5v'
+            tabs:'js,html,css,resources,result'
+              # Comma seperated list
+              # Default: 'result,js,html,css,resources'
+            style:''
+              # Enum: '' or 'presentation'
+              # Default: ''
+            width:300
+            height:400
+          );
+        """
     ]
 ,
   h: 'Social Plugins', id: 'social-plugins', d: ->
@@ -98,7 +144,7 @@ data = [
         Social plugins for following, liking, and upvoting.
       """
     items: [
-      h: 'TwitterFollowButton', id: 'TwitterFollowButton', d: ->
+      h: 'oj.TwitterFollowButton', id: 'TwitterFollowButton', d: ->
 
         TryEditor lineCount: 3, js:"""
             TwitterFollowButton('evanmoran');
@@ -125,7 +171,7 @@ data = [
               size:'large'
           """
     ,
-      h: 'GitHubButton', id: 'GitHubButton', d: ->
+      h: 'oj.GitHubButton', id: 'GitHubButton', d: ->
 
         md 'Follow Button:'
         TryEditor lineCount: 3, js:"""
@@ -186,7 +232,7 @@ data = [
         Form plugins mimic and extend built-in form objects like [TextBox](docs.html#TextBox). These usually have two-way model binding and are intended to take input from a user.
       """
     items: [
-      h: 'AceEditor', id: 'AceEditor', d: ->
+      h: 'oj.AceEditor', id: 'AceEditor', d: ->
         md """
           Each argument is a line of code:
         """
@@ -295,7 +341,7 @@ data = [
         These plugins improve how you write content. Sometimes it is nice not to use tags directly, hence the [markdown](#markdown) plugin. Or you need to interface with legacy templating code, hense the [mustache](mustache) plugin.
       """
     items: [
-      h: 'markdown', id: 'markdown', d: ->
+      h: 'oj.markdown', id: 'markdown', d: ->
         md """
           *Author*: [Christopher Jeffrey](https://github.com/chjj)
 
@@ -337,7 +383,7 @@ data = [
           \"\"\"
         """
     ,
-      h: 'mustache', id: 'mustache', d: ->
+      h: 'oj.mustache', id: 'mustache', d: ->
 
         md """
           *Maintainers*: [Nathan Stott](https://github.com/nrstott) and [Michael Jackson](https://github.com/mjijackson)

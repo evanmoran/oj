@@ -18,6 +18,7 @@ uglify = require 'uglify-js'
 # ------------------------------------------------------------------------------
 
 CAKE_DIR = __dirname
+ROOT_DIR = path.join CAKE_DIR, '..'
 WWW_DIR = path.join CAKE_DIR, 'www'
 WWW_DOWNLOAD_DIR = path.join CAKE_DIR, 'www', 'download'
 WWW_SCRIPTS_DIR = path.join CAKE_DIR, 'www', 'scripts'
@@ -28,17 +29,63 @@ DOCS_DIR = path.join CAKE_DIR, 'docs'
 SRC_DIR = path.join CAKE_DIR, 'src'
 GIT_DIR = path.join CAKE_DIR, '..'
 
-PLUGINS = [
-  'oj.AceEditor'
-  'oj.Bootstrap'
-  'oj.FacebookLikeButton'
-  'oj.GitHubButton'
-  # 'oj.GooglePlusButton'
-  'oj.TwitterFollowButton'
-  'oj.VimeoVideo'
-  'oj.markdown'
-  'oj.mustache'
-]
+# Version Data
+# ------------------------------------------------------------------------------
+
+LIBS =
+  'oj':
+    packageDir:path.join ROOT_DIR, 'oj'
+    inputFile:path.join ROOT_DIR, 'oj', 'lib', 'oj.js'
+    removeFirstLine: true
+    copyrightName: 'Evan Moran'
+    docsUrl:'ojjs.org'
+    outputDirs: [
+      VERSIONS_DIR
+      path.join WWW_DOWNLOAD_DIR, 'oj'
+    ]
+  'oj.AceEditor':
+    packageDir:path.join ROOT_DIR, 'oj.AceEditor'
+    docsUrl:'ojjs.org/plugins#oj.AceEditor'
+    outputDirs: [
+      path.join WWW_DOWNLOAD_DIR, 'oj.AceEditor'
+    ]
+  'oj.GitHubButton':
+    packageDir:path.join ROOT_DIR, 'oj.GitHubButton'
+    docsUrl:'ojjs.org/plugins#oj.GitHubButton'
+    outputDirs: [
+      path.join WWW_DOWNLOAD_DIR, 'oj.GitHubButton'
+    ]
+  'oj.TwitterFollowButton':
+    packageDir:path.join ROOT_DIR, 'oj.TwitterFollowButton'
+    docsUrl:'ojjs.org/plugins#oj.TwitterFollowButton'
+    outputDirs: [
+      path.join WWW_DOWNLOAD_DIR, 'oj.TwitterFollowButton'
+    ]
+  'oj.VimeoVideo':
+    packageDir:path.join ROOT_DIR, 'oj.VimeoVideo'
+    docsUrl:'ojjs.org/plugins#oj.VimeoVideo'
+    outputDirs: [
+      path.join WWW_DOWNLOAD_DIR, 'oj.VimeoVideo'
+    ]
+  'oj.JSFiddle':
+    packageDir:path.join ROOT_DIR, 'oj.JSFiddle'
+    docsUrl:'ojjs.org/plugins#oj.JSFiddle'
+    outputDirs: [
+      path.join WWW_DOWNLOAD_DIR, 'oj.JSFiddle'
+    ]
+  'oj.markdown':
+    packageDir:path.join ROOT_DIR, 'oj.markdown'
+    docsUrl:'ojjs.org/plugins#oj.markdown'
+    outputDirs: [
+      path.join WWW_DOWNLOAD_DIR, 'oj.markdown'
+    ]
+  'oj.mustache':
+    packageDir:path.join ROOT_DIR, 'oj.mustache'
+    docsUrl:'ojjs.org/plugins#oj.mustache'
+    outputDirs: [
+      path.join WWW_DOWNLOAD_DIR, 'oj.mustache'
+    ]
+
 
 # Tasks
 # ------------------------------------------------------------------------------
@@ -46,9 +93,7 @@ PLUGINS = [
 task "build", "Build everything and run tests", ->
   invoke "build:js"
   invoke "build:docs"
-  invoke "build:version"
-  invoke "copy:libs"
-  invoke "copy:plugins"
+  invoke "version:libs"
   invoke "test"
 
 task "build:js", "Compile coffee script files", ->
@@ -64,68 +109,82 @@ task "build:js:watch", "Watch coffee script files", ->
   # For convenience update the site scripts/oj.js to force try editor to latest version of oj
   launch 'coffee', ['--compile', '--watch', '-o', WWW_SCRIPTS_DIR, 'src/oj.litcoffee']
 
-releaseText = (version) ->
-  """
+# Version, minify, prepend license comment, and output to multiple directories
+versionAndMinifyLib = (libName, libData) ->
+
+  # Load package.json for lib
+  json = require(path.join libData.packageDir, 'package.json')
+
+  # Calculate minified name
+  libData.fileName ?= (libName + '.js')
+  libData.minifiedFileName = append unappend(libName,'.js'), '.min.js'
+
+  libData.version = json.version
+  libData.copyrightName ?= 'Evan Moran'
+
+  # Default values
+  libData.inputFile ?= path.join libData.packageDir, json.main
+  libData.licenseUrl ?= 'ojjs.org/license'
+  libData.copyrightName ?= 'Evan Moran'
+
+  # Load code from file
+  libData.code = loadSync libData.inputFile
+
+  # Remove first line if necessary (coffee-script generated)
+  if libData.removeFirstLine
+    libData.code = removeFirstLine libData.code
+
+  # Minify code
+  libData.minifiedCode = uglify libData.code
+
+  # Add release and minified release comments
+  releaseText = """
     //
-    // oj.js v#{version}
-    // http://ojjs.org
+    // #{libData.fileName} v#{libData.version}
+    // #{libData.docsUrl}
     //
-    // Copyright 2013, Evan Moran
+    // Copyright 2013, #{libData.copyrightName}
     // Released under the MIT License
     //\n
   """
-
-minifiedReleaseText = (version) ->
-  """
-    // oj.min.js v#{version} | Copyright 2013 Evan Moran | ojjs.org/license\n
+  minfiedReleaseText = """
+    // #{libData.minifiedFileName} v#{libData.version} | Copyright 2013 #{libData.copyrightName} | #{libData.licenseUrl}\n
   """
 
-task "build:version", "Build and minifiy current version of oj.js to /versions directory", ->
+  libData.code = releaseText + libData.code
+  libData.minifiedCode = minfiedReleaseText + libData.minifiedCode
 
-  version = require('./package.json').version
+  # Save to www/script directory
+  outputPath = path.join WWW_SCRIPTS_DIR, libData.fileName
+  info 'Saving ' + outputPath
+  saveSync outputPath, libData.code
 
-  # Get oj.js code and remove first line
-  code = loadSync path.join LIB_DIR, 'oj.js'
-  endOfFirstLine = code.indexOf('\n') + 1
-  code = code.slice endOfFirstLine
+  # Save to output directories
+  for outputDir in libData.outputDirs
+    # Save latest/<name>.js
+    outputPath = path.join outputDir, 'latest', libData.fileName
+    info 'Saving ' + outputPath
+    saveSync outputPath, libData.code
 
-  # Minify
-  minifiedCode = uglify code
+    # Save latest/<name>.min.js
+    outputPath = path.join outputDir, 'latest', libData.minifiedFileName
+    info 'Saving ' + outputPath
+    saveSync outputPath, libData.minifiedCode
 
-  # Add release notice
-  code = releaseText(version) + code
-  minifiedCode = minifiedReleaseText(version) + minifiedCode
+    # Save <version>/<name>.js
+    outputPath = path.join outputDir, libData.version, libData.fileName
+    info 'Saving ' + outputPath
+    saveSync outputPath, libData.code
 
-  # Save to versions/<version>/
-  saveSync path.join(VERSIONS_DIR, version, 'oj.js'), code
-  saveSync path.join(VERSIONS_DIR, version,'oj.min.js'), minifiedCode
-  # Save to versions/latest/
-  saveSync path.join(VERSIONS_DIR, 'latest', 'oj.js'), code
-  saveSync path.join(VERSIONS_DIR, 'latest','oj.min.js'), minifiedCode
+    # Save <version>/<name>.min.js
+    outputPath = path.join outputDir, libData.version, libData.minifiedFileName
+    info 'Saving ' + outputPath
+    saveSync outputPath, libData.minifiedCode
 
-  # Save to www/download/<version>/
-  saveSync path.join(WWW_DOWNLOAD_DIR, 'oj', version, 'oj.js'), code
-  saveSync path.join(WWW_DOWNLOAD_DIR, 'oj', version,'oj.min.js'), minifiedCode
-  # Save to www/download/latest/
-  saveSync path.join(WWW_DOWNLOAD_DIR, 'oj', 'latest', 'oj.js'), code
-  saveSync path.join(WWW_DOWNLOAD_DIR, 'oj', 'latest','oj.min.js'), minifiedCode
+task "version:libs", "All release text, minifiy and copy oj and plugins", ->
 
-task "copy:libs", "Copy Library files to WWW", ->
-  libSource = path.join VERSIONS_DIR, 'latest', 'oj.js'
-  libDest = path.join WWW_DIR, 'scripts', 'oj.js'
-  launch 'cp', [libSource, libDest]
-
-  libSource = path.join VERSIONS_DIR, 'latest', 'oj.min.js'
-  libDest = path.join WWW_DIR, 'scripts', 'oj.min.js'
-  launch 'cp', [libSource, libDest]
-
-task "copy:plugins", "Copy Plugins to WWW", ->
-  for plugin in PLUGINS
-    pluginSource = path.join GIT_DIR, plugin, 'src', (plugin + '.js')
-    pluginDest = path.join WWW_DIR, 'scripts', (plugin + '.js')
-    # console.log "pluginSource: ", pluginSource
-    # console.log "pluginDest: ", pluginDest
-    launch 'cp', [pluginSource, pluginDest]
+  for libName, libData of LIBS
+    versionAndMinifyLib libName, libData
 
 task "ddd", "Build debug www", ->
   launch 'oj', ['--recurse', '--verbose', '2', '--output', WWW_DIR, PAGES_DIR]
@@ -193,8 +252,6 @@ task 'download', 'download node modules', ->
         save filepath, data, (err) ->
           throw err if err
 
-
-
 # Utilities
 # ------------------------------------------------------------------------------
 
@@ -240,6 +297,11 @@ endsWith = (strInput, strEnd) ->
   throw 'endsWith: argument error' unless (_.isString strInput) and (_.isString strEnd)
   strInput.length >= strEnd.length and strInput.lastIndexOf(strEnd, strInput.length - strEnd.length) == strInput.length - strEnd.length
 
+# Remove first line in string
+removeFirstLine = (str) ->
+  endOfFirstLine = str.indexOf('\n') + 1
+  str.slice endOfFirstLine
+
 # Prepend string if necessary
 prepend = (strInput, strStart) ->
   if (_.isString strInput) and (_.isString strStart) and not (startsWith strInput, strStart)
@@ -250,6 +312,18 @@ prepend = (strInput, strStart) ->
 unprepend = (strInput, strStart) ->
   if _.isString(strInput) && _.isString(strStart) && startsWith(strInput, strStart)
     return strInput.slice strStart.length
+  strInput
+
+# Append string if necessary
+append = (strInput, strEnd) ->
+  if (_.isString strInput) and (_.isString strEnd) and not (endsWith strInput, strEnd)
+    return strInput + strEnd
+  strInput
+
+# Unappend string if necessary
+unappend = (strInput, strEnd) ->
+  if _.isString(strInput) && _.isString(strEnd) && endsWith(strInput, strEnd)
+    return strInput.slice 0, strInput.length - strEnd.length
   strInput
 
 # mkdir: make a directory if it doesn't exist (mkdir -p)
