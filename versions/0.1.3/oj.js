@@ -1,6 +1,6 @@
 //
 // oj.js v0.1.3
-// http://ojjs.org
+// ojjs.org
 //
 // Copyright 2013, Evan Moran
 // Released under the MIT License
