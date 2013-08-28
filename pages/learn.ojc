@@ -375,7 +375,7 @@ data = [
           ul(function(){
             for(var n = 0; n < users.length; n++)
               li(function(){
-                TwitterFollowButton(users[n])
+                TwitterButton(users[n])
               });
           });
           """, cs:"""
@@ -388,7 +388,7 @@ data = [
             ul ->
               for n in [0..users.length-1]
                 li ->
-                  TwitterFollowButton users[n]
+                  TwitterButton users[n]
 
           """
 

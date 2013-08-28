@@ -55,11 +55,11 @@ LIBS =
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.GitHubButton'
     ]
-  'oj.TwitterFollowButton':
-    packageDir:path.join ROOT_DIR, 'oj.TwitterFollowButton'
-    docsUrl:'ojjs.org/plugins#oj.TwitterFollowButton'
+  'oj.TwitterButton':
+    packageDir:path.join ROOT_DIR, 'oj.TwitterButton'
+    docsUrl:'ojjs.org/plugins#oj.TwitterButton'
     outputDirs: [
-      path.join WWW_DOWNLOAD_DIR, 'oj.TwitterFollowButton'
+      path.join WWW_DOWNLOAD_DIR, 'oj.TwitterButton'
     ]
   'oj.VimeoVideo':
     packageDir:path.join ROOT_DIR, 'oj.VimeoVideo'

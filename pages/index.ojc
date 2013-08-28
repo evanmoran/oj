@@ -269,11 +269,11 @@ module.exports = ->
         {
           js:"""
             // Create a Twitter follow button
-            TwitterFollowButton('evanmoran')
+            TwitterButton('evanmoran')
           """
           cs:"""
             # Create a Twitter follow button
-            TwitterFollowButton 'evanmoran'
+            TwitterButton 'evanmoran'
           """
         }
         {
@@ -440,6 +440,6 @@ module.exports = ->
       footer c:'gg100', ->
         GitHubButton c:'github-star-button', 'ojjs', 'oj', type:'watch', showCount:false, size:'large', width: 130
 
-        TwitterFollowButton c:'twitter-follow-button', 'evanmoran', showCount: false, size:'large'
+        TwitterButton c:'twitter-follow-button', 'evanmoran', showCount: false, size:'large'
 
         span 'Copyright 2013 Evan Moran', style:'float':'right'

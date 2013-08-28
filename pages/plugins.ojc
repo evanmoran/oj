@@ -144,18 +144,18 @@ data = [
         Social plugins for following, liking, and upvoting.
       """
     items: [
-      h: 'oj.TwitterFollowButton', id: 'TwitterFollowButton', d: ->
+      h: 'oj.TwitterButton', id: 'TwitterButton', d: ->
 
         TryEditor lineCount: 3, js:"""
-            TwitterFollowButton('evanmoran');
+            TwitterButton('evanmoran');
           """, cs: """
-            TwitterFollowButton 'evanmoran'
+            TwitterButton 'evanmoran'
           """
         md """
           Usage:
         """
         TryEditor js:"""
-            TwitterFollowButton({
+            TwitterButton({
               username:'evanmoran',
               showCount: true,
               showUsername: true,
@@ -163,7 +163,7 @@ data = [
               size:'large'
             });
           """, cs: """
-            TwitterFollowButton
+            TwitterButton
               username:'evanmoran'
               showCount: true
               showUsername: true

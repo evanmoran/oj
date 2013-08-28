@@ -82,7 +82,7 @@ data = [
         'oj.VimeoVideo'
         'oj.JSFiddle'
         'oj.GitHubButton'
-        'oj.TwitterFollowButton'
+        'oj.TwitterButton'
         'oj.AceEditor'
         'oj.markdown'
         'oj.mustache'
