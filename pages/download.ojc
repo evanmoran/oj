@@ -69,9 +69,9 @@ data = [
             ->
               span "#{lib}"
             ->
-              a "#{lib}.js (#{oj.version})", c:'button orange', href:"http://ojjs.org/download/#{lib}/#{oj.version}/#{lib}.js"
+              a "#{lib}.js (#{oj.version})", c:'button orange', href:"download/#{lib}/#{oj.version}/#{lib}.js"
             ->
-              a "#{lib}.min.js (#{oj.version})", c:'button orange', href:"http://ojjs.org/download/#{lib}/#{oj.version}/#{lib}.min.js"
+              a "#{lib}.min.js (#{oj.version})", c:'button orange', href:"download/#{lib}/#{oj.version}/#{lib}.min.js"
           ]
 
         Table c:'download-table', rows:tableRows
@@ -98,11 +98,11 @@ data = [
             ->
               span "#{plugin}"
             ->
-              a "#{plugin}.js", c:'button yellow', href:"http://ojjs.org/download/#{plugin}/latest/#{plugin}.js"
+              a "#{plugin}.js", c:'button yellow', href:"download/#{plugin}/latest/#{plugin}.js"
             ->
-              a "#{plugin}.min.js", c:'button yellow', href:"http://ojjs.org/download/#{plugin}/latest/#{plugin}.min.js"
+              a "#{plugin}.min.js", c:'button yellow', href:"download/#{plugin}/latest/#{plugin}.min.js"
           ]
-      Table c:'download-table', rows:tableRows, header:['', 'DEVELOPMENT', 'PRODUCTION']
+      Table c:'download-table', rows:tableRows#, header:['', 'DEVELOPMENT', 'PRODUCTION']
       css
         '.download-table':
           '& tbody tr':
