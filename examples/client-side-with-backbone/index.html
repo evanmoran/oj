@@ -1,0 +1,56 @@
+<!-- OJ Example: Client-side with Backbone -->
+
+<html>
+  <head>
+      <title>OJ Example: Client-side with Backbone</title>
+
+      <!--Include jQuery -- This is the only dependency of OJ -->
+      <script src="http://code.jquery.com/jquery-2.0.2.min.js" type='text/javascript'></script>
+
+      <!--Include oj.js -->
+      <script src="http://ojjs.org/download/oj/latest/oj.min.js" type="text/javascript"></script>
+
+      <!--Optionally include Underscore / Backbone for two-way model binding -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js" type="text/javascript"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js" type="text/javascript"></script>
+
+  </head>
+  <body>
+  </body>
+  <script>
+      oj.useGlobally();
+      $('body').oj(function(){
+
+        h1('OJ Backbone Model Binding');
+
+        // Create a UserModel
+        var UserModel = Backbone.Model.extend({});
+
+        // Create a user from the model
+        var user = new UserModel({name:'Evan', strength:9001});
+
+        // Bind controls to the user's name
+        TextBox({model:user, key:'name'});
+        TextArea({model:user, key:'name'});
+        ListBox({model:user, key:'name',
+                 options:['', 'Brian','Evan','Sam']});
+        CheckBox({model:user, key:'name'});
+        Text({model:user, key:'name',tagName:'div'});
+
+        // Create a button that sets the model directly
+        Button('Set Model to Brian', {click:function(){
+          user.set('name', 'Brian');
+        }});
+
+        // Add CSS to space the controls evenly
+        css({
+            '.oj-TextBox,.oj-TextArea,.oj-ListBox,.oj-Button,div':{
+                width:'200px',
+                margin:'20px 0',
+                display:'block'
+            }
+        });
+
+      });
+  </script>
+</html>
