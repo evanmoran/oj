@@ -19,7 +19,8 @@ command.coffee
         .option('-r, --recurse', 'Recurse into directories (default: off)', false)
         .option('-v, --verbose <level>', 'Turn on verbose level 0-3 (default: 1)', 1)
         .option('-w, --watch', 'Turn on watch mode (default: off)', false)
-        # .option('--modules <modules>', 'List of modules to include', [])
+        # .option('--include <modules>', 'List of modules to include (underscore, backbone, ...)', [])
+        # .option('--exclude <modules>', 'List of modules to exclude (jquery, oj, ...)', [])
         .parse(process.argv)
 
   No arguments shows usage

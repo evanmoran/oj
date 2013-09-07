@@ -6,8 +6,7 @@ path = require 'path'
 fs = require 'fs'
 async = require 'async'
 
-oj = require '../lib/oj.js'
-oj.useGlobally()
+oj = require '../generated/oj.js'
 
 bodyWrap = (str = '') -> "<body>#{str}</body>"
 headEmpty = '<head></head>'

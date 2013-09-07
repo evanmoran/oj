@@ -1,7 +1,7 @@
 {
   "name": "oj",
-  "version": "0.1.3",
-  "main": "lib/server",
+  "version": "0.1.4",
+  "main": "generated/server",
   "description": "A unified templating language for the people. Thirsty people.",
   "homepage": "http://ojjs.org",
   "bin": "./bin/oj",
@@ -21,7 +21,8 @@
     "csso": "1.3.x",
     "mkdirp": "0.3.3",
     "jsdom": "~0.6.0",
-    "jquery": "latest"
+    "jquery": "latest",
+    "jquery2": "latest"
   },
   "scripts": {
     "test": "cake test"

@@ -7,12 +7,12 @@ fileModifiedTime = (filepath, cb) ->
     return cb(err, data) if err
     cb(err, data.mtime)
 
-oj = require '../lib/oj.js'
+oj = require '../generated/oj.js'
 
 describe 'oj', ->
   dir = process.cwd()
   ojCoffeeFile = path.join dir, 'src/oj.litcoffee'
-  ojJSFile = path.join dir, 'lib/oj.js'
+  ojJSFile = path.join dir, 'generated/oj.js'
 
   it 'should be up-to-date with the .coffee file (run \'cake build\')', (done) ->
     async.parallel

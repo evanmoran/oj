@@ -78,8 +78,8 @@ module.exports = (oj, settings) ->
         @value = args[0]
 
       @state = oj.argumentShift(options, 'state') ? 'js'
-      @js = oj.argumentShift(options,'js') if options.js?
-      @cs = oj.argumentShift(options,'cs') if options.cs?
+      @js = oj.argumentShift(options,'js') if oj.isString options.js
+      @cs = oj.argumentShift(options,'cs') if oj.isString options.cs
 
       @minWidth = oj.argumentShift(options, 'minWidth') ? 400
       @minHeight = oj.argumentShift(options, 'minHeight') ? (lineHeight * 1 + 2 * editorPadding)
@@ -97,6 +97,8 @@ module.exports = (oj, settings) ->
 
       # Bind any events
       @_bindEvents()
+
+      @updateFrame()
 
     properties:
 
@@ -237,7 +239,6 @@ module.exports = (oj, settings) ->
 
             @$gripper.show()
 
-
             # Enable scrolling
             $('body').css
               overflow:'auto'
@@ -359,6 +360,9 @@ module.exports = (oj, settings) ->
         TryEditor.base.inserted.apply @, arguments
 
         @lineCount = @lineCount
+
+        @editor.value = @value
+
         @editor.height = @height
 
         # Maximize instantly if it defaulted that way
@@ -427,7 +431,6 @@ module.exports = (oj, settings) ->
 
         # Make the editor resizable
         if oj.isClient
-
           if $.resize?
             $.resize.throttleWindow = false
             $.resize.delay = 100
@@ -686,10 +689,10 @@ _scriptTagForCodeBody = (code) ->
 
   """
   // Start onready
-  $(function(){try{with(oj){
+  oj.$(function(){try{with(oj){
 
   // Insert code into body
-  $.ojBody(function(){
+  oj.$.ojBody(function(){
 
   #{code}
 

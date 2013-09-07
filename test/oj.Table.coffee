@@ -4,8 +4,7 @@
 path = require 'path'
 fs = require 'fs'
 Backbone = require 'backbone'
-oj = require '../lib/oj.js'
-oj.useGlobally()
+oj = require '../generated/oj.js'
 
 a1 = 'a1'
 a2 = 'a2'

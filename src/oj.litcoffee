@@ -25,11 +25,20 @@ Export Model to NodeJS or globally
 
   Define oj version
 
-    oj.version = '0.1.3'
+    oj.version = '0.1.4'
 
   Detect if this is client or server-side
 
     oj.isClient = not process?.versions?.node
+
+  Store jQuery reference as either the global reference or as required through `jquery2`.
+  This allows this reference to be included as a script tag, included through npm, or overriden.
+
+    if typeof $ != 'undefined'
+      oj.$ = $
+    else if typeof require != 'undefined'
+      try
+        oj.$ = require 'jquery'
 
   Export as a module in node
 
@@ -48,16 +57,14 @@ Export Model to NodeJS or globally
 oj.load
 -------------------------------------------------------------------------------
 Load the page specified generating necessary html, css, and client side events.
-TODO: Static server side support for loading any generated pages dynamically.
-TODO: Support Backbone routes to trigger page changes.
 
     oj.load = (page) ->
 
   Defer dom manipulation until the page is ready
 
-      jQuery ->
+      oj.$ ->
 
-        $.ojBody (require page)
+        oj.$.ojBody (require page)
 
   Trigger events bound through onload
 
@@ -333,7 +340,6 @@ _bind: Helper to bind context to function
   _clone
 
     _clone = (obj) ->
-      # TODO: support cloning OJ instances
       return obj unless (oj.isArray obj) or (oj.isObject obj)
       if oj.isArray obj then obj.slice() else _extend {}, obj
 
@@ -612,13 +618,10 @@ oj.dependency
 ------------------------------------------------------------------------------
 Ensure dependencies through oj plugins
 
-    oj.dependency = (name) ->
-      obj = if oj.isClient then window[name] else global[name]
-      throw new Error("oj: #{name} dependency is missing") unless oj.isDefined obj
-
-Depend on jQuery
-
-    oj.dependency 'jQuery'
+    oj.dependency = (name, check) ->
+      check ?= ->
+        if oj.isClient then oj.isDefined(window[name]) else oj.isDefined(global[name])
+      throw new Error("oj: #{name} dependency is missing") unless check()
 
 oj.addMethod
 ------------------------------------------------------------------------------
@@ -796,7 +799,7 @@ Abstraction to wrap global arguments stack. This makes me sad but it is necessar
 oj.tag (name, attributes, content, content, ...)
 ------------------------------------------------------------------------------
 
-    oj.tag = (name, args...) ->
+    oj.tag = (name, rest...) ->
 
 *name*: String of tag to serialize
 *attributes*: (Optional) Object defining attributes of tag being serialized
@@ -815,15 +818,12 @@ Styles have smart mappings:
 
       ojml = [name]
 
-  Get attributes from args by unioning all objects
+  Get attributes from rest by unioning all objects
 
-      attributes = {}
-      for arg in args
+      {args, options:attributes} = oj.unionArguments rest
 
-  TODO: evaluate argument if necessary
-
-        if oj.isObject arg
-          _extend attributes, arg
+      if isQuiet = attributes.__quiet__
+        delete attributes.__quiet__
 
   Add attributes to ojml if they exist
 
@@ -838,8 +838,8 @@ Styles have smart mappings:
       for arg in args
         if oj.isObject arg
           continue
-        else if oj.isFunction arg
 
+        else if oj.isFunction arg
           len = oj._argsTop().length
 
   Call the argument it will auto append to oj._argsTop() which is ojml
@@ -859,9 +859,10 @@ Styles have smart mappings:
       oj._argsPop()
 
   Append the final result to your parent's arguments
-  if there exists an argument to append to
+  if there exists an argument to append to.
+  Do not emit when quiet is set,
 
-      oj._argsAppend ojml
+      oj._argsAppend(ojml) unless isQuiet
 
       ojml
 
@@ -892,6 +893,11 @@ Styles have smart mappings:
     _getTagName = (tag) ->
       tag.tagName
 
+  Get quiet tag name
+
+    _getQuietTagName = (tag) ->
+      tag + '_'
+
   Record an oj instance on a given element
 
     _setInstanceOnElement = (el, inst) ->
@@ -910,9 +916,20 @@ Styles have smart mappings:
 
     for t in oj.tag.elements.all
       do (t) ->
+
+  Tag functions emit by default
+
         oj[t] = -> oj.tag t, arguments...
-        # Remember the tag name
+
+  Underscore tag functions do not emit
+
+        qt = _getQuietTagName t
+        oj[qt] = -> oj.tag t, {__quiet__:1}, arguments...
+
+  Record the tag name so the OJML syntax can use the function instead of a string
+
         _setTagName oj[t], t
+        _setTagName oj[qt], t
 
 oj.doctype
 ------------------------------------------------------------------------------
@@ -947,10 +964,12 @@ Extend all OJ methods into a context. Common contexts are `global` `window`
 Methods that start with _ are not extended
 
     oj.useGlobally = oj.extendInto = (context = root) ->
+
       o = {}
       for k,v of oj
         if k[0] != '_' and k != 'extendInto' and k != 'useGlobally'
           o[k] = v
+
       _extend context, o
 
 oj.compile(options, ojml)
@@ -1186,7 +1205,6 @@ Nested definitions, media definitions and comma definitions are resolved.
             selectorParts = _splitAndTrim selector, ','
 
   Generate the next selectors and substitue `&` when present
-  TODO: Refactor to use the same code as media queries
 
             selectorsNext = []
             for selOuter in selectorsAcc
@@ -1349,10 +1367,9 @@ Recursive helper for compiling any type
         when 'array'
           _compileTag ojml, options
 
-        when 'jquery'
-          # TODO: Missing unit tests for the jquery case
-          options.html?.push ojml.html()
-          options.dom?.concat ojml.get()
+        # when 'jquery'
+        #   options.html?.push ojml.html()
+        #   options.dom?.concat ojml.get()
 
         when 'string'
           options.html?.push ojml
@@ -1574,10 +1591,6 @@ Recursive helper for compiling ojml tags
       # Omit keys that false, null, or undefined
       _attributeOmitFalsyValues attr
 
-      # TODO: Consider jsoning anything that isn't a string
-      # any keys that aren't strings are jsoned
-      # _attributesJSONAllKeys attributes
-
       # Filter out jquery events
       events = _attributesFilterOutEvents attr
 
@@ -1587,11 +1600,11 @@ Recursive helper for compiling ojml tags
     # Bind events to dom
     _attributesBindEventsToDOM = (events, el) ->
       for ek, ev of events
-        if $?
+        if oj.$?
           if oj.isArray ev
-            $(el)[ek].apply @, ev
+            oj.$(el)[ek].apply @, ev
           else
-            $(el)[ek](ev)
+            oj.$(el)[ek](ev)
         else
           console.error "oj: jquery is missing when binding a '#{ek}' event"
 
@@ -1747,12 +1760,10 @@ oj.createType
           return
 
         # has: Determine if property exists
-        # TODO: Make this O(1)
         has: (k) ->
           _some @properties, (v) -> v == k
 
         # can: Determine if method exists
-        # TODO: Make this O(1)
         can: (k) ->
           _some @methods, (v) -> v == k
 
@@ -1847,7 +1858,7 @@ oj.View
             return
 
         # Get and cache jquery-enabled element (readonly)
-        $el: get: -> @_$el ? (@_$el = $ @el)
+        $el: get: -> @_$el ? (@_$el = oj.$ @el)
 
         # Get and set id attribute of view
         id:
@@ -1872,13 +1883,13 @@ oj.View
         # Get all currently set attributes (readonly)
         attributes: get: ->
           out = {}
-          $.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
+          oj.$.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
           out
 
         # Get all currently set themes (readwrite)
         themes: get: ->
           out = {}
-          $.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
+          oj.$.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
           out
 
         # Determine if this view has been fully constructed (readonly)
@@ -3032,7 +3043,7 @@ swapRow: Swap row rx1 and rx2
 
         clearColgroup: -> @$colgroup.remove(); return
 
-        clearBody: -> console.log "clearing body: oj.litcoffee:2930";@$tbody.remove(); @bodyChanged(); return
+        clearBody: -> @$tbody.remove(); @bodyChanged(); return
 
         clearHeader: -> @$thead.remove(); @headerChanged(); return
 
@@ -3118,7 +3129,7 @@ option.first:true means return only the first get, otherwise it is returned as a
         if (oj.isFunction options.get) and args.length == 0
           out = []
           for el in $els
-            out.push options.get $(el)
+            out.push options.get oj.$(el)
             if options.first
               return out[0]
           out
@@ -3127,7 +3138,7 @@ option.first:true means return only the first get, otherwise it is returned as a
           # By default return this for chaining
           out = $els
           for el in $els
-            r = options.set $(el), args
+            r = options.set oj.$(el), args
             # Short circuit if anything is returned
             return r if r?
 
@@ -3143,14 +3154,14 @@ option.first:true means return only the first get, otherwise it is returned as a
         # Skip global css if options.global is true
         continue if plugin == 'oj-style' and not options?.global
         # Create <style> tag for the plugin
-        if $('.' + _styleClassFromPlugin plugin).length == 0
-          $('head').append oj._styleTagFromMediaObject plugin, mediaMap
+        if oj.$('.' + _styleClassFromPlugin plugin).length == 0
+          oj.$('head').append oj._styleTagFromMediaObject plugin, mediaMap
       return
 
 jQuery.fn.oj
 -----------------------------------------------------------------------------
 
-    jQuery.fn.oj = _jqueryExtend
+    oj.$.fn.oj = _jqueryExtend
       set:($el, args) ->
 
         # No arguments return the first instance
@@ -3180,7 +3191,7 @@ jQuery.ojBody ojml
 -----------------------------------------------------------------------------
 Replace body with ojml. Global css is rebuild when using this method.
 
-    jQuery.ojBody = (ojml) ->
+    oj.$.ojBody = (ojml) ->
 
   Compile only the body and below
 
@@ -3194,7 +3205,7 @@ Replace body with ojml. Global css is rebuild when using this method.
 
   Clear body and insert dom elements
 
-      $('body').html(dom) if dom?
+      oj.$('body').html(dom) if dom?
 
       _insertStyles cssMap, global:1
 
@@ -3221,7 +3232,7 @@ Get the first value of the selected contents
           else
             child
 
-    jQuery.fn.ojValue = _jqueryExtend
+    oj.$.fn.ojValue = _jqueryExtend
       first: true
       set: null
       get: _jqGetValue
@@ -3230,7 +3241,7 @@ jQuery.fn.ojValues
 -----------------------------------------------------------------------------
 Get values as an array of the selected element's contents
 
-    jQuery.fn.ojValues = _jqueryExtend
+    oj.$.fn.ojValues = _jqueryExtend
       first: false
       set: null
       get: _jqGetValue
@@ -3249,7 +3260,7 @@ jQuery plugins
 
     for ojName,jqName of plugins
       do (ojName, jqName) ->
-        jQuery.fn[ojName] = _jqueryExtend
+        oj.$.fn[ojName] = _jqueryExtend
           set: ($el, args) ->
 
             # Compile ojml for each one to separate references

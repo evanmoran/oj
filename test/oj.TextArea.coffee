@@ -3,8 +3,7 @@
 
 path = require 'path'
 fs = require 'fs'
-oj = require '../lib/oj.js'
-oj.useGlobally()
+oj = require '../generated/oj.js'
 
 describe 'oj.TextArea', ->
   it 'exists', ->

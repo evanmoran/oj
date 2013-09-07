@@ -23,7 +23,7 @@ WWW_DIR = path.join CAKE_DIR, 'www'
 WWW_DOWNLOAD_DIR = path.join CAKE_DIR, 'www', 'download'
 WWW_SCRIPTS_DIR = path.join CAKE_DIR, 'www', 'scripts'
 PAGES_DIR = path.join CAKE_DIR, 'pages'
-LIB_DIR = path.join CAKE_DIR, 'lib'
+GENERATED_DIR = path.join CAKE_DIR, 'generated'
 VERSIONS_DIR = path.join CAKE_DIR, 'versions'
 DOCS_DIR = path.join CAKE_DIR, 'docs'
 SRC_DIR = path.join CAKE_DIR, 'src'
@@ -35,7 +35,7 @@ GIT_DIR = path.join CAKE_DIR, '..'
 LIBS =
   'oj':
     packageDir:path.join ROOT_DIR, 'oj'
-    inputFile:path.join ROOT_DIR, 'oj', 'lib', 'oj.js'
+    inputFile:path.join GENERATED_DIR, 'oj.js'
     removeFirstLine: true
     copyrightName: 'Evan Moran'
     docsUrl:'ojjs.org'
@@ -96,10 +96,11 @@ LIBS =
 # Tasks
 # ------------------------------------------------------------------------------
 
-task "all", "Build, version, and tests", ->
+task "all", "Build everthing: compile, copy, version, and tests", ->
   invoke "build:js"
   invoke "build:docs"
   invoke "version:libs"
+  invoke "copy:examples"
   invoke "test"
 
 task "build", "Build everything", ->
@@ -108,14 +109,14 @@ task "build", "Build everything", ->
   invoke "version:libs"
 
 task "build:js", "Compile coffee script files", ->
-  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/oj.litcoffee']
-  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/server.litcoffee']
-  launch 'coffee', ['--compile', '-o', LIB_DIR, 'src/command.litcoffee']
+  launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'src/oj.litcoffee']
+  launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'src/server.litcoffee']
+  launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'src/command.litcoffee']
 
 task "build:js:watch", "Watch coffee script files", ->
-  launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/oj.litcoffee']
-  launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/server.litcoffee']
-  launch 'coffee', ['--compile', '--watch', '-o', LIB_DIR, 'src/command.litcoffee']
+  launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'src/oj.litcoffee']
+  launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'src/server.litcoffee']
+  launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'src/command.litcoffee']
 
   # For convenience update the site scripts/oj.js to force try editor to latest version of oj
   launch 'coffee', ['--compile', '--watch', '-o', WWW_SCRIPTS_DIR, 'src/oj.litcoffee']
@@ -197,6 +198,10 @@ task "version:libs", "All release text, minifiy and copy oj and plugins", ->
   for libName, libData of LIBS
     versionAndMinifyLib libName, libData
 
+task "copy:examples", "Copy example projects to www", ->
+  info 'Copying examples'
+  launch 'rsync', ['-a', path.join(ROOT_DIR,'oj-examples/'), path.join(WWW_DIR, 'examples/')]
+
 task "ddd", "Build debug www", ->
   launch 'oj', ['--recurse', '--verbose', '2', '--output', WWW_DIR, PAGES_DIR]
 
@@ -233,6 +238,7 @@ task "test:watch", "Watch unit tests", ->
   launch 'mocha', ['--reporter', 'min', '--watch']
 
 _modules =
+  jquery: 'http://code.jquery.com/jquery-2.0.3.min.js',
   assert: 'https://raw.github.com/joyent/node/master/lib/assert.js',
   console: 'https://raw.github.com/joyent/node/master/lib/console.js',
   crypto: 'https://raw.github.com/joyent/node/master/lib/crypto.js',
@@ -258,9 +264,13 @@ task 'download', 'download node modules', ->
 
       console.log 'downloading: ', url
       download url, (err, data) ->
+        console.log "downloaded: #{url} (#{data.length} characters)"
 
-        console.log "saving: #{filepath} (#{data.length} characters)"
-        save filepath, data, (err) ->
+        minifiedData = uglify data
+        console.log "minified: #{url} (#{minifiedData.length} characters)"
+
+        console.log "saving: #{filepath} (#{minifiedData.length} characters)"
+        save filepath, minifiedData, (err) ->
           throw err if err
 
 # Utilities

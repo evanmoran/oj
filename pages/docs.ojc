@@ -115,21 +115,17 @@ data = [
         """
         h3 "Example: Using some tag functions"
         TryEditor js:"""
-          span('span');
+          button('button')
 
           input({type:'text',
             placeholder:'input'});
 
-          button('button')
-
-          input({type:'checkbox'})
+          input({type:'checkbox'});
         """, cs:"""
-          span 'span'
+          button 'button'
 
           input type:'text',
             placeholder:'input'
-
-          button 'button'
 
           input type:'checkbox'
         """
@@ -152,7 +148,6 @@ data = [
             li 'Item 3'
             li 'Item 4'
             li 'Item 5'
-          });
         """
 
         h3 "Example: Creating tags with loops"
@@ -168,7 +163,6 @@ data = [
           ul ->
             for n in [1...5]
               li 'Item ' + n
-          });
         """
       ]
   ,
@@ -384,8 +378,8 @@ data = [
         TryEditor js:"""
           TextArea({
             live:false,
-              //live:true will trigger change
-              //events on all key presses
+              //live=true will trigger change
+              //  events on all key presses
               //defaults to true
 
             change:function(e){
@@ -395,11 +389,18 @@ data = [
               alert(this.oj.value);
           }});
         """, cs:"""
-          TextArea change:(e) ->
-            # e is jquery change event
-            # this is element
-            # this.oj is the TextArea instance
-            alert this.oj.value
+          TextArea
+            live:false
+              #live=true will trigger change
+              #  events on all key presses
+              #defaults to true
+
+            change:(e) ->
+              # e is jquery change event
+              # @ is element
+              # @oj is the TextArea instance
+              alert @oj.value
+          }});
         """
     ,
       h:'oj.Text', id:'Text', d: ->
@@ -430,14 +431,19 @@ data = [
         h3 'Example: Changing Text automatically'
 
         TryEditor js:"""
-          var myText = Text('Text to change');
+          var myText = Text('Some text..');
 
           Button('Change It!', {
             click:function(){
-              myText.value = 'Woot';
+              myText.value = 'Changed it!';
             }
           });
         """, cs:"""
+          myText = Text 'Some text..'
+
+          Button 'Change It!',
+            click: ->
+              myText.value = 'Changed it!'
         """
     ,
       h:'oj.TextBox', id:'TextBox', d: ->
@@ -686,8 +692,12 @@ data = [
     """
 
     items: [
-      h:'oj.BulletList', id:'BulletList', d: """
+      h:'oj.BulletList', id:'BulletList', d: ->
+        md """
           This is a simple alias for [oj.List](#List) to abstract creating **bulleted** lists. It overrides the properties [tagName](#List-tagName) to `ul`, and [itemTagName](#List-itemTagName) to `li`.
+        """
+        TryEditor js:"""
+        """, cs:"""
         """
     ,
       h:'oj.NumberList', id:'NumberList', d: """

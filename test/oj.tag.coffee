@@ -4,24 +4,26 @@
 path = require 'path'
 fs = require 'fs'
 async = require 'async'
+_ = require 'underscore'
 
 fileModifiedTime = (filepath, cb) ->
   fs.stat filepath, (err, data) ->
     return cb(err, data) if err
     cb(err, data.mtime)
 
-oj = require '../lib/oj.js'
-oj.useGlobally()
+oj = require '../generated/oj.js'
+
+div = oj.div
+span = oj.span
+div_ = oj.div_
+span_ = oj.span_
+str = 'str'
+str1 = 'one'
+str2 = 'two'
+str3 = 'three'
+str4 = 'four'
 
 describe 'oj.tag', ->
-
-  div = oj.div
-  span = oj.span
-  str = 'str'
-  str1 = 'one'
-  str2 = 'two'
-  str3 = 'three'
-  str4 = 'four'
 
   it 'exists', ->
     assert oj.tag != null, 'oj.tag is null'
@@ -32,11 +34,16 @@ describe 'oj.tag', ->
     (div()).should.deep.equal ['div']
     (span()).should.deep.equal ['span']
     (oj()).should.deep.equal ['oj']
+    (div_()).should.deep.equal ['div']
+    (span_()).should.deep.equal ['span']
 
   it 'name, [String, ...]', ->
     (div str).should.deep.equal ['div', str]
     (div str1, str2).should.deep.equal ['div', str1, str2]
     (div str1, str2, str3).should.deep.equal ['div', str1, str2, str3]
+    (div_ str).should.deep.equal ['div', str]
+    (div_ str1, str2).should.deep.equal ['div', str1, str2]
+    (div_ str1, str2, str3).should.deep.equal ['div', str1, str2, str3]
 
   it 'name, [Function, ...]', ->
     (div -> str).should.deep.equal ['div', str]
@@ -133,3 +140,11 @@ describe 'oj.tag', ->
 
     # but correctly returns its children
     ojml2.should.deep.equal ['oj', ['div', 2], ['div', 3] ]
+
+ it 'nesting with tags_ should not emit', ->
+    (oj ->
+      div(
+        span_(1)
+        span_(2)
+      )
+    ).should.deep.equal ['oj', ['div', ['span',1],['span',2]]]

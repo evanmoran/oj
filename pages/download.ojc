@@ -35,32 +35,46 @@ module.exports = ->
       renderTOC data
 
     body: ->
+      css
+        '.button':
+          borderRadius:'5px'
+          textAlign:'center'
+          fontSize:'16px'
+          fontWeight:'lighter'
+          fontFamily: fontFamilySansSerif
+          color:'#a76200'
+          display:'inline-block'
+          '&.yellow':
+            border:'1px solid #C76200'
+            color:'#a72200'
+
+          '&.orange':
+            '@media phone':
+              marginTop:'15px'
+
+          padding: '4px 8px'
+          margin: '10px 10px 10px 0px'
+          border:'1px solid #a72200'
+
+        '.download-table':
+          '& tbody tr:not(:last-child)':
+
+            borderBottom:'1px solid #ddd'
+
+          '& td, & th':
+            paddingRight:'20px'
+            fontWeight:'200'
+            fontSize:'16px'
+            textAlign:'left'
+            fontFamily: fontFamilySansSerif
+
+          '& th':
+            paddingBottom:'10px'
     head: ->
 
 fontFamilySansSerif = 'Helvetica, Arial, sans-serif'
 data = [
-  h: 'Download', id: 'download', d: ->
-    css
-      '.button':
-        borderRadius:'5px'
-        textAlign:'center'
-        fontSize:'16px'
-        fontWeight:'lighter'
-        fontFamily: fontFamilySansSerif
-        color:'white'
-        backgroundColor:'#FF9B00'
-        display:'inline-block'
-        '&.yellow':
-          backgroundColor:'#FFC000'
-
-        '&.orange':
-          '@media phone':
-            marginTop:'15px'
-        padding: '4px 8px'
-        margin: '10px 10px 10px 0px'
-  items: [
-
-    h: "OJ", id: 'download-oj', d: ->
+  h: 'Download OJ', id: 'download-oj', d: ->
       br()
       tableRows = []
       for lib in ['oj']
@@ -72,20 +86,25 @@ data = [
               a "#{lib}.js (#{oj.version})", c:'button orange', href:"download/#{lib}/#{oj.version}/#{lib}.js"
             ->
               a "#{lib}.min.js (#{oj.version})", c:'button orange', href:"download/#{lib}/#{oj.version}/#{lib}.min.js"
+            ->
+              a "docs", c:'document', href:"docs.html"
+
           ]
 
         Table c:'download-table', rows:tableRows
-
-  ,
-    h: 'Plugins', id: 'download-plugins', d: ->
+    items: [
+    ]
+,
+  h: 'Download Plugins', id: 'download-plugins', d: ->
       plugins = [
-        'oj.VimeoVideo'
-        'oj.JSFiddle'
-        'oj.GitHubButton'
-        'oj.TwitterButton'
-        'oj.AceEditor'
-        'oj.markdown'
-        'oj.mustache'
+        'YouTubeVideo'
+        'VimeoVideo'
+        'JSFiddle'
+        'GitHubButton'
+        'TwitterButton'
+        'AceEditor'
+        'markdown'
+        'mustache'
       ]
       br()
       br()
@@ -98,58 +117,70 @@ data = [
             ->
               span "#{plugin}"
             ->
-              a "#{plugin}.js", c:'button yellow', href:"download/#{plugin}/latest/#{plugin}.js"
+              a "oj.#{plugin}.js", c:'button yellow', href:"download/#{plugin}/latest/oj.#{plugin}.js"
             ->
-              a "#{plugin}.min.js", c:'button yellow', href:"download/#{plugin}/latest/#{plugin}.min.js"
+              a "oj.#{plugin}.min.js", c:'button yellow', href:"download/#{plugin}/latest/oj.#{plugin}.min.js"
+            ->
+              a "docs", c:'document', href:"plugins.html##{plugin}"
           ]
       Table c:'download-table', rows:tableRows#, header:['', 'DEVELOPMENT', 'PRODUCTION']
-      css
-        '.download-table':
-          '& tbody tr':
 
-            borderTop:'1px solid #ddd'
+    items: [
+    ]
 
-          '& td, & th':
-            paddingRight:'20px'
-            fontWeight:'200'
-            fontSize:'16px'
-            textAlign:'left'
-            fontFamily: fontFamilySansSerif
-
-          '& th':
-            paddingBottom:'10px'
-
-  ]
-# ,
-#   h: 'Setup', id: 'setup', d: ->
-#     md """
-#       So you want to use OJ?
-#     """
-#   items: [
-
-#     h: 'Download', id: 'dd', d: """
-#     Download
-#     """
-#   ]
 ,
   h: 'Examples', id: 'setup', d: ->
     md """
-      Here are some examples to get you started. Please let me know if they are helpful or need work!
+
+      All examples are included in the [oj-examples](http://github.com/ojjs/oj-examples) project. To take a look at them clone the repository with git:
+
+          git clone git@github.com:ojjs/oj-examples.git
+
+      Or just go there directly:
+
+          [View examples](http://github.com/ojjs/oj-examples)
+
+      The goal of these is to get you started as fast as possible. If these don't work immediately let me know and I'll fix them so they are even more clear.
     """
   items: [
 
-    h: 'Client-side: Hello World', id: 'example-client-hello-world', d: ->
+    h: 'Client-side Hello World', id: 'example-client-side-hello-world', d: ->
       md """
+        Getting started with OJ is as simple as including oj.js and executing code. Here is Hello World in JSFiddle:
+      """
+      # JSFiddle 'evanmoran/vhNcD', width:'100%',height:'280px', tabs:'result,js,resources'
+
+      md """
+        [View source (github.com)](https://github.com/ojjs/oj-examples/blob/master/client-side-hello-world/index.html)
+
+        [View example (ojjs.org)](examples/client-side-hello-world/index.html)
       """
   ,
-    h: 'Client-side: Backbone', id: 'example-client-model-binding', d: ->
-  ,
-    h: 'Server-side: OJ Commandline', id: 'example-server-commandline', d: ->
-  ,
-    h: 'Server-side: Express', id: 'example-server-express', d: """
-      Express support has not been implemented yet. This is my [#1 priority](https://github.com/ojjs/oj/issues/1), and clearly once this exists OJ will be living the node dream of shared client and server code.
+    h: 'Client-side with Backbone', id: 'example-client-side-backbone', d: ->
 
-      For those interested: the reason express support is still in progress is serious caching is necessary for `require` traversal as well as minification. A simple "one function" approach would be pretty trival. It is just getting the file unification and minification that is hard. If any experts on Express want to help, please feel free to reach out.
+      md """
+        To get started with model binding with Backbone check out this example:
+      """
+      # JSFiddle 'evanmoran/uEWFh/', width:'100%',height:'370px', tabs:'result,js,resources'
+      md """
+        [View source (github.com)](https://github.com/ojjs/oj-examples/blob/master/client-side-with-backbone/index.html)
+
+        [View example (ojjs.org)](examples/client-side-with-backbone/index.html)
+      """
+  ,
+    h: 'Server-side Commandline', id: 'example-server-side-commandline', d: ->
+      md """
+        [View source (github.com)](https://github.com/ojjs/oj-examples/tree/master/server-side-with-commandline)
+
+        [View example (ojjs.org)](examples/server-side-with-commandline/index.html)
+      """
+  ,
+    h: 'Server-side with Express', id: 'example-server-side-express', d: """
+      **Important**: Express support <u>has not been implemented</u> yet. This is my [#1 priority](https://github.com/ojjs/oj/issues/1), and clearly once express support happens OJ the full dream of shared client and server code we will realized!
+
+      For those interested: the challenge is that *serious* caching is necessary for fast minification and `require` traversal. A simple "one function" approach would be pretty trivial. It is just getting support the [command-line](docs.html#commandline) tool's file unification and minification that is hard.
+
+      If you are an expert on Express middleware integration, please feel free to reach out.
     """
 
   ]

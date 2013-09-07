@@ -40,6 +40,10 @@ Export Server Side OJ
 
     module.exports = oj
 
+  Make sure jquery is hooked up
+
+    oj.$ = global.$
+
   Store console codes for color logging
 
     oj.codes =
@@ -56,7 +60,6 @@ Export Server Side OJ
 
 Register require.extension for .oj and .ojc file types
 -------------------------------------------------------------------------------
-TODO: Compile.ojlc files as literate coffee-script
 
     if require.extensions
 
@@ -256,8 +259,9 @@ This is not a public API so it seemed to horrible.
         out = path.basename out, ext
       out
 
-    # compileFile
-    # ------------------------------------------------------------------------------
+compileFile
+------------------------------------------------------------------------------
+
     compileFile = (filePath, includeDir, options = {}, cb = ->) ->
       # Time this method
       startTime = process.hrtime()
@@ -271,7 +275,7 @@ This is not a public API so it seemed to horrible.
       isMinify = options.minify ? false
 
       includedModules = options.modules or []
-      includedModules = includedModules.concat ['oj']
+      includedModules = includedModules.concat ['oj', 'jquery']
       rootDir = options.root or path.dirname filePath
 
       throw new Error('oj: root is not a directory') unless isDirectory rootDir
@@ -374,7 +378,7 @@ This is not a public API so it seemed to horrible.
         error "validation error #{filePath}: <body> tag is missing"
         return
 
-      # TODO: Should we check for doctype?
+      # TODO: Should we auto-insert doctype 5?
       # Insert script before </body> or before </html> or at the end
       scriptIndex = html.lastIndexOf '</body>'
       html = _insertAt html, scriptIndex, scriptHtml
@@ -421,8 +425,6 @@ This is not a public API so it seemed to horrible.
 
     # watchFile
     # ------------------------------------------------------------------------------
-    # Based in part on coffee-script's watch implementation
-    # github.com/jashkenas/coffee-script/
 
     watchFile = (filePath, includeDir, options = {}) ->
       # Do nothing if this file is already watched
@@ -489,11 +491,11 @@ This is not a public API so it seemed to horrible.
           watchCache[filePath].close()
         watchCache[filePath] = null
 
-    # watchDir
-    # ------------------------------------------------------------------------------
+watchDir
+------------------------------------------------------------------------------
+Watch a directory of files for new additions.
+This method does not recurse as it is called from methods that do (compileDir)
 
-    # Watch a directory of files for new additions.
-    # This method does not recurse as it is called from methods that do (compileDir)
     watchDir = (dir, includeDir, options) ->
 
       # Short circuit if already watching this directory
@@ -545,11 +547,11 @@ This is not a public API so it seemed to horrible.
       verbose 1, "oj exited successfully.", 'cyan'
       process.exit()
 
-    # Helpers
-    # =====================================================================
+Helpers
+===============================================================================
 
-    # Output helpers
-    # ------------------------------------------------------------------------------
+Output helpers
+-------------------------------------------------------------------------------
 
     success = ->
       process.exit 0
@@ -571,8 +573,8 @@ This is not a public API so it seemed to horrible.
       console.error "#{red}#{message}#{reset}"
       return
 
-    # File helpers
-    # ------------------------------------------------------------------------------
+File helpers
+------------------------------------------------------------------------------
 
     # isFile: Determine if path is to a file
     isFile = (filePath) ->
@@ -662,11 +664,10 @@ This is not a public API so it seemed to horrible.
         cb err, results.files, results.directories
       return
 
-    # ls
-    # List directories and files from paths asynchronously
-    # options.filterFile: accept those files that return true
-    # options.filterDir: accept those directories that return true
-    # options.recurse: boolean to indicate recursion is desired
+ls: List directories and files from paths asynchronously
+  options.filterFile: accept those files that return true
+  options.filterDir: accept those directories that return true
+  options.recurse: boolean to indicate recursion is desired
 
     ls = (paths, options, cb) ->
       # Default paths to an array
@@ -750,13 +751,13 @@ This is not a public API so it seemed to horrible.
     readFileSync = (filePath) ->
       fs.readFileSync filePath, 'utf8'
 
-    # Timing helpers
-    # ------------------------------------------------------------------------------
+Timing helpers
+------------------------------------------------------------------------------
 
     wait = (seconds, fn) -> setTimeout fn, seconds*1000
 
-    # String helpers
-    # ------------------------------------------------------------------------------
+String helpers
+------------------------------------------------------------------------------
 
     trimArgList = (v) ->
       _trim v.split(',')
@@ -785,8 +786,8 @@ This is not a public API so it seemed to horrible.
     _length = (any) ->
       any.length or _.keys(any).length
 
-    # Code minification
-    # ------------------------------------------------------------------------------
+Code minification
+------------------------------------------------------------------------------
 
     oj._minifyJS = (js, options = {}) ->
 
@@ -804,8 +805,8 @@ This is not a public API so it seemed to horrible.
       else
         css
 
-    # Requiring
-    # ------------------------------------------------------------------------------
+Requiring
+------------------------------------------------------------------------------
 
     # Hooking into require inspired by [node-dev](http://github.com/fgnass/node-dev)
     _hookRequire = (modules, moduleLinkMap, hookCache={}, hookOriginalCache={}) ->
@@ -872,7 +873,7 @@ This is not a public API so it seemed to horrible.
         watchParents[filename].push module.parent
         watchParents[filename] = _.unique watchParents[filename]
 
-    _nodeModulesSupported = oj:1, assert:1, console:1, crypto:1, events:1, freelist:1, path:1, punycode:1, querystring:1, string_decoder:1, tty:1, url:1, util:1
+    _nodeModulesSupported = oj:1, jquery:1, assert:1, console:1, crypto:1, events:1, freelist:1, path:1, punycode:1, querystring:1, string_decoder:1, tty:1, url:1, util:1
     _nodeModuleUnsupported = child_process:1, domain:1, fs:1, net:1, os:1, vm:1, buffer:1
     isNodeModule = (module) -> !!_nodeModulesSupported[module]
     isUnsupportedNodeModule = (module) -> !!_nodeModuleUnsupported[module]
@@ -950,7 +951,7 @@ This is not a public API so it seemed to horrible.
       # To ourselves oj is local but to them oj is native.
       # Removing this cache record ensures only the native copy
       # is saved to the client.
-      delete cache.files[require.resolve '../lib/oj.js']
+      delete cache.files[require.resolve '../generated/oj.js']
 
       return cache
 
@@ -1000,22 +1001,19 @@ This is not a public API so it seemed to horrible.
 
     # ojModuleCode: Get code for oj
     _ojModuleCode = (isMinify) ->
-      code = readFileSync path.join __dirname, "../lib/oj.js"
-      # Minify code if not debugging
+      code = readFileSync path.join __dirname, "../generated/oj.js"
       oj._minifyJS code, filename:'oj', minify:isMinify
 
     # nativeModuleCode: Get code for native module
     _nativeModuleCode = (moduleName, isMinify) ->
       verbose 3, "found #{moduleName}"
       code = readFileSync path.join __dirname, "../modules/#{moduleName}.js"
-      # Minify code if not debugging
-      oj._minifyJS code, filename:moduleName, minify:isMinify
 
-    # Templating
-    # ==============================================================================
+Templating
+==============================================================================
 
-    # Code generation
-    # ------------------------------------------------------------------------------
+Code generation
+------------------------------------------------------------------------------
 
     # ###_requireCacheToString
     # Output html from cache and file
@@ -1114,14 +1112,16 @@ This is not a public API so it seemed to horrible.
                 return r+ex;
             }
           } else {
-            dir = oj._pathDirname(f);
-            while(true) {
-              dm = oj._pathJoin(dir, 'node_modules');
-              if(M[dm] && M[dm][m])
-                return oj._pathJoin(dm, m, M[dm][m]);
-              if(dir == '/')
-                break;
-              dir = oj._pathResolve(dir, '..');
+            if (typeof oj !== 'undefined') {
+              dir = oj._pathDirname(f);
+              while(true) {
+                dm = oj._pathJoin(dir, 'node_modules');
+                if(M[dm] && M[dm][m])
+                  return oj._pathJoin(dm, m, M[dm][m]);
+                if(dir == '/')
+                  break;
+                dir = oj._pathResolve(dir, '..');
+              }
             }
           }
           throw new Error("module not found (" + m + ")");
@@ -1134,18 +1134,18 @@ This is not a public API so it seemed to horrible.
     // Generated with oj v#{oj.version}
     (function(){ var F = {}, M = {}, R = {}, P, G, RR;
 
-    #{_modules}#{_files}#{_native}
+    #{_modules}
+    #{_files}
+    #{_native}
     P = {cwd: function(){return '/';}};
     G = {process: P,Buffer: {}};
     RR = function(f){
-      return function(m){
-        return run(find(m, f));
-      };
+      return function(m){return run(find(m, f));};
       #{_run}
       #{_find}
     };
-
     require = RR('#{path.join clientDir, clientFile}');
+
     oj = require('oj');
     oj.load('#{clientFile}');
 
@@ -1154,9 +1154,10 @@ This is not a public API so it seemed to horrible.
     </script>
     """
 
-    # Express
-    # ==============================================================================
+Express
+==============================================================================
+
     # app.engine
     # app.use('view engine', 'ojc')
     oj.express = ->
-      console.log "express called"
+      throw new Error "oj express support has not yet been implemented"

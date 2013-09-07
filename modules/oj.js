@@ -1,1 +1,1 @@
-../lib/oj.js
+../versions/latest/oj.min.js

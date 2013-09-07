@@ -1,3 +1,1 @@
-module.exports.isatty = function(){ 
-  return undefined;
-}
+module.exports.isatty=function(){return undefined}

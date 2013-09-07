@@ -6,8 +6,7 @@ path = require 'path'
 fs = require 'fs'
 async = require 'async'
 
-oj = require '../lib/oj.js'
-oj.useGlobally()
+oj = require '../generated/oj.js'
 
 compileDOM = (ojml, tag, html, options) ->
   options = _.defaults {}, options,

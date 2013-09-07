@@ -41,7 +41,7 @@ module.exports = ->
           position:'relative'
 
       h1 c:'subtitle', ->
-        span 'Unified templating for the people. '
+        span 'Object-oriented templating for the people. '
         i('Thirsty people.')
 
       css

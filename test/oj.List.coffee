@@ -4,8 +4,7 @@
 path = require 'path'
 fs = require 'fs'
 Backbone = require 'backbone'
-oj = require '../lib/oj.js'
-oj.useGlobally()
+oj = require '../generated/oj.js'
 
 contains = (control, args...) ->
   html = oj.toHTML control
