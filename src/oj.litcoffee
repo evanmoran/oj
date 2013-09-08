@@ -3169,9 +3169,7 @@ jQuery.fn.oj
           return $el[0].oj
 
         # Compile ojml
-        `with (oj) {`
         {dom,types,cssMap} = oj.compile {dom:1,html:0,cssMap:1}, args...
-        `}`
 
         _insertStyles cssMap, global:0
 
