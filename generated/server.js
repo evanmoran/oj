@@ -32,6 +32,8 @@
 
   module.exports = oj;
 
+  oj.$ = global.$;
+
   oj.codes = {
     reset: '\u001b[0m',
     black: '\u001b[30m',
@@ -260,7 +262,7 @@
   };
 
   compileFile = function(filePath, includeDir, options, cb) {
-    var cache, cacheLength, deltaTime, dirOut, eCompile, eRequire, fileBaseName, fileDir, fileOut, hookCache, hookOriginalCache, html, includedModules, isMinify, mediaMap, moduleLinkMap, moduleParents, modules, ojml, outputDir, plugin, results, rootDir, scriptHtml, scriptIndex, startTime, styleHTML, styleIndex, subDir, timeStamp, _j, _len1, _ref1, _ref2;
+    var cache, cacheLength, deltaTime, dirOut, eCompile, eRequire, ex, fileBaseName, fileDir, fileOut, hookCache, hookOriginalCache, html, includedModules, isMinify, mediaMap, moduleLinkMap, moduleParents, modules, ojml, outputDir, plugin, results, rootDir, scriptHtml, scriptIndex, startTime, styleHTML, styleIndex, subDir, timeStamp, _j, _k, _len1, _len2, _ref1, _ref2, _ref3;
 
     if (options == null) {
       options = {};
@@ -275,7 +277,7 @@
     }
     isMinify = (_ref1 = options.minify) != null ? _ref1 : false;
     includedModules = options.modules || [];
-    includedModules = includedModules.concat(['oj']);
+    includedModules = includedModules.concat(['oj', 'jquery']);
     rootDir = options.root || path.dirname(filePath);
     if (!isDirectory(rootDir)) {
       throw new Error('oj: root is not a directory');
@@ -301,9 +303,15 @@
     hookOriginalCache = {};
     _hookRequire(modules, moduleLinkMap, hookCache, hookOriginalCache);
     _saveRequireCache();
+    _ref2 = options.exclude;
+    for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+      ex = _ref2[_j];
+      verbose(3, "excluding " + ex);
+    }
+    includedModules = _.difference(includedModules, options.exclude);
     try {
-      for (_j = 0, _len1 = includedModules.length; _j < _len1; _j++) {
-        m = includedModules[_j];
+      for (_k = 0, _len2 = includedModules.length; _k < _len2; _k++) {
+        m = includedModules[_k];
         if (isNodeModule(m)) {
           _buildNativeCacheFromModuleList(cache["native"], [m], isMinify);
         } else {
@@ -355,9 +363,9 @@
     html = _insertAt(html, scriptIndex, scriptHtml);
     styleIndex = html.indexOf('</head>');
     styleHTML = '';
-    _ref2 = results.cssMap;
-    for (plugin in _ref2) {
-      mediaMap = _ref2[plugin];
+    _ref3 = results.cssMap;
+    for (plugin in _ref3) {
+      mediaMap = _ref3[plugin];
       styleHTML += oj._styleTagFromMediaObject(plugin, mediaMap, options);
     }
     html = _insertAt(html, styleIndex, styleHTML);
@@ -950,6 +958,7 @@
 
   _nodeModulesSupported = {
     oj: 1,
+    jquery: 1,
     assert: 1,
     console: 1,
     crypto: 1,
@@ -1071,7 +1080,7 @@
       _buildNativeCache(cache["native"], data.code, isMinify);
       verbose(4, "stored " + fileLocation);
     }
-    delete cache.files[require.resolve('../lib/oj.js')];
+    delete cache.files[require.resolve('../generated/oj.js')];
     return cache;
   };
 
@@ -1116,7 +1125,7 @@
   _ojModuleCode = function(isMinify) {
     var code;
 
-    code = readFileSync(path.join(__dirname, "../lib/oj.js"));
+    code = readFileSync(path.join(__dirname, "../generated/oj.js"));
     return oj._minifyJS(code, {
       filename: 'oj',
       minify: isMinify
@@ -1127,11 +1136,7 @@
     var code;
 
     verbose(3, "found " + moduleName);
-    code = readFileSync(path.join(__dirname, "../modules/" + moduleName + ".js"));
-    return oj._minifyJS(code, {
-      filename: moduleName,
-      minify: isMinify
-    });
+    return code = readFileSync(path.join(__dirname, "../modules/" + moduleName + ".js"));
   };
 
   _requireCacheToString = function(cache, filePath, isMinify) {
@@ -1179,14 +1184,14 @@
     _run = oj._minifyJS("function run(f){\n    if(R[f] != null)\n      return R[f];\n    var eo = {},\n      mo = {exports: eo};\n    if(typeof F[f] != 'function')\n      throw new Error(\"file not found (\" + f + \")\");\n    F[f](mo,eo);\n    return R[f] = mo.exports;\n  }", {
       minify: isMinify
     });
-    _find = oj._minifyJS("function find(m,f){\n    var r, dir, dm, ext, ex, i;\n\n    if (F[m] && !m.match(/\\//)) {\n      return m;\n    }\n\n    if (!!m.match(/\\//)) {\n      r = oj._pathResolve(f, oj._pathJoin(oj._pathDirname(f), m));\n      ext = ['.ojc','.oj','.coffee','.js','.json'];\n      for(i = 0; i < ext.length; i++){\n        ex = ext[i];\n        if(F[r+ex])\n          return r+ex;\n      }\n    } else {\n      dir = oj._pathDirname(f);\n      while(true) {\n        dm = oj._pathJoin(dir, 'node_modules');\n        if(M[dm] && M[dm][m])\n          return oj._pathJoin(dm, m, M[dm][m]);\n        if(dir == '/')\n          break;\n        dir = oj._pathResolve(dir, '..');\n      }\n    }\n    throw new Error(\"module not found (\" + m + \")\");\n  }", {
+    _find = oj._minifyJS("function find(m,f){\n    var r, dir, dm, ext, ex, i;\n\n    if (F[m] && !m.match(/\\//)) {\n      return m;\n    }\n\n    if (!!m.match(/\\//)) {\n      r = oj._pathResolve(f, oj._pathJoin(oj._pathDirname(f), m));\n      ext = ['.ojc','.oj','.coffee','.js','.json'];\n      for(i = 0; i < ext.length; i++){\n        ex = ext[i];\n        if(F[r+ex])\n          return r+ex;\n      }\n    } else {\n      if (typeof oj !== 'undefined') {\n        dir = oj._pathDirname(f);\n        while(true) {\n          dm = oj._pathJoin(dir, 'node_modules');\n          if(M[dm] && M[dm][m])\n            return oj._pathJoin(dm, m, M[dm][m]);\n          if(dir == '/')\n            break;\n          dir = oj._pathResolve(dir, '..');\n        }\n      }\n    }\n    throw new Error(\"module not found (\" + m + \")\");\n  }", {
       minify: isMinify
     });
-    return "<script>\n\n// Generated with oj v" + oj.version + "\n(function(){ var F = {}, M = {}, R = {}, P, G, RR;\n\n" + _modules + _files + _native + "\nP = {cwd: function(){return '/';}};\nG = {process: P,Buffer: {}};\nRR = function(f){\n  return function(m){\n    return run(find(m, f));\n  };\n  " + _run + "\n  " + _find + "\n};\n\nrequire = RR('" + (path.join(clientDir, clientFile)) + "');\noj = require('oj');\noj.load('" + clientFile + "');\n\n}).call(this);\n\n</script>";
+    return "<script>\n\n// Generated with oj v" + oj.version + "\n(function(){ var F = {}, M = {}, R = {}, P, G, RR;\n\n" + _modules + "\n" + _files + "\n" + _native + "\nP = {cwd: function(){return '/';}};\nG = {process: P,Buffer: {}};\nRR = function(f){\n  return function(m){return run(find(m, f));};\n  " + _run + "\n  " + _find + "\n};\nrequire = RR('" + (path.join(clientDir, clientFile)) + "');\n\noj = require('oj');\noj.load('" + clientFile + "');\n\n}).call(this);\n\n</script>";
   };
 
   oj.express = function() {
-    return console.log("express called");
+    throw new Error("oj express support has not yet been implemented");
   };
 
 }).call(this);

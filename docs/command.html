@@ -78,10 +78,11 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
             <div class="content"><div class='highlight'><pre>  commander.version(oj.version)
     .usage(<span class="string">'[options] &lt;file&gt; &lt;dir&gt; ...'</span>)
     .option(<span class="string">'-m, --minify'</span>, <span class="string">'Turn on minification (default: false)'</span>, <span class="literal">false</span>)
-    .option(<span class="string">'-o, --output &lt;dir&gt;'</span>, <span class="string">'Directory to output all files to (default: .)'</span>, process.cwd())
+    .option(<span class="string">'-w, --watch'</span>, <span class="string">'Turn on watch mode (default: off)'</span>, <span class="literal">false</span>)
     .option(<span class="string">'-r, --recurse'</span>, <span class="string">'Recurse into directories (default: off)'</span>, <span class="literal">false</span>)
+    .option(<span class="string">'-o, --output &lt;dir&gt;'</span>, <span class="string">'Directory to output all files to (default: .)'</span>, process.cwd())
     .option(<span class="string">'-v, --verbose &lt;level&gt;'</span>, <span class="string">'Turn on verbose level 0-3 (default: 1)'</span>, <span class="number">1</span>)
-    .option(<span class="string">'-w, --watch'</span>, <span class="string">'Turn on watch mode (default: off)'</span>, <span class="literal">false</span>)</pre></div></div>
+    .option(<span class="string">'-e, --exclude &lt;modules&gt;'</span>, <span class="string">'List of modules to exclude (jquery,oj,...)'</span>, splitAndTrim, [])</pre></div></div>
             
         </li>
         
@@ -92,7 +93,7 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>.option(&#39;--modules <modules>&#39;, &#39;List of modules to include&#39;, [])</p>
+              <p>.option(&#39;--include [modules]&#39;, &#39;List of modules to include (underscore,backbone,...)&#39;, splitAndTrim, [])</p>
 
             </div>
             
@@ -114,7 +115,7 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
             <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> <span class="keyword">not</span> _.isArray(commander.args) <span class="keyword">or</span> commander.args.length == <span class="number">0</span>
     usage()
 
-  options = _.pick commander, <span class="string">'args'</span>, <span class="string">'minify'</span>, <span class="string">'output'</span>, <span class="string">'recurse'</span>, <span class="string">'modules'</span>, <span class="string">'verbose'</span>, <span class="string">'watch'</span></pre></div></div>
+  options = _.pick commander, <span class="string">'args'</span>, <span class="string">'minify'</span>, <span class="string">'output'</span>, <span class="string">'recurse'</span>, <span class="string">'modules'</span>, <span class="string">'verbose'</span>, <span class="string">'watch'</span>, <span class="string">'exclude'</span></pre></div></div>
             
         </li>
         
@@ -148,6 +149,24 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
             <div class="content"><div class='highlight'><pre><span class="function"><span class="title">usage</span></span> = (code = <span class="number">0</span>) -&gt;
   commander.help()
   process.exit code</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>  Helper method to split lists on comma</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="function"><span class="title">splitAndTrim</span></span> = (str) -&gt;
+  out = str.split(<span class="string">','</span>)
+  <span class="keyword">for</span> o <span class="keyword">in</span> out
+    o.trim()</pre></div></div>
             
         </li>
         
