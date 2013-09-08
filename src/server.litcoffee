@@ -131,7 +131,6 @@ Build list of files or directories
         watch: false
       oj.command options
 
-
 oj.command
 ------------------------------------------------------------------------------
 
@@ -276,6 +275,7 @@ compileFile
 
       includedModules = options.modules or []
       includedModules = includedModules.concat ['oj', 'jquery']
+
       rootDir = options.root or path.dirname filePath
 
       throw new Error('oj: root is not a directory') unless isDirectory rootDir
@@ -317,6 +317,11 @@ compileFile
 
       # Save require cache to restore it later
       _saveRequireCache()
+
+      # Remove excluded
+      for ex in options.exclude
+        verbose 3, "excluding #{ex}"
+      includedModules = _.difference includedModules, options.exclude
 
       # Catch messages thrown by requiring
       try
@@ -911,7 +916,11 @@ Requiring
         y = fn x
         return y if y
 
-    # Load all modules by reading them if they are missing
+    # Build out the cache into the form:
+    #   cache.native = ['oj','jquery',...]
+    #   cache.modules = {<path/to/node_modules>: {<moduleName>:<path/to/main/file.js, ...}, ...}
+    #   cache.files = {<path/to/files.js>:<code>}
+
     _buildRequireCache = (modules, cache, isMinify) ->
       for fileLocation, data of modules
 

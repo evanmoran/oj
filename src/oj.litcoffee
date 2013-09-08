@@ -3,25 +3,21 @@ oj
 ==============================================================================
 A unified templating framework for the people. Thirsty people.
 
-oj function
--------------------------------------------------------------------------------
-
-Convert ojml to dom
-
-    oj = ->
-
-  oj function acts like a tag method that doesn't emit
-
-      oj._argsPush()
-      ojml = oj.emit.apply @, arguments
-      oj._argsPop()
-      ojml
-
 Export Model to NodeJS or globally
 -------------------------------------------------------------------------------
   Remember root context
 
     root = @
+
+oj function
+-------------------------------------------------------------------------------
+
+  oj function acts like a tag method that doesn't emit
+  Using inline js so the function can be named
+
+    `function oj(){
+      return oj.tag.apply(this, ['oj'].concat([].slice.call(arguments)).concat([{__quiet__:1}]));
+    }`
 
   Define oj version
 
@@ -414,7 +410,7 @@ Functional Helpers
 
   _map
 
-    oj._map = (obj, iterator, options = {}) ->
+    _map = (obj, iterator, options = {}) ->
 
       context = options.context
       recurse = options.recurse
@@ -426,7 +422,7 @@ Functional Helpers
         do (options) ->
           iterator_ = (v,k,o) ->
             options_ = _extend (_clone options), (key: k, object: v)
-            oj._map v, iterator, options_
+            _map v, iterator, options_
 
       # Evaluate functions if necessary
       if oj.isFunction obj
@@ -529,7 +525,7 @@ String Helpers
 
     _splitAndTrim = (str, seperator, limit) ->
       r = str.split seperator, limit
-      oj._map r, (v) -> v.trim()
+      _map r, (v) -> v.trim()
 
   _dasherize: Convert from camal case or space seperated to dashes
 
@@ -599,7 +595,7 @@ the node `path` library: github.com/joyent/node/lib/path.js
       (if isAbsolute then '/' else '') + path
 
     oj._pathJoin = ->
-      paths = ArrayP.slice.call arguments, 0
+      paths = slice.call arguments, 0
       oj._pathNormalize(paths.filter((p, index) ->
         p and typeof p == 'string'
       ).join('/'))
@@ -896,7 +892,7 @@ Styles have smart mappings:
   Get quiet tag name
 
     _getQuietTagName = (tag) ->
-      tag + '_'
+      '_' + tag
 
   Record an oj instance on a given element
 
@@ -969,6 +965,12 @@ Methods that start with _ are not extended
       for k,v of oj
         if k[0] != '_' and k != 'extendInto' and k != 'useGlobally'
           o[k] = v
+
+  Export _tag and _Type methods
+
+          qn = _getQuietTagName k
+          if oj[qn]
+            o[qn] = oj[qn]
 
       _extend context, o
 
@@ -1180,7 +1182,7 @@ Nested definitions, media definitions and comma definitions are resolved.
 
   Substitute convience media query methods
 
-            mediaParts = oj._map mediaParts, (v) ->
+            mediaParts = _map mediaParts, (v) ->
               if medias[v]? then medias[v] else v
 
   Calculate the next media queries
@@ -1636,9 +1638,10 @@ Compile ojml directly to css ignoring event bindings and html.
       _extend options, dom:0, js:0, html:0, css:1
       (oj.compile options, ojml).css
 
-    # _inherit
-    # ------------------------------------------------------------------------------
-    # Based on, but sadly incompatable with, coffeescript inheritance
+_inherit
+------------------------------------------------------------------------------
+Based on, but sadly incompatable with, coffeescript inheritance
+
     _inherit = (child, parent) ->
 
       # Copy class properties and methods
@@ -1655,9 +1658,16 @@ Compile ojml directly to css ignoring event bindings and html.
 
       return
 
-    # oj.argumentShift
-    # ------------------------------------------------------------------------------
-    # Helper to make argument handling easier
+_construct(Type, arg1, arg2, ...)
+------------------------------------------------------------------------------
+Construct with specified arguments. This is only necessary because new doesn't support apply/call directly.
+
+    oj._construct = _construct = (Type) ->
+      new (FuncP.bind.apply(Type, arguments));
+
+oj.argumentShift
+------------------------------------------------------------------------------
+Helper to make argument handling easier
 
     oj.argumentShift = (args, key) ->
       if (oj.isObject args) and key? and args[key]?
@@ -1796,6 +1806,23 @@ oj.createType
           args.push v
       options: options, args: args
 
+_createQuietType
+-------------------------------------------------------------------------------
+
+    _createQuietType = (typeName) ->
+      qt = _getQuietTagName typeName
+      oj[qt] = ->
+        _construct oj[typeName], arguments..., __quiet__:1
+
+
+      # qt = _getQuietTagName typeName
+      # T = oj.createType typeName,
+      #   base: oj[qt]
+      #   constructor: ->
+      #     console.log "T: ", T
+      #     console.log "T.base: ", T.base
+      #     T.base.constructor.apply @, _toArray(arguments).concat([__quiet__:1])
+
 oj.enum
 ------------------------------------------------------------------------
 
@@ -1810,16 +1837,22 @@ oj.View
       # Views are special objects map properties together. This is a union of arguments
       # With the remaining arguments becoming a list
 
-      constructor: (options = {}) ->
-        # console.log "View.constructor: ", JSON.stringify arguments
+      constructor: ->
 
         throw new Error("oj.#{@typeName}: constructor failed to set this.el") unless oj.isDOM @el
 
         # Set instance on @el
         _setInstanceOnElement @el, @
 
-        # Emit as a tag if new wasn't called
-        @emit() if @.__autonew__
+        {options,args} = oj.unionArguments arguments
+
+        # Emit as a tag if new wasn't called or quiet is not set
+        if @.__autonew__ and not options.__quiet__
+          @emit()
+
+        # Remove quiet flag
+        if options.__quiet__?
+          delete options.__quiet__
 
         # Generate id if missing
         options.id ?= oj.id()
@@ -2391,9 +2424,13 @@ Button control
           else
             @$el.click()
 
-oj.Link
+
+
+
+oj.Image
 ------------------------------------------------------------------------------
-oj.Link = class Link inherits Control
+oj.Image creates an `<img>` tag
+
 
 oj.List
 ------------------------------------------------------------------------------
@@ -2725,7 +2762,7 @@ rows: Row values as a list of lists as interpreted by ojValue plugin (readwrite)
             return @_rows if @_rows?
             @_rows = []
             for rx in [0...@rowCount] by 1
-              r = oj._map (@$tdsRow rx), ($td) -> $td.ojValues()
+              r = _map (@$tdsRow rx), ($td) -> $td.ojValues()
               @_rows.push r
             @_rows
 
@@ -3082,13 +3119,22 @@ _rowElFromItem: Helper to create rowTagName wrapped row
         _bound: (ix, count, message) ->
           _boundOrThrow ix, count, message, @typeName
 
+Create _Types
+------------------------------------------------------------------------------
+
+  Type with captital first letter that doesn't end in "View"
+
+    for typeName of oj
+      if _isCapitalLetter(typeName[0]) and typeName.slice(typeName.length - 4) != 'View'
+        oj[_getQuietTagName typeName] = _createQuietType typeName
+
 oj.sandbox
 ------------------------------------------------------------------------------
 The sandbox is a readonly version of oj that is exposed to the user
 
     oj.sandbox = {}
     for key in _keys oj
-      if key.length > 0 and key[0] != '_'
+      if (key.length > 0 and key[0] != '_') or (key.length > 0 and key[0] == '_' and (oj[key.slice(1)])?)
         oj.addProperty oj.sandbox, key, value:oj[key], writable:false
 
 oj.use(plugin, settings)
