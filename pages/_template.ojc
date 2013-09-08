@@ -37,7 +37,7 @@ module.exports = _template = (parts) ->
     body ->
       # Absolute position of right and header
       header ->
-        _header()
+        makeHeader()
 
       div c:'gg', ->
         div c:'fixed row', ->
@@ -57,7 +57,7 @@ module.exports = _template = (parts) ->
                 parts?.content?()
 
           footer c:'gg100', ->
-            _footer()
+            makeFooter()
 
   _styles()
   orangeSize = '42px'
@@ -160,7 +160,7 @@ module.exports = _template = (parts) ->
       backgroundImage:'url(media/orange_right.png)'
       right:'0px'
 
-_header = ->
+makeHeader = ->
 
     div c:'header-contents', ->
       a c:'header-logo', href: 'index.html'
@@ -173,5 +173,5 @@ _header = ->
     div c:'header-orange-corner left'
     div c:'header-orange-corner right'
 
-_footer = ->
+makeFooter = ->
   footer()

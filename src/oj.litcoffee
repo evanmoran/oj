@@ -155,6 +155,8 @@ Short names for common prototype and method names
 Type helper for oj types
 
     oj.isOJ = (obj) -> !!(obj?.isOJ)
+    oj.isOJType = (obj) -> oj.isOJ(obj) and obj.type == obj
+    oj.isOJInstance = (obj) -> oj.isOJ(obj) and not oj.isOJType(obj)
 
 Type helper for event enabled objects such as Backbone models
 
@@ -1814,20 +1816,11 @@ _createQuietType
       oj[qt] = ->
         _construct oj[typeName], arguments..., __quiet__:1
 
-
-      # qt = _getQuietTagName typeName
-      # T = oj.createType typeName,
-      #   base: oj[qt]
-      #   constructor: ->
-      #     console.log "T: ", T
-      #     console.log "T.base: ", T.base
-      #     T.base.constructor.apply @, _toArray(arguments).concat([__quiet__:1])
-
 oj.enum
 ------------------------------------------------------------------------
 
     oj.enum = (name, args) ->
-      throw 'NYI'
+      throw new Error 'oj.enum: NYI'
 
 oj.View
 ------------------------------------------------------------------------------
@@ -1919,11 +1912,20 @@ oj.View
           oj.$.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
           out
 
-        # Get all currently set themes (readwrite)
-        themes: get: ->
-          out = {}
-          oj.$.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
-          out
+        # Get / set all currently set themes (readwrite)
+        themes:
+          get: ->
+            out = {}
+            oj.$.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
+            out
+          set: (v) ->
+            v = [v] unless oj.isArray v
+            @clearThemes()
+            for theme in v
+              @addTheme theme
+            return
+
+        theme: @themes
 
         # Determine if this view has been fully constructed (readonly)
         isConstructed: get: -> @_isConstructed ? false
@@ -2063,6 +2065,7 @@ oj.View
       cssMap = _setObject {}, ".oj-#{@typeName}.theme-#{dashName}", css
       _extend @cssMap["oj-#{@typeName}"], cssMap
       @themes.push dashName
+      @themes = _uniqueSort @themes
       return
 
     oj.View.cssMap = {}
@@ -3143,19 +3146,23 @@ Include a plugin of OJ with `settings`
 
     oj.use = (plugin, settings = {}) ->
 
-      # Allow use to extend globally
-      if arguments.length == 0
-        return oj.useGlobally();
-
       throw new Error('oj.use: function expected for first argument') unless oj.isFunction plugin
       throw new Error('oj.use: object expected for second argument') unless oj.isObject settings
 
       # Call plugin to gather extension map
-      pluginMap = plugin oj, settings
+      pluginResult = plugin oj, settings
+
+      # Add _Type quiet types
+      pluginMap = _clone pluginResult
+      for name,value of pluginResult
+        if oj.isOJType value
+          pluginMap[_getQuietTagName name] = _createQuietType value.typeName
 
       # Extend all properties
       for name,value of pluginMap
+        # Add to oj
         oj[name] = value
+
         # Add to sandbox
         oj.addProperty oj.sandbox, name, value:value, writable: false
 

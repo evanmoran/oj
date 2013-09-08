@@ -37,12 +37,13 @@ module.exports = (oj, settings) ->
         showPrintMargin: false
         readOnly: false
         showIndentGuides: false
+        # width:'300px'
+        # height:'300px'
         change: => @editorChanged.apply @, arguments
 
       # Create element
       @el = oj =>
         div =>
-
           div c:'oj-TryEditor-resizer', ->
             div c:'oj-TryEditor-gripper'
 
@@ -73,19 +74,21 @@ module.exports = (oj, settings) ->
       @$csButton = @$ '.oj-TryEditor-bar-state.cs'
       @$maximizeButton = @$ '.oj-TryEditor-bar-maximize'
 
-      # Set value from argument
-      if args.length > 0
-        @value = args[0]
-
-      @state = oj.argumentShift(options, 'state') ? 'js'
+      @state = oj.argumentShift(options, 'state') if oj.isString options.state
       @js = oj.argumentShift(options,'js') if oj.isString options.js
       @cs = oj.argumentShift(options,'cs') if oj.isString options.cs
+
+      # Value is either argument or from js/cs
+      if args.length > 0
+        @value = args.join('\n')
+      else
+        @value = if @state == 'js' then @js else @cs
 
       @minWidth = oj.argumentShift(options, 'minWidth') ? 400
       @minHeight = oj.argumentShift(options, 'minHeight') ? (lineHeight * 1 + 2 * editorPadding)
 
-      @width = oj.argumentShift(options, 'width')
-      @height = oj.argumentShift(options, 'height')
+      # @width = oj.argumentShift(options, 'width') if options.width?
+      @height = oj.argumentShift(options, 'height') if options.height?
 
       @split = oj.argumentShift(options, 'split') ? 0.5
 
@@ -137,27 +140,27 @@ module.exports = (oj, settings) ->
 
       # Accessor to editor.value
       value:
-        get: -> @editor.value
+        get: -> @editor.value ? ''
         set: (v) ->
-          @editor.value = v
           if @state == 'cs'
             @_cs = v
           else
             @_js = v
+          @editor.value = v
 
       # Adjust the js value
       js:
-        get: -> @_js
+        get: -> @_js ? ''
         set: (v) -> @_js = v; @updateValue()
 
       # Adjust the cs value
       cs:
-        get: -> @_cs
+        get: -> @_cs ? ''
         set: (v) -> @_cs = v; @updateValue()
 
       # Display 'cs' or 'js'
       state:
-        get: -> @_state
+        get: -> @_state ? 'js'
         set: (v) ->
           @_state = v;
           if v == 'js'
@@ -282,13 +285,15 @@ module.exports = (oj, settings) ->
         if @maximize
           @height = innerHeight - editorBorderWidth * 2
 
-      # Given values and state recompile everything
+      # Given js/cs & state recompile everything
       updateValue: ->
         if @state == 'js'
-          @mode = 'oj'
+          if @mode != 'oj'
+            @mode = 'oj'
           @value = @js
         else
-          @mode = 'ojc'
+          if @mode != 'ojc'
+            @mode = 'ojc'
           @value = @cs
         @recompile()
 
@@ -358,11 +363,10 @@ module.exports = (oj, settings) ->
       # Positioning can only happen once inserted
       inserted: ->
         TryEditor.base.inserted.apply @, arguments
-
         @lineCount = @lineCount
 
+        @editor.width = @editor.width
         @editor.value = @value
-
         @editor.height = @height
 
         # Maximize instantly if it defaulted that way
@@ -523,6 +527,7 @@ module.exports = (oj, settings) ->
       height:'100%'
       position:'absolute'
       backgroundColor:'white'
+      border:'none'
       zIndex: 20
 
     '.oj-TryEditor-console':

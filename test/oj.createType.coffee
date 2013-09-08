@@ -135,6 +135,15 @@ describe 'oj.createType', ->
     assert oj.createType != null, 'oj.createType is null'
     oj.createType.should.be.a 'function'
 
+  it 'is detectable', ->
+    Empty = oj.createType 'Empty', {}
+    empty = new Empty()
+    expect(oj.isOJ(Empty)).to.equal true
+    expect(oj.isOJType(Empty)).to.equal true
+    expect(oj.isOJInstance(Empty)).to.equal false
+    expect(oj.isOJ(empty)).to.equal true
+    expect(oj.isOJType(empty)).to.equal false
+    expect(oj.isOJInstance(empty)).to.equal true
 
   it 'empty createType', ->
     Empty = oj.createType 'Empty', {}

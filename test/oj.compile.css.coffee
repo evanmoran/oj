@@ -281,8 +281,6 @@ describe 'oj.compile.css', ->
     cssTest ojml, '@media screen (min-width: 100px){.c1{color:red}}@media screen (min-width: 100px) and handheld (max-width: 200px),screen (min-width: 100px) and print (max-width: 300px){.c1.c2{color:orange}}'
     cssTest ojml, '@media screen (min-width: 100px) {\n\t.c1 {\n\t\tcolor:red;\n\t}\n}\n@media screen (min-width: 100px) and handheld (max-width: 200px), screen (min-width: 100px) and print (max-width: 300px) {\n\t.c1.c2 {\n\t\tcolor:orange;\n\t}\n}\n', minify:false
 
-
-
   it '@media monitor', ->
     ojml = oj.css
       '@media monitor':
