@@ -68,23 +68,23 @@ module.exports = _template = (parts) ->
       marginTop: '62px'
       zIndex: 100
       height: '40px'
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         marginTop: '85px'
 
     '.relative':
       position:'relative'
       # marginTop: '55px'
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         marginTop: '62px'
 
     '.hide-phone':
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         display:'none'
 
     '.show-phone':
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         display:'block'
-      '@media tablet':
+      '@media only screen and (min-width: 740px) and (max-width: 959px)':
         display:'none'
       '@media monitor':
         display:'none'
@@ -96,7 +96,7 @@ module.exports = _template = (parts) ->
       boxShadow: '2px 2px 2px RGBA(0,0,0,0.1)'
       backgroundColor:'white'
       zIndex:1000
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         height:'72px'
 
     '.header-contents':
@@ -105,7 +105,7 @@ module.exports = _template = (parts) ->
       marginLeft:'auto !important'
       marginRight:'auto !important'
       display: 'block'
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         textAlign:'center'
         paddingTop:'10px'
         height: '30px'
@@ -117,7 +117,7 @@ module.exports = _template = (parts) ->
       height: '22px'
       verticalAlign: 'middle'
       marginLeft:'91px'
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         marginLeft:'auto'
         marginRight:'auto'
         display:'block'
@@ -127,7 +127,7 @@ module.exports = _template = (parts) ->
       display:'inline-block'
       marginLeft: '44px'
       paddingTop: '12px'
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         marginLeft: '0px'
         textAlign: 'center'
         display: 'block'
@@ -140,9 +140,9 @@ module.exports = _template = (parts) ->
       verticalAlign: 'middle'
       '&:not(:first-child)':
         marginLeft: '44px'
-        '@media phone':
+        '@media only screen and (max-width: 739px)':
           marginLeft: '20px'
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         marginTop: '30px'
 
     '.header-orange-corner':

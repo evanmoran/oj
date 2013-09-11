@@ -12,9 +12,13 @@ module.exports = ->
       script src:'scripts/coffee-script.js', type:'text/javascript'
     body ->
       editor = TryEditor(lineCount:4)
-      editor.value = "div('foo')"
+      editor.value = ""
 
       Button 'hmm', click: ->
-        editor.state = 'js'
-        editor.value = "div('asdf')"
+        editor.js = 'div("js")'
+        editor.cs = 'div "cs"'
+        editor.value = 'div("ojg")'
+
+        # editor.state = 'js'
+        # editor.value = "div('asdf')"
         # editor.js = "div('asdf')"

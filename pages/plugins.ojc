@@ -434,9 +434,9 @@ data = [
           \"\"\"
         """
         md """
-          Abbreviation:
+          It supports the abbreviation `md`:
         """
-        TryEditor lineCount:8, js:"""
+        TryEditor lineCount:4, js:"""
           md(
             '## Short and Sweet'
           );

@@ -1,0 +1,44 @@
+_ = require 'underscore'
+
+_plugins = require './_plugins'
+
+_styles = require './_styles'
+_snippet = require './_snippet'
+_examples = require './_examples'
+
+_template = require './_template'
+
+module.exports = ->
+
+  _template
+
+    title: 'Present OJ - Object-Oriented Templating'
+
+    styles: [
+      'reset.css'
+      'gg.css'
+    ]
+
+    scripts: [
+      'jquery.js'
+      'jquery.event.drag.js'
+      'jquery.ba-resize.min.js'
+      'underscore.js'
+      'backbone.js'
+      'coffee-script.js'
+      'ace/ace.js'
+    ]
+
+    body: ->
+
+      TryEditor
+        cs:"""
+        """
+        js:"""
+        """
+        maximize: true
+        fontSize: 18
+        splitAlways: true
+
+    head: ->
+      _styles()

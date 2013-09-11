@@ -7,6 +7,8 @@ _content = require './_content'
 
 fontFamilySansSerif = 'Helvetica, Arial, sans-serif'
 
+transitionTime = 30
+
 module.exports = ->
 
   _template
@@ -64,201 +66,308 @@ module.exports = ->
       dots = BulletList c:'dots', models:[
         {
           js:"""
-            // Create header
-            h1('Header')
+            h1("What are Templating Objects?");
 
-            // Create paragraph
-            p('A paragraph')
+            var myList = oj.BulletList(
+              'They',
+              'create',
+              'themselves'
+            );
 
-            // Create bulleted list
-            ul(function(){
-              li('Item 1');
-              li('Item 2');
-              li('Item 3');
-            });
+            oj.Button('Add', {click:function(){
+              myList.add('And live edit!')
+            }});
+
+            oj.Button('Move', {click:function(){
+              myList.move(0, myList.length)
+            }});
           """
           cs:"""
-            # Create header
-            h1 'Header'
+            h1 "What are Templating Objects?"
 
-            # Create paragraph
-            p 'A paragraph'
+            myList = oj.BulletList(
+              'They'
+              'create'
+              'themselves'
+            )
 
-            # Create bulleted list
-            ul ->
-              li 'Item 1'
-              li 'Item 2'
-              li 'Item 3'
+            oj.Button 'Add', click: ->
+              myList.add('And live edit!')
+
+            oj.Button 'Move', click: ->
+              myList.move 0, myList.length
           """
         }
         {
           js:"""
-            // Create css
+            h1("OJ includes the basics...");
+
+            TextBox('A text box'); br();
+            TextArea('A text area'); br();
+            ListBox({options:[
+              'A list box',
+              'with',
+              'options'
+            ]});
+            CheckBox(true);
+            NumberList('Number','List');
+            Table({
+              header:['Table','With','Header']},
+              [1,2,3],
+              [4,5,6]
+            );
+          """, cs: """
+            h1 "OJ includes the basics..."
+
+            TextBox 'A text box'; br()
+            TextArea 'A text area'; br()
+            ListBox options:[
+              'A list box'
+              'with'
+              'options'
+            ]
+            CheckBox true
+            NumberList 'Number','List'
+            Table
+              header:['Table','With','Header'],
+              [1,2,3],
+              [4,5,6]
+          """
+
+        }
+        {
+          js:"""
+            h1("Plugins give the rest...")
+
+            var myVideo = YouTubeVideo(
+              'EAcdvmnZ_GM'
+            );
+
+            // Change volume
+            myVideo.volume = 0.7;
+
+            // Add play / pause toggle button
+            Button('Play / Pause', {
+              click:function(){
+                myVideo.playToggle()
+              }
+            });
+
+          """, cs: """
+            h1 "Plugins give the rest..."
+
+            myVideo = YouTubeVideo(
+              'EAcdvmnZ_GM'
+            )
+
+            # Change volume
+            myVideo.volume = 0.7;
+
+            # Add play / pause toggle button
+            Button 'Play / Pause',
+              click: ->
+                myVideo.playToggle()
+          """
+        }
+
+        {
+          js:"""
+            h1('Two-Way Model Binding');
+
+          """, cs:"""
+            h1 'Two-Way Model Binding';
+          """
+        }
+
+        {
+          js:"""
+            h1('HTML Creation');
+
+            p('Tags are functions.')
+
+            p('Attributes are objects...', {
+              style:{fontStyle:'italic'}
+            })
+
+            ul(function(){
+              li('Nest');
+              li('with');
+              li('functions!');
+            });
+          """
+          cs:"""
+            h1 'HTML Creation'
+
+            p 'Tags are functions.'
+
+            p 'Attributes are objects...',
+              style:
+                fontStyle:'italic'
+
+            ul ->
+              li 'Nest'
+              li 'with'
+              li 'functions!'
+          """
+        }
+
+        # {
+        #   js:"""
+
+        #     h1('Why use functions for nesting?')
+
+        #     // Nesting with functions can
+        #     // do anything!
+        #     ul(function(){
+        #       for(var n = 0; n <= 10; n++) {
+        #         var item = '';
+        #         if(n % 3 === 0)
+        #           item += 'Fizz';
+        #         if(n % 5 === 0)
+        #           item += 'Buzz';
+
+        #         // Emit <li> inside of <ul>
+        #         li(item || n);
+        #       }
+        #     });
+        #   """, cs:"""
+
+        #     h1 'Why use functions for nesting?'
+
+        #     # Nesting with functions can
+        #     # do anything!
+        #     ul ->
+        #       for n in [0...11]
+        #         item = ''
+        #         if n % 3 == 0
+        #           item += 'Fizz'
+        #         if n % 5 == 0
+        #           item += 'Buzz'
+
+        #         # Emit <li> inside of <ul>
+        #         li item || n
+        #   """
+        # }
+
+        {
+          js:"""
+            h1('CSS Creation')
+
             css({
               '.red':{color:'#e00'},
               '.big':{fontSize:'25px'}
             });
 
-            // Show the css works
-            div({'class':'red'},
-              'This class is red');
-
-            div({'class':'big'},
-              'This class is big');
-
-            div({'class':'big red'},
-              'This class is big and red');
+            div({'class':'red'}, 'This is red');
+            div({c:'big'}, 'This is big');
+            div({c:'big red'}, 'This is both');
           """
           cs:"""
-            # Create css
+            h1 'CSS Creation'
+
             css
-              '.red': color: '#e00'
-              '.big': fontSize: '25px'
+              '.red':
+                color:'#e00'
+              '.big':
+                fontSize:'25px'
 
-
-            # Show the css works
-            div 'class':'red',
-              'This class is red'
-
-            div 'class':'big',
-              'This class is big'
-
-            div 'class':'big red',
-              'This class is big and red'
+            div class:'red', 'This is red'
+            div c:'big', 'This is big'
+            div c:'big red', 'This is both'
           """
         }
+
         {
           js:"""
-            // Create div with inline style
-            div('This is inline-styled!', {
-              style:{
-                width:200,
-                textAlign:'center',
-                backgroundColor:'#fdd',
-              }
-            });
-          """
-          cs:"""
-            # Create div with inline style
-            div 'This is inline-styled!',
-              style:
-                width:200
-                textAlign:'center'
-                backgroundColor:'#fdd'
-          """
-        }
-        {
-          js:"""
-            // Create jQuery events
-            div('Click me!', {click: function(){
-              alert('It works!')
+            h1('Event Binding');
+
+            markdown('jQuery is the only ',
+              'dependency of OJ.\\n',
+              '*This is why.*');
+
+            var btn = Button('Click me!', {
+              click:function(){
+                alert('Click works!');
+            }});
+
+            TextBox('Change me', {
+              change:function(){
+                btn.title = this.value
             }});
           """
           cs:"""
-            # Create jQuery events
-            div 'Click me!', click: ->
-              alert 'It works!'
+            h1 'Event Binding'
+
+            markdown \"\"\"
+              jQuery is the only dependency of OJ.
+
+              *This is why.*
+            \"\"\"
+
+            btn = Button 'Click me!', click: ->
+              alert('Click works!');
+
+            TextBox 'Change me', change: ->
+              btn.title = this.value
           """
         }
+
+
         {
           js:"""
-            // Create a table
-            var myTable = Table(
-              ['Apple', 'Red'],
-              ['Grape', 'Purple'],
-              ['Banana', 'Yellow']
+            markdown(
+              "# Markdown Plugin",
+              "Use it like a _tag function_.",
+              "* It's",
+              "* <u>Pretty</u>",
+              "* **Nice**"
             );
-            br()
+          """,cs:"""
+            markdown \"\"\"
+              # Markdown Plugin
+              Use it like a _tag function_.
 
-            // Retrieve values
-            div(myTable.rowCount + ' rows');
-            div(myTable.cell(1,0) + ' is (1,0)');
-            div(JSON.stringify(myTable.row(2)));
-          """
-          cs:"""
-            # Create a table
-            myTable = Table(
-              ['Apple', 'Red']
-              ['Grape', 'Purple']
-              ['Banana', 'Yellow']
-            )
-            br()
-
-            # Retrieve values
-            div myTable.rowCount + ' rows'
-            div myTable.cell(1,0) + ' is (1,0)'
-            div JSON.stringify myTable.row(2)
+              * It's
+              * <u>Pretty</u>
+              * **Nice**
+            \"\"\"
           """
         }
 
         {
           js:"""
-            // Solve FizzBuzz!
-            ul(function(){
-              for(var n = 1; n <= 15; n++) {
-                var item = '';
-                if(n % 3 === 0)
-                  item += 'Fizz';
-                if(n % 5 === 0)
-                  item += 'Buzz';
+            h1('AceEditor Plugin');
 
-                li(item || n);
-              }
-            });
-          """, cs:"""
-            # Solve FizzBuzz!
-            ul ->
-              for n in [1..15]
-                item = '';
-                if n % 3 == 0
-                  item += 'Fizz'
-                if n % 5 == 0
-                  item += 'Buzz'
-
-                li item || n
-          """
-        }
-        {
-          js:"""
-            // Create a vimeo video
-            VimeoVideo(24715531);
-          """
-          cs:"""
-            # Create a vimeo video
-            VimeoVideo 24715531
-          """
-        }
-        {
-          js:"""
-            // Create an AceEditor
             var myEditor = AceEditor(
-              '<p>This is html</p>', {
-              mode:'html',
-              theme:'tomorrow'
+              '<body>',
+              '  <p>Choose theme below...</p>',
+              '</body>', {
+              mode:'html'
             });
 
             // Change theme with a list box
             ListBox({options:[
-                'tomorrow',
+                '',
                 'solarized_light',
                 'solarized_dark'
-              ],
-              change:function(){
+              ], change:function(){
                 myEditor.theme = this.value;
               }
             });
           """
           cs:"""
-            # Create an AceEditor
-            myEditor = AceEditor(
-              '<p>This is html</p>'
+            h1 'AceEditor Plugin'
+            myEditor = AceEditor(\"\"\"
+                <body>
+                  <p>Choose theme below...</p>
+                </body>
+              \"\"\",
               mode:'html'
-              theme:'tomorrow'
             )
 
             # Change theme with a list box
             ListBox options:[
-                'tomorrow',
+                ''
                 'solarized_light'
                 'solarized_dark'
               ],
@@ -268,41 +377,73 @@ module.exports = ->
         }
         {
           js:"""
-            // Create a Twitter follow button
+            h1('VimeoVideo Plugin');
+
+            VimeoVideo(24715531);
+          """
+          cs:"""
+            h1 'VimeoVideo Plugin'
+
+            VimeoVideo 24715531
+          """
+        }
+        {
+          js:"""
+            h1('TwitterButton Plugin')
+
             TwitterButton('evanmoran')
           """
           cs:"""
-            # Create a Twitter follow button
+            h1 'TwitterButton Plugin'
+
             TwitterButton 'evanmoran'
           """
         }
         {
           js:"""
-            // Create GitHub buttons
+            h1('GitHub Button Plugin');
 
-            GitHubButton('evanmoran')
+            // Follow
+            GitHubButton('evanmoran');
 
+            // Star
             GitHubButton('ojjs', 'oj');
 
+            // Fork
             GitHubButton('ojjs', 'oj', {type:'fork'});
           """
           cs:"""
-            # Create Github buttons
+            h1  'GitHub Button Plugin'
 
+            # Follow
             GitHubButton 'evanmoran'
 
+            # Star
             GitHubButton 'ojjs', 'oj'
 
+            # Fork
             GitHubButton 'ojjs', 'oj', type:'fork'
           """
         }
+        # {
+        #   js:"""
+        #     h1('JSFiddle Plugin');
+
+        #     JSFiddle('evanmoran/vhNcD');
+        #   """
+        #   cs:"""
+        #     h1  'JSFiddle Plugin'
+
+        #     JSFiddle 'evanmoran/vhNcD'
+        #   """
+        # }
       ], each: (model) ->
         div c:'dot', 'data-js': model.js, 'data-cs':model.cs
 
       css
         'ul.dots':
           listStyleType:'none'
-          width:'' + (dots.count * 20) + 'px'
+          width:'' + (dots.count * 21) + 'px'
           margin:'0 auto 30px'
           'li':
             display:'inline-block'
@@ -324,6 +465,8 @@ module.exports = ->
         selectDot = ($dot, fade) ->
           js = $dot.attr('data-js')
           cs = $dot.attr('data-cs')
+          window.editor = editor
+
           editor.set {js:js, cs:cs}
           $('ul.dots .dot').removeClass 'filled'
           $dot.addClass 'filled'
@@ -333,26 +476,27 @@ module.exports = ->
             selectDot $dot
             editor.$el.fadeIn(300)
 
-
         # Select first dot
         setTimeout (->
-          selectDot $('ul.dots .dot').first()
-          ), 50
+          $dots = $('ul.dots .dot')
+          random = 0#Math.floor(Math.random()*$dots.length);
+          selectDot $dots.eq(random)
+          ), 100
 
         _keepAnimatedDots = true
         nextDot = ->
-          setTimeout (->
-            if _keepAnimatedDots
-              # Get elements as array repeating the first
-              dotEls = $('ul.dots .dot').get()
-              prevEl = $('ul.dots .dot').last().get(0)
-              for dotEl in dotEls
-                if $(prevEl).hasClass('filled')
-                  selectDotWithFade $(dotEl)
-                  break
-                prevEl = dotEl
-              nextDot()
-          ), 7000
+          # setTimeout (->
+          #   if _keepAnimatedDots
+          #     # Get elements as array repeating the first
+          #     dotEls = $('ul.dots .dot').get()
+          #     prevEl = $('ul.dots .dot').last().get(0)
+          #     for dotEl in dotEls
+          #       if $(prevEl).hasClass('filled')
+          #         selectDotWithFade $(dotEl)
+          #         break
+          #       prevEl = dotEl
+          #     nextDot()
+          # ), transitionTime * 1000
 
         # Animate dots
         nextDot()
@@ -433,7 +577,7 @@ module.exports = ->
               backgroundColor:'#FFC000'
 
             '&.orange':
-              '@media phone':
+              '@media only screen and (max-width: 739px)':
                 marginTop:'15px'
             paddingTop: '11px'
 

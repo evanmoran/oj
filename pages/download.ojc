@@ -49,7 +49,7 @@ module.exports = ->
             color:'#a72200'
 
           '&.orange':
-            '@media phone':
+            '@media only screen and (max-width: 739px)':
               marginTop:'15px'
 
           padding: '4px 8px'
@@ -129,7 +129,7 @@ data = [
     ]
 
 ,
-  h: 'Examples', id: 'setup', d: ->
+  h: 'Examples', id: 'examples', d: ->
     md """
 
       All examples are included in the [oj-examples](http://github.com/ojjs/oj-examples) project. To take a look at them clone the repository with git:
@@ -170,15 +170,22 @@ data = [
   ,
     h: 'Server-side Commandline', id: 'example-server-side-commandline', d: ->
       md """
-        [View source (github.com)](https://github.com/ojjs/oj-examples/tree/master/server-side-with-commandline)
+        [View source (github.com)](https://github.com/ojjs/oj-examples/tree/master/server-side-commandline)
 
-        [View example (ojjs.org)](examples/server-side-with-commandline/index.html)
+        [View example (ojjs.org)](examples/server-side-commandline/index.html)
+      """
+  ,
+    h: 'Server-side Commandline (in CoffeeScript)', id: 'example-server-side-commandline-coffeescript', d: ->
+      md """
+        [View source (github.com)](https://github.com/ojjs/oj-examples/tree/master/server-side-commandline-coffeescript)
+
+        [View example (ojjs.org)](examples/server-side-commandline-coffeescript/index.html)
       """
   ,
     h: 'Server-side with Express', id: 'example-server-side-express', d: """
-      **Important**: Express support <u>has not been implemented</u> yet. This is my [#1 priority](https://github.com/ojjs/oj/issues/1), and clearly once express support happens OJ the full dream of shared client and server code we will realized!
+      **Important**: Express support isn't implemented yet</u>. This is my [#1 priority](https://github.com/ojjs/oj/issues/1) after this documentation push.
 
-      For those interested: the challenge is that *serious* caching is necessary for fast minification and `require` traversal. A simple "one function" approach would be pretty trivial. It is just getting support the [command-line](docs.html#commandline) tool's file unification and minification that is hard.
+      For those wondering why it doesn't exist yet: the challenge is that *serious* caching is necessary for minification and `require` traversal. A simple "one function" approach would be pretty trivial. It is just getting support the [command-line](docs.html#commandline) tool's file unification and minification that is hard.
 
       If you are an expert on Express middleware integration, please feel free to reach out.
     """

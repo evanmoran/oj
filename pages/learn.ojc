@@ -36,130 +36,443 @@ module.exports = ->
 
 data = [
 
-  h: 'Crash Course', id: 'crash-course', d: ->
+  h: 'The High Level', id: 'the-high-level', d: ->
       md """
-        OJ stands for *Object JavaScript*. It is a JavaScript library with a singular goal: to make objects that encapsulate website **creation** and **manipulation**.
+        OJ is a JavaScript library with the goal to make objects that **create** and **live edit** the web. So this BulletList object creates itself and then lets you manipulate it once in the DOM:
       """
+
+      TryEditor js:"""
+        var myList = oj.BulletList(
+          'Push',
+          'The',
+          'Button...'
+        );
+
+        oj.Button('Push me!', {
+          click:function(){
+            myList.add('Nice!')
+        }});
+      """
+      cs:"""
+        myList = oj.BulletList(
+          'Push'
+          'The'
+          'Button...'
+        )
+
+        oj.Button 'Push me!', click: ->
+          myList.add 'Nice!'
+      """
+      md """
+        **IMPORTANT:** Did you click the button yet? =). All the editors live compile OJ. Click stuff, and change the code to see what happens!
+      """
+
     items: [
 
-      h: 'Creation', id: 'creation', d: ->
+      h: 'What just happened?', id: 'what-happened', d: ->
 
         md """
-          When making a website you usually must keep track of three separate concepts: HTML structure, CSS design, and JS interaction. In OJ, these concepts still exist but they are all unified into objects. OJ objects do all three; they generate their own HTML, CSS, and JS code.
+          When making a website you have to keep in mind the HTML structure, CSS design, and JS interaction. In OJ, these are still important but they are all unified into objects. OJ objects handle all three; they generate their own HTML, CSS, and JS code.
 
-          The benefit is OJ objects have no dependencies. There is no need to read the docs to be sure the HTML is correct, or the CSS is included. Everything just works.
+          The benefit is OJ objects have **no dependencies**. There is no need to read the docs to be sure the HTML is correct, or see if the CSS is included. *Everything just works.*
 
           Allow me to demonstrate: In this example, the [oj.Button](docs.html#Button) generates its own `<button>` tag, and then once created binds a JavaScript click event:
         """
 
         TryEditor js: """
-          // Create a button
-          oj.Button('Click me', {
+          // Create html
+          Button('Click me!', {
+            // Bind click event
+            click:function(){alert('Woot!');}
+          });
+
+          // Create css
+          css({button:{color:'red'}})
+        """, cs: """
+          # Create html
+          Button 'Click me!',
+            # Bind click event
+            click: ->
+              alert 'Woot!'
+          });
+
+          # Create css
+          css button: color:'red'
+        """
+    ,
+      h: 'What else can it do?', id: 'what-else', d: ->
+        md """
+          Included in `oj.js` are the built-in objects are the basic building blocks of the web. These include creation and manipulation of the common `<html>` elements:
+
+          * [TextBox]() abstracts `<input type='text'>`
+          * [TextArea]() abstracts `<textarea>`
+          * [ListBox]() abstracts `<select> and <option>`
+          * [CheckBox]() abstracts `<input type='checkbox'>`
+          * [Button]() abstracts `<button>`
+          * [NumberList]() abstracts `<ol> and <li>`
+          * [BulletList]() abstracts `<ul>` and `<li>`
+          * [Table]() abstracts `<table>`,`<tr>`,`<td>`, `<tbody>`, and more.
+
+          The whole point of OJ is to make smart templating objects. You can make your own with the [createType](docs.html#createType) function and if they seem generally useful share them as [OJ plugins](plugins.html).
+        """
+    ,
+      h: 'How do I start?', id: 'how-to-start', d: ->
+
+        md """
+
+          Head to the [download page](download.html). There you can download `oj.js` and get going, and download any of the plugins currently available.
+
+          In addition at the bottom of the download page are several [example projects](download.html#examples) going client-side or on the command-line.
+        """
+    ,
+      h: 'Why a jQuery 2.0 dependency?', id: 'jquery-dependency', d: ->
+
+        md """
+
+          OJ uses jQuery to do DOM manipulation and Event Binding. As you can imagine this is pretty hard to do in a cross platform way -- it took some soul searching, but having this dependency seemed reasonable for a JavaScript library so focused on binding events and live editing DOM structure.
+
+          As for jQuery 2.0 -- this is the version of jQuery made for "modern" browsers, specifically IE9 and above. This version requirement also holds for OJ. This will likely hurt some adoption for OJ, but it made sense in that it could use build in HTML5, CSS3 features that would be hard to implement without browser support.
+        """
+    ]
+ ,
+  h: 'The Basics', id: 'the-basics', d: ->
+    md """
+      Now it may seem like OJ objects are doing a lot of magic. Let me assure you they are pretty elegant under the covers. Let's start from the beginning and see how they are made.
+    """
+  items: [
+      h: 'Creating HTML', id: 'creating-html', d: ->
+
+        md """
+          Every html `<tag>` has an analogous tag function by the same name. For example, `<div>` has `oj.div`:
+        """
+        TryEditor lineCount:2, js: """
+            div('This is a div');
+          """, cs: """
+            div 'This is a div'
+          """
+
+        md """`Object` arguments. This defines an `href` attributes on an anchor tag:"""
+        TryEditor js: """
+            a('Link to oj.js',
+              {href: 'http://ojjs.org'});
+          """, cs:"""
+            a 'Link to oj.js',
+              href: 'http://ojjs.org'
+          """
+
+        md """Order doesn't matter for attributes. Add as many as you need and the attribute objects will be unioned. For example, this `<div>` has both an `id` and an inline `style` attribute:"""
+        TryEditor js: """
+            div({id:"id-42"},
+              'A div with id and style',
+              {style:"color:purple"});
+          """, cs:"""
+            div id:"id-42",
+              'A div with id and style',
+              style:"color:purple"
+          """
+
+        md """To make life easier, style attributes can be set with `camelCase` in addition to `dashed-case`:"""
+        TryEditor js: """
+          div('A div with styling', {
+            style:{
+              fontSize:'25px',
+              color:'royalblue'
+            }
+          });
+          """, cs:"""
+            div 'A div with styling',
+              style:
+                fontSize:'25px'
+                color:'royalblue'
+          """
+    ,
+      h: 'Creating CSS', id: 'creating-css', d: ->
+
+        md """
+          Like tag functions, css is defined by its own function `oj.css`. It accepts an object of objects:
+        """
+
+        TryEditor js:"""
+            css({
+              div:{
+                color:'red'
+            }});
+
+            div('This div is red');
+          """, cs:"""
+            css
+              div:
+                color:'red'
+
+            div 'This div is red'
+          """
+
+        md """
+          The css function fully supports selectors. You can select classes:
+        """
+        TryEditor js:"""
+            css({
+              '.big':{
+                fontSize:'25px'
+            }});
+
+            div({'class':'big'},
+              'This div is big');
+          """, cs:"""
+            css
+              '.big':
+                fontSize:'25px'
+
+            div 'class':'big',
+              'This div is big'
+          """
+
+        md """
+          For convenience, the `class` attribute can abbreviated as `c`. This is the only abbreviation in OJ -- I truly hated to do this, but classes are just too commonly used, and in JavaScript it is unfortunate that "class" must be quoted in object literals:
+        """
+        TryEditor js:"""
+            css({
+              '.big':{
+                fontSize:'25px'
+              },
+              '.red':{
+                color:'red'
+              }
+            });
+
+            // c means class and can handle Arrays
+            div({c:['big','red']},
+              'This div is big and red');
+          """, cs:"""
+            css
+              '.big':
+                fontSize:'25px'
+              '.red':
+                color:'red'
+
+            div 'c':['big','red'],
+              'This div is big and red';
+          """
+
+        md """
+          Nesting tags can be done a couple ways. The most powerful is to use a function:
+        """
+        TryEditor js: """
+            ul(function(){
+              li('Item 1');
+              li('Item 2');
+              li('Item 3');
+              li('Item 4');
+              li('Item 5');
+            });
+          """, cs: """
+            ul ->
+              li 'Item 1'
+              li 'Item 2'
+              li 'Item 3'
+              li 'Item 4'
+              li 'Item 5'
+          """
+
+        md """
+          For most people the function notation seems verbose at first. It is very much worth it because it allows structure to be created through code. Here is the same structure generated with a `for` loop:
+        """
+        TryEditor lineCount:6, js: """
+            ul(function(){
+              for (var n = 1; n <= 5; n++)
+                li('Item ' + n);
+            });
+          """, cs: """
+            ul ->
+              for n in [1..5]
+                li 'Item ' + n
+          """
+
+        md """
+          Just to show the power. Here is [FizzBuzz](http://imranontech.com/2007/01/24/using-fizzbuzz-to-find-developers-who-grok-coding/):
+        """
+        TryEditor lineCount:14, js: """
+            ul(function(){
+              for(var n = 1; n <= 15; n++) {
+
+                // Calculate item
+                var item = '';
+                if(n % 3 === 0)
+                  item += 'Fizz';
+                if(n % 5 === 0)
+                  item += 'Buzz';
+
+                // Output item
+                li(item || n);
+              }
+            });
+          """, cs:"""
+            ul ->
+              for n in [1..15]
+
+                # Calculate item
+                item = '';
+                if n % 3 == 0
+                  item += 'Fizz'
+                if n % 5 == 0
+                  item += 'Buzz'
+
+                # Output item
+                li item || n
+          """
+
+        md """
+          As a hit for later OJ objects act just like tag functions. Nest them at will:
+        """
+        TryEditor lineCount:14, js: """
+          var users = [
+            'evanmoran',
+            'savinola',
+            'iamthelawton'
+          ];
+
+          ul(function(){
+            for(var n = 0; n < users.length; n++)
+              li(function(){
+                TwitterButton(users[n])
+              });
+          });
+          """, cs:"""
+            users = [
+              'evanmoran',
+              'savinola',
+              'iamthelawton'
+            ]
+
+            ul ->
+              for n in [0..users.length-1]
+                li ->
+                  TwitterButton users[n]
+
+          """
+
+    ,
+      h: 'Creating JS', id: 'creating-js', d: ->
+
+        md """
+          OJ tag functions have built-in support for jQuery events. If any event is passed as an attribute it will be automatically bound. Here `oj.div` function binds `click`, `mouseenter` and `mouseleave` events:
+        """
+
+        TryEditor js: """
+          p('Click or hover me', {
             click:function(){
-              alert('Events work!');
+              alert('Click works');
+            },
+            mouseenter:function(e){
+              $(this).css('color','royalblue')
+            },
+            mouseleave:function(e){
+              $(this).css('color','black')
             }
           });
         """, cs: """
-          # Create a button
-          oj.Button 'Click me',
+          p 'Click or hover me',
             click: ->
-              alert 'Events work!'
+              alert 'Click works'
+
+            mouseenter: (e) ->
+              $(@).css 'color','royalblue'
+
+            mouseleave: (e) ->
+              $(@).css 'color', 'black'
+
         """
+
         md """
-          **Go ahead. Click the button!**
+          The full list of attributes that bind events are:
 
+          * click
+          * dblclick
+          * change
+          * focus
+          * focusout
+          * hover
+          * scroll
+          * submit
+          * resize (window tags only)
+          * keydown / keyup
+          * mouseenter / mouseleave
+          * mousedown / mouseup
+
+          Here is an example of `keydown` / `keyup`:
         """
+        TryEditor js: """
+          input({
+            placeholder:'Type here...',
+            keyup:function(e){
+              $('.status').html(
+                'KEYUP code ' + e.keyCode);
+            },
+            keydown:function(e){
+              $('.status').html(
+                'KEYDOWN code ' + e.keyCode);
+            }
+          });
+
+          br();
+
+          div({c:'status'});
+        """, cs: """
+          input
+            placeholder:'Type here...'
+
+            keyup:(e) ->
+              $('.status').html(
+                'KEYUP code ' + e.keyCode)
+
+            keydown:(e) ->
+              $('.status').html(
+                'KEYDOWN code ' + e.keyCode)
+
+          br()
+
+          div c:'status'
+        """
+
+        # p 'OK, great. We have a list, but now I want to live edit it. Say I want to add more items or change the order of those items. In OJ, objects not only can create themselves but once made they can edit themselves too:'
+
+        # TryEditor
+        #   js: """
+        #     var myList = BulletList(0,1,2);
+
+        #     Button('Add Item', {
+        #       click: function(){
+        #         myList.push('Item added!');
+        #       }
+        #     });
+
+        #     Button('Move First Item', {
+        #       click: function(){
+        #         myList.move(0, myList.count-1)
+        #       }
+        #     });
+        #   """
+
+
+        # md """
+        #   Above we create a [BulletList](docs.html#BulletList) object with three items (0,1,2) and assign it to the value `myList`. This is not just a function but is actually a constructor that returns a new [BulletList](docs.html#BulletList) instance. Next we add a [Button](docs.html#Button) that when clicked creates a new List item.
+
+        #   Try clicking the button. The click event is bound for you. Try switching between JS (JavaScript) and CS (Coffee-Script). The OJ library was designed to work well in both.
+
+        #   Finally the third button uses the built in [List.move](docs.html#List-move) function to move the first item to the end of the list.
+        # """
+
     # ,
-    #   h: 'Manipulation', id: 'manipulation', d: ->
-    #     md """
-
-    #       OK, imagine you created a website with these OJ *building blocks*. Now what? Well you probably want to change things.
-
-    #       In OJ, direct DOM manipulation is built into the objects themselves. The *very same* object you used to create the website will remember its root DOM element and provide methods and properties to change itself.
-
-    #       In this example, the [BulletList](docs.html#BulletList) object generates its own `<ul>` and `<li>` tags. Then the [Button](docs.html#Button) object, when clicked, adds new items to the list.
-    #     """
-
-    #     TryEditor js: """
-    #         // Create a bulleted list
-    #         var myList = BulletList(
-    #           'Item 1',
-    #           'Item 2',
-    #           'Item 3'
-    #         );
-
-    #         // Create a button to add items
-    #         Button('Add Item',{click:function(){
-    #           myList.push('New Item!')
-    #         }});
-    #       """, cs: """
-    #         # Create a bulleted list
-    #         myList = BulletList(
-    #           'Item 1'
-    #           'Item 2'
-    #           'Item 3'
-    #         )
-
-    #         # Create a button to add items
-    #         Button 'Add Item', click:->
-    #           myList.push 'New Item!'
-
-    #       """
-    #     md """
-    #       ** What are you waiting for? Click the button! Change some code.**
-    #     """
-    # ,
-    #   h: 'The Dream', id: 'the-dream', d: ->
-
-    #     md """
-
-    #       The dream is that your code will "just work". Objects will abstract how things look and behave so you don't have to.
-
-    #       The dream is that your code will be much easier to write and maintain. Simple, clear abstractions make maintenance easy.
-
-    #       The dream is that the same code works on the server and client. With Node.js you can build your site on the Server (command-line or Express), and the very same code will work dynamically on the client. All examples work in both.
-
-    #       The dream is you won't have to remember obscure HTML syntax. Did you know that in `<table>` tags `<tfoot>` *must* come before `<tbody>`? It is true. The [Table](docs.html#Table) object understands this so you don't have to.
-
-    #       The dream is together we can abstract everything away. OJ is [open source](https://github.com/ojjs/oj), and there are a [growing collection of plugins](plugins.html) to build upon.
-
-    #       The dream is this is just the beginning.
-
-    #     """
-
-
-    # ,
-    #   h: 'The Editor is Live!', id: 'live-editor', d: ->
-
-    #     md """
-
-    #       Many people miss this the first time through. The code examples are live compiling OJ. Change stuff and it will update automatically.
-
-    #       Go ahead, edit away:
-
-    #     """
-
-    #     TryEditor lineCount: 4, js:"""
-    #         // Create a paragraph
-    #         p("Edit me, I'm editable...");
-    #       """, cs:"""
-    #         # Create a paragraph
-    #         p "Edit me, I'm editable..."
-    #       """
-    #     md """
-    #       In addition, the editor allows you to switch between JavaScript (js) and CoffeeScript (cs) compiling. OJ was designed work well in either. No pressure, either way. We all have difference preferences and OJ will always work in pure JavaScript.
-    #     """
-    # ,
-    #   h: 'The jQuery Dependency', id: 'live-editor', d: ->
-
+    #   h: 'Dependencies', id: 'dependencies', d: ->
     #     md """
 
     #       Now you may say. "That is nice and all, but why should I care because jQuery can do this?" Well, you are right. jQuery *can* do it quite well; in fact OJ depends on jQuery 2.0 for this very reason. OJ uses jQuery selectors, DOM manipulation, and event binding to ensure this stuff works cross-platform.
 
-    #       As you probably know, jQuery 2.0 is the version of jQuery made for "modern" browsers, specifically IE9 and above. It took a lot of soul searching, but this version requirement also holds for OJ. The reason is primarily to allow OJ objects to use first-class properties (a feature that works IE9+). For example CheckBox values can be set with assignment instead of a function call
-    #     """
+    #       As you probably know, jQuery 2.0 is the version of jQuery made for "modern" browsers, specifically IE9 and above. It took a lot of soul searching, but this version requirement also holds for OJ. The reason is primarily to allow OJ objects to use first-class properties (a feature that works IE9+). For example CheckBox values can be set with assignment instead of a function call:
 
-    #     TryEditor js: """
+    #     """
+    #     TryEditor
+    #       js: """
     #         // Define a checkbox
     #         var cb = CheckBox(true, {click:
     #           function(){
@@ -173,607 +486,248 @@ data = [
     #         // that updates the DOM live
     #         // and triggers model changes.
     #         cb.value = true;
-    #     """, cs:"""
     #     """
+      ]
+
+  ,
+    h: 'Partials & Templates', id: 'partials-and-templates', d: ->
+      md """
+        It is very helpful to think in terms of modular and reusable parts. OJ objects are one way to do this, while Partials & Templates are the other.
+      """
+    items: [
+      h: 'Partials', id: 'partials', d: ->
+        md """
+          Partials are functions. Here is a function to make twitter follow links:
+        """
+        TryEditor js: """
+          input({
+            placeholder:'Type here...',
+            keyup:function(e){
+              $('.status').html(
+                'KEYUP code ' + e.keyCode);
+            },
+            keydown:function(e){
+              $('.status').html(
+                'KEYDOWN code ' + e.keyCode);
+            }
+          });
+
+          br();
+
+          div({c:'status'});
+        """, cs: """
+          input
+            placeholder:'Type here...'
+
+            keyup:(e) ->
+              $('.status').html(
+                'KEYUP code ' + e.keyCode)
+
+            keydown:(e) ->
+              $('.status').html(
+                'KEYDOWN code ' + e.keyCode)
+
+          br()
+
+          div c:'status'
+        """
+    ,
+      h: 'Templates', id: 'templates', d: ->
 
     ]
- # ,
- #  h: 'The Basics', id: 'the-basics', d: ->
- #    md """
- #      Now it may seem like OJ objects are doing a lot of magic. Let me assure you they are pretty elegant under the covers. Let's start from the beginning and see how they are made.
- #    """
- #  items: [
- #      h: 'Creating HTML', id: 'creating-html', d: ->
-
- #        md """
- #          Every html `<tag>` has an analogous tag function by the same name. For example, `<div>` has `oj.div`:
- #        """
- #        TryEditor lineCount:2, js: """
- #            div('This is a div');
- #          """, cs: """
- #            div 'This is a div'
- #          """
-
- #        md """`Object` arguments. This defines an `href` attributes on an anchor tag:"""
- #        TryEditor js: """
- #            a('Link to oj.js',
- #              {href: 'http://ojjs.org'});
- #          """, cs:"""
- #            a 'Link to oj.js',
- #              href: 'http://ojjs.org'
- #          """
-
- #        md """Order doesn't matter for attributes. Add as many as you need and the attribute objects will be unioned. For example, this `<div>` has both an `id` and an inline `style` attribute:"""
- #        TryEditor js: """
- #            div({id:"id-42"},
- #              'A div with id and style',
- #              {style:"color:purple"});
- #          """, cs:"""
- #            div id:"id-42",
- #              'A div with id and style',
- #              style:"color:purple"
- #          """
-
- #        md """To make life easier, style attributes can be set with `camelCase` in addition to `dashed-case`:"""
- #        TryEditor js: """
- #          div('A div with styling', {
- #            style:{
- #              fontSize:'25px',
- #              color:'royalblue'
- #            }
- #          });
- #          """, cs:"""
- #            div 'A div with styling',
- #              style:
- #                fontSize:'25px'
- #                color:'royalblue'
- #          """
- #    ,
- #      h: 'Creating CSS', id: 'creating-css', d: ->
-
- #        md """
- #          Like tag functions, css is defined by its own function `oj.css`. It accepts an object of objects:
- #        """
-
- #        TryEditor js:"""
- #            css({
- #              div:{
- #                color:'red'
- #            }});
-
- #            div('This div is red');
- #          """, cs:"""
- #            css
- #              div:
- #                color:'red'
-
- #            div 'This div is red'
- #          """
-
- #        md """
- #          The css function fully supports selectors. You can select classes:
- #        """
- #        TryEditor js:"""
- #            css({
- #              '.big':{
- #                fontSize:'25px'
- #            }});
-
- #            div({'class':'big'},
- #              'This div is big');
- #          """, cs:"""
- #            css
- #              '.big':
- #                fontSize:'25px'
-
- #            div 'class':'big',
- #              'This div is big'
- #          """
-
- #        md """
- #          For convenience, the `class` attribute can abbreviated as `c`. This is the only abbreviation in OJ -- I trully hated to do this, but classes are just too commonly used, and in JavaScript it is unfortunate that "class" must be quoted in object literals:
- #        """
- #        TryEditor js:"""
- #            css({
- #              '.big':{
- #                fontSize:'25px'
- #              },
- #              '.red':{
- #                color:'red'
- #              }
- #            });
-
- #            // c means class and can handle Arrays
- #            div({c:['big','red']},
- #              'This div is big and red');
- #          """, cs:"""
- #            css
- #              '.big':
- #                fontSize:'25px'
- #              '.red':
- #                color:'red'
-
- #            div 'c':['big','red'],
- #              'This div is big and red';
- #          """
-
- #        md """
- #          Nesting tags can be done a couple ways. The most powerful is to use a function:
- #        """
- #        TryEditor js: """
- #            ul(function(){
- #              li('Item 1');
- #              li('Item 2');
- #              li('Item 3');
- #              li('Item 4');
- #              li('Item 5');
- #            });
- #          """, cs: """
- #            ul ->
- #              li 'Item 1'
- #              li 'Item 2'
- #              li 'Item 3'
- #              li 'Item 4'
- #              li 'Item 5'
- #          """
-
- #        md """
- #          For most people the function notation seems verbose at first. It is very much worth it because it allows structure to be created through code. Here is the same structure generated with a `for` loop:
- #        """
- #        TryEditor lineCount:6, js: """
- #            ul(function(){
- #              for (var n = 1; n <= 5; n++)
- #                li('Item ' + n);
- #            });
- #          """, cs: """
- #            ul ->
- #              for n in [1..5]
- #                li 'Item ' + n
- #          """
-
- #        md """
- #          Just to show the power. Here is [FizzBuzz](http://imranontech.com/2007/01/24/using-fizzbuzz-to-find-developers-who-grok-coding/):
- #        """
- #        TryEditor lineCount:14, js: """
- #            ul(function(){
- #              for(var n = 1; n <= 15; n++) {
-
- #                // Calculate item
- #                var item = '';
- #                if(n % 3 === 0)
- #                  item += 'Fizz';
- #                if(n % 5 === 0)
- #                  item += 'Buzz';
-
- #                // Output item
- #                li(item || n);
- #              }
- #            });
- #          """, cs:"""
- #            ul ->
- #              for n in [1..15]
-
- #                # Calculate item
- #                item = '';
- #                if n % 3 == 0
- #                  item += 'Fizz'
- #                if n % 5 == 0
- #                  item += 'Buzz'
-
- #                # Output item
- #                li item || n
- #          """
-
- #        md """
- #          As a hit for later OJ objects act just like tag functions. Nest them at will:
- #        """
- #        TryEditor lineCount:14, js: """
- #          var users = [
- #            'evanmoran',
- #            'savinola',
- #            'iamthelawton'
- #          ];
-
- #          ul(function(){
- #            for(var n = 0; n < users.length; n++)
- #              li(function(){
- #                TwitterButton(users[n])
- #              });
- #          });
- #          """, cs:"""
- #            users = [
- #              'evanmoran',
- #              'savinola',
- #              'iamthelawton'
- #            ]
-
- #            ul ->
- #              for n in [0..users.length-1]
- #                li ->
- #                  TwitterButton users[n]
-
- #          """
-
- #    ,
- #      h: 'Creating JS', id: 'creating-js', d: ->
-
- #        md """
- #          OJ tag functions have built-in support for jQuery events. If any event is passed as an attribute it will be automatically bound. Here `oj.div` function binds `click`, `mouseenter` and `mouseleave` events:
- #        """
-
- #        TryEditor js: """
- #          p('Click or hover me', {
- #            click:function(){
- #              alert('Click works');
- #            },
- #            mouseenter:function(e){
- #              $(this).css('color','royalblue')
- #            },
- #            mouseleave:function(e){
- #              $(this).css('color','black')
- #            }
- #          });
- #        """, cs: """
- #          p 'Click or hover me',
- #            click: ->
- #              alert 'Click works'
-
- #            mouseenter: (e) ->
- #              $(@).css 'color','royalblue'
-
- #            mouseleave: (e) ->
- #              $(@).css 'color', 'black'
-
- #        """
-
- #        md """
- #          The full list of attributes that bind events are:
-
- #          * click
- #          * dblclick
- #          * change
- #          * focus
- #          * focusout
- #          * hover
- #          * scroll
- #          * submit
- #          * resize (window tags only)
- #          * keydown / keyup
- #          * mouseenter / mouseleave
- #          * mousedown / mouseup
-
- #          Here is an example of `keydown` / `keyup`:
- #        """
- #        TryEditor js: """
- #          input({
- #            placeholder:'Type here...',
- #            keyup:function(e){
- #              $('.status').html(
- #                'KEYUP code ' + e.keyCode);
- #            },
- #            keydown:function(e){
- #              $('.status').html(
- #                'KEYDOWN code ' + e.keyCode);
- #            }
- #          });
-
- #          br();
-
- #          div({c:'status'});
- #        """, cs: """
- #          input
- #            placeholder:'Type here...'
-
- #            keyup:(e) ->
- #              $('.status').html(
- #                'KEYUP code ' + e.keyCode)
-
- #            keydown:(e) ->
- #              $('.status').html(
- #                'KEYDOWN code ' + e.keyCode)
-
- #          br()
-
- #          div c:'status'
- #        """
-
- #        # p 'OK, great. We have a list, but now I want to live edit it. Say I want to add more items or change the order of those items. In OJ, objects not only can create themselves but once made they can edit themselves too:'
-
- #        # TryEditor
- #        #   js: """
- #        #     var myList = BulletList(0,1,2);
-
- #        #     Button('Add Item', {
- #        #       click: function(){
- #        #         myList.push('Item added!');
- #        #       }
- #        #     });
-
- #        #     Button('Move First Item', {
- #        #       click: function(){
- #        #         myList.move(0, myList.count-1)
- #        #       }
- #        #     });
- #        #   """
-
-
- #        # md """
- #        #   Above we create a [BulletList](docs.html#BulletList) object with three items (0,1,2) and assign it to the value `myList`. This is not just a function but is actually a constructor that returns a new [BulletList](docs.html#BulletList) instance. Next we add a [Button](docs.html#Button) that when clicked creates a new List item.
-
- #        #   Try clicking the button. The click event is bound for you. Try switching between JS (JavaScript) and CS (Coffee-Script). The OJ library was designed to work well in both.
-
- #        #   Finally the third button uses the built in [List.move](docs.html#List-move) function to move the first item to the end of the list.
- #        # """
-
- #    # ,
- #    #   h: 'Dependencies', id: 'dependencies', d: ->
- #    #     md """
-
- #    #       Now you may say. "That is nice and all, but why should I care because jQuery can do this?" Well, you are right. jQuery *can* do it quite well; in fact OJ depends on jQuery 2.0 for this very reason. OJ uses jQuery selectors, DOM manipulation, and event binding to ensure this stuff works cross-platform.
-
- #    #       As you probably know, jQuery 2.0 is the version of jQuery made for "modern" browsers, specifically IE9 and above. It took a lot of soul searching, but this version requirement also holds for OJ. The reason is primarily to allow OJ objects to use first-class properties (a feature that works IE9+). For example CheckBox values can be set with assignment instead of a function call:
-
- #    #     """
- #    #     TryEditor
- #    #       js: """
- #    #         // Define a checkbox
- #    #         var cb = CheckBox(true, {click:
- #    #           function(){
- #    #             cb.$el.ojAfter(function(){
- #    #               div('The value is ' + cb.value);
- #    #             });
- #    #           }
- #    #         });
-
- #    #         // value is a smart property
- #    #         // that updates the DOM live
- #    #         // and triggers model changes.
- #    #         cb.value = true;
- #    #     """
- #      ]
-
- #  ,
- #    h: 'Partials & Templates', id: 'partials-and-templates', d: ->
- #      md """
- #        It is very helpful to think in terms of modular and reusable parts. OJ objects are one way to do this, while Partials & Templates are the other.
- #      """
- #    items: [
- #      h: 'Partials', id: 'partials', d: ->
- #        md """
- #          Partials are functions. Here is a function to make twitter follow links:
- #        """
- #        TryEditor js: """
- #          input({
- #            placeholder:'Type here...',
- #            keyup:function(e){
- #              $('.status').html(
- #                'KEYUP code ' + e.keyCode);
- #            },
- #            keydown:function(e){
- #              $('.status').html(
- #                'KEYDOWN code ' + e.keyCode);
- #            }
- #          });
-
- #          br();
-
- #          div({c:'status'});
- #        """, cs: """
- #          input
- #            placeholder:'Type here...'
-
- #            keyup:(e) ->
- #              $('.status').html(
- #                'KEYUP code ' + e.keyCode)
-
- #            keydown:(e) ->
- #              $('.status').html(
- #                'KEYDOWN code ' + e.keyCode)
-
- #          br()
-
- #          div c:'status'
- #        """
- #    ,
- #      h: 'Templates', id: 'templates', d: ->
-
- #    ]
- #  ,
- #    h: 'Model Binding', id: 'models-and-collections', d: ->
- #      md """
-
- #      """
- #    items: [
-
- #      h: 'Form Binding', id: 'form-binding', d: ->
-
- #        md """
- #          OJ was originally meant to be framework agnostic in the way Backbone is. At its heart OJ is about creating really powerful Views, in the MVC sense. It doesn't create Models. It doesn't create Controllers or Routing or page navigation. Instead it tries to do only one thing well: making views with objects.
-
- #          This is all still true. OJ makes Views. Period. The only compromise is OJ now can recognize and bind to Backbone-like models and collections (anything that supports the on,off,trigger event syntax). In a sense, OJ is the View to Backbones Model.
-
- #          When Backbone was originally conceived it brilliantly left Views as an exercise to the reader. The thing is there were too many ways to do templating. Back in 2010 they couldn't know which would stick. Models were a big deal, and Backbone was intended to abstract what could be abstracted well and leave the rest for later.
-
- #        """
- #        TryEditor
- #          js: """
- #            // Define backbone User model
- #            var User = Backbone.Model.extend();
-
- #            // Create a user model
- #            user = new User({name:'Thomas'});
-
- #            // Define TextBox bound to the model
- #            TextBox({model:user, key:'name'});
-
- #            // Define a TextArea bound to the model
- #            TextArea({model:user, key:'name'});
-
- #            // Define css to make them align
- #            css({'textarea, input':{
- #              width: 200,
- #              margin: 10,
- #              display:'block',
- #              border: '1px solid red'
- #            }});
-
- #          """
- #          cs: """
-
- #          """
- #        p (->
- #          md """(Since they are bound to the same model, typing in one box changes the other. Try it!)"""), style: textAlign: 'center'
-
- #    ]
-
- #  ,
- #    h: 'Creating Plugins', id: 'creating-plugins', d: ->
- #      md """
-
- #      """
- #    items: [
-
- #      h: 'Type System', id: 'type-system', d: ->
-
- #        md """
-
- #          The built-in objects seem pretty powerful. How hard is it to make your own?*
-
- #          Answer: Insanely easy. Making types is what OJ does!
-
- #          Included in OJ is a sophisticated type system inspired by the CoffeeScript type system. This lets you create types with:
-
- #          * Constructors
- #          * Single inheritance
- #          * Methods and Properties
- #          * Static Methods and Properties
-
- #          That said, OJ types have two big differences from CoffeeScript types:
-
- #          1.  OJ types work in JavaScript (CoffeeScript types only work in CoffeeScript)
-
- #              This is the big reason why OJ doesn't just use CoffeeScript types (they are pretty great). OJ needed to work in pure JavaScript and keep the syntax as clean as possible.
-
- #          2.  OJ types directly support first-class properties. So if you choose, you can define properties with get / set methods to better abstract your data access.
-
- #              This brings front and center my favorite "new" feature of JavaScript, [first-class properties (ejohn.org)](http://ejohn.org/blog/ecmascript-5-objects-and-properties/). Even though properties have been in JavaScript since 2009, most still aren't aware of them. OJ builds these kind of properties right in.
-
- #          As an example of the type system, lets create a Rectangle type that has properties `width` and `height`. Then a readonly property `area` is calculated from width and height:
-
- #        """
-
- #        TryEditor js:"""
- #          // Create Rectangle type
- #          var Rectangle = createType(
- #            'Rectangle', {
-
- #            // Construct with width and height
- #            constructor: function(w,h){
- #              this.width = w;
- #              this.height = h;
- #            },
-
- #            // Create properties
- #            properties: {
- #              width:null,
- #              height:null,
-
- #              // Area from width and height
- #              area: {
- #                get: function(){
- #                  return this.width *
- #                    this.height;
- #                }
- #              }
- #            }
- #          });
-
- #          // Instance it with new
- #          var myRect = new Rectangle(10,20);
-
- #          // Display the properties
- #          div('The width is: ', myRect.width);
- #          div('The height is: ', myRect.height);
- #          div('The area is: ', myRect.area);
- #          div(JSON.stringify(myRect));
- #        """, cs: """
- #        """
- #    ,
- #      h: 'Creating Views', id: 'creating-views', d: ->
-
- #        md """
-
- #          *Ok, cool. I get that OJ makes types, but do we make types that generate HTML, CSS, and JavaScript?*
-
- #          Think of OJ objects as Views in the MVC sense. OJ does not include models or routes like other frameworks. The goal is to create the best View abstraction possible in pure JavaScript and leave the rest to other frameworks.
-
- #          In a way this approach is the inverse of Backbone. Backbone has models, collection and routes. OJ just is the view. This made it a natural fit to have Backbone support built in, but an adapter to any framework would be straightforward.
-
- #          *Enough talk. How do I make a View?*
-
- #          In this example a new view is created called `OrangeButton`. This view contains default styling with CSS, and editing the `label` property will change its text.
-
- #        """
-
- #        TryEditor js:"""
- #          // Create an OrangeButton view
- #          var OrangeButton = oj.createType(
- #            'OrangeButton', {
-
- #            // Inherit from oj.View
- #            base:View,
-
- #            // Construct by setting el
- #            constructor: function(text, options){
-
- #              // Set root element
- #              this.el = oj(function(){
- #                button();
- #              });
-
- #              // Call super's constructor
- #              OrangeButton.base.constructor.call(
- #                this, options);
-
- #              // Init the label from arguments
- #              this.label = text;
- #            },
-
- #            // Create the label property
- #            // to get/set the button's text
- #            properties: {
- #              label: {
- #                get:function(){
- #                  return this.$el.html();
- #                },
- #                set:function(v){
- #                  this.$el.html(v);
- #                }
- #              }
- #           }
- #          });
-
- #          // Define CSS for this object
- #          OrangeButton.css({
- #            border:'1px solid orange',
- #            borderRadius: '8px',
- #            backgroundColor: 'white',
- #            '&:hover': {
- #              border:'1px solid red'
- #            }
- #          });
-
- #          // Create an orange button
- #          var myButton = OrangeButton(
- #            'Click My Orange Button...', {
- #            click: function(){
- #              myButton.label += ' (Woot!)';
- #            }
- #          });
- #        """
-
- #    ]
+  ,
+    h: 'Model Binding', id: 'models-and-collections', d: ->
+      md """
 
+      """
+    items: [
 
+      h: 'Form Binding', id: 'form-binding', d: ->
 
+        md """
+          OJ was originally meant to be framework agnostic in the way Backbone is. At its heart OJ is about creating really powerful Views, in the MVC sense. It doesn't create Models. It doesn't create Controllers or Routing or page navigation. Instead it tries to do only one thing well: making views with objects.
+
+          This is all still true. OJ makes Views. Period. The only compromise is OJ now can recognize and bind to Backbone-like models and collections (anything that supports the on,off,trigger event syntax). In a sense, OJ is the View to Backbones Model.
+
+          When Backbone was originally conceived it brilliantly left Views as an exercise to the reader. The thing is there were too many ways to do templating. Back in 2010 they couldn't know which would stick. Models were a big deal, and Backbone was intended to abstract what could be abstracted well and leave the rest for later.
+
+        """
+        TryEditor
+          js: """
+            // Define backbone User model
+            var User = Backbone.Model.extend();
+
+            // Create a user model
+            user = new User({name:'Thomas'});
+
+            // Define TextBox bound to the model
+            TextBox({model:user, key:'name'});
+
+            // Define a TextArea bound to the model
+            TextArea({model:user, key:'name'});
+
+            // Define css to make them align
+            css({'textarea, input':{
+              width: 200,
+              margin: 10,
+              display:'block',
+              border: '1px solid red'
+            }});
+
+          """
+          cs: """
+
+          """
+        p (->
+          md """(Since they are bound to the same model, typing in one box changes the other. Try it!)"""), style: textAlign: 'center'
+
+    ]
+
+  ,
+    h: 'Creating Plugins', id: 'creating-plugins', d: ->
+      md """
+
+      """
+    items: [
+
+      h: 'Type System', id: 'type-system', d: ->
+
+        md """
+
+          The built-in objects seem pretty powerful. How hard is it to make your own?*
+
+          Answer: Insanely easy. Making types is what OJ does!
+
+          Included in OJ is a sophisticated type system inspired by the CoffeeScript type system. This lets you create types with:
+
+          * Constructors
+          * Single inheritance
+          * Methods and Properties
+          * Static Methods and Properties
+
+          That said, OJ types have two big differences from CoffeeScript types:
+
+          1.  OJ types work in JavaScript (CoffeeScript types only work in CoffeeScript)
+
+              This is the big reason why OJ doesn't just use CoffeeScript types (they are pretty great). OJ needed to work in pure JavaScript and keep the syntax as clean as possible.
+
+          2.  OJ types directly support first-class properties. So if you choose, you can define properties with get / set methods to better abstract your data access.
+
+              This brings front and center my favorite "new" feature of JavaScript, [first-class properties (ejohn.org)](http://ejohn.org/blog/ecmascript-5-objects-and-properties/). Even though properties have been in JavaScript since 2009, most still aren't aware of them. OJ builds these kind of properties right in.
+
+          As an example of the type system, lets create a Rectangle type that has properties `width` and `height`. Then a readonly property `area` is calculated from width and height:
+
+        """
+
+        TryEditor js:"""
+          // Create Rectangle type
+          var Rectangle = createType(
+            'Rectangle', {
+
+            // Construct with width and height
+            constructor: function(w,h){
+              this.width = w;
+              this.height = h;
+            },
+
+            // Create properties
+            properties: {
+              width:null,
+              height:null,
+
+              // Area from width and height
+              area: {
+                get: function(){
+                  return this.width *
+                    this.height;
+                }
+              }
+            }
+          });
+
+          // Instance it with new
+          var myRect = new Rectangle(10,20);
+
+          // Display the properties
+          div('The width is: ', myRect.width);
+          div('The height is: ', myRect.height);
+          div('The area is: ', myRect.area);
+          div(JSON.stringify(myRect));
+        """, cs: """
+        """
+    ,
+      h: 'Creating Views', id: 'creating-views', d: ->
+
+        md """
+
+          *Ok, cool. I get that OJ makes types, but do we make types that generate HTML, CSS, and JavaScript?*
+
+          Think of OJ objects as Views in the MVC sense. OJ does not include models or routes like other frameworks. The goal is to create the best View abstraction possible in pure JavaScript and leave the rest to other frameworks.
+
+          In a way this approach is the inverse of Backbone. Backbone has models, collection and routes. OJ just is the view. This made it a natural fit to have Backbone support built in, but an adapter to any framework would be straightforward.
+
+          *Enough talk. How do I make a View?*
+
+          In this example a new view is created called `OrangeButton`. This view contains default styling with CSS, and editing the `label` property will change its text.
+
+        """
+
+        TryEditor js:"""
+          // Create an OrangeButton view
+          var OrangeButton = oj.createType(
+            'OrangeButton', {
+
+            // Inherit from oj.View
+            base:View,
+
+            // Construct by setting el
+            constructor: function(text, options){
+
+              // Set root element
+              this.el = oj(function(){
+                button();
+              });
+
+              // Call super's constructor
+              OrangeButton.base.constructor.call(
+                this, options);
+
+              // Init the label from arguments
+              this.label = text;
+            },
+
+            // Create the label property
+            // to get/set the button's text
+            properties: {
+              label: {
+                get:function(){
+                  return this.$el.html();
+                },
+                set:function(v){
+                  this.$el.html(v);
+                }
+              }
+           }
+          });
+
+          // Define CSS for this object
+          OrangeButton.css({
+            border:'1px solid orange',
+            borderRadius: '8px',
+            backgroundColor: 'white',
+            '&:hover': {
+              border:'1px solid red'
+            }
+          });
+
+          // Create an orange button
+          var myButton = OrangeButton(
+            'Click My Orange Button...', {
+            click: function(){
+              myButton.label += ' (Woot!)';
+            }
+          });
+        """
+
+    ]
 ]

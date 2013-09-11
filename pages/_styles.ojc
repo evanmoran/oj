@@ -23,6 +23,7 @@ module.exports = ->
   optionLinkColor = propertyLinkColor
   argumentLinkColor = propertyLinkColor
 
+
   # Fonts
   familyMonospace = 'Inconsolata, Consolas, Courier New, monospace'
   familySanSarif = 'Helvetica, Arial, sans-serif'
@@ -199,9 +200,9 @@ module.exports = ->
       display: 'inline-block'
       position: 'relative'
       width: '560px'
-      '@media tablet':
+      '@media only screen and (min-width: 740px) and (max-width: 959px)':
         width: '377px'
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         width: '100%'
         marginLeft:'20px'
 

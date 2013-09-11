@@ -27,7 +27,7 @@ module.exports = (oj, settings) ->
       @_editor = new AceEditor
         c: 'oj-TryEditor-input-editor'
         theme: 'orange'
-        mode:'ojc'
+        mode:'oj'
         fontSize: 15
         tabSize: 2
         behaviorsEnabled: true
@@ -37,8 +37,6 @@ module.exports = (oj, settings) ->
         showPrintMargin: false
         readOnly: false
         showIndentGuides: false
-        # width:'300px'
-        # height:'300px'
         change: => @editorChanged.apply @, arguments
 
       # Create element
@@ -82,15 +80,22 @@ module.exports = (oj, settings) ->
       if args.length > 0
         @value = args.join('\n')
       else
-        @value = if @state == 'js' then @js else @cs
+        @value = (if @state == 'js' then @js else @cs) || ''
+
+      # Force it to work in firefox. Don't have time to debug this.
+      if @value == ''
+        @value = ' '
+        @value = ''
 
       @minWidth = oj.argumentShift(options, 'minWidth') ? 400
       @minHeight = oj.argumentShift(options, 'minHeight') ? (lineHeight * 1 + 2 * editorPadding)
 
-      # @width = oj.argumentShift(options, 'width') if options.width?
+      @width = oj.argumentShift(options, 'width') if options.width?
       @height = oj.argumentShift(options, 'height') if options.height?
 
       @split = oj.argumentShift(options, 'split') ? 0.5
+
+      @fontSize = oj.argumentShift(options, 'fontSize') ? 15
 
       @lineCount = oj.argumentShift(options, 'lineCount') ? 'fit'
 
@@ -101,7 +106,7 @@ module.exports = (oj, settings) ->
       # Bind any events
       @_bindEvents()
 
-      @updateFrame()
+      # @updateFrame()
 
     properties:
 
@@ -111,6 +116,10 @@ module.exports = (oj, settings) ->
       height:
         get: -> @_height ? @minHeight
         set: (v) -> @_height = v; @updateFrame()
+
+      fontSize:
+        get: -> @editor.fontSize
+        set: (v) -> @editor.fontSize = v; return;
 
       lineCount:
         get: -> @_lineCount
@@ -140,39 +149,49 @@ module.exports = (oj, settings) ->
 
       # Accessor to editor.value
       value:
-        get: -> @editor.value ? ''
+        get: ->
+          @editor.value ? ''
         set: (v) ->
           if @state == 'cs'
             @_cs = v
           else
             @_js = v
           @editor.value = v
+          @recompile()
 
       # Adjust the js value
       js:
         get: -> @_js ? ''
-        set: (v) -> @_js = v; @updateValue()
+        set: (v) ->
+          @_js = v
+          @value = v if @state == 'js'
+          return
 
       # Adjust the cs value
       cs:
         get: -> @_cs ? ''
-        set: (v) -> @_cs = v; @updateValue()
+        set: (v) ->
+          @_cs = v
+          @value = v if @state == 'cs'
+          return
+
 
       # Display 'cs' or 'js'
       state:
-        get: -> @_state ? 'js'
+        get: ->
+          @_state ? 'js'
         set: (v) ->
           @_state = v;
           if v == 'js'
-            @editor.mode = 'oj'
+            @value = @js
+            @mode = 'oj'
             @$jsButton.addClass 'selected'
             @$csButton.removeClass 'selected'
           else
-            @editor.mode = 'ojc'
+            @value = @cs
+            @mode = 'ojc'
             @$jsButton.removeClass 'selected'
             @$csButton.addClass 'selected'
-
-          @updateValue()
 
       mode:
         get: -> @editor.mode
@@ -246,10 +265,6 @@ module.exports = (oj, settings) ->
             $('body').css
               overflow:'auto'
 
-      cs: ''
-      js: ''
-      css: ''
-      html: ''
 
       $inputs: null
       $input: null
@@ -285,21 +300,8 @@ module.exports = (oj, settings) ->
         if @maximize
           @height = innerHeight - editorBorderWidth * 2
 
-      # Given js/cs & state recompile everything
-      updateValue: ->
-        if @state == 'js'
-          if @mode != 'oj'
-            @mode = 'oj'
-          @value = @js
-        else
-          if @mode != 'ojc'
-            @mode = 'ojc'
-          @value = @cs
-        @recompile()
-
       # Given width/height/split recalculate everything
       updateFrame: ->
-
         w = @width
         h = @height
 
@@ -309,33 +311,8 @@ module.exports = (oj, settings) ->
         @$inputs.height h
         @$outputs.height h
 
-        # iphone
-        if w < phoneWidth
-          @$inputs.css display:'block'
-
-          # The input
-          @editor.width = w - editorPadding * 2
-
-          # The output
-          @$outputs.width w
-          @$output.width w
-          @$output.height h - editorPadding
-
-          @$console.height h - 2 * consolePadding
-          @$console.width w - 2 * consolePadding
-
-          # Seperator
-          @$seperator.hide()
-
-          @$outputs.css 'border-top':"#{editorBorderWidth}px solid #{editorBorderColor}"
-
-          # resizer
-          if Math.abs(h / 2 - @$resizer.height()) > 10
-            @$resizer.height h * 2
-
-          @$el.height h * 2
-
-        else
+        # Not phone or maximized make it split into vertical columns
+        if w >= phoneWidth || @maximize
           @$inputs.css display:'inline-block'
 
           # The editor
@@ -360,14 +337,41 @@ module.exports = (oj, settings) ->
 
           @$el.height h
 
+        # iphone
+        else
+          @$inputs.css display:'block'
+
+          # The input
+          @editor.width = w - editorPadding * 2
+
+          # The output
+          @$outputs.width w
+          @$output.width w
+          @$output.height h - editorPadding
+
+          @$console.height h - 2 * consolePadding
+          @$console.width w - 2 * consolePadding
+
+          # Seperator
+          @$seperator.hide()
+
+          @$outputs.css 'border-top':"#{editorBorderWidth}px solid #{editorBorderColor}"
+
+          # resizer
+          if Math.abs(h / 2 - @$resizer.height()) > 10
+            @$resizer.height h * 2
+
+          @$el.height h * 2
       # Positioning can only happen once inserted
       inserted: ->
+
         TryEditor.base.inserted.apply @, arguments
         @lineCount = @lineCount
 
         @editor.width = @editor.width
         @editor.value = @value
         @editor.height = @height
+        @editor.mode = @mode
 
         # Maximize instantly if it defaulted that way
         d = maximizeDuration
@@ -393,7 +397,6 @@ module.exports = (oj, settings) ->
         # Do nothing if we aren't inserted yet (no place to output to)
         return unless @isInserted
         code = @value
-
         # Compile coffee SCRIPT to javascript
         if @state == 'cs'
           try
@@ -402,14 +405,6 @@ module.exports = (oj, settings) ->
             # Set console message
             @consoleError "CoffeeScript Error: #{eCoffee.message}"
             return
-
-        # Compile the code to check for errors
-        # try
-        #   results = oj.compile html:1,css:1, eval("oj(function(){#{code}});")
-
-        # catch eCompile
-        #   @consoleError "#{eCompile.toString()}"
-        #   return
 
         # Calculate what scripts the plugins need.
         scriptTags = _calculateScripts code, _pluginScripts
@@ -586,7 +581,7 @@ module.exports = (oj, settings) ->
       float: 'right'
       zIndex: 101
       cursor:'pointer'
-      '@media phone':
+      '@media only screen and (max-width: 739px)':
         display:'none'
 
     '.oj-TryEditor-gripper':
@@ -727,7 +722,6 @@ _replaceIFRAME = ($iframeParent, $iframe, scriptTags, code) ->
     <body>
     </body>
   """
-
   # Recreate iframe
   $iframe.remove()
   iframe = document.createElement 'iframe'
