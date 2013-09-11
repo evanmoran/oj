@@ -21,7 +21,7 @@ oj function
 
   Define oj version
 
-    oj.version = '0.1.4'
+    oj.version = '0.1.5'
 
   Detect if this is client or server-side
 
@@ -1901,7 +1901,7 @@ oj.View
         #     @$el.attr 'class', v
         #     return
 
-        # # Alias for class
+        # Alias for classes
         # c:
         #   get: -> @class
         #   set: (v) -> @class = v; return
@@ -1912,12 +1912,24 @@ oj.View
           oj.$.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
           out
 
+        # Get all classes as an array (readwrite)
+        classes:
+          get: ->
+            @$el.attr('class').split(/\s+/)
+          set: (v) ->
+            @$el.attr('class', v.join(' '))
+            return
+
         # Get / set all currently set themes (readwrite)
         themes:
           get: ->
-            out = {}
-            oj.$.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
-            out
+            thms = []
+            prefix = 'theme-'
+            for cls in @classes
+              if cls.indexOf(prefix) == 0
+                thms.push cls.slice prefix.length
+            thms
+
           set: (v) ->
             v = [v] unless oj.isArray v
             @clearThemes()
@@ -1925,7 +1937,9 @@ oj.View
               @addTheme theme
             return
 
-        theme: @themes
+        theme:
+          get: -> @themes
+          set: (v) -> @themes = v; return
 
         # Determine if this view has been fully constructed (readonly)
         isConstructed: get: -> @_isConstructed ? false
@@ -1993,6 +2007,10 @@ oj.View
           @$el.removeClass name
           return
 
+        # Determine if class is applied
+        hasClass: (name) ->
+          @$el.hasClass name
+
         # Add a single theme
         addTheme: (name) ->
           @addClass "theme-#{name}"
@@ -2003,11 +2021,14 @@ oj.View
           @removeClass "theme-#{name}"
           return
 
+        # Determine if theme is applied
+        hasTheme: (name) ->
+          @hasClass "theme-#{name}"
+
         # Clear all themes
-        clearThemes: (name) ->
-          @$el.removeClass "theme-#{name}"
-          classes = @$el.attr('class').split(' ')
-          _each classes, (v) ->
+        clearThemes: ->
+          for theme in @themes
+            @removeTheme theme
           return
 
         # emit: Emit instance as a tag function would do
@@ -2607,9 +2628,11 @@ itemsChanged: Model changed occured, clear relevant cached values
 #### Manipulation Methods
 
         add: (ix, ojml) ->
-
+          # ix defaults to -1 and is optional
+          if not ojml?
+            ojml = ix
+            ix = -1
           ix = @_bound ix, @count+1, ".add: index"
-
           tag = @itemTagName
           # Empty
           if @count == 0
@@ -2624,7 +2647,7 @@ itemsChanged: Model changed occured, clear relevant cached values
           @itemsChanged()
           return
 
-        remove: (ix) ->
+        remove: (ix = -1) ->
           ix = @_bound ix, @count, ".remove: index"
           out = @item ix
           @$item(ix).remove()
@@ -3001,9 +3024,13 @@ cell: Get or set value at row rx, column cx
 addRow: Add row to index rx
 
         addRow: (rx, listOJML) ->
-          throw new Error('oj.addRow: expected two arguments') unless arguments.length == 2
+          if not listOJML?
+            listOJML = rx
+            rx = -1
 
           rx = @_bound rx, @rowCount+1, ".addRow: rx"
+
+          throw new Error('oj.addRow: expected array for row content') unless oj.isArray listOJML
 
           tr =
             ->
@@ -3035,9 +3062,7 @@ _addRowTR: Helper to add row directly with `<tr>`
 
 removeRow: Remove row at index rx (defaults to end)
 
-        removeRow: (rx) ->
-          throw new Error('oj.removeRow: expected one argument') unless arguments.length == 1
-
+        removeRow: (rx = -1) ->
           rx = @_bound rx, @rowCount, ".removeRow: index"
           out = @row rx
           @$tr(rx).remove()
