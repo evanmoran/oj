@@ -503,7 +503,7 @@ data = [
     ,
       h: 'Templates', id: 'templates', d: ->
         md """
-          Just like partials, templates are also functions in OJ. The difference being partials create parts of websites and templates create basic structure to fill in the rest.
+          Just like partials, templates are also functions in OJ. The difference is that partials create parts of websites and templates create basic structure to fill in the rest.
 
           Lets create a template function that renders a header and takes the body and title as an argument:
 
@@ -630,7 +630,7 @@ data = [
         md """
           Another type of binding is [CollectionView](docs.html#CollectionView) binding. This is used most often to bind a collection of models to a [List](docs.html#List) or [Table](docs.html#Table), which inherit from [CollectionView](CollectionView).
 
-          Similarly to Model Binding by default OJ understands binding to Backbone Collections. In this example lets render a List from a collection of users:
+          Similarly to Model Binding by default OJ understands binding to Backbone Collections. In this example, let's render a List from a collection of users:
         """
         TryEditor
           js: """
@@ -668,7 +668,7 @@ data = [
           """
 
         md """
-          Using the same data let's render a table instead. The only difference is the each function can set the cells directly.
+          Let's use the same data to render a [Table](docs.html#Table). The only difference here is that the [each](docs.html#Table-each) function can set the cells directly.
         """
 
         TryEditor
@@ -688,8 +688,8 @@ data = [
               each:function(model,cell){
                 var name = model.get('name')
                 cell(name);
-                cell(_TwitterButton(name));
                 cell(model.get('strength'));
+                cell(_TwitterButton(name));
               }})
           """
           cs: """
@@ -708,15 +708,15 @@ data = [
               each: (model,cell) ->
                 name = model.get('name')
                 cell name
-                cell _TwitterButton(name)
                 cell model.get('strength')
+                cell _TwitterButton(name)
           """
 
     ,
       h: 'Creating Types', id: 'creating-types', d: ->
 
         md """
-          Included in OJ is a sophisticated type system inspired by the CoffeeScript type system. This lets you create types with:
+          Included in OJ is a sophisticated type system inspired by CoffeeScript. This lets you create types with:
 
           * Constructors
           * Single inheritance
@@ -727,14 +727,13 @@ data = [
 
           1.  OJ types work in JavaScript (CoffeeScript types only work in CoffeeScript)
 
-              This is the big reason why OJ doesn't just use CoffeeScript types (they are pretty great). OJ needed to work in pure JavaScript and keep the syntax as clean as possible.
+              This is the big reason why OJ doesn't just use CoffeeScript types (though they are pretty great). OJ works in pure JavaScript and keeps the syntax as clean as possible.
 
           2.  OJ types directly support first-class properties. So if you choose, you can define properties with get / set methods to better abstract your data access.
 
-              This brings front and center my favorite "new" feature of JavaScript, [first-class properties (ejohn.org)](http://ejohn.org/blog/ecmascript-5-objects-and-properties/). Even though properties have been in JavaScript since 2009, most still aren't aware of them. OJ builds these kind of properties right in.
+              This brings front and center my favorite "new" feature of JavaScript, [first-class properties (ejohn.org)](http://ejohn.org/blog/ecmascript-5-objects-and-properties/). Even though properties have been in JavaScript since 2009, some devs still aren't aware of them. OJ builds these kind of properties right in.
 
-          As an example of the type system, lets create a Rectangle type that has properties `width` and `height`. Then a readonly property `area` is calculated from width and height:
-
+          As an example of this powerful type system, let's create a Rectangle type that has properties `width` and `height`, with a readonly first-class property `area`:
         """
 
         TryEditor js:"""
@@ -801,19 +800,14 @@ data = [
           div JSON.stringify(myRect)
         """
     ,
-      h: 'Creating Views', id: 'creating-views', d: ->
+      h: 'Creating Plugins', id: 'creating-plugins', d: ->
 
         md """
-
-          *Ok, cool. I get that OJ makes types, but do we make types that generate HTML, CSS, and JavaScript?*
-
-          Think of OJ objects as Views in the MVC sense. OJ does not include models or routes like other frameworks. The goal is to create the best View abstraction possible in pure JavaScript and leave the rest to other frameworks.
-
-          In a way this approach is the inverse of Backbone. Backbone has models, collection and routes. OJ just is the view. This made it a natural fit to have Backbone support built in, but an adapter to any framework would be straightforward.
-
-          *Enough talk. How do I make a View?*
+          Plugins can be made in OJ by using [createType](docs.html#createType) and inheriting from [View](docs.html#View).
 
           In this example a new view is created called `OrangeButton`. This view contains default styling with CSS, and editing the `label` property will change its text.
+
+          (Clearly this example is a bit contrived, but it does show how createType unifies HTML, CSS, and JS into a new View Object).
 
         """
 

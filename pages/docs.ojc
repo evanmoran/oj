@@ -768,7 +768,7 @@ data = [
          #    Alias for `collection` property
          #  """
          ,
-          h:'each', id:'List-each', d:"""
+          h:'each(model)', id:'List-each', d:"""
             Inherited from [CollectionView.each](#CollectionView-each)
 
             A mapping function that turns a model into a view.
@@ -933,7 +933,7 @@ data = [
          #    Alias for `collection` property
          #  """
          ,
-          h:'each', id:'Table-each', d:"""
+          h:'each(model,cell)', id:'Table-each', d:"""
             Inherited from [CollectionView.each](#CollectionView-each)
 
             A mapping function that turns a model into a view.
@@ -1070,11 +1070,9 @@ data = [
           h:'$td(rx,cx)', id:'Table-$tr', d:"""
             Accessor to `<td>` at row index `rx`, column index `cx`
           """
-
         ]
 
     ]
-
 
   ,
     h: 'Creating Types', id: 'creating-types', d: """

@@ -43,7 +43,7 @@ module.exports = ->
           position:'relative'
 
       h1 c:'subtitle', ->
-        span 'Object-oriented templating for the people. '
+        span 'Object templating for the people. '
         i('Thirsty people.')
 
       css
@@ -66,7 +66,7 @@ module.exports = ->
       dots = BulletList c:'dots', models:[
         {
           js:"""
-            h1("What are Templating Objects?");
+            h1("What is Object Templating?");
 
             var myList = oj.BulletList(
               'They',
@@ -83,7 +83,7 @@ module.exports = ->
             }});
           """
           cs:"""
-            h1 "What are Templating Objects?"
+            h1 "What is Object Templating?"
 
             myList = oj.BulletList(
               'They'
