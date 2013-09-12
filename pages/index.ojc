@@ -100,7 +100,7 @@ module.exports = ->
         }
         {
           js:"""
-            h1("OJ includes the basics...");
+            h1("OJ includes several objects...");
 
             TextBox('A text box'); br();
             TextArea('A text area'); br();
@@ -108,30 +108,19 @@ module.exports = ->
               'A list box',
               'with',
               'options'
-            ]});
-            CheckBox(true);
-            NumberList('Number','List');
-            Table({
-              header:['Table','With','Header']},
-              [1,2,3],
-              [4,5,6]
-            );
+            ]});br();
+            CheckBox(true);br();
           """, cs: """
-            h1 "OJ includes the basics..."
+            h1 "OJ includes several objects..."
 
-            TextBox 'A text box'; br()
-            TextArea 'A text area'; br()
-            ListBox options:[
+            TextBox('A text box'); br()
+            TextArea('A text area'); br()
+            ListBox(options:[
               'A list box'
               'with'
               'options'
-            ]
-            CheckBox true
-            NumberList 'Number','List'
-            Table
-              header:['Table','With','Header'],
-              [1,2,3],
-              [4,5,6]
+            ]);br();
+            CheckBox(true);br();
           """
 
         }
@@ -151,14 +140,14 @@ module.exports = ->
               click:function(){
                 myVideo.playToggle()
               }
-            });
+            });br();
 
           """, cs: """
             h1 "Plugins give the rest..."
 
             myVideo = YouTubeVideo(
               'EAcdvmnZ_GM'
-            )
+            );br()
 
             # Change volume
             myVideo.volume = 0.7;
@@ -174,8 +163,39 @@ module.exports = ->
           js:"""
             h1('Two-Way Model Binding');
 
+            // Create a Backbone UserModel
+            var UserModel = Backbone.Model.extend({});
+            var user = new UserModel({name:'Evan'});
+
+            // Bind controls to the user's name
+            TextBox({model:user, key:'name'});
+            TextArea({model:user, key:'name'});
+            ListBox({model:user, key:'name',
+                     options:['', 'Brian','Evan','Sam']});
+            CheckBox({model:user, key:'name'});
+
+            // Add CSS to space the controls evenly
+            css({'.oj-TextBox,.oj-TextArea,.oj-ListBox':{
+              width:'200px',margin:'20px 0',display:'block'}})
+
           """, cs:"""
-            h1 'Two-Way Model Binding';
+            h1 'Two-Way Model Binding'
+
+            # Create a Backbone UserModel
+            UserModel = Backbone.Model.extend({})
+            user = new UserModel name:'Evan'
+
+            # Bind controls to the user's name
+            TextBox model:user, key:'name'
+            TextArea model:user, key:'name'
+            ListBox model:user, key:'name',
+                     options:['', 'Brian','Evan','Sam']
+            CheckBox model:user, key:'name'
+
+            # Add CSS to space the controls evenly
+            css '.oj-TextBox,.oj-TextArea,.oj-ListBox':
+              {width:'200px',margin:'20px 0',display:'block'}
+
           """
         }
 
@@ -281,9 +301,9 @@ module.exports = ->
           js:"""
             h1('Event Binding');
 
-            markdown('jQuery is the only ',
-              'dependency of OJ.\\n',
-              '*This is why.*');
+            p('jQuery is the only ',
+              'dependency of OJ. ',
+              'This is why.')
 
             var btn = Button('Click me!', {
               click:function(){
@@ -298,11 +318,10 @@ module.exports = ->
           cs:"""
             h1 'Event Binding'
 
-            markdown \"\"\"
-              jQuery is the only dependency of OJ.
+            p 'jQuery is the only ',
+              'dependency of OJ. ',
+              'This is why.'
 
-              *This is why.*
-            \"\"\"
 
             btn = Button 'Click me!', click: ->
               alert('Click works!');
@@ -518,10 +537,10 @@ module.exports = ->
 
           BulletList c:'bullets',
             ->
-              markdown """A library written entirely in JavaScript"""
-            ->
               markdown """Abstracts the web into view objects <br>that *create* and *change* websites"""
             'Unifies templating of HTML, CSS and JS'
+            ->
+              markdown """A library written entirely in JavaScript"""
             ->
               markdown """Backbone support built-in with <br>two-way model and collection binding"""
 

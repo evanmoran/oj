@@ -376,7 +376,7 @@ data = [
         h3 'Example: Changing ListBox options dynamically'
         TryEditor js:"""
           TextArea({
-            live:false,
+            live:true,
               //live=true will trigger change
               //  events on all key presses
               //defaults to true
@@ -389,7 +389,7 @@ data = [
           }});
         """, cs:"""
           TextArea
-            live:false
+            live:true
               #live=true will trigger change
               #  events on all key presses
               #defaults to true
@@ -695,12 +695,20 @@ data = [
         md """
           This is a simple alias for [oj.List](#List) to abstract creating **bulleted** lists. It overrides the properties [tagName](#List-tagName) to `ul`, and [itemTagName](#List-itemTagName) to `li`.
         """
-        TryEditor js:"""
+        TryEditor lineCount:3, js:"""
+          BulletList('a','b','c');
         """, cs:"""
+          BulletList 'a','b','c'
         """
     ,
-      h:'oj.NumberList', id:'NumberList', d: """
+      h:'oj.NumberList', id:'NumberList', d: ->
+        md """
           This is a simple alias for [oj.List](#List) to abstract creating **numbered** lists. It overrides the properties [tagName](#List-tagName) to `ul`, and [itemTagName](#List-itemTagName) to `li`.
+        """
+        TryEditor lineCount:3, js:"""
+          NumberList('a','b','c');
+        """, cs:"""
+          NumberList 'a','b','c'
         """
     ,
       h:'oj.List', id:'List', d: ->
@@ -709,27 +717,22 @@ data = [
           Lists are at the heart of OJ. They are a fundamental building block that lets you bind collections of models to views. That can be as simple as NumberList and BulletList above. Or they can be more complex and render Chat Messages, Todo Lists, or whatever else you want tied to data.
 
           Lists can be constructed by basic types:
-
-              List('a', 2, true);
-
+        """
+        TryEditor lineCount:3, js:"""
+          List('a',2,true);
+        """, cs:"""
+          List('a',2,true);
+        """
+        md """
           Lists can be constructed from oj objects:
 
-              List(CheckBox(true), TextBox('hello'));
-
-          Lists can be constructed from [ojml](#ojml):
-
-              List(
-                [div, 'a'],
-                [span, 'b']
-              );
-
-          Lists can be constructed from functions:
-
-              List(
-                function(){div('a');},
-                function(){span('a');},
-              );
-
+        """
+        TryEditor lineCount:3, js:"""
+          List(_CheckBox(true),
+            _TextBox('Hello'))
+        """, cs:"""
+          List _CheckBox(true),
+            _TextBox('Hello')
         """
         name 'List(items..., properties)'
 
@@ -760,10 +763,10 @@ data = [
             to be automatically redrawn. This is done minimally so adds and removes
             cause fewest redraws possible.
           """
-         ,
-          h:'models', id:'List-models', d:"""
-            Alias for `collection` property
-          """
+         # ,
+         #  h:'models', id:'List-models', d:"""
+         #    Alias for `collection` property
+         #  """
          ,
           h:'each', id:'List-each', d:"""
             Inherited from [CollectionView.each](#CollectionView-each)
@@ -925,10 +928,10 @@ data = [
             to be automatically redrawn. This is done minimally so adds and removes
             cause fewest redraws possible.
           """
-         ,
-          h:'models', id:'Table-models', d:"""
-            Alias for `collection` property
-          """
+         # ,
+         #  h:'models', id:'Table-models', d:"""
+         #    Alias for `collection` property
+         #  """
          ,
           h:'each', id:'Table-each', d:"""
             Inherited from [CollectionView.each](#CollectionView-each)

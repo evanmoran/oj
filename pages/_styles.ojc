@@ -75,6 +75,13 @@ module.exports = ->
       marginBottom: '14px'
       color: '#222'
 
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
+
     a:
       color: linkColor
       textDecoration:'none'
@@ -82,38 +89,92 @@ module.exports = ->
     'a.heading1, a.heading1:hover':
       color: h1Color
       textDecoration: 'none'
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
 
     'a.heading2, a.heading2:hover':
       color: h2Color
       textDecoration: 'none'
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
 
     'a.type':
       color: typeLinkColor
       fontFamily: familyMonospace
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
 
     'a.function':
       color: functionLinkColor
       fontFamily: familyMonospace
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
 
     'a.method':
       color: methodLinkColor
       fontFamily: familyMonospace
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
 
     'a.event':
       color: eventLinkColor
       fontFamily: familyMonospace
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
 
     'a.property':
       color: propertyLinkColor
       fontFamily: familyMonospace
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
 
     'a.option':
       color: optionLinkColor
       fontFamily: familyMonospace
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
 
     'a.argument':
       color: argumentLinkColor
       fontFamily: familyMonospace
+      # Anchor url should show this item with spacing
+      '&:before':
+        content:"' '"
+        display:'block'
+        height:'70px'
+        margin:'-70px 0 0'
 
     'a:hover':
       textDecoration:'underline'
