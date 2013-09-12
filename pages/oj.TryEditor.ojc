@@ -379,6 +379,8 @@ module.exports = (oj, settings) ->
         @maximize = @maximize
         maximizeDuration = d
 
+        setTimeout (=> @value = @value), 350
+
         # For perf reasons briefly delay frame update
         setTimeout (=> @updateFrame()), 50
 

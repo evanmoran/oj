@@ -11,14 +11,17 @@ module.exports = ->
       script src:'scripts/ace/ace.js', type:'text/javascript'
       script src:'scripts/coffee-script.js', type:'text/javascript'
     body ->
-      editor = TryEditor(lineCount:4)
-      editor.value = ""
 
-      Button 'hmm', click: ->
-        editor.js = 'div("js")'
-        editor.cs = 'div "cs"'
-        editor.value = 'div("ojg")'
+      AceEditor({mode:'html', theme:'solarized_light'})
 
-        # editor.state = 'js'
-        # editor.value = "div('asdf')"
-        # editor.js = "div('asdf')"
+      # editor = TryEditor(lineCount:4)
+      # editor.value = ""
+
+      # Button 'hmm', click: ->
+      #   editor.js = 'div("js")'
+      #   editor.cs = 'div "cs"'
+      #   editor.value = 'div("ojg")'
+
+      #   # editor.state = 'js'
+      #   # editor.value = "div('asdf')"
+      #   # editor.js = "div('asdf')"
