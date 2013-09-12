@@ -117,9 +117,9 @@ data = [
             ->
               span "#{plugin}"
             ->
-              a "oj.#{plugin}.js", c:'button yellow', href:"download/#{plugin}/latest/oj.#{plugin}.js"
+              a "oj.#{plugin}.js", c:'button yellow', href:"download/oj.#{plugin}/latest/oj.#{plugin}.js"
             ->
-              a "oj.#{plugin}.min.js", c:'button yellow', href:"download/#{plugin}/latest/oj.#{plugin}.min.js"
+              a "oj.#{plugin}.min.js", c:'button yellow', href:"download/oj.#{plugin}/latest/oj.#{plugin}.min.js"
             ->
               a "docs", c:'document', href:"plugins.html##{plugin}"
           ]
@@ -138,7 +138,7 @@ data = [
 
       Or just go there directly:
 
-          [View examples](http://github.com/ojjs/oj-examples)
+      [View all examples](http://github.com/ojjs/oj-examples)
 
       The goal of these is to get you started as fast as possible. If these don't work immediately let me know and I'll fix them so they are even more clear.
     """
