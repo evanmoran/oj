@@ -120,6 +120,36 @@ describe 'oj.List', ->
     control.add(1,6)
     expect(control.items).to.deep.equal [4,6,5]
 
+  it 'remove, add (w/default index)', ->
+    control = oj.List 1,2,3
+    expect(control.count).to.equal 3
+    expect(oj.typeOf control).to.equal 'List'
+    expect(control.items).to.deep.equal [1,2,3]
+
+    r = control.remove()
+    expect(r).to.equal 3
+    expect(control.items).to.deep.equal [1,2]
+
+    r = control.remove()
+    expect(r).to.equal 2
+    expect(control.items).to.deep.equal [1]
+
+    r = control.remove()
+    expect(r).to.equal 1
+    expect(control.items).to.deep.equal []
+
+    expect(-> control.remove()).to.throw Error
+    expect(-> control.add(1,4)).to.throw Error
+
+    control.add(4)
+    expect(control.items).to.deep.equal [4]
+
+    control.add(5)
+    expect(control.items).to.deep.equal [4,5]
+
+    control.add(6)
+    expect(control.items).to.deep.equal [4,5,6]
+
   it 'shift, unshift', ->
     control = oj.List 1,2,3
     expect(control.count).to.equal 3

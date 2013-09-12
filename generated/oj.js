@@ -9,7 +9,7 @@
       return oj.tag.apply(this, ['oj'].concat([].slice.call(arguments)).concat([{__quiet__:1}]));
     };
 
-  oj.version = '0.1.4';
+  oj.version = '0.1.5';
 
   oj.isClient = !(typeof process !== "undefined" && process !== null ? (_ref = process.versions) != null ? _ref.node : void 0 : void 0);
 
@@ -1904,15 +1904,28 @@
           return out;
         }
       },
+      classes: {
+        get: function() {
+          return this.$el.attr('class').split(/\s+/);
+        },
+        set: function(v) {
+          this.$el.attr('class', v.join(' '));
+        }
+      },
       themes: {
         get: function() {
-          var out;
+          var cls, prefix, thms, _j, _len1, _ref2;
 
-          out = {};
-          oj.$.each(this.el.attributes, function(index, attr) {
-            return out[attr.name] = attr.value;
-          });
-          return out;
+          thms = [];
+          prefix = 'theme-';
+          _ref2 = this.classes;
+          for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+            cls = _ref2[_j];
+            if (cls.indexOf(prefix) === 0) {
+              thms.push(cls.slice(prefix.length));
+            }
+          }
+          return thms;
         },
         set: function(v) {
           var theme, _j, _len1;
@@ -1927,7 +1940,14 @@
           }
         }
       },
-      theme: this.themes,
+      theme: {
+        get: function() {
+          return this.themes;
+        },
+        set: function(v) {
+          this.themes = v;
+        }
+      },
       isConstructed: {
         get: function() {
           var _ref2;
@@ -1995,18 +2015,26 @@
       removeClass: function(name) {
         this.$el.removeClass(name);
       },
+      hasClass: function(name) {
+        return this.$el.hasClass(name);
+      },
       addTheme: function(name) {
         this.addClass("theme-" + name);
       },
       removeTheme: function(name) {
         this.removeClass("theme-" + name);
       },
-      clearThemes: function(name) {
-        var classes;
+      hasTheme: function(name) {
+        return this.hasClass("theme-" + name);
+      },
+      clearThemes: function() {
+        var theme, _j, _len1, _ref2;
 
-        this.$el.removeClass("theme-" + name);
-        classes = this.$el.attr('class').split(' ');
-        _each(classes, function(v) {});
+        _ref2 = this.themes;
+        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+          theme = _ref2[_j];
+          this.removeTheme(theme);
+        }
       },
       emit: function() {
         oj._argsAppend(this);
@@ -2657,6 +2685,10 @@
       add: function(ix, ojml) {
         var tag;
 
+        if (ojml == null) {
+          ojml = ix;
+          ix = -1;
+        }
         ix = this._bound(ix, this.count + 1, ".add: index");
         tag = this.itemTagName;
         if (this.count === 0) {
@@ -2677,6 +2709,9 @@
       remove: function(ix) {
         var out;
 
+        if (ix == null) {
+          ix = -1;
+        }
         ix = this._bound(ix, this.count, ".remove: index");
         out = this.item(ix);
         this.$item(ix).remove();
@@ -3135,10 +3170,14 @@
       addRow: function(rx, listOJML) {
         var tr;
 
-        if (arguments.length !== 2) {
-          throw new Error('oj.addRow: expected two arguments');
+        if (listOJML == null) {
+          listOJML = rx;
+          rx = -1;
         }
         rx = this._bound(rx, this.rowCount + 1, ".addRow: rx");
+        if (!oj.isArray(listOJML)) {
+          throw new Error('oj.addRow: expected array for row content');
+        }
         tr = function() {
           return oj.tr(function() {
             var o, _j, _len1, _results;
@@ -3166,8 +3205,8 @@
       removeRow: function(rx) {
         var out;
 
-        if (arguments.length !== 1) {
-          throw new Error('oj.removeRow: expected one argument');
+        if (rx == null) {
+          rx = -1;
         }
         rx = this._bound(rx, this.rowCount, ".removeRow: index");
         out = this.row(rx);

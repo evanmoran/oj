@@ -190,6 +190,50 @@ describe 'oj.Table', ->
     # add invalid args
     expect(-> control.addRow(100,dRow)).to.throw Error
 
+  it 'removeRow, addRow (w/default indexes)', ->
+    control = oj.Table aRow, bRow, cRow
+    expect(control.rowCount).to.equal 3
+    expect(control.columnCount).to.equal 3
+    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.rows).to.deep.equal [aRow, bRow, cRow]
+
+    r = control.removeRow()
+    expect(r).to.deep.equal cRow
+    expect(control.rows).to.deep.equal [aRow, bRow]
+
+    r = control.removeRow()
+    expect(r).to.deep.equal bRow
+    expect(control.rows).to.deep.equal [aRow]
+
+    r = control.removeRow()
+    expect(r).to.deep.equal aRow
+    expect(control.rows).to.deep.equal []
+
+    expect(-> control.removeRow()).to.throw Error
+    expect(-> control.addRow(1,aRow)).to.throw Error
+
+    # add empty
+    control.addRow(bRow)
+    expect(control.rows).to.deep.equal [bRow]
+
+    # add last
+    control.addRow(cRow)
+    expect(control.rows).to.deep.equal [bRow, cRow]
+
+    # add first
+    control.addRow(aRow)
+    expect(control.rows).to.deep.equal [bRow, cRow, aRow]
+
+    # add middle
+    control.addRow(dRow)
+    expect(control.rows).to.deep.equal [bRow, cRow, aRow, dRow]
+
+    # add something that isn't an array
+    expect(-> control.addRow(1)).to.throw Error
+
+    # add invalid args
+    expect(-> control.addRow(100,dRow)).to.throw Error
+
   it 'shiftRow, unshiftRow', ->
     control = oj.Table aRow, bRow, cRow
     expect(control.rowCount).to.equal 3
@@ -610,3 +654,76 @@ describe 'oj.Table', ->
       [user4.name, user4.strength]
     ]
 
+  it 'theming', ->
+    theme1 = 'charmed'
+    theme2 = 'strange'
+
+    oj.Table.theme(theme1, {
+      'tr:not(:last-child)':{
+        borderBottom:'1px solid orange'
+      }
+    })
+    oj.Table.theme(theme2, {
+      'tr:nth-child(even)':{
+        backgroundColor:'orange'
+      }
+    })
+    expect(oj.Table.themes).to.deep.equal ['charmed', 'strange']
+
+    # create table with theme
+    class1 = 'my-class'
+    control = oj.Table c:class1, aRow, bRow, cRow
+    expect(control.hasClass class1).to.equal true
+
+    control = oj.Table themes:[theme1], aRow, bRow, cRow
+    expect(control.hasTheme theme1).to.equal true
+    expect(control.hasTheme theme2).to.equal false
+    expect(control.themes).to.deep.equal [theme1]
+
+    # Accept single theme as well as list
+    control = oj.Table themes:theme1, aRow, bRow, cRow
+    expect(control.hasTheme theme1).to.equal true
+    expect(control.hasTheme theme2).to.equal false
+    expect(control.themes).to.deep.equal [theme1]
+
+    # Accept multiple themes
+    control = oj.Table themes:[theme1,theme2], aRow, bRow, cRow
+    expect(control.hasTheme theme1).to.equal true
+    expect(control.hasTheme theme2).to.equal true
+    expect(control.themes).to.deep.equal [theme1,theme2]
+
+    # Add / Remove themes test
+    control = oj.Table themes:[theme1,theme2], aRow, bRow, cRow
+    control.removeTheme theme1
+    expect(control.themes).to.deep.equal [theme2]
+
+    # Remove theme that doesn't exist des nothing
+    control.removeTheme theme1
+    expect(control.themes).to.deep.equal [theme2]
+
+    control.removeTheme theme2
+    expect(control.themes).to.deep.equal []
+
+    # Add themes
+    control.addTheme theme2
+    expect(control.themes).to.deep.equal [theme2]
+
+    # Adding theme twice doesn't change the result
+    control.addTheme theme2
+    expect(control.themes).to.deep.equal [theme2]
+
+    # Multiple themes can be added
+    control.addTheme theme1
+    expect(control.themes).to.deep.equal [theme2, theme1]
+
+    # Clearing themes works
+    control.clearThemes()
+    expect(control.themes).to.deep.equal []
+
+    # Add themes all at once
+    control.themes = [theme2, theme1]
+    expect(control.themes).to.deep.equal [theme2, theme1]
+
+    # Overwrite themes all at once
+    control.themes = [theme2]
+    expect(control.themes).to.deep.equal [theme2]

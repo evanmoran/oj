@@ -43,8 +43,10 @@ module.exports = ->
           position:'relative'
 
       h1 c:'subtitle', ->
-        span 'Object templating for the people. '
-        i('Thirsty people.')
+        span 'A JavaScript library to build websites with objects.'
+      # h2 c:'subtitle', ->
+      #   span 'A JavaScript library to build websites with objects. '
+      #   i('Thirsty people.')
 
       css
         '.subtitle':
@@ -66,7 +68,7 @@ module.exports = ->
       dots = BulletList c:'dots', models:[
         {
           js:"""
-            h1("What is Object Templating?");
+            h1("What are OJ Objects?");
 
             var myList = oj.BulletList(
               'They',
@@ -81,9 +83,11 @@ module.exports = ->
             oj.Button('Move', {click:function(){
               myList.move(0, myList.length)
             }});
+
+            p('(Hint: push the buttons!)');
           """
           cs:"""
-            h1 "What is Object Templating?"
+            h1 "What are OJ Objects?"
 
             myList = oj.BulletList(
               'They'
@@ -96,66 +100,8 @@ module.exports = ->
 
             oj.Button 'Move', click: ->
               myList.move 0, myList.length
-          """
-        }
-        {
-          js:"""
-            h1("OJ includes several objects...");
 
-            TextBox('A text box'); br();
-            TextArea('A text area'); br();
-            ListBox({options:[
-              'A list box',
-              'with',
-              'options'
-            ]});br();
-            CheckBox(true);br();
-          """, cs: """
-            h1 "OJ includes several objects..."
-
-            TextBox('A text box'); br()
-            TextArea('A text area'); br()
-            ListBox(options:[
-              'A list box'
-              'with'
-              'options'
-            ]);br();
-            CheckBox(true);br();
-          """
-
-        }
-        {
-          js:"""
-            h1("Plugins give the rest...")
-
-            var myVideo = YouTubeVideo(
-              'EAcdvmnZ_GM'
-            );
-
-            // Change volume
-            myVideo.volume = 0.7;
-
-            // Add play / pause toggle button
-            Button('Play / Pause', {
-              click:function(){
-                myVideo.playToggle()
-              }
-            });br();
-
-          """, cs: """
-            h1 "Plugins give the rest..."
-
-            myVideo = YouTubeVideo(
-              'EAcdvmnZ_GM'
-            );br()
-
-            # Change volume
-            myVideo.volume = 0.7;
-
-            # Add play / pause toggle button
-            Button 'Play / Pause',
-              click: ->
-                myVideo.playToggle()
+            p '(Hint: push the buttons!)'
           """
         }
 
@@ -231,43 +177,6 @@ module.exports = ->
           """
         }
 
-        # {
-        #   js:"""
-
-        #     h1('Why use functions for nesting?')
-
-        #     // Nesting with functions can
-        #     // do anything!
-        #     ul(function(){
-        #       for(var n = 0; n <= 10; n++) {
-        #         var item = '';
-        #         if(n % 3 === 0)
-        #           item += 'Fizz';
-        #         if(n % 5 === 0)
-        #           item += 'Buzz';
-
-        #         // Emit <li> inside of <ul>
-        #         li(item || n);
-        #       }
-        #     });
-        #   """, cs:"""
-
-        #     h1 'Why use functions for nesting?'
-
-        #     # Nesting with functions can
-        #     # do anything!
-        #     ul ->
-        #       for n in [0...11]
-        #         item = ''
-        #         if n % 3 == 0
-        #           item += 'Fizz'
-        #         if n % 5 == 0
-        #           item += 'Buzz'
-
-        #         # Emit <li> inside of <ul>
-        #         li item || n
-        #   """
-        # }
 
         {
           js:"""
@@ -352,7 +261,40 @@ module.exports = ->
             \"\"\"
           """
         }
+        {
+          js:"""
+            h1("YouTubeVideo Plugin")
 
+            var myVideo = YouTubeVideo(
+              'EAcdvmnZ_GM'
+            );
+
+            // Change volume
+            myVideo.volume = 0.7;
+
+            // Add play / pause toggle button
+            Button('Play / Pause', {
+              click:function(){
+                myVideo.playToggle()
+              }
+            });br();
+
+          """, cs: """
+            h1 "YouTubeVideo Plugin"
+
+            myVideo = YouTubeVideo(
+              'EAcdvmnZ_GM'
+            );br()
+
+            # Change volume
+            myVideo.volume = 0.7;
+
+            # Add play / pause toggle button
+            Button 'Play / Pause',
+              click: ->
+                myVideo.playToggle()
+          """
+        }
         {
           js:"""
             h1('AceEditor Plugin');
@@ -394,6 +336,7 @@ module.exports = ->
                 myEditor.theme = @value
           """
         }
+
         {
           js:"""
             h1('VimeoVideo Plugin');

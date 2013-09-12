@@ -102,6 +102,7 @@ task "all", "Build everthing: compile, copy, version, and tests", ->
   invoke "version:libs"
   invoke "copy:examples"
   invoke "test"
+  # launch 'rsync', ['-a', WWW_DIR+'/', path.join(WWW_DIR, 'beta/')]
 
 task "build", "Build everything", ->
   invoke "build:js"
