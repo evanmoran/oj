@@ -9,7 +9,7 @@
       return oj.tag.apply(this, ['oj'].concat([].slice.call(arguments)).concat([{__quiet__:1}]));
     };
 
-  oj.version = '0.1.5';
+  oj.version = '0.1.6';
 
   oj.isClient = !(typeof process !== "undefined" && process !== null ? (_ref = process.versions) != null ? _ref.node : void 0 : void 0);
 

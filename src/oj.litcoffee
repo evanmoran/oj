@@ -21,7 +21,7 @@ oj function
 
   Define oj version
 
-    oj.version = '0.1.5'
+    oj.version = '0.1.6'
 
   Detect if this is client or server-side
 
