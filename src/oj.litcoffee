@@ -302,6 +302,24 @@ Functional Helpers
         out.push item
       out
 
+Error Handling Helpers
+-----------------------------------------------------------------------------
+  Assert cond is true or throw message
+
+    _a = (cond, msg, fn) ->
+      if !cond
+        if fn
+          msg = "oj.#{fn}: #{msg}"
+        throw new Error msg
+      return
+
+  Validate fn argument at position n matches type
+
+    _v = (fn, n, v, type) ->
+      n = {1:'first', 2:'second',3:'third',4:'fourth',5:'fifth'}[n]
+      _a (!type or (typeof v == type)), "#{type} expected for #{n} argument", fn
+      return
+
 String Helpers
 -----------------------------------------------------------------------------
 
@@ -408,11 +426,8 @@ oj.addMethod
 Add method to an object
 
     oj.addMethod = (obj, methodName, method) ->
-
-  Validate input
-
-      throw new Error('oj.addMethod: string expected for second argument') unless oj.isString methodName
-      throw new Error('oj.addMethod: function expected for thrid argument') unless oj.isFunction method
+      _v 'addMethod', 2, methodName, 'string'
+      _v 'addMethod', 3, method, 'function'
 
   Methods are non-enumerable, non-writable properties
 
@@ -428,10 +443,7 @@ oj.removeMethod
 Remove a method from an object
 
     oj.removeMethod = (obj, methodName) ->
-
-  Validate inputs
-
-      throw new Error('oj.removeMethod: string expected for second argument') unless oj.isString methodName
+      _v 'removeMethod', 2, methodName, 'string'
 
   Remove the method
       delete obj[methodName]
@@ -471,11 +483,8 @@ oj.addProperty
 ------------------------------------------------------------------------------
 
     oj.addProperty = (obj, propName, propInfo) ->
-
-Validate input
-
-      throw new Error('oj.addProperty: string expected for second argument') unless oj.isString propName
-      throw new Error('oj.addProperty: object expected for third argument') unless oj.isPlainObject propInfo
+      _v 'addProperty', 2, propName, 'string'
+      _v 'addProperty', 3, propInfo, 'object'
 
 Default properties to enumerable and configurable
 
@@ -498,14 +507,9 @@ oj.removeProperty
 ------------------------------------------------------------------------------
 
     oj.removeProperty = (obj, propName) ->
-
-Validate input
-
-      throw new Error('oj.addProperty: string expected for second argument') unless oj.isString propName
-
-Remove property
-
+      _v 'removeProperty', 2, propName, 'string'
       delete obj[propName]
+      return
 
 oj.isProperty
 ------------------------------------------------------------------------------
@@ -513,8 +517,7 @@ oj.isProperty
     # Determine if the specified key is was defined by addProperty
 
     oj.isProperty = (obj, propName) ->
-      throw new Error('oj.isProperty: string expected for second argument') unless oj.isString propName
-
+      _v 'isProperty', 2, propName, 'string'
       Object.getOwnPropertyDescriptor(obj, propName).get?
 
 oj.copyProperty
@@ -579,7 +582,7 @@ Styles have smart mappings:
 
   Validate input
 
-      throw 'oj.tag error: argument 1 is not a string (expected tag name)' unless oj.isString name
+      _v 'tag', 1, name, 'string'
 
   Build ojml starting with tag
 
@@ -1135,55 +1138,43 @@ Recursive helper for compiling any type
 
     # Compile ojml or any type
     pass = ->
-    _compileAny = (ojml, options) ->
+    _compileAny = (any, options) ->
 
-      switch oj.typeOf ojml
+      if oj.isArray any
+        _compileTag any, options
 
-        when 'array'
-          _compileTag ojml, options
-
-        # when 'jquery'
-        #   options.html?.push ojml.html()
-        #   options.dom?.concat ojml.get()
-
-        when 'string'
-          options.html?.push ojml
-          if ojml.length > 0 and ojml[0] == '<'
-            root = document.createElement 'div'
-            root.innerHTML = ojml
-            els = root.childNodes
-            options.dom?.appendChild root
-            # for el in els
-            #   options.dom?.appendChild el
-          else
-            options.dom?.appendChild document.createTextNode ojml
-
-        when 'boolean', 'number'
-          options.html?.push "#{ojml}"
-          options.dom?.appendChild document.createTextNode "#{ojml}"
-
-        when 'function'
-          # Wrap function call to allow full oj generation within ojml
-          _compileAny (oj ojml), options
-
-        when 'date'
-          options.html?.push "#{ojml.toLocaleString()}"
-          options.dom?.appendChild document.createTextNode "#{ojml.toLocaleString()}"
-
-        # Do nothing for 'null', 'undefined', 'object'
-        when 'null' then break
-        when 'undefined' then break
-        when 'object' then break
-
+      else if oj.isString any
+        options.html?.push any
+        if any.length > 0 and any[0] == '<'
+          root = document.createElement 'div'
+          root.innerHTML = any
+          els = root.childNodes
+          options.dom?.appendChild root
+          # for el in els
+          #   options.dom?.appendChild el
         else
-          # OJ type
-          if oj.isOJ ojml
-            options.types?.push ojml
-            options.html?.push ojml.toHTML(options)
-            options.dom?.appendChild ojml.toDOM(options)
-            if options.css?
-              _extend options.css, ojml.toCSSMap(options)
+          options.dom?.appendChild document.createTextNode any
 
+      else if oj.isBoolean(any) or oj.isNumber(any)
+        options.html?.push "#{any}"
+        options.dom?.appendChild document.createTextNode "#{any}"
+
+      else if oj.isFunction any
+        # Wrap function call to allow full oj generation within any
+        _compileAny (oj any), options
+
+      else if oj.isDate any
+        options.html?.push "#{any.toLocaleString()}"
+        options.dom?.appendChild document.createTextNode "#{any.toLocaleString()}"
+
+      else if oj.isOJ any
+        options.types?.push any
+        options.html?.push any.toHTML(options)
+        options.dom?.appendChild any.toDOM(options)
+        if options.css?
+          _extend options.css, any.toCSSMap(options)
+
+      # Do nothing for: null, undefined, object
       return
 
 _compileTag
@@ -1237,7 +1228,7 @@ Recursive helper for compiling ojml tags
   In this way it is HTML generation only.
 
       if tag == '!DOCTYPE'
-        throw new Error('oj.compile: doctype expects string as first argument') unless oj.isString ojml[1]
+        _v 'compile', 1, ojml[1], 'string'
         if not options.ignore[tag]
           if options.html
             options.html.push "<#{tag} #{ojml[1]}>"
@@ -1309,20 +1300,16 @@ Recursive helper for compiling ojml tags
 
       return
 
-    # Allow attributes to take style as an object
-    _attributeStyleAllowsObject = (attr) ->
-      if oj.isPlainObject attr?.style
-        attr.style = _styleFromObject attr.style, inline:true
-      return
+    # All the OJ magic for attributes
+    _attributesProcessedForOJ = (attr) ->
+      jqEvents = `{bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1}`
 
-    # Allow attributes to alias c to class and use arrays instead of space seperated strings
-    _attributeCMeansClassAndAllowsArrays = (attr) ->
+      # Allow attributes to alias c to class and use arrays instead of space seperated strings
       # Convert to c and class from arrays to strings
       if oj.isArray(attr?.c)
         attr.c = attr.c.join ' '
       if oj.isArray(attr?.class)
         attr.class = attr.class.join ' '
-
       # Move c to class
       if attr?.c?
         if attr?.class?
@@ -1330,44 +1317,26 @@ Recursive helper for compiling ojml tags
         else
           attr.class = attr.c
         delete attr.c
-      return
 
-    # Omit falsy values except for zero
-    _attributeOmitFalsyValues = (attr) ->
+      # Allow attributes to take style as an object
+      if oj.isPlainObject attr?.style
+        attr.style = _styleFromObject attr.style, inline:true
+
+      # Omit attributes with values of false, null, or undefined
       if oj.isPlainObject attr
         # Filter out falsy except for 0
         for k,v of attr
           delete attr[k] if v == null or v == undefined or v == false
 
-    # Supported events from jquery
-    jqueryEvents = `{bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1}`
-
-    # Filter out jquery events
-    _attributesFilterOutEvents = (attr) ->
-      out = {}
+      # Filter out jquery events
+      events = {}
       if oj.isPlainObject attr
-        # Filter out attributes that are jqueryEvents
+        # Filter out attributes that are jquery events
         for k,v of attr
           # If this attribute (k) is an event
-          if jqueryEvents[k]?
-            out[k] = v
+          if jqEvents[k]?
+            events[k] = v
             delete attr[k]
-      out
-
-    # All the OJ magic for attributes
-    _attributesProcessedForOJ = (attr) ->
-
-      # Alias c to class
-      _attributeCMeansClassAndAllowsArrays attr
-
-      # style takes objects
-      _attributeStyleAllowsObject attr
-
-      # Omit keys that false, null, or undefined
-      _attributeOmitFalsyValues attr
-
-      # Filter out jquery events
-      events = _attributesFilterOutEvents attr
 
       # Returns bindable events
       events
@@ -1375,13 +1344,11 @@ Recursive helper for compiling ojml tags
     # Bind events to dom
     _attributesBindEventsToDOM = (events, el) ->
       for ek, ev of events
-        if oj.$?
-          if oj.isArray ev
-            oj.$(el)[ek].apply @, ev
-          else
-            oj.$(el)[ek](ev)
+        _a oj.$?, "oj: jquery is missing when binding a '#{ek}' event"
+        if oj.isArray ev
+          oj.$(el)[ek].apply @, ev
         else
-          console.error "oj: jquery is missing when binding a '#{ek}' event"
+          oj.$(el)[ek](ev)
 
 oj.toHTML
 -------------------------------------------------------------------------------
@@ -1452,8 +1419,8 @@ oj.createType
 ------------------------------------------------------------------------------
 
     oj.createType = (name, args = {}) ->
-      throw 'oj.createType: string expected for first argument' unless oj.isString name
-      throw 'oj.createType: object expected for second argument' unless oj.isPlainObject args
+      _v 'createType', 1, name, 'string'
+      _v 'createType', 2, args, 'object'
 
       args.methods ?= {}
       args.properties ?= {}
@@ -1584,11 +1551,11 @@ _createQuietType
       oj[_getQuietTagName typeName] = ->
         _construct oj[typeName], arguments..., __quiet__:1
 
-oj.enum
+oj.createEnum
 ------------------------------------------------------------------------
 
-    oj.enum = (name, args) ->
-      throw new Error 'oj.enum: NYI'
+    oj.createEnum = (name, args) ->
+      _a 0, 'NYI', 'createEnum'
 
 oj.View
 ------------------------------------------------------------------------------
@@ -1599,8 +1566,7 @@ oj.View
       # With the remaining arguments becoming a list
 
       constructor: ->
-
-        throw new Error("oj.#{@typeName}: constructor failed to set this.el") unless oj.isDOM @el
+        _a oj.isDOM(@el), 'constructor failed to set this.el', @typeName
 
         # Set instance on @el
         _setInstanceOnElement @el, @
@@ -1834,7 +1800,7 @@ oj.View
   oj.View.css: set view's css with css object mapping, or raw css string
 
     oj.View.css = (css) ->
-      throw new Error("oj.#{@typeName}.css: object or string expected for first argument") unless oj.isString(css) or oj.isPlainObject(css)
+      _a oj.isString(css) or oj.isPlainObject(css), 'object or string expected for first argument', @typeName
       if oj.isString css
         @cssMap["oj-#{@typeName}"] ?= ""
         @cssMap["oj-#{@typeName}"] += css
@@ -1847,8 +1813,8 @@ oj.View
   oj.View.theme: create a View specific theme with css object mapping
 
     oj.View.theme = (name, css) ->
-      throw new Error("oj.#{@typeName}.theme: string expected for first argument (theme name)") unless oj.isString name
-      throw new Error("oj.#{@typeName}.css: object expected for second argument") unless oj.isPlainObject(css)
+      _v @typeName, 1, name, 'string'
+      _v @typeName, 2, css, 'object'
 
       @cssMap["oj-#{@typeName}"] ?= {}
       dashName = _dasherize name
@@ -1913,7 +1879,7 @@ oj.CollectionView
 
       methods:
         # Override make to create your view
-        make: -> throw new Error("oj.#{@typeName}: `make` method not implemented by custom view")
+        make: -> _a 0, '`make` method not implemented by custom view', @typeName
 
         # Override these events to minimally update on change
         collectionModelAdded: (model, collection) -> @make()
@@ -1962,7 +1928,7 @@ Model view base class
           @$el.oj =>
             @make @mode
 
-        make: (model) -> throw "oj.#{@typeName}: `make` method not implemented on custom view"
+        make: (model) -> _a 0, '`make` method not implemented by custom view', @typeName
 
 oj.ModelKeyView
 ------------------------------------------------------------------------------
@@ -1986,8 +1952,8 @@ Model key view base class
         # Value directly gets and sets to the dom
         # when it changes it must trigger viewChanged
         value:
-          get: -> throw "#{@typeName} value getter not implemented"
-          set: (v) -> throw "#{@typeName} value setter not implemented"
+          get: -> _a 0, 'value getter not implemented', @typeName
+          set: (v) -> _a 0, 'value setter not implemented', @typeName
 
       methods:
         # When the model changes update the value
@@ -2908,11 +2874,6 @@ _rowFromModel: Helper to map model to row
           oj =>
             @each model, oj.td
 
-_rowElFromItem: Helper to create rowTagName wrapped row
-
-        _rowElFromItem: (row) ->
-          oj[@rowTagName] row
-
   _bound: Bound index to allow negatives, throw when out of range
 
         _bound: (ix, count, message) ->
@@ -2944,9 +2905,8 @@ oj.use(plugin, settings)
 Include a plugin of OJ with `settings`
 
     oj.use = (plugin, settings = {}) ->
-
-      throw new Error('oj.use: function expected for first argument') unless oj.isFunction plugin
-      throw new Error('oj.use: object expected for second argument') unless oj.isPlain settings
+      _v 'use', 1, plugin, 'function'
+      _v 'use', 2, settings, 'object'
 
       # Call plugin to gather extension map
       pluginResult = plugin oj, settings
@@ -2965,14 +2925,14 @@ Include a plugin of OJ with `settings`
         # Add to sandbox
         oj.addProperty oj.sandbox, name, value:value, writable: false
 
-_jqueryExtend(fn)
+_jqExtend(fn)
 -----------------------------------------------------------------------------
-
+jQuery Extend
 option.get is called to retrieve value per element
 option.set is called when setting elements
 option.first:true means return only the first get, otherwise it is returned as an array.
 
-    _jqueryExtend = (options = {}) ->
+    _jqExtend = (options = {}) ->
       options =  _extend get:_identity, set:_identity, first: false, options
       ->
         args = _toArray arguments
@@ -3013,7 +2973,7 @@ option.first:true means return only the first get, otherwise it is returned as a
 jQuery.fn.oj
 -----------------------------------------------------------------------------
 
-    oj.$.fn.oj = _jqueryExtend
+    oj.$.fn.oj = _jqExtend
       set:($el, args) ->
 
         # No arguments return the first instance
@@ -3070,19 +3030,18 @@ Get the first value of the selected contents
       el = $el[0]
       child = el.firstChild
 
-      switch oj.typeOf child
-        # Parse the text to turn it into bool, number, or string
-        when 'dom-text'
-          text = oj.parse child.nodeValue
+      if oj.isDOMText child
+      # Parse the text to turn it into bool, number, or string
+        text = oj.parse child.nodeValue
 
-        # Get elements as oj instances or elements
-        when 'dom-element'
-          if (inst = _getInstanceOnElement child)?
-            inst
-          else
-            child
+      # Get elements as oj instances or elements
+      else if oj.isDOMElement child
+        if (inst = _getInstanceOnElement child)?
+          inst
+        else
+          child
 
-    oj.$.fn.ojValue = _jqueryExtend
+    oj.$.fn.ojValue = _jqExtend
       first: true
       set: null
       get: _jqGetValue
@@ -3091,7 +3050,7 @@ jQuery.fn.ojValues
 -----------------------------------------------------------------------------
 Get values as an array of the selected element's contents
 
-    oj.$.fn.ojValues = _jqueryExtend
+    oj.$.fn.ojValues = _jqExtend
       first: false
       set: null
       get: _jqGetValue
@@ -3110,7 +3069,7 @@ jQuery plugins
 
     for ojName,jqName of plugins
       do (ojName, jqName) ->
-        oj.$.fn[ojName] = _jqueryExtend
+        oj.$.fn[ojName] = _jqExtend
           set: ($el, args) ->
 
             # Compile ojml for each one to separate references
