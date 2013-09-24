@@ -232,7 +232,7 @@ Utility Helpers
     _identity = `function(v){return v;}`
     _has = `function(obj, key){return ObjP.hasOwnProperty.call(obj, key);}`
     _keys = Object.keys
-    _values = `function(obj){var keys = _.keys(obj);var length = keys.length; var values = new Array(length); for (var i = 0; i < length; i++) {values[i] = obj[keys[i]]; } return values;}`
+    _values = `function(obj){var keys = _keys(obj);var length = keys.length; var values = new Array(length); for (var i = 0; i < length; i++) {values[i] = obj[keys[i]]; } return values;}`
 
   _toArray
 
@@ -344,11 +344,11 @@ Path Helpers
 Used to implement require client side. These methods are simplified versions of
 the node `path` library: github.com/joyent/node/lib/path.js
 
-    _pathSplitRe = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/
-    _pathSplit = (filename) ->
-      result = _pathSplitRe.exec filename
+    _pathRx = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/
+    _pathSplit = (fname) ->
+      result = _pathRx.exec fname
       [result[1] or '', result[2] or '', result[3] or '', result[4] or '']
-    _pathNormalizeArray = (parts, allowAboveRoot) ->
+    _pathNormArray = (parts, allowAboveRoot) ->
       up = 0
       i = parts.length - 1
       while i >= 0
@@ -369,25 +369,25 @@ the node `path` library: github.com/joyent/node/lib/path.js
 
     oj._pathResolve = ->
       resolvedPath = ''
-      resolvedAbsolute = false
+      isAbsolute = false
       i = arguments.length-1
-      while i >= -1 and !resolvedAbsolute
+      while i >= -1 and !isAbsolute
         path = if (i >= 0) then arguments[i] else process.cwd()
         if (typeof path != 'string') or !path
           continue
         resolvedPath = path + '/' + resolvedPath
-        resolvedAbsolute = path.charAt(0) == '/'
+        isAbsolute = path.charAt(0) == '/'
         i--
-      resolvedPath = _pathNormalizeArray(resolvedPath.split('/').filter((p) ->
+      resolvedPath = _pathNormArray(resolvedPath.split('/').filter((p) ->
         return !!p
-      ), !resolvedAbsolute).join('/')
+      ), !isAbsolute).join('/')
 
-      ((if resolvedAbsolute then '/' else '') + resolvedPath) or '.'
+      ((if isAbsolute then '/' else '') + resolvedPath) or '.'
 
     oj._pathNormalize = (path) ->
       isAbsolute = path.charAt(0) == '/'
       trailingSlash = path.substr(-1) == '/'
-      path = _pathNormalizeArray(path.split('/').filter((p) ->
+      path = _pathNormArray(path.split('/').filter((p) ->
         !!p
       ), !isAbsolute).join('/')
       if !path and !isAbsolute
@@ -444,8 +444,6 @@ Remove a method from an object
 
     oj.removeMethod = (obj, methodName) ->
       _v 'removeMethod', 2, methodName, 'string'
-
-  Remove the method
       delete obj[methodName]
       return
 
@@ -488,9 +486,9 @@ oj.addProperty
 
 Default properties to enumerable and configurable
 
-      propInfo = _extend {}, {
+      propInfo = _extend
         enumerable: true
-        configurable: true},
+        configurable: true
         propInfo
 
 Remove property if it already exists
@@ -1300,11 +1298,13 @@ Recursive helper for compiling ojml tags
 
       return
 
-    # All the OJ magic for attributes
+_attributesProcessedForOJ: Process attributes to make them easier to use
+
     _attributesProcessedForOJ = (attr) ->
       jqEvents = `{bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1}`
 
-      # Allow attributes to alias c to class and use arrays instead of space seperated strings
+  Allow attributes to alias c to class and use arrays instead of space seperated strings
+
       # Convert to c and class from arrays to strings
       if oj.isArray(attr?.c)
         attr.c = attr.c.join ' '
@@ -1318,17 +1318,19 @@ Recursive helper for compiling ojml tags
           attr.class = attr.c
         delete attr.c
 
-      # Allow attributes to take style as an object
+  Allow attributes to take style as an object
+
       if oj.isPlainObject attr?.style
         attr.style = _styleFromObject attr.style, inline:true
 
-      # Omit attributes with values of false, null, or undefined
+  Omit attributes with values of false, null, or undefined
+
       if oj.isPlainObject attr
-        # Filter out falsy except for 0
         for k,v of attr
           delete attr[k] if v == null or v == undefined or v == false
 
-      # Filter out jquery events
+  Filter out jquery events
+
       events = {}
       if oj.isPlainObject attr
         # Filter out attributes that are jquery events
@@ -1338,7 +1340,8 @@ Recursive helper for compiling ojml tags
             events[k] = v
             delete attr[k]
 
-      # Returns bindable events
+  Returns bindable events
+
       events
 
     # Bind events to dom
