@@ -85,19 +85,18 @@ describe 'oj._', ->
     assert.isFalse (oj.isArray 1), '1 case'
     assert.isFalse (oj.isArray "string"), 'string case'
 
-  it 'isObject', ->
-    assert.isTrue (oj.isObject {}), '{} case'
-    assert.isTrue (oj.isObject {a:1, b:2}), '{a:1, b:2} case'
-    assert.isFalse (oj.isObject []), '[] case'
-    assert.isFalse (oj.isObject /abc/), '/abc/ case'
-    assert.isFalse (oj.isObject new Array), 'new Array case'
-    assert.isFalse (oj.isObject undefined), 'undefined case'
-    assert.isFalse (oj.isObject null), 'null case'
-    assert.isFalse (oj.isObject true, 'true case')
-    assert.isFalse (oj.isObject new Date, 'new Date case')
-    assert.isFalse (oj.isObject 1), '1 case'
-    assert.isFalse (oj.isObject "string"), 'string case'
-
+  it 'isPlainObject', ->
+    assert.isTrue (oj.isPlainObject {}), '{} case'
+    assert.isTrue (oj.isPlainObject {a:1, b:2}), '{a:1, b:2} case'
+    assert.isFalse (oj.isPlainObject []), '[] case'
+    assert.isFalse (oj.isPlainObject /abc/), '/abc/ case'
+    assert.isFalse (oj.isPlainObject new Array), 'new Array case'
+    assert.isFalse (oj.isPlainObject undefined), 'undefined case'
+    assert.isFalse (oj.isPlainObject null), 'null case'
+    assert.isFalse (oj.isPlainObject true, 'true case')
+    assert.isFalse (oj.isPlainObject new Date, 'new Date case')
+    assert.isFalse (oj.isPlainObject 1), '1 case'
+    assert.isFalse (oj.isPlainObject "string"), 'string case'
 
   it 'isEvent', ->
     class UserModel extends Backbone.Model

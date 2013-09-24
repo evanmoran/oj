@@ -15,13 +15,11 @@ oj function
   oj function acts like a tag method that doesn't emit
   Using inline js so the function can be named
 
-    `function oj(){
-      return oj.tag.apply(this, ['oj'].concat([].slice.call(arguments)).concat([{__quiet__:1}]));
-    }`
+    `function oj(){return oj.tag.apply(this, ['oj'].concat([].slice.call(arguments)).concat([{__quiet__:1}]));}`
 
   Define oj version
 
-    oj.version = '0.1.6'
+    oj.version = '0.2.0'
 
   Detect if this is client or server-side
 
@@ -59,7 +57,6 @@ Load the page specified generating necessary html, css, and client side events.
   Defer dom manipulation until the page is ready
 
       oj.$ ->
-
         oj.$.ojBody (require page)
 
   Trigger events bound through onload
@@ -99,64 +96,26 @@ Used by plugins to group multiple elements as if it is a single tag.
     oj.emit = ->
       ojml = oj.tag 'oj', arguments...
 
-oj.id
------------------------------------------------------------------------------
-Generate a unique oj id
-
-    oj.id = (len, chars) ->
-      'oj' + oj.guid len, chars
-
-oj.guid
------------------------------------------------------------------------------
-Generate a unique guid
-
-    _randomInteger = (min, max) ->
-      return null if min == null or max == null or min > max
-      diff = max - min;
-      # random int from zero to number minus one
-      rnd = Math.floor Math.random() * (diff + 1)
-      rnd + min
-
-    _chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split ''
-    oj.guid = (len = 8, chars = _chars) ->
-      # Default arguments
-      base = chars.length
-
-      # Calculate how many chars can be determined by each random call
-      charsPerRand = Math.floor Math.log(Math.pow(2,31)-1) / Math.log(base)
-      randMin = 0
-      randMax = Math.pow(base, charsPerRand)-1
-
-      # Calculate random chars by calling random the minimum number of times
-      output = ""
-      for i in [0...len]
-        # Generate random number
-        if i % charsPerRand == 0
-          rand = _randomInteger randMin, randMax
-        charNext = chars[rand % base]
-        output += charNext
-        rand = Math.floor(rand / base)
-
-      output
-
 Type Helpers
 ------------------------------------------------------------------------------
 
 Short names for common prototype and method names
 
-    ArrayP = Array.prototype
-    FuncP = Function.prototype
+    ArrP = Array.prototype
+    FunP = Function.prototype
     ObjP = Object.prototype
 
-    slice = ArrayP.slice
-    unshift = ArrayP.unshift
-    concat = ArrayP.concat
+    slice = ArrP.slice
+    unshift = ArrP.unshift
+    concat = ArrP.concat
 
 Type helper for oj types
 
-    oj.isOJ = (obj) -> !!(obj?.isOJ)
-    oj.isOJType = (obj) -> oj.isOJ(obj) and obj.type == obj
-    oj.isOJInstance = (obj) -> oj.isOJ(obj) and not oj.isOJType(obj)
+    oj.isOJ = `function(obj){return !!(obj != null ? obj.isOJ : void 0);}`
+
+    oj.isOJType = `function(obj){return oj.isOJ(obj) && obj.type === obj;}`
+
+    oj.isOJInstance = `function(obj){return oj.isOJ(obj) && !oj.isOJType(obj);}`
 
 Type helper for event enabled objects such as Backbone models
 
@@ -180,8 +139,9 @@ Type helpers for basic types. Based on [underscore.js](http://underscorejs.org/)
     oj.isNumber = (obj) -> !!(obj == 0 or (obj and obj.toExponential and obj.toFixed))
     oj.isString = (obj) -> !!(obj == '' or (obj and obj.charCodeAt and obj.substr))
     oj.isDate = (obj) -> !!(obj and obj.getTimezoneOffset and obj.setUTCFullYear)
-    oj.isFunction = (obj) -> typeof obj == 'function'
-    oj.isArray = Array.isArray or (obj) -> ObjP.toString.call(obj) == '[object Array]'
+    oj.isPlainObject = oj.$.isPlainObject
+    oj.isFunction = oj.$.isFunction
+    oj.isArray = oj.$.isArray
     oj.isRegEx = (obj) -> ObjP.toString.call(obj) == '[object RegExp]'
     oj.isArguments = (obj) -> ObjP.toString.call(obj) == '[object Arguments]'
 
@@ -225,96 +185,54 @@ oj.parse: Convert string to basic type, number, boolean, null, or undefined
       else
         str
 
-oj.isObject: Determine if object is a vanilla object type
+oj.id
+-----------------------------------------------------------------------------
+Generate a unique oj id
 
-    oj.isObject = (obj) -> (oj.typeOf obj) == 'object'
+    oj.id = (len, chars) ->
+      'oj' + oj.guid len, chars
+
+oj.guid
+-----------------------------------------------------------------------------
+Generate a unique guid
+
+    _randomInteger = (min, max) ->
+      return null if min == null or max == null or min > max
+      diff = max - min;
+      # random int from zero to number minus one
+      rnd = Math.floor Math.random() * (diff + 1)
+      rnd + min
+
+    _chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split ''
+    oj.guid = (len = 8, chars = _chars) ->
+      # Default arguments
+      base = chars.length
+
+      # Calculate how many chars can be determined by each random call
+      charsPerRand = Math.floor Math.log(Math.pow(2,31)-1) / Math.log(base)
+      randMin = 0
+      randMax = Math.pow(base, charsPerRand)-1
+
+      # Calculate random chars by calling random the minimum number of times
+      output = ""
+      for i in [0...len]
+        # Generate random number
+        if i % charsPerRand == 0
+          rand = _randomInteger randMin, randMax
+        charNext = chars[rand % base]
+        output += charNext
+        rand = Math.floor(rand / base)
+
+      output
 
 Utility Helpers
 ------------------------------------------------------------------------------
 
-    _isCapitalLetter = (c) -> !!(c.match /[A-Z]/)
-    _identity = (v) -> v
-    _has = (obj, key) -> ObjP.hasOwnProperty.call(obj, key)
-    _keys = Object.keys || (obj) ->
-      throw 'Invalid object' if obj != Object(obj)
-      keys = [];
-      for key of obj
-        if _has obj, key
-          keys[keys.length] = key;
-      keys
-    _values = (obj) ->
-      throw 'Invalid object' if obj != Object(obj)
-      out = []
-      _each obj, (v) -> out.push v
-      out
-
-    _flatten = (array, shallow) ->
-      _reduce array, ((memo, value) ->
-        if oj.isArray value
-          return memo.concat(if shallow then value else _flatten(value))
-        memo[memo.length] = value
-        memo
-      ), []
-
-    _reduce = (obj = [], iterator, memo, context) ->
-      initial = arguments.length > 2
-      if ArrayP.reduce and obj.reduce == ArrayP.reduce
-        if context
-          iterator = _bind iterator, context
-        return if initial then obj.reduce iterator, memo else obj.reduce iterator
-
-      _each obj, (value, index, list) ->
-        if (!initial)
-          memo = value
-          initial = true
-        else
-          memo = iterator.call context, memo, value, index, list
-
-      if !initial
-        throw new TypeError 'Reduce of empty array with no initial value'
-      memo
-
-      ctor = ->
-
-_bind: Helper to bind context to function
-
-      _bind = (func, context) ->
-        if func.bind == FuncP.bind and FuncP.bind
-          return FuncP.bind.apply func, slice.call(arguments, 1)
-
-  Safari 5.1 doesn't implement bind in some iOS versions
-  TODO: Remove when iOS 6 reaches 95% adoption
-
-        args = slice.call arguments, 2
-        return bound = ->
-          unless this instanceof bound
-            return func.apply context, args.concat(slice.call arguments)
-          ctor.prototype = func.prototype
-          self = new ctor
-          result = func.apply self, args.concat(slice.call(arguments))
-          if Object(result) == result
-            return result
-          self
-
-    _sortedIndex = (array, obj, iterator = _identity) ->
-      low = 0
-      high = array.length;
-      while low < high
-        mid = (low + high) >> 1;
-        if iterator(array[mid]) < iterator(obj) then low = mid + 1 else high = mid;
-      low
-
-
-  _indexOf
-
-    _indexOf = (array, item, isSorted) ->
-      return -1 unless array?
-      if isSorted
-        i = _sortedIndex array, item
-        return if array[i] == item then i else -1
-      if ArrayP.indexOf and array.indexOf == ArrayP.indexOf
-        return array.indexOf item
-      -1
+    _isCapitalLetter = `function(c){return !!(c.match(/[A-Z]/));}`
+    _identity = `function(v){return v;}`
+    _has = `function(obj, key){return ObjP.hasOwnProperty.call(obj, key);}`
+    _keys = Object.keys
+    _values = `function(obj){var keys = _.keys(obj);var length = keys.length; var values = new Array(length); for (var i = 0; i < length; i++) {values[i] = obj[keys[i]]; } return values;}`
 
   _toArray
 
@@ -338,31 +256,8 @@ _bind: Helper to bind context to function
   _clone
 
     _clone = (obj) ->
-      return obj unless (oj.isArray obj) or (oj.isObject obj)
+      return obj unless (oj.isArray obj) or ((oj.typeOf obj) == 'object')
       if oj.isArray obj then obj.slice() else _extend {}, obj
-
-  _contains
-
-    _contains = (obj, target) ->
-      if not obj?
-        return false
-      if ArrayP.indexOf and obj.indexOf == ArrayP.indexOf
-        return obj.indexOf(target) != -1
-      _some obj, (value) -> value == target
-
-  _some
-
-    _some = (obj, iterator, context) ->
-        iterator ?= _identity
-        result = false
-        if not obj?
-          return result
-        if ArrayP.some and obj.some == ArrayP.some
-          return obj.some iterator, context
-        _each obj, (value, index, list) ->
-          if result or (result = iterator.call(context, value, index, list))
-            return breaker
-        return !!result
 
 _setObject: Set object deeply and ensure each part is an object
 
@@ -374,7 +269,6 @@ _setObject: Set object deeply and ensure each part is an object
   Initialize key to empty object if necessary
 
         if typeof o[k] != 'object'
-
           o[k] = {} unless (typeof o[k] == 'object')
 
   Set final value if this is the last key
@@ -391,105 +285,10 @@ _setObject: Set object deeply and ensure each part is an object
 
 Functional Helpers
 ------------------------------------------------------------------------
-  _each
-
-    _breaker = {}
-
-    _each = (col, iterator, context) ->
-
-      return if col == null
-      if ArrayP.forEach and col.forEach == ArrayP.forEach
-        col.forEach iterator, context
-      else if oj.isArray col
-        for v, i in col
-          if iterator.call(context, v, i, col) == _breaker
-            return _breaker
-      else
-        for k, v of col
-          if _has col, k
-            if iterator.call(context, v, k, col) == _breaker
-              return _breaker
-
-  _map
-
-    _map = (obj, iterator, options = {}) ->
-
-      context = options.context
-      recurse = options.recurse
-      evaluate = options.evaluate
-
-      # Recurse if necessary
-      iterator_ = iterator
-      if recurse
-        do (options) ->
-          iterator_ = (v,k,o) ->
-            options_ = _extend (_clone options), (key: k, object: v)
-            _map v, iterator, options_
-
-      # Evaluate functions if necessary
-      if oj.isFunction obj
-
-        # Functions pass through if evaluate isn't set
-        return obj unless evaluate
-
-        while evaluate and oj.isFunction obj
-          obj = obj()
-
-      out = obj
-
-      # Array case
-      if oj.isArray obj
-        out = []
-        return out unless obj
-        return (obj.map iterator_, context) if ArrayP.map and obj.map == ArrayP.map
-        _each(obj, ((v, ix, list) ->
-          out[out.length] = iterator_.call context, v, ix, list
-        ))
-
-        if obj.length == +obj.length
-          out.length = obj.length
-
-      # Object case
-      else if oj.isObject obj
-        out = {}
-        return out unless obj
-        for k,v of obj
-          # Returning undefined will omit the thing
-          if (r = iterator_.call(context, v, k, obj)) != undefined
-            out[k] = r
-      # Basis of recursive case
-      else
-        return iterator.call context, obj, options.key, options.object,
-      out
 
   _extend
 
-    _extend = (obj) ->
-      _each(slice.call(arguments, 1), ((source) ->
-        for key, value of source
-          obj[key] = value
-      ))
-      obj
-
-  _defaults
-
-    _defaults = (obj) ->
-      _each(slice.call(arguments, 1), ((source) ->
-        for prop of source
-          if not obj[prop]?
-            obj[prop] = source[prop]
-      ))
-      obj
-
-  _omit
-
-    _omit = (obj) ->
-      copy = {}
-      keys = concat.apply ArrayP, slice.call(arguments, 1)
-      for key of obj
-        if not _contains keys, key
-          copy[key] = obj[key]
-      copy
+    _extend = oj.$.extend
 
   _uniqueSort
 
@@ -503,23 +302,6 @@ Functional Helpers
         out.push item
       out
 
-  _uniqueSortedUnion
-
-    _uniqueSortedUnion = (arr, arr2) ->
-      _uniqueSort (arr.concat arr2)
-
-
-Indexing Helpers
------------------------------------------------------------------------------
-
-  _boundOrThrow: Bound index to allow negatives, throw when out of range
-
-    _boundOrThrow = (ix, count, message, method) ->
-      ixNew = if ix < 0 then ix + count else ix
-      unless 0 <= ixNew and ixNew < count
-        throw new Error("oj.#{method}#{message} is out of bounds (#{ix} in [0,#{count-1}])")
-      ixNew
-
 String Helpers
 -----------------------------------------------------------------------------
 
@@ -527,7 +309,7 @@ String Helpers
 
     _splitAndTrim = (str, seperator, limit) ->
       r = str.split seperator, limit
-      _map r, (v) -> v.trim()
+      r.map (v) -> v.trim()
 
   _dasherize: Convert from camal case or space seperated to dashes
 
@@ -612,15 +394,6 @@ the node `path` library: github.com/joyent/node/lib/path.js
         dir = dir.substr 0, dir.length - 1
       root + dir
 
-oj.dependency
-------------------------------------------------------------------------------
-Ensure dependencies through oj plugins
-
-    oj.dependency = (name, check) ->
-      check ?= ->
-        if oj.isClient then oj.isDefined(window[name]) else oj.isDefined(global[name])
-      throw new Error("oj: #{name} dependency is missing") unless check()
-
 oj.addMethod
 ------------------------------------------------------------------------------
 Add multiple methods to an object
@@ -638,9 +411,8 @@ Add method to an object
 
   Validate input
 
-      # throw 'oj.addMethod: object expected for first argument' unless oj.isObject obj
-      throw 'oj.addMethod: string expected for second argument' unless oj.isString methodName
-      throw 'oj.addMethod: function expected for thrid argument' unless oj.isFunction method
+      throw new Error('oj.addMethod: string expected for second argument') unless oj.isString methodName
+      throw new Error('oj.addMethod: function expected for thrid argument') unless oj.isFunction method
 
   Methods are non-enumerable, non-writable properties
 
@@ -659,7 +431,7 @@ Remove a method from an object
 
   Validate inputs
 
-      throw 'oj.removeMethod: string expected for second argument' unless oj.isString methodName
+      throw new Error('oj.removeMethod: string expected for second argument') unless oj.isString methodName
 
   Remove the method
       delete obj[methodName]
@@ -702,18 +474,15 @@ oj.addProperty
 
 Validate input
 
-      # throw new Error('oj.addProperty: obj expected for first argument') unless oj.isObject obj
-
       throw new Error('oj.addProperty: string expected for second argument') unless oj.isString propName
-
-      throw new Error('oj.addProperty: object expected for third argument') unless oj.isObject propInfo
-
+      throw new Error('oj.addProperty: object expected for third argument') unless oj.isPlainObject propInfo
 
 Default properties to enumerable and configurable
 
-      _defaults propInfo,
+      propInfo = _extend {}, {
         enumerable: true
-        configurable: true
+        configurable: true},
+        propInfo
 
 Remove property if it already exists
 
@@ -834,7 +603,7 @@ Styles have smart mappings:
   Loop over attributes
 
       for arg in args
-        if oj.isObject arg
+        if oj.isPlainObject arg
           continue
 
         else if oj.isFunction arg
@@ -877,7 +646,7 @@ Styles have smart mappings:
   Determine if an element is closed or open
 
     oj.tag.isClosed = (tag) ->
-      (_indexOf oj.tag.elements.open, tag, true) == -1
+      oj.tag.elements.open.indexOf(tag) == -1
 
   Record tag name on a given tag function
 
@@ -1001,13 +770,14 @@ Define method
         options = {}
 
       # Default options to compile everything
-      options = _defaults {}, options,
+      options = _extend
         html: true
         dom: false
         css: false
         cssMap: false
         minify: false
         ignore: {}
+        options
 
       # Always ignore oj and css tags
       _extend options.ignore, oj:1, css:1
@@ -1078,9 +848,10 @@ Convert object to string form
 
   Default options
 
-      _defaults options,
+      options = _extend
         inline: true
         indent: ''
+        options
 
   Trailing semi should only exist on when we aren't indenting
 
@@ -1119,7 +890,7 @@ precicely what must be serialized with no adjustment.
 
     _attributesFromObject = (obj) ->
       # Pass through non objects
-      return obj if not oj.isObject obj
+      return obj if not oj.isPlainObject obj
 
       out = ''
       # Serialize attributes in order for consistent output
@@ -1184,7 +955,7 @@ Nested definitions, media definitions and comma definitions are resolved.
 
   Substitute convience media query methods
 
-            mediaParts = _map mediaParts, (v) ->
+            mediaParts = mediaParts.map (v) ->
               if medias[v]? then medias[v] else v
 
   Calculate the next media queries
@@ -1444,7 +1215,7 @@ Recursive helper for compiling ojml tags
   Gather attributes if present
 
       attributes = null
-      if oj.isObject ojml[1]
+      if oj.isPlainObject ojml[1]
         attributes = ojml[1]
 
   Gather children if present
@@ -1492,7 +1263,7 @@ Recursive helper for compiling ojml tags
           options.dom = el
 
           # Set attributes in sorted order for consistency
-          if oj.isObject attributes
+          if oj.isPlainObject attributes
             for attrName in _keys(attributes).sort()
               attrValue = attributes[attrName]
               # Boolean attributes have no value
@@ -1540,7 +1311,7 @@ Recursive helper for compiling ojml tags
 
     # Allow attributes to take style as an object
     _attributeStyleAllowsObject = (attr) ->
-      if oj.isObject attr?.style
+      if oj.isPlainObject attr?.style
         attr.style = _styleFromObject attr.style, inline:true
       return
 
@@ -1563,18 +1334,18 @@ Recursive helper for compiling ojml tags
 
     # Omit falsy values except for zero
     _attributeOmitFalsyValues = (attr) ->
-      if oj.isObject attr
+      if oj.isPlainObject attr
         # Filter out falsy except for 0
         for k,v of attr
           delete attr[k] if v == null or v == undefined or v == false
 
     # Supported events from jquery
-    jqueryEvents = bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1
+    jqueryEvents = `{bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1}`
 
     # Filter out jquery events
     _attributesFilterOutEvents = (attr) ->
       out = {}
-      if oj.isObject attr
+      if oj.isPlainObject attr
         # Filter out attributes that are jqueryEvents
         for k,v of attr
           # If this attribute (k) is an event
@@ -1618,7 +1389,7 @@ Make ojml directly to HTML ignoring event bindings and css.
 
     oj.toHTML = (options, ojml) ->
       # Options is optional
-      if not oj.isObject options
+      if not oj.isPlainObject options
         ojml = options
         options = {}
 
@@ -1632,7 +1403,7 @@ Compile ojml directly to css ignoring event bindings and html.
 
     oj.toCSS = (options, ojml) ->
       # Options is optional
-      if not oj.isObject options
+      if not oj.isPlain options
         ojml = options
         options = {}
 
@@ -1664,15 +1435,15 @@ _construct(Type, arg1, arg2, ...)
 ------------------------------------------------------------------------------
 Construct with specified arguments. This is only necessary because new doesn't support apply/call directly.
 
-    oj._construct = _construct = (Type) ->
-      new (FuncP.bind.apply(Type, arguments));
+    _construct = (Type) ->
+      new (FunP.bind.apply(Type, arguments));
 
 oj.argumentShift
 ------------------------------------------------------------------------------
 Helper to make argument handling easier
 
     oj.argumentShift = (args, key) ->
-      if (oj.isObject args) and key? and args[key]?
+      if (oj.isPlainObject args) and key? and args[key]?
         value = args[key]
         delete args[key]
       value
@@ -1682,7 +1453,7 @@ oj.createType
 
     oj.createType = (name, args = {}) ->
       throw 'oj.createType: string expected for first argument' unless oj.isString name
-      throw 'oj.createType: object expected for second argument' unless oj.isObject args
+      throw 'oj.createType: object expected for second argument' unless oj.isPlainObject args
 
       args.methods ?= {}
       args.properties ?= {}
@@ -1728,17 +1499,15 @@ oj.createType
       # Add properties helper to instance
       propKeys = (_keys args.properties).sort()
       if Out::properties?
-        propKeys = _uniqueSortedUnion Out::properties, propKeys
+        propKeys = _uniqueSort Out::properties.concat propKeys
       properties = value:propKeys, writable:false, enumerable:false
-      # propKeys.has = _reduce propKeys, ((o,item) -> o[item.key] = true; o), {}
       oj.addProperty Out::, 'properties', properties
 
       # Add methods helper to instance
       methodKeys = (_keys args.methods).sort()
       if Out::methods?
-        methodKeys = _uniqueSortedUnion Out::methods, methodKeys
+        methodKeys = _uniqueSort Out::methods.concat methodKeys
       methods = value:methodKeys, writable:false, enumerable:false
-      # methodKeys.has = _reduce methodKeys, ((o,item) -> o[item.key] = true; o), {}
       oj.addProperty Out::, 'methods', methods
 
       # Add methods to the type
@@ -1761,7 +1530,7 @@ oj.createType
         set: (k,v) ->
           obj = k
           # Optionally take key, value instead of object
-          if not oj.isObject k
+          if not oj.isPlainObject k
             obj = {}
             obj[k] = v;
 
@@ -1773,11 +1542,11 @@ oj.createType
 
         # has: Determine if property exists
         has: (k) ->
-          _some @properties, (v) -> v == k
+          @properties.some (v) -> v == k
 
         # can: Determine if method exists
         can: (k) ->
-          _some @methods, (v) -> v == k
+          @methods.some (v) -> v == k
 
         # toJSON: Use properties to generate json
         toJSON: ->
@@ -1802,7 +1571,7 @@ oj.createType
       options = {}
       args = []
       for v in argList
-        if oj.isObject v
+        if oj.isPlainObject v
           options = _extend options, v
         else
           args.push v
@@ -1812,8 +1581,7 @@ _createQuietType
 -------------------------------------------------------------------------------
 
     _createQuietType = (typeName) ->
-      qt = _getQuietTagName typeName
-      oj[qt] = ->
+      oj[_getQuietTagName typeName] = ->
         _construct oj[typeName], arguments..., __quiet__:1
 
 oj.enum
@@ -1858,7 +1626,8 @@ oj.View
         @set options
 
         # Remove options that were set
-        options = _omit options, @properties...
+        options = _clone options
+        @properties.forEach (v) -> delete options[v]
 
         # Views pass through remaining options to be attributes on the root element
         # This can include jquery events and interpreted arguments
@@ -1909,7 +1678,7 @@ oj.View
         # Get all currently set attributes (readonly)
         attributes: get: ->
           out = {}
-          oj.$.each @el.attributes, (index, attr) -> out[ attr.name ] = attr.value;
+          slice.call(@el.attributes).forEach (attr) -> out[ attr.name ] = attr.value;
           out
 
         # Get all classes as an array (readwrite)
@@ -1967,7 +1736,7 @@ oj.View
           events = _attributesProcessedForOJ attr
 
           # Add attributes as object
-          if oj.isObject attr
+          if oj.isPlainObject attr
             for k,v of attr
               if k == 'class'
                 @addClass v
@@ -2065,7 +1834,7 @@ oj.View
   oj.View.css: set view's css with css object mapping, or raw css string
 
     oj.View.css = (css) ->
-      throw new Error("oj.#{@typeName}.css: object or string expected for first argument") unless oj.isString(css) or oj.isObject(css)
+      throw new Error("oj.#{@typeName}.css: object or string expected for first argument") unless oj.isString(css) or oj.isPlainObject(css)
       if oj.isString css
         @cssMap["oj-#{@typeName}"] ?= ""
         @cssMap["oj-#{@typeName}"] += css
@@ -2079,7 +1848,7 @@ oj.View
 
     oj.View.theme = (name, css) ->
       throw new Error("oj.#{@typeName}.theme: string expected for first argument (theme name)") unless oj.isString name
-      throw new Error("oj.#{@typeName}.css: object expected for second argument") unless oj.isObject(css)
+      throw new Error("oj.#{@typeName}.css: object expected for second argument") unless oj.isPlainObject(css)
 
       @cssMap["oj-#{@typeName}"] ?= {}
       dashName = _dasherize name
@@ -2099,7 +1868,6 @@ oj.CollectionView
       base: oj.View
 
       constructor: (options) ->
-        # console.log "CollectionView constructor: ", arguments
 
         @each = oj.argumentShift options, 'each' if options?.each?
         @models = oj.argumentShift options, 'models' if options?.models?
@@ -2617,7 +2385,10 @@ collectionModelRemoved: On add
   _bound: Bound index to allow negatives, throw when out of range
 
         _bound: (ix, count, message) ->
-          _boundOrThrow ix,count,message,@typeName
+          ixNew = if ix < 0 then ix + count else ix
+          unless 0 <= ixNew and ixNew < count
+            throw new Error("oj.#{@typeName}#{message} is out of bounds (#{ix} in [0,#{count-1}])")
+          ixNew
 
 #### Events
 
@@ -2788,7 +2559,7 @@ rows: Row values as a list of lists as interpreted by ojValue plugin (readwrite)
             return @_rows if @_rows?
             @_rows = []
             for rx in [0...@rowCount] by 1
-              r = _map (@$tdsRow rx), ($td) -> $td.ojValues()
+              r = @$tdsRow(rx).toArray().map (el) -> $(el).ojValue()
               @_rows.push r
             @_rows
 
@@ -3145,7 +2916,10 @@ _rowElFromItem: Helper to create rowTagName wrapped row
   _bound: Bound index to allow negatives, throw when out of range
 
         _bound: (ix, count, message) ->
-          _boundOrThrow ix, count, message, @typeName
+          ixNew = if ix < 0 then ix + count else ix
+          unless 0 <= ixNew and ixNew < count
+            throw new Error("oj.#{@typeName}#{message} is out of bounds (#{ix} in [0,#{count-1}])")
+          ixNew
 
 Create _Types
 ------------------------------------------------------------------------------
@@ -3172,7 +2946,7 @@ Include a plugin of OJ with `settings`
     oj.use = (plugin, settings = {}) ->
 
       throw new Error('oj.use: function expected for first argument') unless oj.isFunction plugin
-      throw new Error('oj.use: object expected for second argument') unless oj.isObject settings
+      throw new Error('oj.use: object expected for second argument') unless oj.isPlain settings
 
       # Call plugin to gather extension map
       pluginResult = plugin oj, settings
@@ -3199,7 +2973,7 @@ option.set is called when setting elements
 option.first:true means return only the first get, otherwise it is returned as an array.
 
     _jqueryExtend = (options = {}) ->
-      _defaults options, get:_identity, set:_identity, first: false
+      options =  _extend get:_identity, set:_identity, first: false, options
       ->
         args = _toArray arguments
         $els = jQuery(@)
