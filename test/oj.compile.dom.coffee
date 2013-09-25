@@ -18,12 +18,12 @@ compileDOM = (ojml, tag, html, options) ->
   if options.dom
     if _.isArray r.dom
       for d,ix in r.dom
-        expect(oj.typeOf(d)).to.equal 'dom-element'
+        expect(oj.isDOMElement(d)).to.equal true
         if tag?
           expect(d.tagName).to.equal tag[ix].toUpperCase()
         expect(d.outerHTML).to.equal html[ix]
     else
-      expect(oj.typeOf(r.dom)).to.equal 'dom-element'
+      expect(oj.isDOMElement(r.dom)).to.equal true
       if tag?
         expect(r.dom.tagName).to.equal tag.toUpperCase()
       expect(r.dom.outerHTML).to.equal html
@@ -39,7 +39,7 @@ compileDOMText = (ojml, text, options) ->
   r = oj.compile options, ojml
   if options.dom
     if r.dom?
-      expect(oj.typeOf(r.dom)).to.equal 'dom-text'
+      expect(oj.isDOMText(r.dom)).to.equal true
       expect(r.dom.data).to.equal text
     else
       expect(text).to.not.exist

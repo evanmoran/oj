@@ -13,12 +13,12 @@ describe 'oj.CheckBox', ->
   it 'construct default', ->
     control = oj.CheckBox()
     expect(oj.isOJ control).to.equal true
-    expect(oj.typeOf control).to.equal 'CheckBox'
+    expect(control.typeName).to.equal 'CheckBox'
     expect(control.value).to.equal false
 
   it 'construct with value:true', ->
     control = oj.CheckBox value:true
-    expect(oj.typeOf control).to.equal 'CheckBox'
+    expect(control.typeName).to.equal 'CheckBox'
     expect(control.value).to.equal true
 
   it 'construct with id', ->

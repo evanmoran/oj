@@ -102,7 +102,6 @@ describe 'oj._', ->
     class UserModel extends Backbone.Model
     user = new UserModel name:'Evan'
     expect(oj.isEvent(user)).to.equal true
-    expect(oj.typeOf(user)).to.equal 'object'
 
   it 'isOJML'
 

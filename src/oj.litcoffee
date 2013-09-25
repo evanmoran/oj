@@ -139,7 +139,7 @@ Type helpers for basic types. Based on [underscore.js](http://underscorejs.org/)
     oj.isNumber = (obj) -> !!(obj == 0 or (obj and obj.toExponential and obj.toFixed))
     oj.isString = (obj) -> !!(obj == '' or (obj and obj.charCodeAt and obj.substr))
     oj.isDate = (obj) -> !!(obj and obj.getTimezoneOffset and obj.setUTCFullYear)
-    oj.isPlainObject = oj.$.isPlainObject
+    oj.isPlainObject = (obj) -> oj.$.isPlainObject(obj) and not oj.isOJ(obj)
     oj.isFunction = oj.$.isFunction
     oj.isArray = oj.$.isArray
     oj.isRegEx = (obj) -> ObjP.toString.call(obj) == '[object RegExp]'
@@ -148,26 +148,6 @@ Type helpers for basic types. Based on [underscore.js](http://underscorejs.org/)
 Type helper for is defined
 
     oj.isDefined = (obj) -> not (typeof obj == 'undefined')
-
-oj.typeOf
--------------------------------------------------------------------------------
-Mimic behavior of built-in typeof operator and integrate jQuery, Backbone, and OJ types
-
-    oj.typeOf = (any) ->
-
-      return 'null' if any == null
-      t = typeof any
-      if t == 'object'
-        if oj.isArray any                     then t = 'array'
-        else if oj.isOJ any                   then t = any.typeName
-        else if oj.isRegEx any                then t = 'regexp'
-        else if oj.isDate any                 then t = 'date'
-        else if oj.isDOMElement any           then t = 'dom-element'
-        else if oj.isDOMText any              then t = 'dom-text'
-        else if oj.isDOMAttribute any         then t = 'dom-attribute'
-        else if oj.isjQuery any               then t = 'jquery'
-        else                                  t = 'object'
-      t
 
 oj.parse: Convert string to basic type, number, boolean, null, or undefined
 
@@ -256,7 +236,7 @@ Utility Helpers
   _clone
 
     _clone = (obj) ->
-      return obj unless (oj.isArray obj) or ((oj.typeOf obj) == 'object')
+      return obj unless (oj.isArray obj) or (oj.isPlainObject obj)
       if oj.isArray obj then obj.slice() else _extend {}, obj
 
 _setObject: Set object deeply and ensure each part is an object

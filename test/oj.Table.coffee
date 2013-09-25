@@ -86,7 +86,7 @@ describe 'oj.Table', ->
   it 'construct default', ->
     control = oj.Table()
     expect(oj.isOJ control).to.equal true
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.rowCount).to.equal 0
     expect(control.columnCount).to.equal 0
     expect(control.rows).to.deep.equal []
@@ -112,7 +112,7 @@ describe 'oj.Table', ->
 
   it 'construct with one argument', ->
     control = oj.Table [1]
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.rowCount).to.equal 1
     expect(control.columnCount).to.equal 1
     expect(control.rows).to.deep.equal [[1]]
@@ -129,7 +129,7 @@ describe 'oj.Table', ->
 
   it 'construct with two arguments', ->
     control = oj.Table [1],[2]
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.rowCount).to.equal 2
     expect(control.columnCount).to.equal 1
 
@@ -150,7 +150,7 @@ describe 'oj.Table', ->
     control = oj.Table aRow, bRow, cRow
     expect(control.rowCount).to.equal 3
     expect(control.columnCount).to.equal 3
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.rows).to.deep.equal [aRow, bRow, cRow]
 
     r = control.removeRow(1)
@@ -194,7 +194,7 @@ describe 'oj.Table', ->
     control = oj.Table aRow, bRow, cRow
     expect(control.rowCount).to.equal 3
     expect(control.columnCount).to.equal 3
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.rows).to.deep.equal [aRow, bRow, cRow]
 
     r = control.removeRow()
@@ -237,7 +237,7 @@ describe 'oj.Table', ->
   it 'shiftRow, unshiftRow', ->
     control = oj.Table aRow, bRow, cRow
     expect(control.rowCount).to.equal 3
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.rows).to.deep.equal [aRow, bRow, cRow]
 
     r = control.shiftRow()
@@ -262,7 +262,7 @@ describe 'oj.Table', ->
   it 'popRow, pushRow', ->
     control = oj.Table aRow,bRow,cRow
     expect(control.rowCount).to.equal 3
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.rows).to.deep.equal [aRow,bRow,cRow]
 
     r = control.popRow()
@@ -287,7 +287,7 @@ describe 'oj.Table', ->
   it 'moveRow', ->
     control = oj.Table aRow,bRow,cRow
     expect(control.rowCount).to.equal 3
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.rows).to.deep.equal [aRow,bRow,cRow]
 
     # Move same position
@@ -320,7 +320,7 @@ describe 'oj.Table', ->
   it 'swapRow', ->
     control = oj.Table aRow,bRow,cRow
     expect(control.rowCount).to.equal 3
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.rows).to.deep.equal [aRow,bRow,cRow]
 
     # Swap same position
@@ -486,7 +486,7 @@ describe 'oj.Table', ->
     control = oj.Table models:users3
 
     expect(control.rowCount).to.equal 3
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.typeName).to.equal 'Table'
 
     contains control,
@@ -504,7 +504,7 @@ describe 'oj.Table', ->
     control = oj.Table models:userModels3
 
     expect(control.rowCount).to.equal 3
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.typeName).to.equal 'Table'
 
     contains control,
@@ -525,7 +525,7 @@ describe 'oj.Table', ->
     control = oj.Table models:users
 
     expect(control.rowCount).to.equal 2
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.typeName).to.equal 'Table'
 
     contains control,
@@ -594,7 +594,7 @@ describe 'oj.Table', ->
       td model.get('strength')
 
     expect(control.rowCount).to.equal 2
-    expect(oj.typeOf control).to.equal 'Table'
+    expect(control.typeName).to.equal 'Table'
     expect(control.typeName).to.equal 'Table'
 
     contains control,

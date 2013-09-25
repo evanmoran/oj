@@ -28,7 +28,7 @@ describe 'oj.List', ->
   it 'construct default', ->
     control = oj.List()
     expect(oj.isOJ control).to.equal true
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.count).to.equal 0
     expect(control.items).to.deep.equal []
 
@@ -48,7 +48,7 @@ describe 'oj.List', ->
 
   it 'construct with one argument', ->
     control = oj.List 1
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.count).to.equal 1
     expect(control.items).to.deep.equal [1]
 
@@ -60,7 +60,7 @@ describe 'oj.List', ->
 
   it 'construct with two arguments', ->
     control = oj.List 1,2
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.count).to.equal 2
     expect(control.items).to.deep.equal [1,2]
 
@@ -74,12 +74,12 @@ describe 'oj.List', ->
   it 'construct with empty models argument', ->
     control = oj.List models:[]
     expect(control.count).to.equal 0
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.items).to.deep.equal []
 
   it 'tagName and itemTagName', ->
     control = oj.List 1, 2, tagName:'span', itemTagName:'div'
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.count).to.equal 2
     expect(control.items).to.deep.equal [1,2]
 
@@ -93,7 +93,7 @@ describe 'oj.List', ->
   it 'remove, add', ->
     control = oj.List 1,2,3
     expect(control.count).to.equal 3
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.items).to.deep.equal [1,2,3]
 
     r = control.remove(1)
@@ -123,7 +123,7 @@ describe 'oj.List', ->
   it 'remove, add (w/default index)', ->
     control = oj.List 1,2,3
     expect(control.count).to.equal 3
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.items).to.deep.equal [1,2,3]
 
     r = control.remove()
@@ -153,7 +153,7 @@ describe 'oj.List', ->
   it 'shift, unshift', ->
     control = oj.List 1,2,3
     expect(control.count).to.equal 3
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.items).to.deep.equal [1,2,3]
 
     r = control.shift()
@@ -178,7 +178,7 @@ describe 'oj.List', ->
   it 'pop, push', ->
     control = oj.List 1,2,3
     expect(control.count).to.equal 3
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.items).to.deep.equal [1,2,3]
 
     r = control.pop()
@@ -202,7 +202,7 @@ describe 'oj.List', ->
 
   it 'NumberList', ->
     control = oj.NumberList 1,2
-    expect(oj.typeOf control).to.equal 'NumberList'
+    expect(control.typeName).to.equal 'NumberList'
     expect(control.count).to.equal 2
     expect(control.items).to.deep.equal [1,2]
 
@@ -215,7 +215,7 @@ describe 'oj.List', ->
 
     it 'BulletList', ->
     control = oj.BulletList 1,2
-    expect(oj.typeOf control).to.equal 'BulletList'
+    expect(control.typeName).to.equal 'BulletList'
     expect(control.count).to.equal 2
     expect(control.items).to.deep.equal [1,2]
 
@@ -229,7 +229,7 @@ describe 'oj.List', ->
   it 'construct with one model argument (default each)', ->
     control = oj.List models:[1]
     expect(control.count).to.equal 1
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.typeName).to.equal 'List'
 
     contains control,
@@ -245,7 +245,7 @@ describe 'oj.List', ->
     control = oj.List models:[user1,user2,user3]
 
     expect(control.count).to.equal 3
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.typeName).to.equal 'List'
 
     contains control,
@@ -269,7 +269,7 @@ describe 'oj.List', ->
     control = oj.List models:[user1,user2,user3]
 
     expect(control.count).to.equal 3
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.typeName).to.equal 'List'
 
     contains control,
@@ -300,7 +300,7 @@ describe 'oj.List', ->
     control = oj.List models:users
 
     expect(control.count).to.equal 2
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.typeName).to.equal 'List'
 
     contains control,
@@ -369,7 +369,7 @@ describe 'oj.List', ->
     control = oj.List models:users, each:namify
 
     expect(control.count).to.equal 2
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.typeName).to.equal 'List'
 
     contains control,
@@ -429,7 +429,7 @@ describe 'oj.List', ->
     $list = $('ul')
 
     control = oj.BulletList el:$list[0]
-    expect(oj.typeOf control).to.equal 'BulletList'
+    expect(control.typeName).to.equal 'BulletList'
     expect(control.count).to.equal 3
 
     expect(control.item(0)).to.equal 'one'
@@ -451,7 +451,7 @@ describe 'oj.List', ->
     $list = $('ol')
 
     control = oj.NumberList el:$list[0]
-    expect(oj.typeOf control).to.equal 'NumberList'
+    expect(control.typeName).to.equal 'NumberList'
     expect(control.count).to.equal 3
 
     expect(control.item(0)).to.equal 'one'
@@ -473,7 +473,7 @@ describe 'oj.List', ->
     $list = $('body > div')
 
     control = oj.List el:$list[0]
-    expect(oj.typeOf control).to.equal 'List'
+    expect(control.typeName).to.equal 'List'
     expect(control.count).to.equal 3
 
     expect(control.item(0)).to.equal 'one'

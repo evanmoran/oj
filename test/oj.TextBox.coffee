@@ -12,14 +12,14 @@ describe 'oj.TextBox', ->
   it 'construct default', ->
     control = oj.TextBox()
     expect(oj.isOJ control).to.equal true
-    expect(oj.typeOf control).to.equal 'TextBox'
+    expect(control.typeName).to.equal 'TextBox'
     expect(control.value).to.equal ''
     control.value = 'test'
     expect(control.value).to.equal 'test'
 
   it 'construct with value:"test"', ->
     control = oj.TextBox value:"test"
-    expect(oj.typeOf control).to.equal 'TextBox'
+    expect(control.typeName).to.equal 'TextBox'
     expect(control.value).to.equal "test"
 
   it 'construct with id', ->

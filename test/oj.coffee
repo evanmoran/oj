@@ -59,33 +59,31 @@ describe 'oj', ->
     assert.equal (oj.isOJ empty), true, 'new case}'
     assert.equal (oj.isOJ empty2), true, 'no new case}'
 
-  it 'typeOf', ->
-    assert.equal (oj.typeOf {}), 'object', '{} case}'
-    assert.equal (oj.typeOf {a:1}), 'object', '{a:1} case}'
+  it 'isPlainObject', ->
 
     Empty = oj.createType 'Empty', {}
     empty = new Empty()
     empty2 = Empty()
-    assert.equal (oj.typeOf Empty), 'function', 'oj type case'
-    assert.equal (oj.typeOf empty), 'Empty', 'oj instance case'
-    assert.equal (oj.typeOf empty2), 'Empty', 'oj instance case (no new)'
 
-    assert.equal (oj.typeOf new Array), 'array', 'new Array case'
-    assert.equal (oj.typeOf null), 'null', 'null case'
-    assert.equal (oj.typeOf undefined), 'undefined', 'undefined case'
-    assert.equal (oj.typeOf 0), 'number', '0 case'
-    assert.equal (oj.typeOf 1), 'number', '1 case'
-    assert.equal (oj.typeOf 3.14), 'number', '3.14 case'
-    assert.equal (oj.typeOf NaN), 'number', 'NaN case'
-    assert.equal (oj.typeOf ''), 'string', 'empty string case'
-    assert.equal (oj.typeOf 'string'), 'string', 'string case'
-    assert.equal (oj.typeOf new Date), 'date', 'new Date case'
-    assert.equal (oj.typeOf /abc/), 'regexp', '/abc/ case'
+    assert.equal (oj.isPlainObject {}), true, 'empty object case'
+    assert.equal (oj.isPlainObject {a:1}), true, 'object case'
 
-    # TODO: Add these cases
-    # assert.equal (Document.createElement('div')), 'dom', 'dom case'
-    # assert.equal (oj.typeOf $()), 'jquery', 'jquery case'
-    # assert.equal (oj.typeOf new Backbone.Model.extend()), 'backbone', 'backbone case'
+    # OJ types and instances
+    assert.equal (oj.isPlainObject Empty), false, 'oj type case'
+    assert.equal (oj.isPlainObject empty), false, 'oj instance case'
+    assert.equal (oj.isPlainObject empty2), false, 'oj instance case (no new)'
+
+    # Plain types
+    assert.equal (oj.isPlainObject new Array), false, 'new Array case'
+    assert.equal (oj.isPlainObject null), false, 'null case'
+    assert.equal (oj.isPlainObject undefined), false, 'undefined case'
+    assert.equal (oj.isPlainObject 0), false, '0 case'
+    assert.equal (oj.isPlainObject 3.14), false, '3.14 case'
+    assert.equal (oj.isPlainObject NaN), false, 'NaN case'
+    assert.equal (oj.isPlainObject ''), false, 'empty string case'
+    assert.equal (oj.isPlainObject 'string'), false, 'string case'
+    assert.equal (oj.isPlainObject new Date), false, 'new Date case'
+    assert.equal (oj.isPlainObject /abc/), false, '/abc/ case'
 
 
 

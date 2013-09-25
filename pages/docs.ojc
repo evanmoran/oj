@@ -1256,45 +1256,6 @@ data = [
             Convert properties to json
           """
         ]
-    ,
-      h:'oj.typeOf', id:'typeOf', d: ->
-        md """
-          This function helps detect what type an object is. It is much smarter then the built in `typeof` keyword.
-        """
-
-        name 'typeOf(any)'
-
-        arguments_ [
-          h:'any', id:'typeOf-any', d:"""
-            Returns the type of `any` as a string.
-          """
-        ]
-
-        md """
-          ### Example
-
-              // OJ types return their own name
-              oj.typeOf(new CheckBox());  // "CheckBox"
-
-              // jQuery selectors return 'jquery'
-              oj.typeOf($('body'));       // "jquery"
-              oj.typeOf($('body')[0]);    // 'dom-element'
-
-              // DOM elements and DOM text elements also work
-              $('body').html('test')
-              var $contents = $('body').contents()
-              oj.typeOf($contents[0]);    // 'dom-text'
-
-              // Basic types work too
-              oj.typeOf(undefined);       // 'undefined'
-              oj.typeOf(null);            // 'null'
-              oj.typeOf(true);            // 'boolean'
-              oj.typeOf(42);              // 'number'
-              oj.typeOf("test");          // 'string'
-              oj.typeOf(/.*/);            // 'regexp'
-              oj.typeOf(new Date());      // 'date'
-
-        """
     ]
   ,
     h: 'Base Types', id: 'base-types', d: """
