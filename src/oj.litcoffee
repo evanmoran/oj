@@ -925,7 +925,7 @@ Nested definitions, media definitions and comma definitions are resolved.
         _flattenCSSMap_ cssMap_, flatMap, [''], [''], plugin
       flatMap
 
-  Recursive helper with accumulators for flatMap (output)
+  Recursive helper with accumulators (it outputs flatMapAcc)
 
     _flattenCSSMap_ = (cssMap, flatMapAcc, selectorsAcc, mediasAcc, plugin) ->
 
@@ -939,77 +939,71 @@ Nested definitions, media definitions and comma definitions are resolved.
 
       for selector, rules of cssMap
 
-  (1) Recursive Case: Recurse on `rules` when it is an object
 
-        if typeof rules == 'object'
+  Base Case: Record our selector when `rules` is a value
 
-  (1a) Media Query found: Generate the next media queries
+        if typeof rules != 'object'
 
-          if selector.indexOf('@media') == 0
+  Join selectors and media accumulators with commas
 
-            selectorsNext = selectorsAcc
-            selector = (selector.slice '@media'.length).trim()
+          selectorJoined = selectorsAcc.sort().join ','
+          mediaJoined = mediasAcc.sort().join ','
 
-  Media queries can be comma seperated
+  Prepend @media as that was removed previously when spliting into parts
 
-            mediaParts = _splitAndTrim selector, ','
-
-  Substitute convience media query methods
-
-            mediaParts = mediaParts.map (v) ->
-              if medias[v]? then medias[v] else v
-
-  Calculate the next media queries
-
-            mediasNext = []
-            for mediaOuter in mediasAcc
-              for mediaInner in mediaParts
-
-                mediaCur = mediaInner
-                if (mediaInner.indexOf '&') == -1 and mediaOuter != ''
-                  mediaCur = "& and #{mediaInner}"
-
-                mediasNext.push mediaCur.replace(/&/g, mediaOuter)
-
-  (1b) Selector Found: Generate the next selectors
-
-          else
-            mediasNext = mediasAcc
-
-  Selectors can be comma seperated
-
-            selectorParts = _splitAndTrim selector, ','
-
-  Generate the next selectors and substitue `&` when present
-
-            selectorsNext = []
-            for selOuter in selectorsAcc
-              for selInner in selectorParts
-
-  When `&` is not present just insert in front with a space
-
-                selCur = selInner
-                if (selInner.indexOf '&') == -1 and selOuter != ''
-                  selCur = "& #{selInner}"
-
-                selectorsNext.push selCur.replace(/&/g, selOuter)
-
-  Recurse through objects after calculating the next selectors
-
-
-          _flattenCSSMap_ rules, flatMapAcc, selectorsNext, mediasNext, plugin
-
-  (2) Base Case: Record our selector when `rules` is a value
-
-        else
-          selectorWithCommas = selectorsAcc.sort().join ','
-
-          mediaWithAnds = mediasAcc.sort().join ','
-          mediaWithAnds = "@media " + mediaWithAnds unless mediaWithAnds == ''
+          mediaJoined = "@media " + mediaJoined if mediaJoined != ''
 
   Record the rule deeply in `flatMapAcc`
 
-          _setObject flatMapAcc, plugin, mediaWithAnds, selectorWithCommas, selector, rules
+          _setObject flatMapAcc, plugin, mediaJoined, selectorJoined, selector, rules
+
+        else
+
+  Recursive Case: Recurse on `rules` when it is an object
+
+  (r1) Media Query found: Generate the next media queries
+
+          if selector.indexOf('@media') == 0
+            isMedia = true
+            mediasNext = next = []
+            selectorsNext = selectorsAcc
+            selector = (selector.slice '@media'.length).trim()
+            acc = mediasAcc
+
+  (r2) Selector found: Generate the next selectors
+
+          else
+            isMedia = false
+            selectorsNext = next = []
+            mediasNext = mediasAcc
+            acc = selectorsAcc
+
+  Media queries and Selectors can be comma seperated
+
+          parts = _splitAndTrim selector, ','
+
+  Media queries have convience substitutions like 'phone', 'tablet'
+
+          if isMedia
+            parts = parts.map (v) ->
+              if medias[v]? then medias[v] else v
+
+  Determine the next selectors or media queries
+
+          for outer in acc
+            for inner in parts
+
+  When `&` is not present just insert in front with the correct join operator
+
+              cur = inner
+              if (inner.indexOf '&') == -1 and outer != ''
+                cur = (if isMedia then '& and ' else '& ') + cur
+
+              next.push cur.replace(/&/g, outer)
+
+  Recurse through objects after calculating the next selectors
+
+          _flattenCSSMap_ rules, flatMapAcc, selectorsNext, mediasNext, plugin
 
       return
 
