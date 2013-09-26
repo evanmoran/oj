@@ -50,7 +50,7 @@ describe 'oj.CheckBox', ->
     control = oj.CheckBox(value:true)
     results = oj.compile html:true, dom:true, control
     expect(results.html).to.contain '<input'
-    expect(results.html).to.contain 'id="oj'
+    expect(results.html).to.not.contain 'id'
     expect(results.html).to.contain 'class="oj-CheckBox"'
     expect(results.html).to.contain 'checked="checked"'
 
@@ -70,4 +70,4 @@ describe 'oj.CheckBox', ->
       oj.div c:'test2', ->
         control.emit()
 
-    expect(htmlDiv2).to.equal """<div class="test2"><input type="checkbox" checked="checked" class="#{control.attributes.class}" id="#{control.id}" /></div>"""
+    expect(htmlDiv2).to.equal """<div class="test2"><input type="checkbox" checked="checked" class="#{control.attributes.class}" /></div>"""

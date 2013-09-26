@@ -112,9 +112,7 @@ Short names for common prototype and method names
 Type helper for oj types
 
     oj.isOJ = `function(obj){return !!(obj != null ? obj.isOJ : void 0);}`
-
     oj.isOJType = `function(obj){return oj.isOJ(obj) && obj.type === obj;}`
-
     oj.isOJInstance = `function(obj){return oj.isOJ(obj) && !oj.isOJType(obj);}`
 
 Type helper for event enabled objects such as Backbone models
@@ -152,58 +150,18 @@ Type helper for is defined
 oj.parse: Convert string to basic type, number, boolean, null, or undefined
 
     oj.parse = (str) ->
+      o = str
       if str == 'undefined'
-        undefined
+        o = undefined
       else if str == 'null'
-        null
+        o = null
       else if str == 'true'
-        true
+        o = true
       else if str == 'false'
-        false
+        o = false
       else if !(isNaN(number = parseFloat str))
-        number
-      else
-        str
-
-oj.id
------------------------------------------------------------------------------
-Generate a unique oj id
-
-    oj.id = (len, chars) ->
-      'oj' + oj.guid len, chars
-
-oj.guid
------------------------------------------------------------------------------
-Generate a unique guid
-
-    _randomInteger = (min, max) ->
-      return null if min == null or max == null or min > max
-      diff = max - min;
-      # random int from zero to number minus one
-      rnd = Math.floor Math.random() * (diff + 1)
-      rnd + min
-
-    _chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split ''
-    oj.guid = (len = 8, chars = _chars) ->
-      # Default arguments
-      base = chars.length
-
-      # Calculate how many chars can be determined by each random call
-      charsPerRand = Math.floor Math.log(Math.pow(2,31)-1) / Math.log(base)
-      randMin = 0
-      randMax = Math.pow(base, charsPerRand)-1
-
-      # Calculate random chars by calling random the minimum number of times
-      output = ""
-      for i in [0...len]
-        # Generate random number
-        if i % charsPerRand == 0
-          rand = _randomInteger randMin, randMax
-        charNext = chars[rand % base]
-        output += charNext
-        rand = Math.floor(rand / base)
-
-      output
+        o = number
+      o
 
 Utility Helpers
 ------------------------------------------------------------------------------
@@ -1558,9 +1516,6 @@ oj.View
         if options.__quiet__?
           delete options.__quiet__
 
-        # Generate id if missing
-        options.id ?= oj.id()
-
         # Add class oj-typeName
         @$el.addClass "oj-#{@typeName}"
 
@@ -2159,14 +2114,6 @@ Button control
           else
             @$el.click()
 
-
-
-
-oj.Image
-------------------------------------------------------------------------------
-oj.Image creates an `<img>` tag
-
-
 oj.List
 ------------------------------------------------------------------------------
 List control with model bindings and live editing
@@ -2175,7 +2122,6 @@ List control with model bindings and live editing
       base: oj.CollectionView
 
       constructor: ->
-        # console.log "List constructor: ", arguments
         {options, args} = oj.unionArguments arguments
 
         # tagName is write-once
@@ -2255,8 +2201,7 @@ item: get or set item value at item ix
 $item: `<li>` element for a given item ix. The tag name may change.
 
         $item: (ix) ->
-          ix = @_bound ix, @count, ".$item: index"
-          @$items.eq(ix)
+          @$items.eq(@_bound ix, @count, ".$item: index")
 
 #### CollectionView Methods
 
@@ -2295,9 +2240,7 @@ make: Remake view from property data
 collectionModelAdded: Model add occurred, add the item
 
         collectionModelAdded: (m, c) ->
-          ix = c.indexOf m
-          item = @_itemFromModel m
-          @add ix, item
+          @add (c.indexOf m), (@_itemFromModel m)
           return
 
 collectionModelRemoved: Model remove occured, delete the item
