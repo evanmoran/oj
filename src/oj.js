@@ -411,58 +411,36 @@
   };
 
   // oj.removeMethod
-
-
   // ---
-
-
   // Remove a method from an object
-
-
   oj.removeMethod = function(obj, methodName){
     _v('removeMethod', 2, methodName, 'string');
     delete obj[methodName];
   };
 
   // oj.addProperties
-
-
   // ---
-
-
   // Add multiple properties to an object
-
-
   // Properties can be specified by get/set methods or by a value
 
-
   // Value Property:
-
-
   // `age: 7    # defaults to {writable:true, enumerable:true}`
 
-
   // Value Property with specified writable/enumerable:
-
-
   // `age: {value:7, writable:false, enumerable:false}`
 
-
   // Readonly Get Property
-
-
   // `age: {get:(-> 7)}`
 
-
   oj.addProperties = function(obj, mapNameToInfo){
-    // Iterate over properties
 
+    // Iterate over properties
     var propInfo, propName;
 
     for (propName in mapNameToInfo){
       propInfo = mapNameToInfo[propName];
-      // Wrap the value if propInfo is not already a property definition
 
+      // Wrap the value if propInfo is not already a property definition
       if (((propInfo != null ? propInfo.get : void 0) == null) && ((propInfo != null ? propInfo.value : void 0) == null)){
         propInfo = {
           value: propInfo,
@@ -474,27 +452,24 @@
   };
 
   // oj.addProperty
-
-
   // ---
-
 
   oj.addProperty = function(obj, propName, propInfo){
     _v('addProperty', 2, propName, 'string');
     _v('addProperty', 3, propInfo, 'object');
-    // Default properties to enumerable and configurable
 
+    // Default properties to enumerable and configurable
     propInfo = _extend({
       enumerable: true,
       configurable: true
     }, propInfo);
-    // Remove property if it already exists
 
+    // Remove property if it already exists
     if (Object.getOwnPropertyDescriptor(obj, propName) != null){
       oj.removeProperty(obj, propName);
     }
-    // Add the property
 
+    // Add the property
     Object.defineProperty(obj, propName, propInfo);
   };
 
@@ -520,9 +495,7 @@
   // Determine copy source.propName to dest.propName
 
   oj.copyProperty = function(dest, source, propName){
-    var info;
-
-    info = Object.getOwnPropertyDescriptor(source, propName);
+    var info = Object.getOwnPropertyDescriptor(source, propName);
     if (info.value != null){
       info.value = _clone(info.value);
     }
@@ -538,38 +511,32 @@
 
   // Result is top of the stack
   oj._argsTop = function(){
-    if (_argsStack.length){
-      return _argsStack[_argsStack.length - 1];
-    } else {
-      return null;
-    }
-  };
+    if (_argsStack.length)
+      return _argsStack[_argsStack.length - 1]
+    else
+      return null
+  }
 
   // Push scope onto arguments
   oj._argsPush = function(args){
-    if (args == null){
-      args = [];
-    }
-    _argsStack.push(args);
-  };
+    if (args == null)
+      args = []
+    _argsStack.push(args)
+  }
 
   // Pop scope from arguments
   oj._argsPop = function(){
-    if (_argsStack.length){
-      return _argsStack.pop();
-    }
-    return null;
-  };
+    if (_argsStack.length)
+      return _argsStack.pop()
+    return null
+  }
 
   // Append argument
   oj._argsAppend = function(arg){
-    var top;
-
-    top = oj._argsTop();
-    if (top != null){
-      top.push(arg);
-    }
-  };
+    var top = oj._argsTop()
+    if (top != null)
+      top.push(arg)
+  }
 
   // oj.tag (name, attributes, content, content, ...)
   // ---
@@ -586,98 +553,92 @@
 
     // Get attributes from rest by unioning all objects
     _ref1 = oj.unionArguments(rest), args = _ref1.args, attributes = _ref1.options;
-    if (isQuiet = attributes.__quiet__){
+    if (isQuiet = attributes.__quiet__)
       delete attributes.__quiet__;
-    }
+
     // Add attributes to ojml if they exist
-
-    if (!_isEmpty(attributes)){
+    if (!_isEmpty(attributes))
       ojml.push(attributes);
-    }
-    // Push arguments to build up children tags
 
+    // Store current tag context
     oj._argsPush(ojml);
-    // Loop over attributes
 
+    // Loop over attributes
     for (_i = 0, _len = args.length; _i < _len; _i++){
       arg = args[_i];
-      if (oj.isPlainObject(arg)){
+
+      if (oj.isPlainObject(arg))
         continue;
-      } else if (oj.isFunction(arg)){
+
+      else if (oj.isFunction(arg)){
         len = oj._argsTop().length;
-        // Call the argument it will auto append to oj._argsTop() which is ojml
 
-        r = arg();
-        // Use return value if oj._argsTop() weren't changed
+        // Call the fn tags will append to oj._argsTop
+        r = arg()
 
-        if (len === oj._argsTop().length && (r != null)){
-          oj._argsAppend(r);
-        }
-      } else {
-        oj._argsAppend(arg);
-      }
+        // Use return value instead if oj._argsTop didn't change
+        if (len === oj._argsTop().length && (r != null))
+          oj._argsAppend(r)
+
+      } else
+        oj._argsAppend(arg)
     }
-    // Pop to restore previous context
 
-    oj._argsPop();
+    // Restore previous tag context
+    oj._argsPop()
+
     // Append the final result to your parent's arguments
-
     // if there exists an argument to append to.
-
     // Do not emit when quiet is set,
+    if (!isQuiet)
+      oj._argsAppend(ojml)
 
-    if (!isQuiet){
-      oj._argsAppend(ojml);
-    }
-    return ojml;
-  };
+    return ojml
+  }
 
   // Define all elements as closed or open
   oj.tag.elements = {
     closed: 'a abbr acronym address applet article aside audio b bdo big blockquote body button canvas caption center cite code colgroup command datalist dd del details dfn dir div dl dt em embed fieldset figcaption figure font footer form frameset h1 h2 h3 h4 h5 h6 head header hgroup html i iframe ins keygen kbd label legend li map mark menu meter nav noframes noscript object ol optgroup option output p pre progress q rp rt ruby s samp script section select small source span strike strong style sub summary sup table tbody td textarea tfoot th thead time title tr tt u ul var video wbr xmp'.split(' '),
     open: 'area base br col command css !DOCTYPE embed hr img input keygen link meta param source track wbr'.split(' ')
-  };
+  }
 
   // Keep track of all valid elements
-  oj.tag.elements.all = (oj.tag.elements.closed.concat(oj.tag.elements.open)).sort();
+  oj.tag.elements.all = (oj.tag.elements.closed.concat(oj.tag.elements.open)).sort()
 
   // Determine if an element is closed or open
   oj.tag.isClosed = function(tag){
-    return oj.tag.elements.open.indexOf(tag) === -1;
-  };
+    return oj.tag.elements.open.indexOf(tag) === -1
+  }
 
   // Record tag name on a given tag function
   _setTagName = function(tag, name){
-    if (tag != null){
-      tag.tagName = name;
-    }
-  };
+    if (tag != null)
+      tag.tagName = name
+  }
 
   // Get a tag name on a given tag function
   _getTagName = function(tag){
     return tag.tagName;
-  };
+  }
 
   // Get quiet tag name
   _getQuietTagName = function(tag){
     return '_' + tag;
-  };
+  }
 
   // Record an oj instance on a given element
   _setInstanceOnElement = function(el, inst){
-    if (el != null){
-      el.oj = inst;
-    }
-  };
+    if (el != null)
+      el.oj = inst
+  }
 
   // Get a oj instance on a given element
   _getInstanceOnElement = function(el){
-    if ((el != null ? el.oj : void 0) != null){
-      return el.oj;
-    } else {
-      return null;
-    }
-  };
+    if ((el != null ? el.oj : 0) != null)
+      return el.oj
+    else
+      return null
+  }
 
   // Create tag methods for all elements
   _ref1 = oj.tag.elements.all;
@@ -688,19 +649,20 @@
     oj[t] = function(){
       return oj.tag.apply(oj, [t].concat(__slice.call(arguments)));
     };
-    // Underscore tag functions do not emit
 
+    // Underscore tag functions do not emit
     qt = _getQuietTagName(t);
     oj[qt] = function(){
       return oj.tag.apply(oj, [t, {
         __quiet__: 1
       }].concat(__slice.call(arguments)));
     };
-    // Record the tag name so the OJML syntax can use the function instead of a string
 
+    // Record the tag name so the OJML syntax can use the function instead of a string
     _setTagName(oj[t], t);
     return _setTagName(oj[qt], t);
   };
+
   for (_i = 0, _len = _ref1.length; _i < _len; _i++){
     t = _ref1[_i];
     _fn(t);
@@ -711,13 +673,10 @@
   // Method to define doctypes based on short names
   // Define helper variables
 
-  dhp = 'HTML PUBLIC "-//W3C//DTD HTML 4.01';
-
-  w3 = '"http://www.w3.org/TR/html4/';
-
-  strict5 = 'html';
-
-  strict4 = dhp + '//EN" ' + w3 + 'strict.dtd"';
+  dhp = 'HTML PUBLIC "-//W3C//DTD HTML 4.01'
+  w3 = '"http://www.w3.org/TR/html4/'
+  strict5 = 'html'
+  strict4 = dhp + '//EN" ' + w3 + 'strict.dtd"'
 
   // Define possible arguments
   _doctypes = {
@@ -727,7 +686,7 @@
     'HTML 4.01 Strict': strict4,
     'HTML 4.01 Frameset': dhp + ' Frameset//EN" ' + w3 + 'frameset.dtd"',
     'HTML 4.01 Transitional': dhp + ' Transitional//EN" ' + w3 + 'loose.dtd"'
-  };
+  }
 
   // Define the method passing through to !DOCTYPE tag function
   oj.doctype = function(typeOrValue){
@@ -748,23 +707,23 @@
   oj.useGlobally = oj.extendInto = function(context){
     var k, o, qn, v;
 
-    if (context == null){
-      context = root;
-    }
-    o = {};
+    if (context == null)
+      context = root
+
+    o = {}
     for (k in oj){
       v = oj[k];
       if (k[0] !== '_' && k !== 'extendInto' && k !== 'useGlobally'){
         o[k] = v;
-        // Export _tag and _Type methods
 
+        // Export _tag and _Type methods
         qn = _getQuietTagName(k);
-        if (oj[qn]){
-          o[qn] = oj[qn];
-        }
+        if (oj[qn])
+          o[qn] = oj[qn]
+
       }
     }
-    return _extend(context, o);
+    return _extend(context, o)
   };
 
   // oj.compile(options, ojml)
@@ -780,7 +739,7 @@
   // * ignore:{html:1} - Map of tags to ignore while compiling
 
   oj.compile = function(options, ojml){
-    var acc, css, cssMap, dom, html, out, pluginCSSMap;
+    var acc, css, cssMap, dom, html, pluginCSSMap;
 
     // Options is optional
     if (ojml == null){
@@ -808,19 +767,18 @@
     acc.dom = options.dom && (typeof document !== "undefined" && document !== null) ? document.createElement('OJ') : null;
     acc.css = options.css || options.cssMap ? {} : null;
     acc.indent = '';
-    if (options.dom){
+    if (options.dom)
       acc.types = [];
-    }
+
     acc.tags = {};
     _compileAny(ojml, acc);
-    if (acc.css != null){
-      pluginCSSMap = _flattenCSSMap(acc.css);
-    }
+
+    if (acc.css != null)
+      pluginCSSMap = _flattenCSSMap(acc.css)
 
     // Output cssMap if necessary
-    if (options.cssMap){
+    if (options.cssMap)
       cssMap = pluginCSSMap;
-    }
 
     // Generate css if necessary
     if (options.css){
@@ -831,9 +789,8 @@
     }
 
     // Generate HTML if necessary
-    if (options.html){
-      html = acc.html.join('');
-    }
+    if (options.html)
+      html = acc.html.join('')
 
     // Generate dom if necessary
     if (options.dom){
@@ -854,9 +811,9 @@
       }
 
       // Ensure dom is null if empty
-      if (dom.length === 0){
-        dom = null;
-      } else if (dom.length === 1){
+      if (dom.length === 0)
+        dom = null
+      else if (dom.length === 1)
 
         // Single elements are returned themselves not as a list
         // Reasoning: The common cases don't have multiple elements <html>,<body>
@@ -866,23 +823,21 @@
         // In short it is easier to check for isArray dom, then isArray dom && dom.length > 0
 
         dom = dom[0];
-      }
+
     }
-    out = {
+    return {
       html: html,
       dom: dom,
       css: css,
       cssMap: cssMap,
       types: acc.types,
       tags: acc.tags
-    };
-    return out;
+    }
   };
 
   // _styleFromObject:
   // ---
   // Convert object to style string
-
   _styleFromObject = function(obj, options){
     var indent, ix, k, kFancy, keys, newline, out, semi, _j, _len1, _ref2;
 
@@ -943,12 +898,12 @@
       k = _ref2[_j];
       v = obj[k];
       // Boolean attributes have no value
-      if (v === true){
+      if (v === true)
         out += "" + space + k;
       // Other attributes have a value
-      } else {
+      else
         out += "" + space + k + "=\"" + v + "\"";
-      }
+
       space = ' ';
     }
     return out;
@@ -1056,19 +1011,11 @@
   };
 
   // _styleClassFromPlugin:
-  // ---
-
-
   _styleClassFromPlugin = function(plugin){
     return "" + plugin + "-style";
   };
 
   // _styleTagFromMediaObject:
-
-
-  // ---
-
-
   oj._styleTagFromMediaObject = function(plugin, mediaMap, options){
     var css, newline;
 
@@ -1078,61 +1025,49 @@
   };
 
   // _cssFromMediaObject:
-
-
   // ---
-
-
   // Convert css from a flattened rule object. The rule object is of the form:
 
-
   // mediaQuery => selector => rulesObject
-
-
   // Placeholder functions for server side minification
 
-
-  oj._minifyJS = function(js, options){
-    return js;
-  };
-
-  oj._minifyCSS = function(css, options){
-    return css;
-  };
+  oj._minifyJS = function(js, options){return js}
+  oj._minifyCSS = function(css, options){return css}
 
   _cssFromMediaObject = function(mediaMap, options){
     var css, eCSS, indent, indentRule, inline, media, minify, newline, rules, selector, selectorMap, space, styles, tags, _ref2, _ref3;
 
-    if (options == null){
-      options = {};
-    }
+    if (options == null)
+      options = {}
+
     minify = (_ref2 = options.minify) != null ? _ref2 : 0;
     tags = (_ref3 = options.tags) != null ? _ref3 : 0;
-    // Deterine what output characters are needed
 
+    // Deterine what output characters are needed
     newline = minify ? '' : '\n';
     space = minify ? '' : ' ';
     inline = minify;
-    // Build css for media => selector =>  rules
 
+    // Build css for media => selector =>  rules
     css = '';
     for (media in mediaMap){
       selectorMap = mediaMap[media];
-      // Serialize media query
 
+      // Serialize media query
       if (media){
         media = media.replace(/,/g, "," + space);
         css += "" + media + space + "{" + newline;
       }
+
       for (selector in selectorMap){
         styles = selectorMap[selector];
         indent = (!minify) && media ? '\t' : '';
-        // Serialize selector
 
+        // Serialize selector
         selector = selector.replace(/,/g, "," + newline);
         css += "" + indent + selector + space + "{" + newline;
-        // Serialize style rules
 
+        // Serialize style rules
         indentRule = !minify ? indent + '\t' : indent;
         rules = _styleFromObject(styles, {
           inline: inline,
@@ -1140,11 +1075,11 @@
         });
         css += rules + indent + '}' + newline;
       }
-      // End media query
 
-      if (media !== ''){
-        css += '}' + newline;
-      }
+      // End media query
+      if (media !== '')
+        css += '}' + newline
+
     }
     try {
       css = oj._minifyCSS(css, options);
@@ -1152,40 +1087,27 @@
       eCSS = _error;
       throw new Error("css minification error: " + eCSS.message + "\nCould not minify:\n" + css);
     }
-    return css;
+    return css
   };
 
   // _cssFromPluginObject:
-
-
   // ---
-
-
-  // Convert flattened css selectors and rules to a string. Plugin objects are of the form:
-
-
+  // Convert flattened css selectors and rules to a string.
+  // Plugin objects are of the form:
   // pluginName => mediaQuery => selector => rulesObject
-
-
-  // Supports nested objections, comma seperated rules, and @media queries
-
-
   // minify:false will output newlines
-
-
   // tags:true will output the css in `<style>` tags
-
 
   _cssFromPluginObject = function(flatCSSMap, options){
     var css, inline, mediaMap, minify, newline, plugin, space, tags, _ref2, _ref3;
 
-    if (options == null){
-      options = {};
-    }
+    if (options == null)
+      options = {}
+
     minify = (_ref2 = options.minify) != null ? _ref2 : 0;
     tags = (_ref3 = options.tags) != null ? _ref3 : 0;
-    // Deterine what output characters are needed
 
+    // Deterine what output characters are needed
     newline = minify ? '' : '\n';
     space = minify ? '' : ' ';
     inline = minify;
@@ -1195,29 +1117,22 @@
       if (tags){
         css += "<style class=\"" + plugin + "-style\">" + newline;
       }
-      // Serialize CSS with potential minification
 
+      // Serialize CSS with potential minification
       css += _cssFromMediaObject(mediaMap, options);
-      if (tags){
-        css += "" + newline + "</style>" + newline;
-      }
+      if (tags)
+        css += "" + newline + "</style>" + newline
+
     }
     return css;
   };
 
   // _compileDeeper
-
-
   // ---
-
-
   // Recursive helper for compiling that wraps indention
 
-
   _compileDeeper = function(method, ojml, options){
-    var i;
-
-    i = options.indent;
+    var i = options.indent;
     options.indent += '\t';
     method(ojml, options);
     return options.indent = i;
@@ -1228,16 +1143,18 @@
   // Recursive helper for compiling any type
   // Compile ojml or any type
 
-
   _compileAny = function(any, options){
     var els, _ref10, _ref11, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
 
-    if (oj.isArray(any)){
-      _compileTag(any, options);
-    } else if (oj.isString(any)){
-      if ((_ref2 = options.html) != null){
-        _ref2.push(any);
-      }
+    // Array
+    if (oj.isArray(any))
+      _compileTag(any, options)
+
+    // String
+    else if (oj.isString(any)){
+      if ((_ref2 = options.html) != null)
+        _ref2.push(any)
+
       if (any.length > 0 && any[0] === '<'){
         root = document.createElement('div');
         root.innerHTML = any;
@@ -1246,7 +1163,6 @@
           _ref3.appendChild(root);
         }
         // for el in els
-
         // options.dom?.appendChild el
 
       } else {
@@ -1254,6 +1170,8 @@
           _ref4.appendChild(document.createTextNode(any));
         }
       }
+
+    // Boolean or Number
     } else if (oj.isBoolean(any) || oj.isNumber(any)){
       if ((_ref5 = options.html) != null){
         _ref5.push("" + any);
@@ -1261,10 +1179,14 @@
       if ((_ref6 = options.dom) != null){
         _ref6.appendChild(document.createTextNode("" + any));
       }
-    } else if (oj.isFunction(any)){
-      // Wrap function call to allow full oj generation within any
 
+    // Function
+    } else if (oj.isFunction(any)){
+
+      // Wrap function call to allow full oj generation within any
       _compileAny(oj(any), options);
+
+    // Date
     } else if (oj.isDate(any)){
       if ((_ref7 = options.html) != null){
         _ref7.push("" + (any.toLocaleString()));
@@ -1272,6 +1194,8 @@
       if ((_ref8 = options.dom) != null){
         _ref8.appendChild(document.createTextNode("" + (any.toLocaleString())));
       }
+
+    // OJ Type or Instance
     } else if (oj.isOJ(any)){
       if ((_ref9 = options.types) != null){
         _ref9.push(any);
@@ -1291,67 +1215,56 @@
   };
 
   // _compileTag
-
-
   // ---
-
-
   // Recursive helper for compiling ojml tags
 
-
   _compileTag = function(ojml, options){
-    // Empty list compiles to undefined
-
     var att, attr, attrName, attrValue, attributes, child, children, el, events, selector, space, styles, tag, tagType, _base, _base1, _j, _k, _len1, _len2, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8;
 
-    if (ojml.length === 0){
-      return;
-    }
-    // Get tag name, allowing the tag parameter to be 'table' (tag name) or table (function) or Table (object)
+    // Empty list compiles to undefined
+    if (ojml.length === 0) return
 
+    // Get tag name, allowing the tag parameter to be 'table' (tag name) or table (function) or Table (object)
     tag = ojml[0];
     tagType = typeof tag;
     tag = (tagType === 'function' || tagType === 'object') && (_getTagName(tag) != null) ? _getTagName(tag) : tag;
-    if (!(oj.isString(tag) && tag.length > 0)){
+    if (!(oj.isString(tag) && tag.length > 0))
       throw new Error('oj.compile: tag name is missing');
-    }
+
     // Record tag as encountered
-
     options.tags[tag] = true;
+
     // Instance oj object if tag is capitalized
+    if (_isCapitalLetter(tag[0]))
+      return _compileDeeper(_compileAny, new oj[tag](ojml.slice(1)), options)
 
-    if (_isCapitalLetter(tag[0])){
-      return _compileDeeper(_compileAny, new oj[tag](ojml.slice(1)), options);
-    }
     // Gather attributes if present
-
     attributes = null;
     if (oj.isPlainObject(ojml[1])){
       attributes = ojml[1];
     }
+
     // Gather children if present
-
     children = attributes ? ojml.slice(2) : ojml.slice(1);
+
     // Compile to css if requested
-
     if (options.css && tag === 'css'){
-      // Extend options.css with rules
 
+      // Extend options.css with rules
       for (selector in attributes){
         styles = attributes[selector];
-        if ((_ref2 = (_base = options.css)['oj']) == null){
+        if ((_ref2 = (_base = options.css)['oj']) == null)
           _base['oj'] = {};
-        }
-        if ((_ref3 = (_base1 = options.css['oj'])[selector]) == null){
+
+        if ((_ref3 = (_base1 = options.css['oj'])[selector]) == null)
           _base1[selector] = {};
-        }
+
         _extend(options.css['oj'][selector], styles);
       }
     }
+
     // Compile DOCTYPE as special case because it is not really an element
-
     // It has attributes with spaces and cannot be created by dom manipulation
-
     // In this way it is HTML generation only.
 
     if (tag === '!DOCTYPE'){
@@ -3705,87 +3618,68 @@
         };
         this._addRowTR(rx, tr);
       },
+
       // _addRowTR: Helper to add row directly with `<tr>`
-
       _addRowTR: function(rx, tr){
-        if (this.rowCount === 0){
-          // Empty
+        // Empty
+        if (this.rowCount === 0)
+          this.$el.oj(tr)
 
-          this.$el.oj(tr);
-        } else if (rx === this.rowCount){
-          // Last
+        // Last
+        else if (rx === this.rowCount)
+          this.$tr(rx - 1).ojAfter(tr)
 
-          this.$tr(rx - 1).ojAfter(tr);
-        } else {
-          // Not last
+        // Not last
+        else
+          this.$tr(rx).ojBefore(tr)
 
-          this.$tr(rx).ojBefore(tr);
-        }
-        this.bodyChanged();
+        this.bodyChanged()
       },
+
       // removeRow: Remove row at index rx (defaults to end)
-
       removeRow: function(rx){
-        var out;
-
-        if (rx == null){
-          rx = -1;
-        }
+        if (rx == null)
+          rx = -1
         rx = this._bound(rx, this.rowCount, ".removeRow: index");
-        out = this.row(rx);
-        this.$tr(rx).remove();
-        this.bodyChanged();
-        return out;
+        var out = this.row(rx)
+        this.$tr(rx).remove()
+        this.bodyChanged()
+        return out
       },
+
       // moveRow: Move row at index rx (defaults to end)
-
       moveRow: function(rxFrom, rxTo){
-        var insert;
-
-        if (rxFrom === rxTo){
+        if (rxFrom === rxTo)
           return;
-        }
+
         rxFrom = this._bound(rxFrom, this.rowCount, ".moveRow: fromIndex");
         rxTo = this._bound(rxTo, this.rowCount, ".moveRow: toIndex");
-        insert = rxTo > rxFrom ? 'insertAfter' : 'insertBefore';
+        var insert = rxTo > rxFrom ? 'insertAfter' : 'insertBefore';
         this.$tr(rxFrom)[insert](this.$tr(rxTo));
         this.bodyChanged();
       },
+
       // swapRow: Swap row rx1 and rx2
-
       swapRow: function(rx1, rx2){
-        var rxMax, rxMin;
-
-        if (rx1 === rx2){
-          return;
-        }
+        if (rx1 === rx2)
+          return
         rx1 = this._bound(rx1, this.rowCount, ".swap: firstIndex");
         rx2 = this._bound(rx2, this.rowCount, ".swap: secondIndex");
-        if (Math.abs(rx1 - rx2) === 1){
-          this.moveRow(rx1, rx2);
-        } else {
-          rxMin = Math.min(rx1, rx2);
-          rxMax = Math.max(rx1, rx2);
+        if (Math.abs(rx1 - rx2) === 1)
+          this.moveRow(rx1, rx2)
+        else {
+          var rxMin = Math.min(rx1, rx2),
+            rxMax = Math.max(rx1, rx2)
           this.moveRow(rxMax, rxMin);
           this.moveRow(rxMin + 1, rxMax);
         }
         this.bodyChanged();
       },
-      unshiftRow: function(v){
-        this.addRow(0, v);
-      },
-      shiftRow: function(){
-        return this.removeRow(0);
-      },
-      pushRow: function(v){
-        this.addRow(this.rowCount, v);
-      },
-      popRow: function(){
-        return this.removeRow(-1);
-      },
-      clearColgroup: function(){
-        this.$colgroup.remove();
-      },
+      unshiftRow: function(v){this.addRow(0, v)},
+      shiftRow: function(){return this.removeRow(0)},
+      pushRow: function(v){this.addRow(this.rowCount, v)},
+      popRow: function(){return this.removeRow(-1)},
+      clearColgroup: function(){this.$colgroup.remove()},
       clearBody: function(){
         this.$tbody.remove();
         this.bodyChanged();
@@ -3807,29 +3701,25 @@
         this.clearFooter();
         return this.$caption.remove();
       },
-      //
 
       // When body changes clear relevant cached values
-
       bodyChanged: function(){
         this._rows = null;
         this._columns = null;
         this._$trs = null;
       },
-      // When header changes clear relevant cached values
 
+      // When header changes clear relevant cached values
       headerChanged: function(){
         this._header = null;
       },
-      // When footer changes clear relevant cached values
 
+      // When footer changes clear relevant cached values
       footerChanged: function(){
         this._footer = null;
       },
-      //
 
       // _rowFromModel: Helper to map model to row
-
       _rowFromModel: function(model){
         var _this = this;
 
@@ -3837,8 +3727,8 @@
           return _this.each(model, oj.td);
         });
       },
-      // _bound: Bound index to allow negatives, throw when out of range
 
+      // _bound: Bound index to allow negatives, throw when out of range
       _bound: function(ix, count, message){
         var ixNew;
 
@@ -3852,13 +3742,8 @@
   });
 
   // Create _Types
-
-
   // ---
-
-
   // Type with captital first letter that doesn't end in "View"
-
 
   for (typeName in oj){
     if (_isCapitalLetter(typeName[0]) && typeName.slice(typeName.length - 4) !== 'View'){
@@ -3867,14 +3752,8 @@
   }
 
   // oj.sandbox
-
-
   // ---
-
-
   // The sandbox is a readonly version of oj that is exposed to the user
-
-
   oj.sandbox = {};
 
   _ref2 = _keys(oj);
@@ -3889,13 +3768,8 @@
   }
 
   // oj.use(plugin, settings)
-
-
   // ---
-
-
   // Include a plugin of OJ with `settings`
-
 
   oj.use = function(plugin, settings){
     var name, pluginMap, pluginResult, value, _results;
@@ -3905,11 +3779,11 @@
     }
     _v('use', 1, plugin, 'function');
     _v('use', 2, settings, 'object');
+
     // Call plugin to gather extension map
-
     pluginResult = plugin(oj, settings);
-    // Add _Type quiet types
 
+    // Add _Type quiet types
     pluginMap = _clone(pluginResult);
     for (name in pluginResult){
       value = pluginResult[name];
@@ -3917,16 +3791,16 @@
         pluginMap[_getQuietTagName(name)] = _createQuietType(value.typeName);
       }
     }
-    // Extend all properties
 
+    // Extend all properties
     _results = [];
     for (name in pluginMap){
       value = pluginMap[name];
+
       // Add to oj
-
       oj[name] = value;
-      // Add to sandbox
 
+      // Add to sandbox
       _results.push(oj.addProperty(oj.sandbox, name, {
         value: value,
         writable: false
@@ -3936,27 +3810,16 @@
   };
 
   // _jqExtend(fn)
-
-
   // ---
-
-
   // jQuery Extend
-
-
   // option.get is called to retrieve value per element
-
-
   // option.set is called when setting elements
-
-
   // option.first:true means return only the first get, otherwise it is returned as an array.
 
-
   _jqExtend = function(options){
-    if (options == null){
+    if (options == null)
       options = {};
-    }
+
     options = _extend({
       get: identity,
       set: identity,
@@ -3967,8 +3830,8 @@
 
       args = _toArray(arguments);
       $els = jQuery(this);
-      // Map over jquery selection if no arguments
 
+      // Map over jquery selection if no arguments
       if ((oj.isFunction(options.get)) && args.length === 0){
         out = [];
         for (_k = 0, _len2 = $els.length; _k < _len2; _k++){
@@ -3980,8 +3843,8 @@
         }
         return out;
       } else if (oj.isFunction(options.set)){
-        // By default return this for chaining
 
+        // By default return this for chaining
         out = $els;
         for (_l = 0, _len3 = $els.length; _l < _len3; _l++){
           el = $els[_l];
@@ -4011,13 +3874,13 @@
 
     for (plugin in pluginMap){
       mediaMap = pluginMap[plugin];
-      // Skip global css if options.global is true
 
+      // Skip global css if options.global is true
       if (plugin === 'oj-style' && !(options != null ? options.global : void 0)){
         continue;
       }
-      // Create <style> tag for the plugin
 
+      // Create <style> tag for the plugin
       if (oj.$('.' + _styleClassFromPlugin(plugin)).length === 0){
         oj.$('head').append(oj._styleTagFromMediaObject(plugin, mediaMap));
       }
@@ -4025,22 +3888,18 @@
   };
 
   // jQuery.fn.oj
-
-
   // ---
-
 
   oj.$.fn.oj = _jqExtend({
     set: function($el, args){
-      // No arguments return the first instance
 
       var cssMap, d, dom, types, _k, _len2, _ref3;
 
-      if (args.length === 0){
-        return $el[0].oj;
-      }
-      // Compile ojml
+      // No arguments return the first instance
+      if (args.length === 0)
+        return $el[0].oj
 
+      // Compile ojml
       _ref3 = oj.compile.apply(oj, [{
         dom: 1,
         html: 0,
@@ -4049,8 +3908,8 @@
       _insertStyles(cssMap, {
         global: 0
       });
-      // Reset content and append to dom
 
+      // Reset content and append to dom
       $el.html('');
       if (!oj.isArray(dom)){
         dom = [dom];
@@ -4067,19 +3926,14 @@
   });
 
   // jQuery.ojBody ojml
-
-
   // ---
-
-
   // Replace body with ojml. Global css is rebuild when using this method.
 
-
   oj.$.ojBody = function(ojml){
-    // Compile only the body and below
 
     var bodyOnly, cssMap, dom, eCompile, types, _ref3;
 
+    // Compile only the body and below
     bodyOnly = {
       html: 1,
       '!DOCTYPE': 1,
@@ -4102,11 +3956,11 @@
       eCompile = _error;
       throw new Error("oj.compile: " + eCompile.message);
     }
-    // Clear body and insert dom elements
 
-    if (dom != null){
+    // Clear body and insert dom elements
+    if (dom != null)
       oj.$('body').html(dom);
-    }
+
     _insertStyles(cssMap, {
       global: 1
     });
@@ -4114,13 +3968,8 @@
   };
 
   // jQuery.fn.ojValue
-
-
   // ---
-
-
   // Get the first value of the selected contents
-
 
   _jqGetValue = function($el, args){
     var child, el, inst, text;
@@ -4128,12 +3977,12 @@
     el = $el[0];
     child = el.firstChild;
     if (oj.isDOMText(child)){
-      // Parse the text to turn it into bool, number, or string
 
+      // Parse the text to turn it into bool, number, or string
       return text = oj.parse(child.nodeValue);
     } else if (oj.isDOMElement(child)){
-      // Get elements as oj instances or elements
 
+      // Get elements as oj instances or elements
       if ((inst = _getInstanceOnElement(child)) != null){
         return inst;
       } else {
@@ -4149,13 +3998,8 @@
   });
 
   // jQuery.fn.ojValues
-
-
   // ---
-
-
   // Get values as an array of the selected element's contents
-
 
   oj.$.fn.ojValues = _jqExtend({
     first: false,
@@ -4164,10 +4008,7 @@
   });
 
   // jQuery plugins
-
-
   // ---
-
 
   plugins = {
     ojAfter: 'after',
@@ -4182,8 +4023,8 @@
   _fn1 = function(ojName, jqName){
     return oj.$.fn[ojName] = _jqExtend({
       set: function($el, args){
-        // Compile ojml for each one to separate references
 
+        // Compile ojml for each one to separate references
         var cssMap, dom, types, _ref3;
 
         _ref3 = oj.compile.apply(oj, [{
@@ -4195,8 +4036,8 @@
         _insertStyles(cssMap, {
           global: 0
         });
-        // Append to the dom
 
+        // Append to the dom
         $el[jqName](dom);
         _triggerTypes(types);
       },
