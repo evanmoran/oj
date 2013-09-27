@@ -1270,34 +1270,31 @@
     if (tag === '!DOCTYPE'){
       _v('compile', 1, ojml[1], 'string');
       if (!options.ignore[tag]){
-        if (options.html){
-          options.html.push("<" + tag + " " + ojml[1] + ">");
-        }
-        // options.dom is purposely ignored
+        if (options.html)
+          options.html.push("<" + tag + " " + ojml[1] + ">")
 
+        // options.dom is purposely ignored
       }
       return;
     }
     if (!options.ignore[tag]){
       events = _attributesProcessedForOJ(attributes);
+
       // Compile to dom if requested
-
       // Add dom element with attributes
-
       if (options.dom && (typeof document !== "undefined" && document !== null)){
+
         // Create element
-
         el = document.createElement(tag);
+
         // Add self to parent
+        if (oj.isDOMElement(options.dom))
+          options.dom.appendChild(el)
 
-        if (oj.isDOMElement(options.dom)){
-          options.dom.appendChild(el);
-        }
         // Push ourselves on the dom stack (to handle children)
-
         options.dom = el;
-        // Set attributes in sorted order for consistency
 
+        // Set attributes in sorted order for consistency
         if (oj.isPlainObject(attributes)){
           _ref4 = _keys(attributes).sort();
           for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++){
@@ -1313,14 +1310,13 @@
             }
           }
         }
-        // Bind events
 
+        // Bind events
         _attributesBindEventsToDOM(events, el);
       }
+
       // Compile to html if requested
-
       // Add tag with attributes
-
       if (options.html){
         attr = (_ref5 = _attributesFromObject(attributes)) != null ? _ref5 : '';
         space = attr === '' ? '' : ' ';
@@ -1342,99 +1338,91 @@
         _compileDeeper(_compileAny, child, options);
       }
     }
-    // Skip indention if there is only one child
 
+    // Skip indention if there is only one child
     if ((!options.minify) && children.length > 1){
       if ((_ref7 = options.html) != null){
         _ref7.push("\n" + options.indent);
       }
     }
+
     // End html tag if you have children or your tag closes
-
     if (!options.ignore[tag]){
-      // Close tag if html
 
+      // Close tag if html
       if (options.html && (children.length > 0 || oj.tag.isClosed(tag))){
         if ((_ref8 = options.html) != null){
           _ref8.push("</" + tag + ">");
         }
       }
-      // Pop ourselves if dom
 
-      if (options.dom){
-        options.dom = options.dom.parentNode;
-      }
+      // Pop ourselves if dom
+      if (options.dom)
+        options.dom = options.dom.parentNode
+
     }
   };
 
   // _attributesProcessedForOJ: Process attributes to make them easier to use
-
-
   _attributesProcessedForOJ = function(attr){
     var events, jqEvents, k, v;
 
     jqEvents = {bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1};
+
     // Allow attributes to alias c to class and use arrays instead of space seperated strings
-
     // Convert to c and class from arrays to strings
+    if (oj.isArray(attr != null ? attr.c : void 0))
+      attr.c = attr.c.join(' ')
 
-    if (oj.isArray(attr != null ? attr.c : void 0)){
-      attr.c = attr.c.join(' ');
-    }
-    if (oj.isArray(attr != null ? attr["class"] : void 0)){
-      attr["class"] = attr["class"].join(' ');
-    }
+    if (oj.isArray(attr != null ? attr["class"] : void 0))
+      attr["class"] = attr["class"].join(' ')
+
     // Move c to class
-
     if ((attr != null ? attr.c : void 0) != null){
-      if ((attr != null ? attr["class"] : void 0) != null){
-        attr["class"] += ' ' + attr.c;
-      } else {
-        attr["class"] = attr.c;
-      }
-      delete attr.c;
+      if ((attr != null ? attr["class"] : void 0) != null)
+        attr["class"] += ' ' + attr.c
+      else
+        attr["class"] = attr.c
+      delete attr.c
     }
-    // Allow attributes to take style as an object
 
+    // Allow attributes to take style as an object
     if (oj.isPlainObject(attr != null ? attr.style : void 0)){
       attr.style = _styleFromObject(attr.style, {
         inline: true
       });
     }
-    // Omit attributes with values of false, null, or undefined
 
+    // Omit attributes with values of false, null, or undefined
     if (oj.isPlainObject(attr)){
       for (k in attr){
-        v = attr[k];
-        if (v === null || v === void 0 || v === false){
-          delete attr[k];
-        }
+        v = attr[k]
+        if (v === null || v === void 0 || v === false)
+          delete attr[k]
       }
     }
-    // Filter out jquery events
 
+    // Filter out jquery events
     events = {};
     if (oj.isPlainObject(attr)){
-      // Filter out attributes that are jquery events
 
+      // Filter out attributes that are jquery events
       for (k in attr){
         v = attr[k];
-        // If this attribute (k) is an event
 
+        // If this attribute (k) is an event
         if (jqEvents[k] != null){
           events[k] = v;
           delete attr[k];
         }
       }
     }
-    // Returns bindable events
 
+    // Returns bindable events
     return events;
   };
 
   // Bind events to dom
-
-
   _attributesBindEventsToDOM = function(events, el){
     var ek, ev, _results;
 
@@ -1452,13 +1440,8 @@
   };
 
   // oj.toHTML
-
-
   // ---
-
-
   // Make ojml directly to HTML ignoring event bindings and css.
-
 
   oj.toHTML = function(options, ojml){
     // Options is optional
@@ -1466,8 +1449,8 @@
       ojml = options;
       options = {};
     }
-    // Create html only
 
+    // Create html only
     _extend(options, {
       dom: 0,
       js: 0,
@@ -1478,13 +1461,8 @@
   };
 
   // oj.toCSS
-
-
   // ---
-
-
   // Compile ojml directly to css ignoring event bindings and html.
-
 
   oj.toCSS = function(options, ojml){
     // Options is optional
@@ -1492,8 +1470,8 @@
       ojml = options;
       options = {};
     }
-    // Create css only
 
+    // Create css only
     _extend(options, {
       dom: 0,
       js: 0,
@@ -1504,17 +1482,11 @@
   };
 
   // _inherit
-
-
   // ---
-
-
   // Based on, but sadly incompatable with, coffeescript inheritance
-
 
   _inherit = function(child, parent){
     // Copy class properties and methods
-
     var ctor, key;
 
     for (key in parent){
@@ -1523,34 +1495,24 @@
     ctor = function(){};
     ctor.prototype = parent.prototype;
     child.prototype = new ctor();
-    // Provide easy access for base class methods
 
+    // Provide easy access for base class methods
     // Example: Parent.base.methodName(arguments...)
 
     child.base = parent.prototype;
   };
 
   // _construct(Type, arg1, arg2, ...)
-
-
   // ---
-
-
   // Construct with specified arguments. This is only necessary because new doesn't support apply/call directly.
-
 
   _construct = function(Type){
     return new (FunP.bind.apply(Type, arguments));
   };
 
   // oj.argumentShift
-
-
   // ---
-
-
   // Helper to make argument handling easier
-
 
   oj.argumentShift = function(args, key){
     var value;
@@ -1563,29 +1525,24 @@
   };
 
   // oj.createType
-
-
   // ---
-
 
   oj.createType = function(name, args){
     var Out, delay, methodKeys, methods, propKeys, properties, typeProps, _ref2, _ref3;
 
-    if (args == null){
-      args = {};
-    }
+    if (args == null)
+      args = {}
+
     _v('createType', 1, name, 'string');
     _v('createType', 2, args, 'object');
     if ((_ref2 = args.methods) == null){
       args.methods = {};
     }
-    if ((_ref3 = args.properties) == null){
-      args.properties = {};
-    }
+    if ((_ref3 = args.properties) == null)
+      args.properties = {}
+
     // When auto newing you need to delay construct the properties
-
     // or they will be constructed twice.
-
     delay = '__DELAYED__';
     Out = new Function("return function " + name + "(){\n  var _this = this;\n  if ( !(this instanceof " + name + ") ){\n    _this = new " + name + "('" + delay + "');\n    _this.__autonew__ = true;\n  }\n\n  if (arguments && arguments[0] != '" + delay + "')\n    " + name + ".prototype.constructor.apply(_this, arguments);\n\n  return _this;\n}")();
     // Default the constructor to call its base
@@ -1597,16 +1554,15 @@
         return (_ref4 = Out.base) != null ? _ref4.constructor.apply(this, arguments) : void 0;
       };
     }
+
     // Inherit if necessary
+    if (args.base != null)
+      _inherit(Out, args.base)
 
-    if (args.base != null){
-      _inherit(Out, args.base);
-    }
     // Add the constructor as a method
-
     oj.addMethod(Out.prototype, 'constructor', args.constructor);
-    // Mark new type and its instances with a non-enumerable type and isOJ properties
 
+    // Mark new type and its instances with a non-enumerable type and isOJ properties
     typeProps = {
       type: {
         value: Out,
@@ -1626,8 +1582,8 @@
     };
     oj.addProperties(Out, typeProps);
     oj.addProperties(Out.prototype, typeProps);
-    // Add properties helper to instance
 
+    // Add properties helper to instance
     propKeys = (_keys(args.properties)).sort();
     if (Out.prototype.properties != null){
       propKeys = _uniqueSort(Out.prototype.properties.concat(propKeys));
@@ -1638,8 +1594,8 @@
       enumerable: false
     };
     oj.addProperty(Out.prototype, 'properties', properties);
-    // Add methods helper to instance
 
+    // Add methods helper to instance
     methodKeys = (_keys(args.methods)).sort();
     if (Out.prototype.methods != null){
       methodKeys = _uniqueSort(Out.prototype.methods.concat(methodKeys));
@@ -1650,20 +1606,19 @@
       enumerable: false
     };
     oj.addProperty(Out.prototype, 'methods', methods);
+
     // Add methods to the type
-
     _extend(args.methods, {
-      // get: Get all properties, or get a single property
 
+      // get: Get all properties, or get a single property
       get: function(k){
         var out, p, _j, _len1, _ref4;
 
         if (oj.isString(k)){
-          if (this.has(k)){
-            return this[k];
-          } else {
-            return void 0;
-          }
+          if (this.has(k))
+            return this[k]
+          else
+            return void 0
         } else {
           out = {};
           _ref4 = this.properties;
@@ -1671,23 +1626,21 @@
             p = _ref4[_j];
             out[p] = this[p];
           }
-          return out;
+          return out
         }
       },
+
       // set: Set all properties on the object at once
-
       set: function(k, v){
-        var key, obj, value;
+        var key, obj = k, value;
 
-        obj = k;
         // Optionally take key, value instead of object
-
         if (!oj.isPlainObject(k)){
           obj = {};
           obj[k] = v;
         }
-        // Set all keys that are valid properties
 
+        // Set all keys that are valid properties
         for (key in obj){
           value = obj[key];
           if (this.has(key)){
@@ -1695,22 +1648,22 @@
           }
         }
       },
-      // has: Determine if property exists
 
+      // has: Determine if property exists
       has: function(k){
         return this.properties.some(function(v){
           return v === k;
         });
       },
-      // can: Determine if method exists
 
+      // can: Determine if method exists
       can: function(k){
         return this.methods.some(function(v){
           return v === k;
         });
       },
-      // toJSON: Use properties to generate json
 
+      // toJSON: Use properties to generate json
       toJSON: function(){
         var json, prop, _j, _len1, _ref4;
 
@@ -1723,26 +1676,19 @@
         return json;
       }
     });
+
     // Add methods
-
     oj.addMethods(Out.prototype, args.methods);
-    // Add the properties
 
+    // Add the properties
     oj.addProperties(Out.prototype, args.properties);
     return Out;
   };
 
   // unionArguments:
-
-
   // Take arguments and tranform them into options and args.
-
-
   // options is a union of all items in `arguments` that are objects
-
-
   // args is a concat of all arguments that aren't objects in the same order
-
 
   oj.unionArguments = function(argList){
     var args, options, v, _j, _len1;
@@ -1764,10 +1710,7 @@
   };
 
   // _createQuietType
-
-
   // ---
-
 
   _createQuietType = function(typeName){
     return oj[_getQuietTagName(typeName)] = function(){
@@ -1778,84 +1721,71 @@
   };
 
   // oj.createEnum
-
-
   // ---
-
 
   oj.createEnum = function(name, args){
-    return _a(0, 'NYI', 'createEnum');
-  };
+    return _a(0, 'NYI', 'createEnum')
+  }
 
   // oj.View
-
-
   // ---
 
-
   oj.View = oj.createType('View', {
+
     // Views are special objects map properties together. This is a union of arguments
-
     // With the remaining arguments becoming a list
-
     constructor: function(){
       var args, options, _ref2;
 
       _a(oj.isDOM(this.el), 'constructor failed to set this.el', this.typeName);
-      // Set instance on @el
 
+      // Set instance on @el
       _setInstanceOnElement(this.el, this);
       _ref2 = oj.unionArguments(arguments), options = _ref2.options, args = _ref2.args;
+
       // Emit as a tag if new wasn't called or quiet is not set
+      if (this.__autonew__ && !options.__quiet__)
+        this.emit()
 
-      if (this.__autonew__ && !options.__quiet__){
-        this.emit();
-      }
       // Remove quiet flag
+      if (options.__quiet__ != null)
+        delete options.__quiet__
 
-      if (options.__quiet__ != null){
-        delete options.__quiet__;
-      }
       // Add class oj-typeName
-
       this.$el.addClass("oj-" + this.typeName);
+
       // Views automatically set all options to their properties
-
       // arguments directly to properties
-
       this.set(options);
-      // Remove options that were set
 
+      // Remove options that were set
       options = _clone(options);
       this.properties.forEach(function(v){
         return delete options[v];
       });
+
       // Views pass through remaining options to be attributes on the root element
-
       // This can include jquery events and interpreted arguments
-
       this.addAttributes(options);
-      // Record if view is fully constructed
 
+      // Record if view is fully constructed
       return this._isConstructed = true;
     },
     properties: {
       // The element backing the View
-
       el: {
-        get: function(){
-          return this._el;
-        },
+        get: function(){return this._el},
         set: function(v){
+
           // Set the element directly if this is a dom element
           if (oj.isDOMElement(v)){
             this._el = v;
-            // Clear cache of $el
 
+            // Clear cache of $el
             this._$el = null;
           } else {
-            // Generate the element from ojml
 
+            // Generate the element from ojml
             this._el = oj.compile({
               css: 0,
               cssMap: 0,
@@ -1865,78 +1795,54 @@
           }
         }
       },
-      // Get and cache jquery-enabled element (readonly)
 
+      // Get and cache jquery-enabled element (readonly)
       $el: {
         get: function(){
           var _ref2;
-
           return (_ref2 = this._$el) != null ? _ref2 : (this._$el = oj.$(this.el));
         }
       },
-      // Get and set id attribute of view
 
+      // Get and set id attribute of view
       id: {
-        get: function(){
-          return this.$el.attr('id');
-        },
-        set: function(v){
-          return this.$el.attr('id', v);
-        }
+        get: function(){return this.$el.attr('id')},
+        set: function(v){return this.$el.attr('id', v)}
       },
       // class:
-
       // get: -> @$el.attr 'class'
-
       // set: (v) ->
-
       //   # Join arrays with spaces
-
       //   if oj.isArray v
-
       //     v = v.join ' '
-
       //   @$el.attr 'class', v
-
       //   return
-
       // Alias for classes
-
       // c:
-
       // get: -> @class
-
       // set: (v) -> @class = v; return
-
       // Get all currently set attributes (readonly)
 
       attributes: {
         get: function(){
-          var out;
-
-          out = {};
+          var out = {};
           slice.call(this.el.attributes).forEach(function(attr){
             return out[attr.name] = attr.value;
           });
           return out;
         }
       },
+
       // Get all classes as an array (readwrite)
-
       classes: {
-        get: function(){
-          return this.$el.attr('class').split(/\s+/);
-        },
-        set: function(v){
-          this.$el.attr('class', v.join(' '));
-        }
+        get: function(){return this.$el.attr('class').split(/\s+/)},
+        set: function(v){this.$el.attr('class', v.join(' '))}
       },
-      // Get / set all currently set themes (readwrite)
 
+      // Get / set all currently set themes (readwrite)
       themes: {
         get: function(){
           var cls, prefix, thms, _j, _len1, _ref2;
-
           thms = [];
           prefix = 'theme-';
           _ref2 = this.classes;
@@ -1950,10 +1856,8 @@
         },
         set: function(v){
           var theme, _j, _len1;
-
-          if (!oj.isArray(v)){
+          if (!oj.isArray(v))
             v = [v];
-          }
           this.clearThemes();
           for (_j = 0, _len1 = v.length; _j < _len1; _j++){
             theme = v[_j];
@@ -1962,189 +1866,153 @@
         }
       },
       theme: {
-        get: function(){
-          return this.themes;
-        },
-        set: function(v){
-          this.themes = v;
-        }
+        get: function(){return this.themes},
+        set: function(v){this.themes = v}
       },
-      // Determine if this view has been fully constructed (readonly)
 
+      // Determine if this view has been fully constructed (readonly)
       isConstructed: {
         get: function(){
           var _ref2;
-
           return (_ref2 = this._isConstructed) != null ? _ref2 : false;
         }
       },
-      // Determine if this view has been fully inserted (readonly)
 
+      // Determine if this view has been fully inserted (readonly)
       isInserted: {
         get: function(){
           var _ref2;
-
           return (_ref2 = this._isInserted) != null ? _ref2 : false;
         }
       }
     },
     methods: {
-      // Mirror backbone view's find by selector
 
+      // Mirror backbone view's find by selector
       $: function(){
         var _ref2;
-
         return (_ref2 = this.$el).find.apply(_ref2, arguments);
       },
+
       // Add a single attribute
-
       addAttribute: function(name, value){
-        var attr;
-
-        attr = {};
+        var attr = {};
         attr[name] = value;
         this.addAttributes(attr);
       },
-      // Add attributes and apply the oj magic with jquery binding
 
+      // Add attributes and apply the oj magic with jquery binding
       addAttributes: function(attributes){
         var att, attr, events, k, v;
 
         attr = _clone(attributes);
         events = _attributesProcessedForOJ(attr);
-        // Add attributes as object
 
+        // Add attributes as object
         if (oj.isPlainObject(attr)){
           for (k in attr){
             v = attr[k];
             if (k === 'class'){
               this.addClass(v);
             } else if (v === true){
-              // Boolean attributes have no value
 
+              // Boolean attributes have no value
               att = document.createAttribute(k);
               this.el.setAttributeNode(att);
             } else {
-              // Otherwise add it normally
 
+              // Otherwise add it normally
               this.$el.attr(k, v);
             }
           }
         }
+
         // Bind events
+        if (events != null)
+          _attributesBindEventsToDOM(events, this.el)
 
-        if (events != null){
-          _attributesBindEventsToDOM(events, this.el);
-        }
       },
-      // Remove a single attribute
 
+      // Remove a single attribute
       removeAttribute: function(name){
         this.$el.removeAttr(name);
       },
-      // Remove multiple attributes
 
+      // Remove multiple attributes
       removeAttributes: function(list){
         var k, _j, _len1;
-
         for (_j = 0, _len1 = list.length; _j < _len1; _j++){
           k = list[_j];
           this.removeAttribute(k);
         }
       },
+
       // Add a single class
+      addClass: function(name){this.$el.addClass(name)},
 
-      addClass: function(name){
-        this.$el.addClass(name);
-      },
       // Remove a single class
+      removeClass: function(name){this.$el.removeClass(name)},
 
-      removeClass: function(name){
-        this.$el.removeClass(name);
-      },
       // Determine if class is applied
+      hasClass: function(name){return this.$el.hasClass(name)},
 
-      hasClass: function(name){
-        return this.$el.hasClass(name);
-      },
       // Add a single theme
+      addTheme: function(name){this.addClass("theme-" + name)},
 
-      addTheme: function(name){
-        this.addClass("theme-" + name);
-      },
       // Remove a single theme
+      removeTheme: function(name){this.removeClass("theme-" + name)},
 
-      removeTheme: function(name){
-        this.removeClass("theme-" + name);
-      },
       // Determine if theme is applied
+      hasTheme: function(name){return this.hasClass("theme-" + name)},
 
-      hasTheme: function(name){
-        return this.hasClass("theme-" + name);
-      },
       // Clear all themes
-
       clearThemes: function(){
         var theme, _j, _len1, _ref2;
-
         _ref2 = this.themes;
         for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++){
           theme = _ref2[_j];
           this.removeTheme(theme);
         }
       },
-      // emit: Emit instance as a tag function would do
 
+      // emit: Emit instance as a tag function would do
       emit: function(){
         oj._argsAppend(this);
       },
-      // Convert View to html
 
+      // Convert View to html
       toHTML: function(options){
         return this.el.outerHTML + ((options != null ? options.minify : void 0) ? '' : '\n');
       },
+
       // Convert View to dom (for compiling)
+      toDOM: function(){return this.el},
 
-      toDOM: function(){
-        return this.el;
-      },
       // Convert
-
       toCSS: function(options){
         return _cssFromPluginObject(_flattenCSSMap(this.cssMap), _extend({}, {
           minify: options.minify,
           tags: 0
         }));
       },
+
       // Convert
+      toCSSMap: function(){return this.type.cssMap},
 
-      toCSSMap: function(){
-        return this.type.cssMap;
-      },
       // Convert View to string (for debugging)
+      toString: function(){return this.toHTML()},
 
-      toString: function(){
-        return this.toHTML();
-      },
       // detach: -> throw 'detach nyi'
-
-      // # The implementation is to set el manipulate it, and remember how to set it back
-
+      // The implementation is to set el manipulate it, and remember how to set it back
       // attach: -> throw 'attach nyi'
-
-      // # The implementation is to unset el from detach
-
+      // The implementation is to unset el from detach
       // inserted is called the instance is inserted in the dom (override)
 
-      inserted: function(){
-        return this._isInserted = true;
-      }
+      inserted: function(){return this._isInserted = true}
     }
   });
 
   // oj.View.css: set view's css with css object mapping, or raw css string
-
-
   oj.View.css = function(css){
     var cssMap, _base, _base1, _name, _name1, _ref2, _ref3;
 
@@ -2165,10 +2033,8 @@
 
   // oj.View.theme: create a View specific theme with css object mapping
 
-
   oj.View.theme = function(name, css){
     var cssMap, dashName, _base, _name, _ref2;
-
     _v(this.typeName, 1, name, 'string');
     _v(this.typeName, 2, css, 'object');
     if ((_ref2 = (_base = this.cssMap)[_name = "oj-" + this.typeName]) == null){
@@ -2182,34 +2048,28 @@
   };
 
   oj.View.cssMap = {};
-
   oj.View.themes = [];
 
   // oj.CollectionView
-
-
   // ---
-
 
   oj.CollectionView = oj.createType('CollectionView', {
     base: oj.View,
     constructor: function(options){
-      if ((options != null ? options.each : void 0) != null){
-        this.each = oj.argumentShift(options, 'each');
-      }
-      if ((options != null ? options.models : void 0) != null){
-        this.models = oj.argumentShift(options, 'models');
-      }
-      oj.CollectionView.base.constructor.apply(this, arguments);
-      // Once everything is constructed call make precisely once.
+      if ((options != null ? options.each : void 0) != null)
+        this.each = oj.argumentShift(options, 'each')
 
+      if ((options != null ? options.models : void 0) != null)
+        this.models = oj.argumentShift(options, 'models')
+
+      oj.CollectionView.base.constructor.apply(this, arguments);
+
+      // Once everything is constructed call make precisely once.
       return this.make();
     },
     properties: {
       each: {
-        get: function(){
-          return this._each;
-        },
+        get: function(){return this._each},
         set: function(v){
           this._each = v;
           if (this.isConstructed){
@@ -2218,28 +2078,22 @@
         }
       },
       collection: {
-        get: function(){
-          return this.models;
-        },
-        set: function(v){
-          return this.models = v;
-        }
+        get: function(){return this.models},
+        set: function(v){return this.models = v}
       },
       models: {
-        get: function(){
-          return this._models;
-        },
+        get: function(){return this._models},
         set: function(v){
-          // Unbind events if collection
-
           var _ref2, _ref3;
 
+          // Unbind events if collection
           if (oj.isFunction((_ref2 = this._models) != null ? _ref2.off : void 0)){
             this._models.off('add remove change reset destroy', null, this);
           }
-          this._models = v;
-          // Bind events if collection
 
+          this._models = v
+
+          // Bind events if collection
           if (oj.isFunction((_ref3 = this._models) != null ? _ref3.on : void 0)){
             this._models.on('add', this.collectionModelAdded, this);
             this._models.on('remove', this.collectionModelRemoved, this);
@@ -2254,68 +2108,61 @@
       }
     },
     methods: {
-      // Override make to create your view
 
+      // Override make to create your view
       make: function(){
         return _a(0, '`make` method not implemented by custom view', this.typeName);
       },
       // Override these events to minimally update on change
-
-      collectionModelAdded: function(model, collection){
+      collectionModelAdded: function(mod, cols){
         return this.make();
       },
-      collectionModelRemoved: function(model, collection, options){
+      collectionModelRemoved: function(mod, cols, opt){
         return this.make();
       },
-      collectionModelChanged: function(model, collection, options){},
-      collectionModelDestroyed: function(collection, options){
+      collectionModelChanged: function(mod, cols, opt){},
+      collectionModelDestroyed: function(cols, opt){
         return this.make();
       },
-      collectionReset: function(collection, options){
+      collectionReset: function(cols, opt){
         return this.make();
       }
     }
   });
 
   // oj.ModelView
-
-
   // ---
-
-
   // Model view base class
-
 
   oj.ModelView = oj.createType('ModelView', {
     base: oj.View,
     constructor: function(options){
-      if ((options != null ? options.value : void 0) != null){
-        this.value = oj.argumentShift(options, 'value');
-      }
-      if ((options != null ? options.model : void 0) != null){
-        this.model = oj.argumentShift(options, 'model');
-      }
-      return oj.ModelView.base.constructor.apply(this, arguments);
+      if ((options != null ? options.value : void 0) != null)
+        this.value = oj.argumentShift(options, 'value')
+
+      if ((options != null ? options.model : void 0) != null)
+        this.model = oj.argumentShift(options, 'model')
+
+      return oj.ModelView.base.constructor.apply(this, arguments)
     },
     properties: {
       model: {
         get: function(){
-          return this._model;
+          return this._model
         },
         set: function(v){
           // Unbind events on the old model
-          if (oj.isEvented(this._model)){
+          if (oj.isEvented(this._model))
             this._model.off('change', null, this);
-          }
-          this._model = v;
+
+          this._model = v
+
           // Bind events on the new model
-
-          if (oj.isEvented(this._model)){
+          if (oj.isEvented(this._model))
             this._model.on('change', this.modelChanged, this);
-          }
-          // Trigger change manually when settings new model
 
-          this.modelChanged();
+          // Trigger change manually when settings new model
+          this.modelChanged()
         }
       }
     },
@@ -2324,9 +2171,8 @@
 
       modelChanged: function(){
         var _this = this;
-
         return this.$el.oj(function(){
-          return _this.make(_this.mode);
+          return _this.make(_this.mode)
         });
       },
       make: function(model){
@@ -2336,35 +2182,28 @@
   });
 
   // oj.ModelKeyView
-
-
   // ---
-
-
   // Model key view base class
 
-
   oj.ModelKeyView = oj.createType('ModelKeyView', {
-    // Inherit ModelView to handle model and bindings
 
+    // Inherit ModelView to handle model and bindings
     base: oj.ModelView,
     constructor: function(options){
-      // console.log "ModelKeyView.constructor: ", JSON.stringify arguments
-      if ((options != null ? options.key : void 0) != null){
-        this.key = oj.argumentShift(options, 'key');
-      }
-      // Call super to bind model and value
 
+      if ((options != null ? options.key : void 0) != null)
+        this.key = oj.argumentShift(options, 'key')
+
+      // Call super to bind model and value
       return oj.ModelKeyView.base.constructor.apply(this, arguments);
     },
     properties: {
       // Key used to access model
 
       key: null,
+
       // Value directly gets and sets to the dom
-
       // when it changes it must trigger viewChanged
-
       value: {
         get: function(){
           return _a(0, 'value getter not implemented', this.typeName);
@@ -2374,29 +2213,25 @@
         }
       }
     },
-    methods: {
-      // When the model changes update the value
 
+    methods: {
+
+      // When the model changes update the value
       modelChanged: function(){
         if ((this.model != null) && (this.key != null)){
           // Update the view if necessary
-
-          if (!this._viewUpdatedModel){
-            this.value = this.model.get(this.key);
-          }
+          if (!this._viewUpdatedModel)
+            this.value = this.model.get(this.key)
         }
       },
+
       // When the view changes update the model
-
       viewChanged: function(){
-        // Delay view changes because many of them hook before controls update
-
         var _this = this;
-
+        // Delay view changes because they hook before controls update
         setTimeout((function(){
           if ((_this.model != null) && (_this.key != null)){
             // Ensure view changes aren't triggered twice
-
             _this._viewUpdatedModel = true;
             _this.model.set(_this.key, _this.value);
             _this._viewUpdatedModel = false;
@@ -2407,27 +2242,21 @@
   });
 
   // oj.TextBox
-
-
   // ---
-
-
   // TextBox control
-
 
   oj.TextBox = oj.createType('TextBox', {
     base: oj.ModelKeyView,
     constructor: function(){
       var args, options, _ref2,
         _this = this;
-
       _ref2 = oj.unionArguments(arguments), options = _ref2.options, args = _ref2.args;
       this.el = oj(function(){
         return oj.input({
           type: 'text'
         }, {
-          // Delay change event slighty as value is updated after key presses
 
+          // Delay change event slighty as value is updated after key presses
           keydown: function(){
             if (_this.live){
               setTimeout((function(){
@@ -2442,18 +2271,16 @@
               }), 10);
             }
           },
-          change: function(){
-            _this.viewChanged();
-          }
+          change: function(){_this.viewChanged()}
         });
       });
-      // Value can be set by argument
 
+      // Value can be set by argument
       if (args.length > 0){
         this.value = args[0];
       }
-      // Set live if it exists
 
+      // Set live if it exists
       if ((options != null ? options.live : void 0) != null){
         this.live = oj.argumentShift(options, 'live');
       }
@@ -2462,39 +2289,30 @@
     properties: {
       value: {
         get: function(){
-          var v;
-
-          v = this.el.value;
-          if ((v == null) || v === _undef){
-            v = '';
-          }
-          return v;
+          var v = this.el.value
+          if ((v == null) || v === _undef)
+            v = ''
+          return v
         },
         set: function(v){
-          this.el.value = v;
+          this.el.value = v
         }
       },
-      // Live update model as text changes
 
+      // Live update model as text changes
       live: true
     }
   });
 
   // oj.CheckBox
-
-
   // ---
-
-
   // CheckBox control
-
 
   oj.CheckBox = oj.createType('CheckBox', {
     base: oj.ModelKeyView,
     constructor: function(){
       var args, options, _ref2,
         _this = this;
-
       _ref2 = oj.unionArguments(arguments), options = _ref2.options, args = _ref2.args;
       this.el = oj(function(){
         return oj.input({
@@ -2505,18 +2323,16 @@
           }
         });
       });
-      // Value can be set by argument
 
-      if (args.length > 0){
-        this.value = args[0];
-      }
+      // Value can be set by argument
+      if (args.length > 0)
+        this.value = args[0]
+
       return oj.CheckBox.base.constructor.call(this, options);
     },
     properties: {
       value: {
-        get: function(){
-          return this.el.checked;
-        },
+        get: function(){return this.el.checked},
         set: function(v){
           v = !!v;
           this.el.checked = v;
@@ -2531,13 +2347,8 @@
   });
 
   // oj.Text
-
-
   // ---
-
-
   // Text control
-
 
   oj.Text = oj.createType('Text', {
     base: oj.ModelKeyView,
@@ -2546,36 +2357,32 @@
         _this = this;
 
       _ref2 = oj.unionArguments(arguments), options = _ref2.options, args = _ref2.args;
-      // Get tag name if provided
 
+      // Get tag name if provided
       this._tagName = oj.argumentShift(options, 'tagName');
       this.el = oj(function(){
         return oj[_this.tagName]();
       });
-      // Value can be set by argument
 
-      if (args.length > 0){
-        this.value = args[0];
-      }
+      // Value can be set by argument
+      if (args.length > 0)
+        this.value = args[0]
+
       return oj.Text.base.constructor.call(this, options);
     },
+
     properties: {
+
       // value: text value of this object (readwrite)
-
       value: {
-        get: function(){
-          return this.$el.ojValue();
-        },
-        set: function(v){
-          this.$el.oj(v);
-        }
+        get: function(){return this.$el.ojValue()},
+        set: function(v){this.$el.oj(v)}
       },
-      // tagName: name of root tag (writeonce)
 
+      // tagName: name of root tag (writeonce)
       tagName: {
         get: function(){
           var _ref2;
-
           return (_ref2 = this._tagName) != null ? _ref2 : 'div';
         }
       }
@@ -2583,13 +2390,8 @@
   });
 
   // oj.TextArea
-
-
   // ---
-
-
   // TextArea control
-
 
   oj.TextArea = oj.createType('TextArea', {
     base: oj.ModelKeyView,
@@ -2628,27 +2430,18 @@
     },
     properties: {
       value: {
-        get: function(){
-          return this.el.value;
-        },
-        set: function(v){
-          this.el.value = v;
-        }
+        get: function(){return this.el.value},
+        set: function(v){this.el.value = v}
       },
-      // Live update model as text changes
 
+      // Live update model as text changes
       live: true
     }
   });
 
   // oj.ListBox
-
-
   // ---
-
-
   // ListBox control
-
 
   oj.ListBox = oj.createType('ListBox', {
     base: oj.ModelKeyView,
@@ -2664,14 +2457,14 @@
           }
         });
       });
+
       // @options is a list of elements
-
       this.options = oj.argumentShift(options, 'options');
-      // Value can be set by argument
 
-      if (args.length > 0){
-        this.value = args[0];
-      }
+      // Value can be set by argument
+      if (args.length > 0)
+        this.value = args[0]
+
       return oj.ListBox.base.constructor.apply(this, [options]);
     },
     properties: {
@@ -2706,13 +2499,8 @@
   });
 
   // oj.Button
-
-
   // ---
-
-
   // Button control
-
 
   oj.Button = oj.createType('Button', {
     base: oj.View,
@@ -2721,17 +2509,16 @@
         _this = this;
 
       _ref2 = oj.unionArguments(arguments), options = _ref2.options, args = _ref2.args;
+
       // Label is first argument
+      title = ''
+      if (args.length > 0)
+        title = args[0]
 
-      title = '';
-      if (args.length > 0){
-        title = args[0];
-      }
       // Label is specified as option
+      if (options.title != null)
+        title = oj.argumentShift(options, 'title')
 
-      if (options.title != null){
-        title = oj.argumentShift(options, 'title');
-      }
       this.el = oj(function(){
         return oj.button(title);
       });
@@ -2742,7 +2529,6 @@
       title: {
         get: function(){
           var _ref2;
-
           return (_ref2 = this._title) != null ? _ref2 : '';
         },
         set: function(v){
@@ -2753,24 +2539,17 @@
     methods: {
       click: function(){
         var _ref2;
-
-        if (arguments.length > 0){
-          return (_ref2 = this.$el).click.apply(_ref2, arguments);
-        } else {
-          return this.$el.click();
-        }
+        if (arguments.length > 0)
+          return (_ref2 = this.$el).click.apply(_ref2, arguments)
+        else
+          return this.$el.click()
       }
     }
   });
 
   // oj.List
-
-
   // ---
-
-
   // List control with model bindings and live editing
-
 
   oj.List = oj.createType('List', {
     base: oj.CollectionView,
@@ -2779,22 +2558,21 @@
         _this = this;
 
       _ref2 = oj.unionArguments(arguments), options = _ref2.options, args = _ref2.args;
-      // tagName is write-once
 
+      // tagName is write-once
       this._tagName = oj.argumentShift(options, 'tagName');
       this.itemTagName = oj.argumentShift(options, 'itemTagName');
-      // Generate el
 
+      // Generate el
       this.el = oj(function(){
         return oj[_this.tagName]();
       });
+
       // Use el if it was passed in
+      if (options.el != null)
+        this.el = oj.argumentShift(options, 'el')
 
-      if (options.el != null){
-        this.el = oj.argumentShift(options, 'el');
-      }
       // Default @each function to pass through values
-
       if ((_ref3 = options.each) == null){
         options.each = function(model){
           if ((oj.isString(model)) || (oj.isNumber(model)) || (oj.isBoolean(model))){
@@ -2804,55 +2582,46 @@
           }
         };
       }
+
       // Args have been handled so don't pass them on
-
       oj.List.base.constructor.apply(this, [options]);
-      // Set @items to options or args if they exist
 
+      // Set @items to options or args if they exist
       items = args.length > 0 ? args : null;
       return this.items = options.items != null ? oj.argumentShift(options, 'items') : items;
     },
-    // Properties
 
     properties: {
-      // items: get or set all items at once (readwrite)
 
+      // items: get or set all items at once (readwrite)
       items: {
         get: function(){
-          // Used cached items or items as interpreted by ojValues jquery plugin
+          // Cached
+          if (this._items != null)
+            return this._items
 
-          var v;
-
-          if (this._items != null){
-            return this._items;
-          }
-          return v = this.$items.ojValues();
+          // Calc from ojValues
+          return this.$items.ojValues();
         },
         set: function(v){
           this._items = v;
           this.make();
         }
       },
-      count: {
-        get: function(){
-          return this.$items.length;
-        }
-      },
-      // tagName: name of root tag (writeonce)
+      count: {get: function(){return this.$items.length}},
 
+      // tagName: name of root tag (writeonce)
       tagName: {
         get: function(){
           var _ref2;
-
           return (_ref2 = this._tagName) != null ? _ref2 : 'div';
         }
       },
-      // itemTagName: name of item tags (readwrite)
 
+      // itemTagName: name of item tags (readwrite)
       itemTagName: {
         get: function(){
           var _ref2;
-
           return (_ref2 = this._itemTagName) != null ? _ref2 : 'div';
         },
         set: function(v){
@@ -2860,51 +2629,41 @@
           this.make();
         }
       },
-      // $items: list of `<li>` elements (readonly)
 
+      // $items: list of `<li>` elements (readonly)
       $items: {
         get: function(){
           var _ref2;
-
           return (_ref2 = this._$items) != null ? _ref2 : (this._$items = this.$("> " + this.itemTagName));
         }
       }
     },
-    // Methods
 
     methods: {
-      //
-
       // item: get or set item value at item ix
-
       item: function(ix, ojml){
         ix = this._bound(ix, this.count, ".item: index");
-        if (ojml != null){
-          this.$item(ix).oj(ojml);
-        } else {
-          return this.$item(ix).ojValue();
-        }
+        if (ojml != null)
+          this.$item(ix).oj(ojml)
+        else
+          return this.$item(ix).ojValue()
       },
-      // $item: `<li>` element for a given item ix. The tag name may change.
 
+      // $item: `<li>` element for a given item ix. The tag name may change.
       $item: function(ix){
         return this.$items.eq(this._bound(ix, this.count, ".$item: index"));
       },
-      // CollectionView Methods
 
       // make: Remake view from property data
-
       make: function(){
         // Some properties call make before construction completes
-
         var model, models, views, _j, _len1,
           _this = this;
 
-        if (!this.isConstructed){
-          return;
-        }
-        // Convert models to views
+        if (!this.isConstructed)
+          return
 
+        // Convert models to views
         views = [];
         if ((this.models != null) && (this.each != null)){
           models = oj.isEvented(this.models) ? this.models.models : this.models;
@@ -2912,16 +2671,15 @@
             model = models[_j];
             views.push(this._itemFromModel(model));
           }
-        } else if (this.items != null){
-          // Items are already views
 
-          views = this.items;
-        }
+        // Items are already views
+        } else if (this.items != null)
+          views = this.items
+
+
         // Render the views
-
         this.$el.oj(function(){
           var view, _k, _len2, _results;
-
           _results = [];
           for (_k = 0, _len2 = views.length; _k < _len2; _k++){
             view = views[_k];
@@ -2930,42 +2688,38 @@
           return _results;
         });
         this.itemsChanged();
-        //
-
-        // collectionModelAdded: Model add occurred, add the item
-
       },
+
+      // collectionModelAdded: Model add occurred, add the item
       collectionModelAdded: function(m, c){
         this.add(c.indexOf(m), this._itemFromModel(m));
       },
-      // collectionModelRemoved: Model remove occured, delete the item
 
+      // collectionModelRemoved: Model remove occured, delete the item
       collectionModelRemoved: function(m, c, o){
         this.remove(o.index);
       },
-      // collectionModelRemoved: On add
 
+      // collectionModelRemoved: On add
       collectionReset: function(){
         this.make();
       },
+
       // Helper Methods
-
       // _itemFromModel: Helper to map model to item
-
       _itemFromModel: function(model){
         var _this = this;
-
         return oj(function(){
           return _this.each(model);
         });
       },
-      // _itemElFromItem: Helper to create itemTagName wrapped item
 
+      // _itemElFromItem: Helper to create itemTagName wrapped item
       _itemElFromItem: function(item){
         return oj[this.itemTagName](item);
       },
-      // _bound: Bound index to allow negatives, throw when out of range
 
+      // _bound: Bound index to allow negatives, throw when out of range
       _bound: function(ix, count, message){
         var ixNew;
 
@@ -2975,10 +2729,8 @@
         }
         return ixNew;
       },
-      // Events
 
       // itemsChanged: Model changed occured, clear relevant cached values
-
       itemsChanged: function(){
         this._items = null;
         this._$items = null;
@@ -2986,95 +2738,76 @@
       // Manipulation Methods
 
       add: function(ix, ojml){
+
         // ix defaults to -1 and is optional
-
-        var tag;
-
         if (ojml == null){
           ojml = ix;
           ix = -1;
         }
         ix = this._bound(ix, this.count + 1, ".add: index");
-        tag = this.itemTagName;
-        if (this.count === 0){
-          // Empty
+        var tag = this.itemTagName;
 
-          this.$el.oj(function(){
-            return oj[tag](ojml);
-          });
-        } else if (ix === this.count){
-          // Last
+        // Empty
+        if (this.count === 0)
+          this.$el.oj(function(){return oj[tag](ojml)});
 
+        // Last
+        else if (ix === this.count)
           this.$item(ix - 1).ojAfter(function(){
             return oj[tag](ojml);
           });
-        } else {
-          // Not last
 
+        // Not last
+        else
           this.$item(ix).ojBefore(function(){
             return oj[tag](ojml);
           });
-        }
-        this.itemsChanged();
-      },
-      remove: function(ix){
-        var out;
 
-        if (ix == null){
-          ix = -1;
-        }
-        ix = this._bound(ix, this.count, ".remove: index");
-        out = this.item(ix);
-        this.$item(ix).remove();
         this.itemsChanged();
-        return out;
       },
+
+      remove: function(ix){
+        if (ix == null)
+          ix = -1
+        ix = this._bound(ix, this.count, ".remove: index")
+        var out = this.item(ix)
+        this.$item(ix).remove()
+        this.itemsChanged()
+        return out
+      },
+
       move: function(ixFrom, ixTo){
-        if (ixTo == null){
-          ixTo = -1;
-        }
-        if (ixFrom === ixTo){
-          return;
-        }
-        ixFrom = this._bound(ixFrom, this.count, ".move: fromIndex");
-        ixTo = this._bound(ixTo, this.count, ".move: toIndex");
-        if (ixTo > ixFrom){
-          this.$item(ixFrom).insertAfter(this.$item(ixTo));
-        } else {
-          this.$item(ixFrom).insertBefore(this.$item(ixTo));
-        }
-        this.itemsChanged();
+        if (ixTo == null)
+          ixTo = -1
+        if (ixFrom === ixTo)
+          return
+        ixFrom = this._bound(ixFrom, this.count, ".move: fromIndex")
+        ixTo = this._bound(ixTo, this.count, ".move: toIndex")
+        if (ixTo > ixFrom)
+          this.$item(ixFrom).insertAfter(this.$item(ixTo))
+        else
+          this.$item(ixFrom).insertBefore(this.$item(ixTo))
+        this.itemsChanged()
       },
       swap: function(ix1, ix2){
-        var ixMax, ixMin;
-
-        if (ix1 === ix2){
-          return;
-        }
+        if (ix1 === ix2)
+          return
         ix1 = this._bound(ix1, this.count, ".swap: firstIndex");
         ix2 = this._bound(ix2, this.count, ".swap: secondIndex");
-        if (Math.abs(ix1 - ix2) === 1){
-          this.move(ix1, ix2);
-        } else {
-          ixMin = Math.min(ix1, ix2);
-          ixMax = Math.max(ix1, ix2);
-          this.move(ixMax, ixMin);
-          this.move(ixMin + 1, ixMax);
+        if (Math.abs(ix1 - ix2) === 1)
+          this.move(ix1, ix2)
+        else {
+          var ixMin = Math.min(ix1, ix2),
+            ixMax = Math.max(ix1, ix2)
+          this.move(ixMax, ixMin)
+          this.move(ixMin + 1, ixMax)
         }
-        this.itemsChanged();
+        this.itemsChanged()
       },
-      unshift: function(v){
-        this.add(0, v);
-      },
-      shift: function(){
-        return this.remove(0);
-      },
-      push: function(v){
-        this.add(this.count, v);
-      },
-      pop: function(){
-        return this.remove(-1);
-      },
+      unshift: function(v){this.add(0, v)},
+      shift: function(){return this.remove(0)},
+      push: function(v){this.add(this.count, v)},
+      pop: function(){return this.remove(-1)},
       clear: function(){
         this.$items.remove();
         this.itemsChanged();
@@ -3082,14 +2815,10 @@
     }
   });
 
+
   // oj.NumberList
-
-
   // ---
-
-
   // NumberList is a `List` specialized with `<ol>` and `<li>` tags
-
 
   oj.NumberList = oj.createType('NumberList', {
     base: oj.List,
@@ -3105,15 +2834,10 @@
   });
 
   // oj.BulletList
-
-
   // ---
-
-
   // BulletList is a `List` specialized with `<ul>` and `<li>` tags
-
-
   oj.BulletList = oj.createType('BulletList', {
+
     base: oj.List,
     constructor: function(){
       var args;
@@ -3127,37 +2851,25 @@
   });
 
   // oj.Table
-
-
   // ---
-
-
-  // Table control
-
-
   oj.Table = oj.createType('Table', {
-    // Inherit and construct
-
     base: oj.CollectionView,
     constructor: function(){
-      // console.log "Table constructor: ", arguments
-
       var arg, args, options, rows, _j, _len1, _ref2, _ref3, _ref4,
         _this = this;
 
       _ref2 = oj.unionArguments(arguments), options = _ref2.options, args = _ref2.args;
-      // Generate el
 
+      // Generate el
       this.el = oj(function(){
         return oj.table();
       });
+
       // Use el if it was passed in
+      if (options.el != null)
+        this.el = oj.argumentShift(options, 'el')
 
-      if (options.el != null){
-        this.el = oj.argumentShift(options, 'el');
-      }
       // Default @each function to pass through values
-
       if ((_ref3 = options.each) == null){
         options.each = function(model, cell){
           var v, values, _j, _len1, _results;
@@ -3171,53 +2883,44 @@
           return _results;
         };
       }
+
       // Args have been handled so don't pass them on
-
       oj.Table.base.constructor.apply(this, [options]);
-      // Validate args as arrays
 
+      // Validate args as arrays
       for (_j = 0, _len1 = args.length; _j < _len1; _j++){
         arg = args[_j];
         if (!oj.isArray(arg)){
           throw new Error('oj.Table: array expected for row arguments');
         }
       }
-      // Set @rows to options or args if they exist
 
+      // Set @rows to options or args if they exist
       rows = (_ref4 = oj.argumentShift(options, 'rows')) != null ? _ref4 : args;
-      if (rows.length > 0){
-        return this.rows = rows;
-      }
+      if (rows.length > 0)
+        return this.rows = rows
     },
     properties: {
+
       // rowCount: The number of rows (readonly)
+      rowCount: {get: function(){return this.$trs.length}},
 
-      rowCount: {
-        get: function(){
-          return this.$trs.length;
-        }
-      },
       // columnCount: The number of columns (readonly)
+      columnCount: {get: function(){
+        var tflen, thlen, trlen;
 
-      columnCount: {
-        get: function(){
-          var tflen, thlen, trlen;
+        if ((trlen = this.$tr(0).find('> td').length) > 0)
+          return trlen
+        else if ((thlen = this.$theadTR.find('> th').length) > 0)
+          return thlen
+        else if ((tflen = this.$tfootTR.find('> td').length) > 0)
+          return tflen
+        else
+          return 0
 
-          if ((trlen = this.$tr(0).find('> td').length) > 0){
-            return trlen;
-          } else if ((thlen = this.$theadTR.find('> th').length) > 0){
-            return thlen;
-          } else if ((tflen = this.$tfootTR.find('> td').length) > 0){
-            return tflen;
-          } else {
-            return 0;
-          }
-        }
-      },
-      //
+      }},
 
       // rows: Row values as a list of lists as interpreted by ojValue plugin (readwrite)
-
       rows: {
         get: function(){
           var r, rx, _j, _ref2;
@@ -3242,8 +2945,8 @@
           this.make();
         }
       },
-      // header: Array of header values as interpreted by ojValue plugin (readwrite)
 
+      // header: Array of header values as interpreted by ojValue plugin (readwrite)
       header: {
         get: function(){
           return this.$theadTR.find('> th').ojValues();
@@ -3269,8 +2972,8 @@
           });
         }
       },
-      // footer: Array of footer values as interpreted by ojValue plugin (readwrite)
 
+      // footer: Array of footer values as interpreted by ojValue plugin (readwrite)
       footer: {
         get: function(){
           return this.$tfootTR.find('> td').ojValues();
@@ -3296,92 +2999,44 @@
           });
         }
       },
+
       // caption: The table caption (readwrite)
-
       caption: {
-        get: function(){
-          return this.$caption.ojValue();
-        },
-        set: function(v){
-          this.$captionMake.oj(v);
-        }
+        get: function(){return this.$caption.ojValue()},
+        set: function(v){this.$captionMake.oj(v)}
       },
+
       // Element accessors
+      $table: {get: function(){return this.$el}},
+      $caption: {get: function(){return this.$('> caption')}},
+      $colgroup: {get: function(){return this.$('> colgroup')}},
+      $thead: {get: function(){return this.$('> thead')}},
+      $tfoot: {get: function(){return this.$('> tfoot')}},
+      $tbody: {get: function(){return this.$('> tbody')}},
+      $theadTR: {get: function(){return this.$thead.find('> tr')}},
+      $tfootTR: {get: function(){return this.$tfoot.find('> tr')}},
+      $ths: {get: function(){return this.$theadTR.find('> th')}},
+      $trs: {get: function(){
+        var _ref2;
+        return (_ref2 = this._$trs) != null ? _ref2 : (this._$trs = this.$("> tbody > tr"));
+      }},
 
-      $table: {
-        get: function(){
-          return this.$el;
-        }
-      },
-      $caption: {
-        get: function(){
-          return this.$('> caption');
-        }
-      },
-      $colgroup: {
-        get: function(){
-          return this.$('> colgroup');
-        }
-      },
-      $thead: {
-        get: function(){
-          return this.$('> thead');
-        }
-      },
-      $tfoot: {
-        get: function(){
-          return this.$('> tfoot');
-        }
-      },
-      $tbody: {
-        get: function(){
-          return this.$('> tbody');
-        }
-      },
-      $theadTR: {
-        get: function(){
-          return this.$thead.find('> tr');
-        }
-      },
-      $tfootTR: {
-        get: function(){
-          return this.$tfoot.find('> tr');
-        }
-      },
-      $ths: {
-        get: function(){
-          return this.$theadTR.find('> th');
-        }
-      },
-      $trs: {
-        get: function(){
-          var _ref2;
-
-          return (_ref2 = this._$trs) != null ? _ref2 : (this._$trs = this.$("> tbody > tr"));
-        }
-      },
       // Table tags must have an order: `<caption>` `<colgroup>` `<thead>` `<tfoot>` `<tbody>`
-
       // These accessors create table tags and preserve this order very carefully
-
       // $colgroupMake: get or create `<colgroup>` after `<caption>` or prepended to `<table>`
 
-      $colgroupMake: {
-        get: function(){
-          if (this.$colgroup.length > 0){
-            return this.$colgroup;
-          }
-          t = '<colgroup></colgroup>';
-          if (this.$caption.length > 0){
-            this.$caption.insertAfter(t);
-          } else {
-            this.$table.append(t);
-          }
-          return this.$tbody;
-        }
-      },
-      // $captionMake: get or create `<caption>` prepended to `<table>`
+      $colgroupMake: {get: function(){
+        if (this.$colgroup.length > 0)
+          return this.$colgroup
+        t = '<colgroup></colgroup>'
+        if (this.$caption.length > 0)
+          this.$caption.insertAfter(t)
+        else
+          this.$table.append(t)
+        return this.$tbody
+      }},
 
+      // $captionMake: get or create `<caption>` prepended to `<table>`
       $captionMake: {
         get: function(){
           if (this.$caption.length > 0){
@@ -3391,42 +3046,39 @@
           return this.$caption;
         }
       },
-      // $tfootMake: get or create `<tfoot>` before `<tbody>` or appended to `<table>`
 
+      // $tfootMake: get or create `<tfoot>` before `<tbody>` or appended to `<table>`
       $tfootMake: {
         get: function(){
-          if (this.$tfoot.length > 0){
-            return this.$tfoot;
-          }
-          t = '<tfoot></tfoot>';
-          if (this.$tfoot.length > 0){
-            this.$tfoot.insertBefore(t);
-          } else {
-            this.$table.append(t);
-          }
-          return this.$tfoot;
+          if (this.$tfoot.length > 0)
+            return this.$tfoot
+          t = '<tfoot></tfoot>'
+          if (this.$tfoot.length > 0)
+            this.$tfoot.insertBefore(t)
+          else
+            this.$table.append(t)
+
+          return this.$tfoot
         }
       },
-      // $theadMake: get or create `<thead>` after `<colgroup>` or after `<caption>`, or prepended to `<table>`
 
+      // $theadMake: get or create `<thead>` after `<colgroup>` or after `<caption>`, or prepended to `<table>`
       $theadMake: {
         get: function(){
-          if (this.$thead.length > 0){
-            return this.$thead;
-          }
-          t = '<thead></thead>';
-          if (this.$colgroup.length > 0){
+          if (this.$thead.length > 0)
+            return this.$thead
+          t = '<thead></thead>'
+          if (this.$colgroup.length > 0)
             this.$colgroup.insertAfter(t);
-          } else if (this.$caption.length > 0){
-            this.$caption.insertAfter(t);
-          } else {
-            this.$table.prepend(t);
-          }
-          return this.$thead;
+          else if (this.$caption.length > 0)
+            this.$caption.insertAfter(t)
+          else
+            this.$table.prepend(t)
+          return this.$thead
         }
       },
-      // $tbodyMake: get or create `<tbody>` appened to `<table>`
 
+      // $tbodyMake: get or create `<tbody>` appened to `<table>`
       $tbodyMake: {
         get: function(){
           if (this.$tbody.length > 0){
@@ -3436,8 +3088,8 @@
           return this.$tbody;
         }
       },
-      // $theadTRMake: get or create `<tr>` inside of `<thead>`
 
+      // $theadTRMake: get or create `<tr>` inside of `<thead>`
       $theadTRMake: {
         get: function(){
           if (this.$theadTR.length > 0){
@@ -3447,8 +3099,8 @@
           return this.$theadTR;
         }
       },
-      // $tfootTRMake: get or create `<tr>` inside of `<tfoot>`
 
+      // $tfootTRMake: get or create `<tr>` inside of `<tfoot>`
       $tfootTRMake: {
         get: function(){
           if (this.$tfootTR.length > 0){
@@ -3459,22 +3111,20 @@
         }
       }
     },
-    // CollectionView Methods
 
     methods: {
-      // make: Remake everything
 
+      // make: Remake everything (override)
       make: function(){
-        // Some properties call make before construction completes
 
+        // Some properties call make before construction completes
         var model, models, row, rowViews, _j, _k, _len1, _len2, _ref2,
           _this = this;
 
-        if (!this.isConstructed){
-          return;
-        }
-        // Convert models to views
+        if (!this.isConstructed)
+          return
 
+        // Convert models to views
         rowViews = [];
         if ((this.models != null) && (this.each != null)){
           models = oj.isEvented(this.models) ? this.models.models : this._models;
@@ -3483,8 +3133,8 @@
             rowViews.push(this._rowFromModel(model));
           }
         } else if (this.rows != null){
-          // Rows need tds to become views
 
+          // Rows need tds to become views
           _ref2 = this.rows;
           for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++){
             row = _ref2[_k];
@@ -3500,8 +3150,8 @@
             }));
           }
         }
-        // Render rows into tbody
 
+        // Render rows into tbody
         if (rowViews.length > 0){
           this.$tbodyMake.oj(function(){
             var r, _l, _len3, _results;
@@ -3516,54 +3166,43 @@
         }
         this.bodyChanged();
       },
-      //
-
-      // On add minimally create the missing model
 
       collectionModelAdded: function(m, c){
-        var row, rx;
-
-        rx = c.indexOf(m);
-        row = this._rowFromModel(m);
+        var rx = c.indexOf(m),
+          row = this._rowFromModel(m)
         this._addRowTR(rx, oj(function(){
-          return oj.tr(row);
-        }));
+          return oj.tr(row)
+        }))
       },
-      // On add minimally create the missing model
 
       collectionModelRemoved: function(m, c, o){
         this.removeRow(o.index);
       },
+
       collectionReset: function(){
         this.make();
       },
-      //
-
-      // table.header(r,ojml)    // value for header
-
-      // table.cell(r,c,ojml)    // get/set value for cell
 
       // $tr: Get `<tr>` jquery element at row rx
-
       $tr: function(rx){
         rx = rx < 0 ? rx + count : rx;
         return this.$trs.eq(rx);
       },
-      // $tdsRow: Get list of `<td>`s in row rx
 
+      // $tdsRow: Get list of `<td>`s in row rx
       $tdsRow: function(rx){
         rx = rx < 0 ? rx + count : rx;
         return this.$tr(rx).find('> td');
       },
-      // $td: Get `<td>` row rx, column cx
 
+      // $td: Get `<td>` row rx, column cx
       $td: function(rx, cx){
         rx = rx < 0 ? rx + this.rowCount : rx;
         cx = cx < 0 ? cx + this.columnCount : cx;
         return this.$tdsRow(rx).eq(cx);
       },
-      // row: Get values at a given row
 
+      // row: Get values at a given row
       row: function(rx, listOJML){
         var cx, ojml, _j, _len1;
 
@@ -3580,8 +3219,8 @@
           return this.$tdsRow(rx).ojValues();
         }
       },
-      // cell: Get or set value at row rx, column cx
 
+      // cell: Get or set value at row rx, column cx
       cell: function(rx, cx, ojml){
         if (ojml != null){
           return this.$td(rx, cx).oj(ojml);
@@ -3589,10 +3228,8 @@
           return this.$td(rx, cx).ojValue();
         }
       },
-      // Manipulation Methods
 
       // addRow: Add row to index rx
-
       addRow: function(rx, listOJML){
         var tr;
 
@@ -3650,12 +3287,12 @@
       // moveRow: Move row at index rx (defaults to end)
       moveRow: function(rxFrom, rxTo){
         if (rxFrom === rxTo)
-          return;
+          return
 
-        rxFrom = this._bound(rxFrom, this.rowCount, ".moveRow: fromIndex");
-        rxTo = this._bound(rxTo, this.rowCount, ".moveRow: toIndex");
-        var insert = rxTo > rxFrom ? 'insertAfter' : 'insertBefore';
-        this.$tr(rxFrom)[insert](this.$tr(rxTo));
+        rxFrom = this._bound(rxFrom, this.rowCount, ".moveRow: fromIndex")
+        rxTo = this._bound(rxTo, this.rowCount, ".moveRow: toIndex")
+        var insert = rxTo > rxFrom ? 'insertAfter' : 'insertBefore'
+        this.$tr(rxFrom)[insert](this.$tr(rxTo))
         this.bodyChanged();
       },
 
