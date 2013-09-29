@@ -1,34 +1,36 @@
 // oj
 // ===================================================================
-// A unified templating framework for the people. Thirsty people.
-// ---
-(function(){
-  var ArrP, FunP, ObjP, concat, dhp, exports, jqName, key, ojName, pass, plugins, root, slice, strict4, strict5, t, typeName, unshift, w3, _a, _argsStack, _attributesBindEventsToDOM, _attributesFromObject, _attributesProcessedForOJ, _clone, _compileAny, _compileDeeper, _compileTag, _construct, _createQuietType, _cssFromMediaObject, _cssFromPluginObject, _dasherize, _decamelize, _doctypes, _extend, _flattenCSSMap, _flattenCSSMap_, _fn, _fn1, _getInstanceOnElement, _getQuietTagName, _getTagName, _has, _i, identity, _inherit, _insertStyles, _isCapitalLetter, _isEmpty, _j, _jqExtend, _jqGetValue, _keys, _len, _len1, _onLoadQueue, _pathNormArray, _pathRx, _pathSplit, _ref, _ref1, _ref2, _setInstanceOnElement, _setObject, _setTagName, _splitAndTrim, _styleClassFromPlugin, _styleFromObject, _toArray, _triggerTypes, _undef = 'undefined', _uniqueSort, _v, _values,
-    __slice = [].slice;
+// Unified templating for the people. Thirsty people.
 
-  root = this;
+;(function(){
+  var root = this,
+    ArrP = Array.prototype,
+    FunP = Function.prototype,
+    ObjP = Object.prototype,
+    slice = ArrP.slice,
+    unshift = ArrP.unshift,
+    concat = ArrP.concat,
+    pass = function(v){return v},
+    _udf = 'undefined'
 
-  // oj function
-  // ---
-  // oj function acts like a tag method that doesn't emit
-
-  function oj(){return oj.tag.apply(this, ['oj'].concat([].slice.call(arguments)).concat([{__quiet__:1}]));};
+  // oj function: a tag function that captures
+  function oj(){return oj.tag.apply(this, ['oj'].concat(slice.call(arguments)).concat([{__quiet__:1}]));};
 
   oj.version = '0.2.0'
 
   oj.isClient = !(typeof process !== "undefined" && process !== null ? process.versions != null ? process.versions.node : 0 : 0)
 
   // Detect jQuery globally or in required module
-  if (typeof $ != _undef)
+  if (typeof $ != _udf)
     oj.$ = $
-  else if (typeof require != _undef)
+  else if (typeof require != _udf)
     try {
       oj.$ = require('jquery')
     } catch (e){}
 
   // Export as a module in node
-  if (typeof require != _undef)
-    exports = module.exports = oj;
+  if (typeof require != _udf)
+    module.exports = oj;
   // Export globally if not in node
   else
     root['oj'] = oj;
@@ -36,26 +38,19 @@
   // Reference ourselves for template files to see
   oj.oj = oj;
 
-  // oj.load
-  // ---
-  // Load the page specified generating necessary html, css, and client side events.
-
+  // oj.load: load the page specified generating necessary html, css, and client side events
   oj.load = function(page){
     // Defer dom manipulation until the page is ready
     return oj.$(function(){
       oj.$.ojBody(require(page));
-      // Trigger events bound through onload
 
+      // Trigger events bound through onload
       return oj.onload();
     });
   };
 
-  // oj.onload
-  // ---
-  // Enlist in onload action.
-
-  _onLoadQueue = {queue: [], loaded: false}
-
+  // oj.onload: Enlist in onload action or run them.
+  var _onLoadQueue = {queue: [], loaded: false}
   oj.onload = function(f){
     // Call everything if no arguments
     if (oj.isUndefined(f)){
@@ -71,26 +66,11 @@
       _onLoadQueue.queue.push(f)
   }
 
-  // oj.emit
-  // ---
-  // Used by plugins to group multiple elements as if it is a single tag.
-
-  oj.emit = function(){
-    return oj.tag.apply(oj, ['oj'].concat(__slice.call(arguments)));
-  }
-
-  ArrP = Array.prototype
-  FunP = Function.prototype
-  ObjP = Object.prototype
-  slice = ArrP.slice
-  unshift = ArrP.unshift
-  concat = ArrP.concat
-  identity = pass = function(v){return v}
+  // oj.emit: Used by plugins to group multiple elements as if it is a single tag.
+  oj.emit = function(){return oj.tag.apply(oj, ['oj'].concat(slice.call(arguments)))}
 
   // Type Helpers
-  // ---
-
-  oj.isDefined = function(a){return typeof a !== _undef}
+  oj.isDefined = function(a){return typeof a !== _udf}
   oj.isOJ = function(obj){return !!(obj != null ? obj.isOJ : void 0)}
   oj.isOJType = function(a){return oj.isOJ(a) && a.type === a}
   oj.isOJInstance = function(a){return oj.isOJ(a) && !oj.isOJType(a)}
@@ -112,7 +92,7 @@
   oj.isArguments = function(a){return ObjP.toString.call(a) === '[object Arguments]'}
   oj.parse = function(str){
     var n, o = str
-    if (str === _undef)
+    if (str === _udf)
       o = void 0
     else if (str === 'null')
       o = null
@@ -120,23 +100,53 @@
       o = true
     else if (str === 'false')
       o = false
-    else if (!(isNaN(n = parseFloat(str))))
+    else if (!isNaN(n = parseFloat(str)))
       o = n
     return o;
   };
 
+  // unionArguments: Union arguments into options and args
+  oj.unionArguments = function(argList){
+    var options = {}, args = [], v, ix = 0
+    for (; ix < argList.length; ix++){
+      v = argList[ix]
+      if (oj.isPlainObject(v))
+        options = _extend(options, v)
+      else
+        args.push(v)
+    }
+    return {options: options, args: args}
+  }
+
+  // argumentShift: Shift argument out of options with key
+  oj.argumentShift = function(options, key){
+    var value;
+    if ((oj.isPlainObject(options)) && (key != null) && (options[key] != null)){
+      value = options[key]
+      delete options[key]
+    }
+    return value
+  };
+
   // Utility Helpers
-  // ---
+  var _keys = Object.keys,
+    _extend = oj.$.extend
 
-  _isCapitalLetter = function(c){return !!(c.match(/[A-Z]/));};
+  function _isCapitalLetter(c){return !!(c.match(/[A-Z]/));};
 
-  _has = function(obj, key){return ObjP.hasOwnProperty.call(obj, key)}
+  function _has(obj, key){return ObjP.hasOwnProperty.call(obj, key)}
 
-  _keys = Object.keys
+  function _values(obj){
+    var keys = _keys(obj),
+      len = keys.length,
+      values = new Array(len),
+      i = 0
+    for (; i < len; i++)
+      values[i] = obj[keys[i]]
+    return values
+  }
 
-  _values = function(obj){var keys = _keys(obj);var length = keys.length; var values = new Array(length); for (var i = 0; i < length; i++){values[i] = obj[keys[i]]; } return values}
-
-  _toArray = function(obj){
+  function _toArray(obj){
     if (!obj)
       return []
     if (oj.isArray(obj))
@@ -148,290 +158,224 @@
     return _values(obj)
   }
 
-
-  // _isEmpty: Determine if object or array is empty
-  _isEmpty = function(obj){
-    if (oj.isArray(obj))
-      return obj.length === 0
-    for (var k in obj){
-      if (_has(obj, k))
+  function _isEmpty(o){
+    if (oj.isArray(o))
+      return o.length === 0
+    for (var k in o)
+      if (_has(o, k))
         return false
-    }
     return true
   };
 
-  // _clone
-  _clone = function(obj){
-    if (!((oj.isArray(obj)) || (oj.isPlainObject(obj))))
-      return obj
-    if (oj.isArray(obj))
-      return obj.slice()
+  function _clone(o){
+    if (!(oj.isArray(o) || oj.isPlainObject(o)))
+      return o
+    if (oj.isArray(o))
+      return o.slice()
     else
-      return _extend({}, obj)
+      return _extend({}, o)
   }
 
-  // _setObject: Set object deeply and ensure each part is an object
-  _setObject = function(){
-    var ix, k, keys, o, obj, value, _i, _j, _len;
+  // _setObject(obj, k1, k2, ..., value):
+  // Set object deeply key by key ensure each part is an object
+  function _setObject(obj){
+    var args = arguments,
+      o = obj,
+      len = args.length,
+      // keys are args ix: 1 to n-2
+      keys = 3 <= len ? slice.call(args, 1, len = len - 1) : (len = 1, []),
+      // value is last arg
+      value = args[len++],
+      ix, k
 
-    obj = arguments[0], keys = 3 <= arguments.length ? __slice.call(arguments, 1, _i = arguments.length - 1) : (_i = 1, []), value = arguments[_i++];
-    o = obj;
-    for (ix = _j = 0, _len = keys.length; _j < _len; ix = ++_j){
-      k = keys[ix];
+    for (ix = 0; ix < keys.length; ix++){
+      k = keys[ix]
+
       // Initialize key to empty object if necessary
+      if (typeof o[k] !== 'object')
+        o[k] = {}
 
-      if (typeof o[k] !== 'object'){
-        if (!(typeof o[k] === 'object')){
-          o[k] = {};
-        }
-      }
       // Set final value if this is the last key
-
-      if (ix === keys.length - 1){
-        o[k] = value;
-        break;
-      }
-      // Continue deeper
-
-      o = o[k];
+      if (ix === keys.length - 1)
+        o[k] = value
+      else
+        // Continue deeper
+        o = o[k]
     }
-    return obj;
+    return obj
   };
 
-  // Functional Helpers
-  // ---
+  // uniqueSort:
+  function uniqueSort(arr, isSorted){
+    if (isSorted == null)
+      isSorted = false
 
-  // _extend
-  _extend = oj.$.extend;
+    if (!isSorted)
+      arr.sort()
 
-  // _uniqueSort
-
-
-  _uniqueSort = function(array, isSorted){
-    var item, ix, out, _i, _len;
-
-    if (isSorted == null){
-      isSorted = false;
+    var out = [], ix, item
+    for (ix = 0; ix < arr.length; ix++){
+      item = arr[ix]
+      if (ix > 0 && arr[ix - 1] === arr[ix])
+        continue
+      out.push(item)
     }
-    if (!isSorted){
-      array.sort();
-    }
-    out = [];
-    for (ix = _i = 0, _len = array.length; _i < _len; ix = ++_i){
-      item = array[ix];
-      if (ix > 0 && array[ix - 1] === array[ix]){
-        continue;
-      }
-      out.push(item);
-    }
-    return out;
+    return out
   };
 
-  // Error Handling Helpers
-  // ---
-  // Assert cond is true or throw message
-
-  _a = function(cond, msg, fn){
+  // _a: assert with message and optional fn name
+  function _a(cond, msg, fn){
     if (!cond){
-      if (fn){
+      if (fn)
         msg = "oj." + fn + ": " + msg;
-      }
       throw new Error(msg);
     }
-  };
+  }
 
-  // Validate fn argument at position n matches type
-  _v = function(fn, n, v, type){
-    n = {
-      1: 'first',
-      2: 'second',
-      3: 'third',
-      4: 'fourth',
-      5: 'fifth'
-    }[n];
+  // _v: validate argument n with fn name and message
+  function _v(fn, n, v, type){
+    n = {1:'first',2:'second',3: 'third', 4: 'fourth', 5: 'fifth'}[n];
     _a(!type || (typeof v === type), "" + type + " expected for " + n + " argument", fn);
   };
 
-  // String Helpers
-  // ---
-  // _splitAndTrim: Split string by seperator and trim result
-  _splitAndTrim = function(str, seperator, limit){
-    var r;
+  // _d(args...): initialization helper that returns first arg that isn't null
+  function _d(){
+    for (var ix = 0;ix < arguments.length; ix++)
+      if (arguments[ix] != null)
+        return arguments[ix]
+    return null
+  }
 
-    r = str.split(seperator, limit);
-    return r.map(function(v){
+  // _splitAndTrim: Split string by seperator and trim result
+  function _splitAndTrim(str, seperator, limit){
+    return str.split(seperator, limit).map(function(v){
       return v.trim();
     });
   };
 
-  // _dasherize: Convert from camal case or space seperated to dashes
-  _dasherize = function(str){return _decamelize(str).replace(/[ _]/g, '-')}
-
   // _decamelize: Convert from camal case to underscore case
-  _decamelize = function(str){return str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}
+  function _decamelize(str){return str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}
+
+  // _dasherize: Convert from camal case or space seperated to dashes
+  function _dasherize(str){return _decamelize(str).replace(/[ _]/g, '-')}
+
+  // Placeholder functions for server side minification
+  oj._minifyJS = function(js, options){return js}
+  oj._minifyCSS = function(css, options){return css}
 
   // Path Helpers
   // ---
   // Used to implement require client side. These methods are simplified versions of
   // the node `path` library: github.com/joyent/node/lib/path.js
 
-  _pathRx = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/;
+  var _pathRx = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/;
 
-  _pathSplit = function(fname){
+  function _pathSplit(fname){
     var result = _pathRx.exec(fname)
     return [result[1] || '', result[2] || '', result[3] || '', result[4] || ''];
   };
 
-  _pathNormArray = function(parts, allowAboveRoot){
-    var i, last, up;
-
-    up = 0;
-    i = parts.length - 1;
+  function _pathNormArray(parts, allowAboveRoot){
+    var up = 0,
+      i = parts.length - 1,
+      last
     while (i >= 0){
       last = parts[i];
-      if (last === '.'){
-        parts.splice(i, 1);
-      } else if (last === '..'){
-        parts.splice(i, 1);
-        up++;
+      if (last === '.')
+        parts.splice(i, 1)
+      else if (last === '..'){
+        parts.splice(i, 1)
+        up++
       } else if (up){
-        parts.splice(i, 1);
-        up--;
+        parts.splice(i, 1)
+        up--
       }
-      i--;
+      i--
     }
-    if (allowAboveRoot){
-      while (up--){
-        parts.unshift('..');
-      }
-    }
-    return parts;
+    if (allowAboveRoot)
+      while (up--)
+        parts.unshift('..')
+    return parts
   };
 
   oj._pathResolve = function(){
-    var i, isAbsolute, path, resolvedPath;
-
-    resolvedPath = '';
-    isAbsolute = false;
-    i = arguments.length - 1;
+    var resolvedPath = '',
+      isAbsolute = false,
+      i = arguments.length - 1,
+      path
     while (i >= -1 && !isAbsolute){
       path = i >= 0 ? arguments[i] : process.cwd();
-      if ((typeof path !== 'string') || !path){
+      if ((typeof path !== 'string') || !path)
         continue;
-      }
-      resolvedPath = path + '/' + resolvedPath;
-      isAbsolute = path.charAt(0) === '/';
-      i--;
+      resolvedPath = path + '/' + resolvedPath
+      isAbsolute = path.charAt(0) === '/'
+      i--
     }
     resolvedPath = _pathNormArray(resolvedPath.split('/').filter(function(p){
       return !!p;
-    }), !isAbsolute).join('/');
-    return ((isAbsolute ? '/' : '') + resolvedPath) || '.';
+    }), !isAbsolute).join('/')
+    return ((isAbsolute ? '/' : '') + resolvedPath) || '.'
   };
 
   oj._pathNormalize = function(path){
-    var isAbsolute, trailingSlash;
-
-    isAbsolute = path.charAt(0) === '/';
-    trailingSlash = path.substr(-1) === '/';
+    var isAbsolute = path.charAt(0) === '/',
+    trailingSlash = path.substr(-1) === '/'
     path = _pathNormArray(path.split('/').filter(function(p){
-      return !!p;
-    }), !isAbsolute).join('/');
-    if (!path && !isAbsolute){
-      path = '.';
-    }
-    if (path && trailingSlash){
-      path += '/';
-    }
-    return (isAbsolute ? '/' : '') + path;
+      return !!p
+    }), !isAbsolute).join('/')
+    if (!path && !isAbsolute)
+      path = '.'
+    if (path && trailingSlash)
+      path += '/'
+    return (isAbsolute ? '/' : '') + path
   };
 
   oj._pathJoin = function(){
-    var paths;
-
-    paths = slice.call(arguments, 0);
+    var paths = slice.call(arguments, 0)
     return oj._pathNormalize(paths.filter(function(p, index){
-      return p && typeof p === 'string';
-    }).join('/'));
-  };
+      return p && typeof p === 'string'
+    }).join('/'))
+  }
 
   oj._pathDirname = function(path){
-    var dir, result;
-
-    result = _pathSplit(path);
-    root = result[0];
-    dir = result[1];
-    if (!root && !dir){
-      return '.';
-    }
-    if (dir){
-      dir = dir.substr(0, dir.length - 1);
-    }
-    return root + dir;
+    var result = _pathSplit(path),
+    root = result[0],
+    dir = result[1]
+    if (!root && !dir)
+      return '.'
+    if (dir)
+      dir = dir.substr(0, dir.length - 1)
+    return root + dir
   };
 
-  // oj.addMethod
-
-
-  // ---
-
-
-  // Add multiple methods to an object
-
-
+  // oj.addMethod: add multiple methods to an object
   oj.addMethods = function(obj, mapNameToMethod){
-    var method, methodName;
+    for (var methodName in mapNameToMethod)
+      oj.addMethod(obj, methodName, mapNameToMethod[methodName]);
+  }
 
-    for (methodName in mapNameToMethod){
-      method = mapNameToMethod[methodName];
-      oj.addMethod(obj, methodName, method);
-    }
-  };
-
-  // oj.addMethod
-
-
-  // ---
-
-
-  // Add method to an object
-
-
-  oj.addMethod = function(obj, methodName, method){
-    _v('addMethod', 2, methodName, 'string');
-    _v('addMethod', 3, method, 'function');
+  // oj.addMethod: Add method to object with name and fn
+  oj.addMethod = function(obj, name, fn){
+    _v('addMethod', 2, name, 'string')
+    _v('addMethod', 3, fn, 'function')
     // Methods are non-enumerable, non-writable properties
-
-    Object.defineProperty(obj, methodName, {
-      value: method,
+    Object.defineProperty(obj, name, {
+      value: fn,
       enumerable: false,
       writable: false,
       configurable: true
-    });
+    })
+  }
+
+  // oj.removeMethod: Remove a method with name from an object
+  oj.removeMethod = function(obj, name){
+    _v('removeMethod', 2, name, 'string');
+    delete obj[name]
   };
 
-  // oj.removeMethod
-  // ---
-  // Remove a method from an object
-  oj.removeMethod = function(obj, methodName){
-    _v('removeMethod', 2, methodName, 'string');
-    delete obj[methodName];
-  };
-
-  // oj.addProperties
-  // ---
-  // Add multiple properties to an object
+  // oj.addProperties: add multiple properties to an object
   // Properties can be specified by get/set methods or by a value
-
-  // Value Property:
-  // `age: 7    # defaults to {writable:true, enumerable:true}`
-
-  // Value Property with specified writable/enumerable:
-  // `age: {value:7, writable:false, enumerable:false}`
-
-  // Readonly Get Property
-  // `age: {get:(-> 7)}`
-
+  // Optionally you can include writable or enumerable settings
   oj.addProperties = function(obj, mapNameToInfo){
 
     // Iterate over properties
@@ -440,76 +384,56 @@
     for (propName in mapNameToInfo){
       propInfo = mapNameToInfo[propName];
 
-      // Wrap the value if propInfo is not already a property definition
-      if (((propInfo != null ? propInfo.get : void 0) == null) && ((propInfo != null ? propInfo.value : void 0) == null)){
-        propInfo = {
-          value: propInfo,
-          writable: true
-        };
-      }
+      // Wrap the value if propInfo is not already a prop definition
+      if (((propInfo != null ? propInfo.get : void 0) == null) &&
+          ((propInfo != null ? propInfo.value : void 0) == null))
+        propInfo = {value: propInfo, writable: true}
+
       oj.addProperty(obj, propName, propInfo);
     }
   };
 
-  // oj.addProperty
-  // ---
-
-  oj.addProperty = function(obj, propName, propInfo){
-    _v('addProperty', 2, propName, 'string');
-    _v('addProperty', 3, propInfo, 'object');
+  // oj.addProperty: Add property to object with name and info
+  oj.addProperty = function(obj, name, info){
+    _v('addProperty', 2, name, 'string')
+    _v('addProperty', 3, info, 'object')
 
     // Default properties to enumerable and configurable
-    propInfo = _extend({
-      enumerable: true,
-      configurable: true
-    }, propInfo);
+    info = _extend({enumerable: true, configurable: true}, info)
 
     // Remove property if it already exists
-    if (Object.getOwnPropertyDescriptor(obj, propName) != null){
-      oj.removeProperty(obj, propName);
-    }
+    if (Object.getOwnPropertyDescriptor(obj, name) != null)
+      oj.removeProperty(obj, name)
 
     // Add the property
-    Object.defineProperty(obj, propName, propInfo);
+    Object.defineProperty(obj, name, info)
   };
 
-  // oj.removeProperty
-  // ---
+  // oj.removeProperty: remove property from object with name
+  oj.removeProperty = function(obj, name){
+    _v('removeProperty', 2, name, 'string')
+    delete obj[name]
+  }
 
-  oj.removeProperty = function(obj, propName){
-    _v('removeProperty', 2, propName, 'string');
-    delete obj[propName];
+  // oj.isProperty: Determine property in object is a get/set property
+  oj.isProperty = function(obj, name){
+    _v('isProperty', 2, name, 'string')
+    return Object.getOwnPropertyDescriptor(obj, name).get != null
   };
 
-  // oj.isProperty
-  // ---
-  // Determine if the specified key is was defined by addProperty
-
-  oj.isProperty = function(obj, propName){
-    _v('isProperty', 2, propName, 'string');
-    return Object.getOwnPropertyDescriptor(obj, propName).get != null;
-  };
-
-  // oj.copyProperty
-  // ---
-  // Determine copy source.propName to dest.propName
-
+  // oj.copyProperty: Copy source.propName to dest.propName
   oj.copyProperty = function(dest, source, propName){
-    var info = Object.getOwnPropertyDescriptor(source, propName);
-    if (info.value != null){
-      info.value = _clone(info.value);
-    }
-    return Object.defineProperty(dest, propName, info);
-  };
+    var info = Object.getOwnPropertyDescriptor(source, propName)
+    if (info.value != null)
+      info.value = _clone(info.value)
+    return Object.defineProperty(dest, propName, info)
+  }
 
-  // _argsStack
-  // ---
-  // Abstraction to wrap global arguments stack. This makes me sad but it is necessary for div -> syntax
+  // _argsStack: Abstraction to wrap global arguments stack.
+  // This makes me sad but it is necessary for div -> syntax
+  var _argsStack = [];
 
-  // Stack of results
-  _argsStack = [];
-
-  // Result is top of the stack
+  // Access the top of the stack
   oj._argsTop = function(){
     if (_argsStack.length)
       return _argsStack[_argsStack.length - 1]
@@ -519,9 +443,7 @@
 
   // Push scope onto arguments
   oj._argsPush = function(args){
-    if (args == null)
-      args = []
-    _argsStack.push(args)
+    _argsStack.push(_d(args,[]))
   }
 
   // Pop scope from arguments
@@ -538,22 +460,20 @@
       top.push(arg)
   }
 
-  // oj.tag (name, attributes, content, content, ...)
-  // ---
-  oj.tag = function(){
-    var arg, args, attributes, isQuiet, len, name, ojml, r, rest, _i, _len, _ref1;
+  // oj.tag (name, attributes, rest...)
+  oj.tag = function(name){
+    _v('tag', 1, name, 'string')
 
-    name = arguments[0], rest = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+    var rest = 2 <= arguments.length ? slice.call(arguments, 1) : [],
+      u = oj.unionArguments(rest),
+      args = u.args,
+      attributes = u.options,
+      isQuiet = attributes.__quiet__,
+      arg, len, r, ix,
+      // Build ojml starting with tag
+      ojml = [name]
 
-    // Validate input
-    _v('tag', 1, name, 'string');
-
-    // Build ojml starting with tag
-    ojml = [name];
-
-    // Get attributes from rest by unioning all objects
-    _ref1 = oj.unionArguments(rest), args = _ref1.args, attributes = _ref1.options;
-    if (isQuiet = attributes.__quiet__)
+    if (isQuiet)
       delete attributes.__quiet__;
 
     // Add attributes to ojml if they exist
@@ -561,17 +481,17 @@
       ojml.push(attributes);
 
     // Store current tag context
-    oj._argsPush(ojml);
+    oj._argsPush(ojml)
 
     // Loop over attributes
-    for (_i = 0, _len = args.length; _i < _len; _i++){
-      arg = args[_i];
+    for (ix = 0; ix < args.length; ix++){
+      arg = args[ix]
 
       if (oj.isPlainObject(arg))
-        continue;
+        continue
 
       else if (oj.isFunction(arg)){
-        len = oj._argsTop().length;
+        len = oj._argsTop().length
 
         // Call the fn tags will append to oj._argsTop
         r = arg()
@@ -605,35 +525,23 @@
   // Keep track of all valid elements
   oj.tag.elements.all = (oj.tag.elements.closed.concat(oj.tag.elements.open)).sort()
 
-  // Determine if an element is closed or open
-  oj.tag.isClosed = function(tag){
-    return oj.tag.elements.open.indexOf(tag) === -1
-  }
+  // tag.isClosed: Determine if an element is closed or open
+  oj.tag.isClosed = function(tag){return oj.tag.elements.open.indexOf(tag) === -1}
 
-  // Record tag name on a given tag function
-  _setTagName = function(tag, name){
-    if (tag != null)
-      tag.tagName = name
-  }
+  // _setTagName: Record tag name on a given tag function
+  function _setTagName(tag, name){if (tag != null) tag.tagName = name }
 
-  // Get a tag name on a given tag function
-  _getTagName = function(tag){
-    return tag.tagName;
-  }
+  // _getTagName: Get a tag name on a given tag function
+  function _getTagName(tag){return tag.tagName}
 
-  // Get quiet tag name
-  _getQuietTagName = function(tag){
-    return '_' + tag;
-  }
+  // _getQuietTagName: Get quiet tag name
+  function _getQuietTagName(tag){return '_' + tag}
 
-  // Record an oj instance on a given element
-  _setInstanceOnElement = function(el, inst){
-    if (el != null)
-      el.oj = inst
-  }
+  // _setInstanceOnElement: Record an oj instance on a given element
+  function _setInstanceOnElement(el, inst){if (el != null) el.oj = inst}
 
-  // Get a oj instance on a given element
-  _getInstanceOnElement = function(el){
+  // _getInstanceOnElement: Get a oj instance on a given element
+  function _getInstanceOnElement(el){
     if ((el != null ? el.oj : 0) != null)
       return el.oj
     else
@@ -641,44 +549,29 @@
   }
 
   // Create tag methods for all elements
-  _ref1 = oj.tag.elements.all;
-  _fn = function(t){
-    // Tag functions emit by default
-    var qt;
+  for (var ix = 0; ix < oj.tag.elements.all.length; ix++){
+    t = oj.tag.elements.all[ix]
+    ;(function(t){
+      // Define tag function named t
+      oj[t] = function(){return oj.tag.apply(oj, [t].concat(slice.call(arguments)))}
 
-    oj[t] = function(){
-      return oj.tag.apply(oj, [t].concat(__slice.call(arguments)));
-    };
+      // Quiet tag functions do not emit
+      // Define quiet tag function named qt
+      var qt = _getQuietTagName(t)
+      oj[qt] = function(){return oj.tag.apply(oj, [t, {__quiet__: 1 }].concat(slice.call(arguments)))}
 
-    // Underscore tag functions do not emit
-    qt = _getQuietTagName(t);
-    oj[qt] = function(){
-      return oj.tag.apply(oj, [t, {
-        __quiet__: 1
-      }].concat(__slice.call(arguments)));
-    };
-
-    // Record the tag name so the OJML syntax can use the function instead of a string
-    _setTagName(oj[t], t);
-    return _setTagName(oj[qt], t);
-  };
-
-  for (_i = 0, _len = _ref1.length; _i < _len; _i++){
-    t = _ref1[_i];
-    _fn(t);
+      // Tag functions remember their name so the OJML syntax can use the function
+      _setTagName(oj[t], t)
+      _setTagName(oj[qt], t)
+    })(t)
   }
 
-  // oj.doctype
-  // ---
-  // Method to define doctypes based on short names
-  // Define helper variables
+  // oj.doctype: Method to define doctypes based on short names
 
-  dhp = 'HTML PUBLIC "-//W3C//DTD HTML 4.01'
-  w3 = '"http://www.w3.org/TR/html4/'
-  strict5 = 'html'
-  strict4 = dhp + '//EN" ' + w3 + 'strict.dtd"'
-
-  // Define possible arguments
+  var dhp = 'HTML PUBLIC "-//W3C//DTD HTML 4.01',
+  w3 = '"http://www.w3.org/TR/html4/',
+  strict5 = 'html',
+  strict4 = dhp + '//EN" ' + w3 + 'strict.dtd"',
   _doctypes = {
     '5': strict5,
     'HTML 5': strict5,
@@ -690,40 +583,34 @@
 
   // Define the method passing through to !DOCTYPE tag function
   oj.doctype = function(typeOrValue){
-    var value, _ref2;
-
-    if (typeOrValue == null){
-      typeOrValue = '5';
-    }
-    value = (_ref2 = _doctypes[typeOrValue]) != null ? _ref2 : typeOrValue;
-    return oj['!DOCTYPE'](value);
+    typeOrValue = _d(typeOrValue,'5')
+    return oj['!DOCTYPE'](_d(_doctypes[typeOrValue], typeOrValue))
   };
 
-  // oj.extendInto (context)
-  // ---
-  // Extend all OJ methods into a context. Common contexts are `global` `window`
+  // oj.extendInto (context): Extend all OJ methods into a context.
+  // Defaults to root, which is either `global` or `window`
 
   // Methods that start with _ are not extended
   oj.useGlobally = oj.extendInto = function(context){
-    var k, o, qn, v;
+    context = _d(context,root)
 
-    if (context == null)
-      context = root
+    var o = {}, k, qn, v;
 
-    o = {}
+    // For all keys and values in oj
     for (k in oj){
-      v = oj[k];
+      v = oj[k]
+
+      // Extend into new object
       if (k[0] !== '_' && k !== 'extendInto' && k !== 'useGlobally'){
-        o[k] = v;
+        o[k] = v
 
         // Export _tag and _Type methods
-        qn = _getQuietTagName(k);
+        qn = _getQuietTagName(k)
         if (oj[qn])
           o[qn] = oj[qn]
-
       }
     }
-    return _extend(context, o)
+    _extend(context, o)
   };
 
   // oj.compile(options, ojml)
@@ -739,54 +626,44 @@
   // * ignore:{html:1} - Map of tags to ignore while compiling
 
   oj.compile = function(options, ojml){
-    var acc, css, cssMap, dom, html, pluginCSSMap;
-
     // Options is optional
-    if (ojml == null){
-      ojml = options;
-      options = {};
-    }
+    ojml = _d(ojml, options)
+
+    var css, cssMap, dom, html,
 
     // Default options to compile everything
-    options = _extend({
-      html: true,
-      dom: false,
-      css: false,
-      cssMap: false,
-      minify: false,
-      ignore: {}
-    }, options);
+    options = _extend({html:1, dom:0, css:0, cssMap:0, minify:0, ignore:{}}, options),
 
-    // Always ignore oj and css tags
-    _extend(options.ignore, {
-      oj: 1,
-      css: 1
-    });
-    acc = _clone(options);
-    acc.html = options.html ? [] : null;
-    acc.dom = options.dom && (typeof document !== "undefined" && document !== null) ? document.createElement('OJ') : null;
+    // Init accumulator
+    acc = _clone(options)
+
+    acc.html = options.html ? [] : null
+    acc.dom = options.dom && (typeof document !== "undefined" && document !== null) ? document.createElement('OJ') : null
     acc.css = options.css || options.cssMap ? {} : null;
-    acc.indent = '';
+    acc.indent = ''
+
     if (options.dom)
       acc.types = [];
 
-    acc.tags = {};
-    _compileAny(ojml, acc);
+    acc.tags = {}
 
+    // Always ignore oj and css tags
+    _extend(options.ignore, {oj:1, css:1})
+
+    // Recursive compile to accumulator
+    _compileAny(ojml, acc)
+
+    // Flatten CSS
     if (acc.css != null)
-      pluginCSSMap = _flattenCSSMap(acc.css)
-
-    // Output cssMap if necessary
-    if (options.cssMap)
-      cssMap = pluginCSSMap;
+      cssMap = _flattenCSSMap(acc.css)
 
     // Generate css if necessary
-    if (options.css){
-      css = _cssFromPluginObject(pluginCSSMap, {
-        minify: options.minify,
-        tags: 0
-      });
-    }
+    if (options.css)
+      css = _cssFromPluginObject(cssMap, {minify: options.minify, tags: 0})
+
+    // Output cssMap if necessary
+    if (!options.cssMap)
+      cssMap = undefined
 
     // Generate HTML if necessary
     if (options.html)
@@ -801,29 +678,22 @@
       // Cleanup inconsistencies of childNodes
       if (dom.length != null){
         // Make dom a real array
-
-        dom = _toArray(dom);
+        dom = _toArray(dom)
 
         // Filter out anything that isn't a dom element
-        dom = dom.filter(function(v){
-          return oj.isDOM(v);
-        });
+        dom = dom.filter(function(v){return oj.isDOM(v)})
       }
 
       // Ensure dom is null if empty
       if (dom.length === 0)
         dom = null
+
+      // Single elements are not returned as a list
       else if (dom.length === 1)
-
-        // Single elements are returned themselves not as a list
-        // Reasoning: The common cases don't have multiple elements <html>,<body>
-
-        // or the complexity doesn't matter because insertion is abstracted for you
-
-        // In short it is easier to check for isArray dom, then isArray dom && dom.length > 0
-
-        dom = dom[0];
-
+        // Reasoning: The common cases don't have multiple elements
+        // <html>,<body>, etc and this is abstracted for you anyway
+        // with jQuery plugins
+        dom = dom[0]
     }
     return {
       html: html,
@@ -835,103 +705,89 @@
     }
   };
 
-  // _styleFromObject:
-  // ---
-  // Convert object to style string
-  _styleFromObject = function(obj, options){
-    var indent, ix, k, kFancy, keys, newline, out, semi, _j, _len1, _ref2;
-
-    if (options == null){
-      options = {};
-    }
-
-    // Default options
+  // _styleFromObject: Convert object to style string
+  function _styleFromObject(obj, options){
     options = _extend({
       inline: true,
       indent: ''
-    }, options);
+    }, options)
 
     // Trailing semi should only exist on when we aren't indenting
     options.semi = !options.inline;
-    out = "";
+
+    var out = "",
 
     // Sort keys to create consistent output
-    keys = _keys(obj).sort();
+    keys = _keys(obj).sort(),
 
     // Support indention and inlining
-    indent = (_ref2 = options.indent) != null ? _ref2 : '';
-    newline = options.inline ? '' : '\n';
-    for (ix = _j = 0, _len1 = keys.length; _j < _len1; ix = ++_j){
-      kFancy = keys[ix];
+    indent = options.indent != null ? options.indent : '',
+    newline = options.inline ? '' : '\n',
+    ix, k, kFancy, semi
+
+    for (ix = 0; ix < keys.length; ix++){
+      kFancy = keys[ix]
 
       // Add semi if it is not inline or it is not the last key
-      semi = options.semi || ix !== keys.length - 1 ? ";" : '';
-      // Allow keys to be camal case
+      semi = options.semi || ix !== keys.length - 1 ? ";" : ''
 
-      k = _dasherize(kFancy);
+      // Allow keys to be camal case
+      k = _dasherize(kFancy)
 
       // Collect css result for this key
-      out += "" + indent + k + ":" + obj[kFancy] + semi + newline;
+      out += "" + indent + k + ":" + obj[kFancy] + semi + newline
     }
-    return out;
+    return out
   };
 
-  // _attributesFromObject: Convert object to attribute string
-  // ---
-  // This object has nothing special. No renamed keys, no jquery events. It is
-  // precicely what must be serialized with no adjustment.
-
-  _attributesFromObject = function(obj){
+  // _attributesFromObject: Convert object to attribute string with no special conversions
+  function _attributesFromObject(obj){
+    if (!oj.isPlainObject(obj))
+      return obj
 
     // Pass through non objects
-    var k, out, space, v, _j, _len1, _ref2;
+    var k, v, ix,
+      out = '',
+      space = '',
+      // Serialize attributes in order for consistent output
+      attrs = _keys(obj).sort()
 
-    if (!oj.isPlainObject(obj)){
-      return obj;
-    }
-    out = '';
+    for (ix = 0; ix < attrs.length; ix++){
+      k = attrs[ix]
+      v = obj[k]
 
-    // Serialize attributes in order for consistent output
-    space = '';
-    _ref2 = _keys(obj).sort();
-    for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++){
-      k = _ref2[_j];
-      v = obj[k];
       // Boolean attributes have no value
       if (v === true)
-        out += "" + space + k;
+        out += "" + space + k
+
       // Other attributes have a value
       else
-        out += "" + space + k + "=\"" + v + "\"";
+        out += "" + space + k + "=\"" + v + "\""
 
-      space = ' ';
+      space = ' '
     }
     return out;
   };
 
-  // _flattenCSSMap
-  // ---
-  // Take an OJ object definition of CSS and simplify it to the form:
+  // _flattenCSSMap: Take an OJ cssMap and flatten it into the form
   // `'plugin' -> '@media query' -> 'selector' ->'rulesMap'`
+  //
   // This method vastly simplifies `_cssFromPluginObject`
-  // Nested definitions, media definitions and comma definitions are resolved.
-
-  _flattenCSSMap = function(cssMap){
-    var cssMap_, flatMap, plugin;
-
-    flatMap = {};
+  // Nested, media, and comma definitions are resolved and merged
+  function _flattenCSSMap(cssMap){
+    var flatMap = {}, plugin, cssMap_
     for (plugin in cssMap){
-      cssMap_ = cssMap[plugin];
-      _flattenCSSMap_(cssMap_, flatMap, [''], [''], plugin);
+      cssMap_ = cssMap[plugin]
+      _flattenCSSMap_(cssMap_, flatMap, [''], [''], plugin)
     }
-    return flatMap;
+    return flatMap
   };
 
   // Recursive helper with accumulators (it outputs flatMapAcc)
-  _flattenCSSMap_ = function(cssMap, flatMapAcc, selectorsAcc, mediasAcc, plugin){
+  function _flattenCSSMap_(cssMap, flatMapAcc, selectorsAcc, mediasAcc, plugin){
 
     // Built in media helpers
-    var acc, cur, inner, isMedia, mediaJoined, medias, mediasNext, next, outer, parts, rules, selector, selectorJoined, selectorsNext, _j, _k, _len1, _len2;
+    var acc, cur, inner, isMedia, mediaJoined, mediasNext, next, outer, parts, rules, selector, selectorJoined, selectorsNext, o, i,
 
     medias = {
       'widescreen': 'only screen and (min-width: 1200px)',
@@ -939,117 +795,104 @@
       'tablet': 'only screen and (min-width: 768px) and (max-width: 959px)',
       'phone': 'only screen and (max-width: 767px)'
     };
+
     for (selector in cssMap){
-      rules = cssMap[selector];
+      rules = cssMap[selector]
 
       // Base Case: Record our selector when `rules` is a value
       if (typeof rules !== 'object'){
 
         // Join selectors and media accumulators with commas
-        selectorJoined = selectorsAcc.sort().join(',');
-        mediaJoined = mediasAcc.sort().join(',');
+        selectorJoined = selectorsAcc.sort().join(',')
+        mediaJoined = mediasAcc.sort().join(',')
 
         // Prepend @media as that was removed previously when spliting into parts
-        if (mediaJoined !== ''){
-          mediaJoined = "@media " + mediaJoined;
-        }
+        if (mediaJoined !== '')
+          mediaJoined = "@media " + mediaJoined
 
         // Record the rule deeply in `flatMapAcc`
-        _setObject(flatMapAcc, plugin, mediaJoined, selectorJoined, selector, rules);
+        _setObject(flatMapAcc, plugin, mediaJoined, selectorJoined, selector, rules)
+      // Recursive Case: Recurse on `rules` when it is an object
       } else {
 
-        // Recursive Case: Recurse on `rules` when it is an object
         // (r1) Media Query found: Generate the next media queries
         if (selector.indexOf('@media') === 0){
-          isMedia = true;
-          mediasNext = next = [];
-          selectorsNext = selectorsAcc;
-          selector = (selector.slice('@media'.length)).trim();
-          acc = mediasAcc;
-        } else {
+          isMedia = true
+          mediasNext = next = []
+          selectorsNext = selectorsAcc
+          selector = (selector.slice('@media'.length)).trim()
+          acc = mediasAcc
 
-          // (r2) Selector found: Generate the next selectors
-          isMedia = false;
-          selectorsNext = next = [];
-          mediasNext = mediasAcc;
-          acc = selectorsAcc;
+        // (r2) Selector found: Generate the next selectors
+        } else {
+          isMedia = false
+          selectorsNext = next = []
+          mediasNext = mediasAcc
+          acc = selectorsAcc
         }
 
         // Media queries and Selectors can be comma seperated
-        parts = _splitAndTrim(selector, ',');
+        parts = _splitAndTrim(selector, ',')
 
         // Media queries have convience substitutions like 'phone', 'tablet'
         if (isMedia){
           parts = parts.map(function(v){
-            if (medias[v] != null){
-              return medias[v];
-            } else {
-              return v;
-            }
+            return _d(medias[v], v)
           });
         }
 
         // Determine the next selectors or media queries
-        for (_j = 0, _len1 = acc.length; _j < _len1; _j++){
-          outer = acc[_j];
-          for (_k = 0, _len2 = parts.length; _k < _len2; _k++){
-            inner = parts[_k];
+        for (o = 0; o < acc.length; o++){
+          outer = acc[o]
+
+          for (i = 0; i < parts.length; i++){
+            inner = parts[i]
 
             // When `&` is not present just insert in front with the correct join operator
-            cur = inner;
-            if ((inner.indexOf('&')) === -1 && outer !== ''){
+            cur = inner
+            if ((inner.indexOf('&')) === -1 && outer !== '')
               cur = (isMedia ? '& and ' : '& ') + cur;
-            }
+
             next.push(cur.replace(/&/g, outer));
           }
         }
 
         // Recurse through objects after calculating the next selectors
-        _flattenCSSMap_(rules, flatMapAcc, selectorsNext, mediasNext, plugin);
+        _flattenCSSMap_(
+          rules, flatMapAcc, selectorsNext, mediasNext, plugin
+        );
       }
     }
   };
 
-  // _styleClassFromPlugin:
-  _styleClassFromPlugin = function(plugin){
-    return "" + plugin + "-style";
-  };
+  // _styleClassFromPlugin: Abstract plugin <style> naming
+  function _styleClassFromPlugin(plugin){return "" + plugin + "-style"}
 
-  // _styleTagFromMediaObject:
+  // _styleTagFromMediaObject: Abstract creating <style> tag
   oj._styleTagFromMediaObject = function(plugin, mediaMap, options){
-    var css, newline;
-
-    newline = (options != null ? options.minify : void 0) ? '' : '\n';
-    css = _cssFromMediaObject(mediaMap, options);
+    var newline = (options != null ? options.minify : void 0) ? '' : '\n',
+      css = _cssFromMediaObject(mediaMap, options)
     return "<style class=\"" + (_styleClassFromPlugin(plugin)) + "\">" + newline + css + "</style>";
-  };
+  }
 
-  // _cssFromMediaObject:
-  // ---
-  // Convert css from a flattened rule object. The rule object is of the form:
-
+  // _cssFromMediaObject: Convert css from a flattened mediaMap rule object.
+  // The rule object is of the form:
   // mediaQuery => selector => rulesObject
-  // Placeholder functions for server side minification
+  function _cssFromMediaObject(mediaMap, options){
+    options = _d(options, {})
 
-  oj._minifyJS = function(js, options){return js}
-  oj._minifyCSS = function(css, options){return css}
+    var indent, indentRule, media, rules, selector, selectorMap, space, styles,
 
-  _cssFromMediaObject = function(mediaMap, options){
-    var css, eCSS, indent, indentRule, inline, media, minify, newline, rules, selector, selectorMap, space, styles, tags, _ref2, _ref3;
+      minify = options.minify != null ? options.minify : 0,
+      tags = options.tags != null ? options.tags : 0,
 
-    if (options == null)
-      options = {}
-
-    minify = (_ref2 = options.minify) != null ? _ref2 : 0;
-    tags = (_ref3 = options.tags) != null ? _ref3 : 0;
-
-    // Deterine what output characters are needed
-    newline = minify ? '' : '\n';
-    space = minify ? '' : ' ';
-    inline = minify;
+      // Deterine what output characters are needed
+      newline = minify ? '' : '\n',
+      space = minify ? '' : ' ',
+      inline = minify,
+      css = ''
 
     // Build css for media => selector =>  rules
-    css = '';
     for (media in mediaMap){
       selectorMap = mediaMap[media];
 
@@ -1060,20 +903,20 @@
       }
 
       for (selector in selectorMap){
-        styles = selectorMap[selector];
-        indent = (!minify) && media ? '\t' : '';
+        styles = selectorMap[selector]
+        indent = (!minify) && media ? '\t' : ''
 
         // Serialize selector
-        selector = selector.replace(/,/g, "," + newline);
-        css += "" + indent + selector + space + "{" + newline;
+        selector = selector.replace(/,/g, "," + newline)
+        css += "" + indent + selector + space + "{" + newline
 
         // Serialize style rules
-        indentRule = !minify ? indent + '\t' : indent;
+        indentRule = !minify ? indent + '\t' : indent
         rules = _styleFromObject(styles, {
           inline: inline,
           indent: indentRule
         });
-        css += rules + indent + '}' + newline;
+        css += rules + indent + '}' + newline
       }
 
       // End media query
@@ -1082,103 +925,85 @@
 
     }
     try {
-      css = oj._minifyCSS(css, options);
-    } catch (_error){
-      eCSS = _error;
-      throw new Error("css minification error: " + eCSS.message + "\nCould not minify:\n" + css);
+      css = oj._minifyCSS(css, options)
+    } catch (e){
+      throw new Error("css minification error: " + e.message + "\nCould not minify:\n" + css)
     }
     return css
   };
 
-  // _cssFromPluginObject:
-  // ---
-  // Convert flattened css selectors and rules to a string.
-  // Plugin objects are of the form:
+  // _cssFromPluginObject: Convert flattened css selectors and rules to a string
+  // pluginMaps are of the form:
   // pluginName => mediaQuery => selector => rulesObject
   // minify:false will output newlines
   // tags:true will output the css in `<style>` tags
 
-  _cssFromPluginObject = function(flatCSSMap, options){
-    var css, inline, mediaMap, minify, newline, plugin, space, tags, _ref2, _ref3;
+  function _cssFromPluginObject(flatCSSMap, options){
+    options = _d(options, {})
 
-    if (options == null)
-      options = {}
+    var mediaMap, plugin,
+      minify = options.minify != null ? options.minify : 0,
+      tags = options.tags != null ? options.tags : 0,
+      // Deterine what output characters are needed
+      newline = minify ? '' : '\n',
+      space = minify ? '' : ' ',
+      inline = minify,
+      css = ''
 
-    minify = (_ref2 = options.minify) != null ? _ref2 : 0;
-    tags = (_ref3 = options.tags) != null ? _ref3 : 0;
-
-    // Deterine what output characters are needed
-    newline = minify ? '' : '\n';
-    space = minify ? '' : ' ';
-    inline = minify;
-    css = '';
     for (plugin in flatCSSMap){
-      mediaMap = flatCSSMap[plugin];
-      if (tags){
-        css += "<style class=\"" + plugin + "-style\">" + newline;
-      }
+      mediaMap = flatCSSMap[plugin]
+      if (tags)
+        css += "<style class=\"" + plugin + "-style\">" + newline
 
       // Serialize CSS with potential minification
-      css += _cssFromMediaObject(mediaMap, options);
+      css += _cssFromMediaObject(mediaMap, options)
       if (tags)
         css += "" + newline + "</style>" + newline
-
     }
-    return css;
+    return css
   };
 
-  // _compileDeeper
-  // ---
-  // Recursive helper for compiling that wraps indention
-
-  _compileDeeper = function(method, ojml, options){
-    var i = options.indent;
-    options.indent += '\t';
-    method(ojml, options);
-    return options.indent = i;
+  // _compileDeeper: Recursive helper for compiling that wraps indention
+  function _compileDeeper(method, ojml, options){
+    var i = options.indent
+    options.indent += '\t'
+    method(ojml, options)
+    options.indent = i
   };
 
-  // _compileAny
-  // ---
-  // Recursive helper for compiling any type
-  // Compile ojml or any type
-
-  _compileAny = function(any, options){
-    var els, _ref10, _ref11, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9;
-
+  // _compileAny Recursive helper for compiling ojml or any type
+  function _compileAny(any, options){
     // Array
     if (oj.isArray(any))
       _compileTag(any, options)
 
     // String
     else if (oj.isString(any)){
-      if ((_ref2 = options.html) != null)
-        _ref2.push(any)
+      if (options.html != null)
+        options.html.push(any)
 
       if (any.length > 0 && any[0] === '<'){
         root = document.createElement('div');
         root.innerHTML = any;
-        els = root.childNodes;
-        if ((_ref3 = options.dom) != null){
-          _ref3.appendChild(root);
-        }
+        var els = root.childNodes;
+        if (options.dom != null)
+          options.dom.appendChild(root);
+
         // for el in els
         // options.dom?.appendChild el
 
       } else {
-        if ((_ref4 = options.dom) != null){
-          _ref4.appendChild(document.createTextNode(any));
-        }
+        if (options.dom != null)
+          options.dom.appendChild(document.createTextNode(any))
       }
 
     // Boolean or Number
     } else if (oj.isBoolean(any) || oj.isNumber(any)){
-      if ((_ref5 = options.html) != null){
-        _ref5.push("" + any);
-      }
-      if ((_ref6 = options.dom) != null){
-        _ref6.appendChild(document.createTextNode("" + any));
-      }
+      if (options.html != null)
+        options.html.push("" + any)
+
+      if (options.dom != null)
+        options.dom.appendChild(document.createTextNode("" + any));
 
     // Function
     } else if (oj.isFunction(any)){
@@ -1188,37 +1013,31 @@
 
     // Date
     } else if (oj.isDate(any)){
-      if ((_ref7 = options.html) != null){
-        _ref7.push("" + (any.toLocaleString()));
-      }
-      if ((_ref8 = options.dom) != null){
-        _ref8.appendChild(document.createTextNode("" + (any.toLocaleString())));
-      }
+      if (options.html != null)
+        options.html.push("" + (any.toLocaleString()));
+
+      if (options.dom != null)
+        options.dom.appendChild(document.createTextNode("" + (any.toLocaleString())));
 
     // OJ Type or Instance
     } else if (oj.isOJ(any)){
-      if ((_ref9 = options.types) != null){
-        _ref9.push(any);
-      }
-      if ((_ref10 = options.html) != null){
-        _ref10.push(any.toHTML(options));
-      }
-      if ((_ref11 = options.dom) != null){
-        _ref11.appendChild(any.toDOM(options));
-      }
-      if (options.css != null){
+      if (options.types != null)
+        options.types.push(any)
+
+      if (options.html != null)
+        options.html.push(any.toHTML(options))
+
+      if (options.dom != null)
+        options.dom.appendChild(any.toDOM(options))
+
+      if (options.css != null)
         _extend(options.css, any.toCSSMap(options));
-      }
     }
     // Do nothing for: null, undefined, object
-
   };
 
-  // _compileTag
-  // ---
-  // Recursive helper for compiling ojml tags
-
-  _compileTag = function(ojml, options){
+  // _compileTag: Recursive helper for compiling ojml tags
+  function _compileTag(ojml, options){
     var att, attr, attrName, attrValue, attributes, child, children, el, events, selector, space, styles, tag, tagType, _base, _base1, _j, _k, _len1, _len2, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8;
 
     // Empty list compiles to undefined
@@ -1364,10 +1183,9 @@
   };
 
   // _attributesProcessedForOJ: Process attributes to make them easier to use
-  _attributesProcessedForOJ = function(attr){
-    var events, jqEvents, k, v;
-
-    jqEvents = {bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1};
+  function _attributesProcessedForOJ(attr){
+    var jqEvents = {bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1},
+    events, k, v
 
     // Allow attributes to alias c to class and use arrays instead of space seperated strings
     // Convert to c and class from arrays to strings
@@ -1403,33 +1221,33 @@
     }
 
     // Filter out jquery events
-    events = {};
+    events = {}
     if (oj.isPlainObject(attr)){
 
       // Filter out attributes that are jquery events
       for (k in attr){
-        v = attr[k];
+        v = attr[k]
 
         // If this attribute (k) is an event
         if (jqEvents[k] != null){
-          events[k] = v;
-          delete attr[k];
+          events[k] = v
+          delete attr[k]
         }
       }
     }
 
     // Returns bindable events
-    return events;
+    return events
   };
 
   // Bind events to dom
-  _attributesBindEventsToDOM = function(events, el){
+  function _attributesBindEventsToDOM(events, el){
     var ek, ev, _results;
 
     _results = [];
     for (ek in events){
-      ev = events[ek];
-      _a(oj.$ != null, "oj: jquery is missing when binding a '" + ek + "' event");
+      ev = events[ek]
+      _a(oj.$ != null, "oj: jquery is missing when binding a '" + ek + "' event")
       if (oj.isArray(ev)){
         _results.push(oj.$(el)[ek].apply(this, ev));
       } else {
@@ -1439,94 +1257,54 @@
     return _results;
   };
 
-  // oj.toHTML
-  // ---
-  // Make ojml directly to HTML ignoring event bindings and css.
-
+  // oj.toHTML: Compile directly to HTML only
   oj.toHTML = function(options, ojml){
     // Options is optional
     if (!oj.isPlainObject(options)){
-      ojml = options;
-      options = {};
+      ojml = options
+      options = {}
     }
 
     // Create html only
-    _extend(options, {
-      dom: 0,
-      js: 0,
-      html: 1,
-      css: 0
-    });
-    return (oj.compile(options, ojml)).html;
+    _extend(options, {dom: 0, js: 0, html: 1, css: 0})
+    return (oj.compile(options, ojml)).html
   };
 
-  // oj.toCSS
-  // ---
-  // Compile ojml directly to css ignoring event bindings and html.
-
+  // oj.toCSS: Compile directly to CSS only
   oj.toCSS = function(options, ojml){
     // Options is optional
     if (!oj.isPlain(options)){
-      ojml = options;
-      options = {};
+      ojml = options
+      options = {}
     }
-
     // Create css only
-    _extend(options, {
-      dom: 0,
-      js: 0,
-      html: 0,
-      css: 1
-    });
-    return (oj.compile(options, ojml)).css;
+    _extend(options, {dom: 0, js: 0, html: 0, css: 1})
+    return (oj.compile(options, ojml)).css
   };
 
-  // _inherit
-  // ---
+  // _inherit: Inherit Child from Parent
   // Based on, but sadly incompatable with, coffeescript inheritance
+  function _inherit(Child, Parent){
+    var Constructr, key
 
-  _inherit = function(child, parent){
     // Copy class properties and methods
-    var ctor, key;
+    for (key in Parent)
+      oj.copyProperty(Child, Parent, key)
 
-    for (key in parent){
-      oj.copyProperty(child, parent, key);
-    }
-    ctor = function(){};
-    ctor.prototype = parent.prototype;
-    child.prototype = new ctor();
+    Constructr = function(){};
+    Constructr.prototype = Parent.prototype;
+    Child.prototype = new Constructr()
 
     // Provide easy access for base class methods
     // Example: Parent.base.methodName(arguments...)
-
-    child.base = parent.prototype;
+    Child.base = Child.__super__ = Parent.prototype
   };
 
-  // _construct(Type, arg1, arg2, ...)
-  // ---
-  // Construct with specified arguments. This is only necessary because new doesn't support apply/call directly.
+  // _construct(Type, arg1, arg2, ...): Construct type as if using call
+  function _construct(Type){return new (FunP.bind.apply(Type, arguments))};
 
-  _construct = function(Type){
-    return new (FunP.bind.apply(Type, arguments));
-  };
-
-  // oj.argumentShift
-  // ---
-  // Helper to make argument handling easier
-
-  oj.argumentShift = function(args, key){
-    var value;
-
-    if ((oj.isPlainObject(args)) && (key != null) && (args[key] != null)){
-      value = args[key];
-      delete args[key];
-    }
-    return value;
-  };
-
-  // oj.createType
-  // ---
-
+  // oj.createType: Create OJ type with args object supporting:
+  // base, constructor, properties, and methods
   oj.createType = function(name, args){
     var Out, delay, methodKeys, methods, propKeys, properties, typeProps, _ref2, _ref3;
 
@@ -1586,7 +1364,7 @@
     // Add properties helper to instance
     propKeys = (_keys(args.properties)).sort();
     if (Out.prototype.properties != null){
-      propKeys = _uniqueSort(Out.prototype.properties.concat(propKeys));
+      propKeys = uniqueSort(Out.prototype.properties.concat(propKeys));
     }
     properties = {
       value: propKeys,
@@ -1598,7 +1376,7 @@
     // Add methods helper to instance
     methodKeys = (_keys(args.methods)).sort();
     if (Out.prototype.methods != null){
-      methodKeys = _uniqueSort(Out.prototype.methods.concat(methodKeys));
+      methodKeys = uniqueSort(Out.prototype.methods.concat(methodKeys));
     }
     methods = {
       value: methodKeys,
@@ -1685,40 +1463,16 @@
     return Out;
   };
 
-  // unionArguments:
-  // Take arguments and tranform them into options and args.
-  // options is a union of all items in `arguments` that are objects
-  // args is a concat of all arguments that aren't objects in the same order
 
-  oj.unionArguments = function(argList){
-    var args, options, v, _j, _len1;
 
-    options = {};
-    args = [];
-    for (_j = 0, _len1 = argList.length; _j < _len1; _j++){
-      v = argList[_j];
-      if (oj.isPlainObject(v)){
-        options = _extend(options, v);
-      } else {
-        args.push(v);
-      }
-    }
-    return {
-      options: options,
-      args: args
-    };
-  };
-
-  // _createQuietType
-  // ---
-
+  // _createQuietType: Takes an OJ Type and creates the _Type that doesn't emit
   _createQuietType = function(typeName){
     return oj[_getQuietTagName(typeName)] = function(){
-      return _construct.apply(null, [oj[typeName]].concat(__slice.call(arguments), [{
+      return _construct.apply(null, [oj[typeName]].concat(slice.call(arguments), [{
         __quiet__: 1
       }]));
-    };
-  };
+    }
+  }
 
   // oj.createEnum
   // ---
@@ -2044,7 +1798,7 @@
     cssMap = _setObject({}, ".oj-" + this.typeName + ".theme-" + dashName, css);
     _extend(this.cssMap["oj-" + this.typeName], cssMap);
     this.themes.push(dashName);
-    this.themes = _uniqueSort(this.themes);
+    this.themes = uniqueSort(this.themes);
   };
 
   oj.View.cssMap = {};
@@ -2290,7 +2044,7 @@
       value: {
         get: function(){
           var v = this.el.value
-          if ((v == null) || v === _undef)
+          if ((v == null) || v === _udf)
             v = ''
           return v
         },
@@ -2828,7 +2582,7 @@
       args = [{
           tagName: 'ol',
           itemTagName: 'li'
-        }].concat(__slice.call(arguments));
+        }].concat(slice.call(arguments));
       return oj.NumberList.base.constructor.apply(this, args);
     }
   });
@@ -2845,7 +2599,7 @@
       args = [{
           tagName: 'ul',
           itemTagName: 'li'
-        }].concat(__slice.call(arguments));
+        }].concat(slice.call(arguments));
       return oj.BulletList.base.constructor.apply(this, args);
     }
   });
@@ -3378,11 +3132,9 @@
     }
   });
 
-  // Create _Types
-  // ---
-  // Type with captital first letter that doesn't end in "View"
-
-  for (typeName in oj){
+  // Create Quiet _Types
+  for (var typeName in oj){
+    // Type with captital first letter that doesn't end in "View"
     if (_isCapitalLetter(typeName[0]) && typeName.slice(typeName.length - 4) !== 'View'){
       oj[_getQuietTagName(typeName)] = _createQuietType(typeName);
     }
@@ -3393,75 +3145,59 @@
   // The sandbox is a readonly version of oj that is exposed to the user
   oj.sandbox = {};
 
-  _ref2 = _keys(oj);
-  for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++){
-    key = _ref2[_j];
+  var _ref2 = _keys(oj);
+  for (var _j = 0, _len1 = _ref2.length; _j < _len1; _j++){
+    var key = _ref2[_j];
     if ((key.length > 0 && key[0] !== '_') || (key.length > 0 && key[0] === '_' && (oj[key.slice(1)] != null))){
-      oj.addProperty(oj.sandbox, key, {
-        value: oj[key],
-        writable: false
-      });
+      oj.addProperty(oj.sandbox, key, {value: oj[key], writable: false});
     }
   }
 
-  // oj.use(plugin, settings)
-  // ---
-  // Include a plugin of OJ with `settings`
-
+  // oj.use(plugin, settings): import a plugin of OJ with optional settings
   oj.use = function(plugin, settings){
-    var name, pluginMap, pluginResult, value, _results;
+    settings = settings || {}
+    _v('use', 1, plugin, 'function')
+    _v('use', 2, settings, 'object')
 
-    if (settings == null){
-      settings = {};
-    }
-    _v('use', 1, plugin, 'function');
-    _v('use', 2, settings, 'object');
-
-    // Call plugin to gather extension map
-    pluginResult = plugin(oj, settings);
+   // Call plugin to gather extension map
+    var pluginResult = plugin(oj, settings),
+      pluginMap =  _clone(pluginResult),
+      name, value
 
     // Add _Type quiet types
-    pluginMap = _clone(pluginResult);
     for (name in pluginResult){
-      value = pluginResult[name];
-      if (oj.isOJType(value)){
+      value = pluginResult[name]
+      if (oj.isOJType(value))
         pluginMap[_getQuietTagName(name)] = _createQuietType(value.typeName);
-      }
     }
 
     // Extend all properties
-    _results = [];
     for (name in pluginMap){
-      value = pluginMap[name];
+      value = pluginMap[name]
 
       // Add to oj
-      oj[name] = value;
+      oj[name] = value
 
-      // Add to sandbox
-      _results.push(oj.addProperty(oj.sandbox, name, {
-        value: value,
-        writable: false
-      }));
+      // Add plugin to sandbox
+      oj.addProperty(oj.sandbox, name, {value: value, writable: false})
     }
-    return _results;
   };
 
-  // _jqExtend(fn)
-  // ---
-  // jQuery Extend
-  // option.get is called to retrieve value per element
-  // option.set is called when setting elements
-  // option.first:true means return only the first get, otherwise it is returned as an array.
-
-  _jqExtend = function(options){
+  // _jqExtend(fn): Create a jquery plugin with the following options:
+  //   option.get is called to retrieve value per element
+  //   option.set is called when setting elements
+  //   option.first:true means return only the first get,
+  //     otherwise it is returned as an array
+  function _jqExtend(options){
     if (options == null)
-      options = {};
+      options = {}
 
     options = _extend({
-      get: identity,
-      set: identity,
+      get: pass,
+      set: pass,
       first: false
-    }, options);
+    }, options)
+
     return function(){
       var $els, args, el, out, r, _k, _l, _len2, _len3;
 
@@ -3497,118 +3233,84 @@
     };
   };
 
-  _triggerTypes = function(types){
-    var type, _k, _len2;
+  function _triggerInserted(types){
+    for (var ix = 0;ix <  types.length; ix++)
+      types[ix].inserted()
+  }
 
-    for (_k = 0, _len2 = types.length; _k < _len2; _k++){
-      type = types[_k];
-      type.inserted();
-    }
-  };
-
-  _insertStyles = function(pluginMap, options){
-    var mediaMap, plugin;
-
+  function _insertStyles(pluginMap, options){
+    var mediaMap, plugin
     for (plugin in pluginMap){
-      mediaMap = pluginMap[plugin];
+      mediaMap = pluginMap[plugin]
 
       // Skip global css if options.global is true
-      if (plugin === 'oj-style' && !(options != null ? options.global : void 0)){
-        continue;
-      }
+      if (plugin === 'oj-style' && !(options != null ? options.global : 0))
+        continue
 
       // Create <style> tag for the plugin
-      if (oj.$('.' + _styleClassFromPlugin(plugin)).length === 0){
-        oj.$('head').append(oj._styleTagFromMediaObject(plugin, mediaMap));
-      }
+      if (oj.$('.' + _styleClassFromPlugin(plugin)).length === 0)
+        oj.$('head').append(oj._styleTagFromMediaObject(plugin, mediaMap))
     }
   };
 
-  // jQuery.fn.oj
-  // ---
-
+  // oj jquery plugin: Insert like innertHTML or get first instance
   oj.$.fn.oj = _jqExtend({
-    set: function($el, args){
+    // Get returns the first instance
+    get: function($el){return $el[0].oj;},
 
-      var cssMap, d, dom, types, _k, _len2, _ref3;
+    // Set compiles and inserts in innerHTML
+    set: function($el, args){
 
       // No arguments return the first instance
       if (args.length === 0)
         return $el[0].oj
 
       // Compile ojml
-      _ref3 = oj.compile.apply(oj, [{
-        dom: 1,
-        html: 0,
-        cssMap: 1
-      }].concat(__slice.call(args))), dom = _ref3.dom, types = _ref3.types, cssMap = _ref3.cssMap;
-      _insertStyles(cssMap, {
-        global: 0
-      });
+      var r = oj.compile.apply(oj, [{dom: 1, html: 0, cssMap: 1 }].concat(slice.call(args)))
+
+      _insertStyles(r.cssMap, {global: 0})
 
       // Reset content and append to dom
-      $el.html('');
-      if (!oj.isArray(dom)){
-        dom = [dom];
-      }
-      for (_k = 0, _len2 = dom.length; _k < _len2; _k++){
-        d = dom[_k];
-        $el.append(d);
-      }
-      _triggerTypes(types);
-    },
-    get: function($el){
-      return $el[0].oj;
+      $el.html('')
+
+      // Ensure r.dom is an array
+      if (!oj.isArray(r.dom))
+        r.dom = [r.dom]
+
+      // Append resulting dom elements
+      for (var ix = 0; ix < r.dom.length; ix++)
+        $el.append(r.dom[ix])
+
+      // Trigger inserted events
+      _triggerInserted(r.types)
     }
   });
 
-  // jQuery.ojBody ojml
-  // ---
-  // Replace body with ojml. Global css is rebuild when using this method.
+  // jQuery.ojBody plugin: replace body with ojml.
+  // Global css is rebuilt when using this method.
 
   oj.$.ojBody = function(ojml){
 
-    var bodyOnly, cssMap, dom, eCompile, types, _ref3;
-
     // Compile only the body and below
-    bodyOnly = {
-      html: 1,
-      '!DOCTYPE': 1,
-      body: 1,
-      head: 'deep',
-      meta: 1,
-      title: 'deep',
-      link: 'deep',
-      script: 'deep'
-    };
+    var bodyOnly = {html: 1, '!DOCTYPE': 1, body: 1, head: 'deep', meta: 1, title: 'deep', link: 'deep', script: 'deep'}
+
     try {
-      _ref3 = oj.compile({
-        dom: 1,
-        html: 0,
-        css: 0,
-        cssMap: 1,
-        ignore: bodyOnly
-      }, ojml), dom = _ref3.dom, types = _ref3.types, cssMap = _ref3.cssMap;
-    } catch (_error){
-      eCompile = _error;
-      throw new Error("oj.compile: " + eCompile.message);
+      var r = oj.compile({dom: 1, html: 0, css: 0, cssMap: 1, ignore: bodyOnly }, ojml)
+    } catch (e){
+      throw new Error("oj.compile: " + e.message);
     }
 
     // Clear body and insert dom elements
-    if (dom != null)
-      oj.$('body').html(dom);
+    if (r.dom != null)
+      oj.$('body').html(r.dom)
 
-    _insertStyles(cssMap, {
-      global: 1
-    });
-    return _triggerTypes(types);
+    _insertStyles(r.cssMap, {global:1})
+
+    _triggerInserted(r.types)
   };
 
-  // jQuery.fn.ojValue
-  // ---
-  // Get the first value of the selected contents
-
-  _jqGetValue = function($el, args){
+  // Helper method that abstracts getting oj values
+  function _jqGetValue($el, args){
     var child, el, inst, text;
 
     el = $el[0];
@@ -3628,26 +3330,14 @@
     }
   };
 
-  oj.$.fn.ojValue = _jqExtend({
-    first: true,
-    set: null,
-    get: _jqGetValue
-  });
+  // jQuery.fn.ojValue: Get the first value of the selected contents
+  oj.$.fn.ojValue = _jqExtend({first: true, set: null, get: _jqGetValue })
 
-  // jQuery.fn.ojValues
-  // ---
-  // Get values as an array of the selected element's contents
+  // jQuery.fn.ojValues: Get values as an array of the selected element's contents
+  oj.$.fn.ojValues = _jqExtend({first: false, set: null, get: _jqGetValue})
 
-  oj.$.fn.ojValues = _jqExtend({
-    first: false,
-    set: null,
-    get: _jqGetValue
-  });
-
-  // jQuery plugins
-  // ---
-
-  plugins = {
+  // jQuery.fn.ojAfter, ojBefore, etc: oj insertion plugins to jquery
+  var jqFromOJ = {
     ojAfter: 'after',
     ojBefore: 'before',
     ojAppend: 'append',
@@ -3655,35 +3345,25 @@
     ojReplaceWith: 'replaceWith',
     ojWrap: 'wrap',
     ojWrapInner: 'wrapInner'
-  };
+  }
+  for (var ojName in jqFromOJ){
+    var jqName = jqFromOJ[ojName]
+    ;(function(ojName, jqName){
+      oj.$.fn[ojName] = _jqExtend({
+        set: function($el, args){
 
-  _fn1 = function(ojName, jqName){
-    return oj.$.fn[ojName] = _jqExtend({
-      set: function($el, args){
+          // Compile ojml for each one to separate references
+          var opts = {dom:1,html:0,css:0,cssMap:1},
+            r = oj.compile.apply(oj, [opts].concat(slice.call(args)))
+          _insertStyles(r.cssMap, {global: 0});
 
-        // Compile ojml for each one to separate references
-        var cssMap, dom, types, _ref3;
-
-        _ref3 = oj.compile.apply(oj, [{
-          dom: 1,
-          html: 0,
-          css: 0,
-          cssMap: 1
-        }].concat(__slice.call(args))), dom = _ref3.dom, types = _ref3.types, cssMap = _ref3.cssMap;
-        _insertStyles(cssMap, {
-          global: 0
-        });
-
-        // Append to the dom
-        $el[jqName](dom);
-        _triggerTypes(types);
-      },
-      get: null
-    });
-  };
-  for (ojName in plugins){
-    jqName = plugins[ojName];
-    _fn1(ojName, jqName);
+          // Append to the dom
+          $el[jqName](r.dom);
+          _triggerInserted(r.types);
+        },
+        get: null
+      });
+    })(ojName, jqName)
   }
 
 }).call(this);
