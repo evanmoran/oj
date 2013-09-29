@@ -3,6 +3,7 @@
 // Unified templating for the people. Thirsty people.
 
 ;(function(){
+
   var root = this,
     ArrP = Array.prototype,
     FunP = Function.prototype,
@@ -13,8 +14,10 @@
     pass = function(v){return v},
     _udf = 'undefined'
 
-  // oj function: a tag function that captures
-  function oj(){return oj.tag.apply(this, ['oj'].concat(slice.call(arguments)).concat([{__quiet__:1}]));};
+  // oj function: highest level of capture for tag functions
+  function oj(){
+    return oj.tag.apply(this, ['oj'].concat(slice.call(arguments)).concat([{__quiet__:1}]))
+  };
 
   oj.version = '0.2.0'
 
@@ -120,7 +123,7 @@
 
   // argumentShift: Shift argument out of options with key
   oj.argumentShift = function(options, key){
-    var value;
+    var value
     if ((oj.isPlainObject(options)) && (key != null) && (options[key] != null)){
       value = options[key]
       delete options[key]
@@ -223,21 +226,6 @@
     return out
   };
 
-  // _a: assert with message and optional fn name
-  function _a(cond, msg, fn){
-    if (!cond){
-      if (fn)
-        msg = "oj." + fn + ": " + msg;
-      throw new Error(msg);
-    }
-  }
-
-  // _v: validate argument n with fn name and message
-  function _v(fn, n, v, type){
-    n = {1:'first',2:'second',3: 'third', 4: 'fourth', 5: 'fifth'}[n];
-    _a(!type || (typeof v === type), "" + type + " expected for " + n + " argument", fn);
-  };
-
   // _d(args...): initialization helper that returns first arg that isn't null
   function _d(){
     for (var ix = 0;ix < arguments.length; ix++)
@@ -246,107 +234,37 @@
     return null
   }
 
+  // _e: error by throwing msg with optional fn name
+  function _e(fn, msg){
+    msg = _d(msg, fn, '')
+    fn = _d(fn, 0)
+    var pfx = "oj: "
+    if (fn)
+      pfx = "oj." + fn + ": "
+    throw new Error(pfx + msg)
+  }
+
+  // _a: assert when cond is false with msg and with optional fn name
+  function _a(cond, fn, msg){if (!cond) _e(fn,msg)}
+
+  // _v: validate argument n with fn name and message
+  function _v(fn, n, v, type){
+    n = {1:'first',2:'second',3: 'third', 4: 'fourth'}[n]
+    _a(!type || (typeof v === type), fn, "" + type + " expected for " + n + " argument")
+  }
+
   // _splitAndTrim: Split string by seperator and trim result
   function _splitAndTrim(str, seperator, limit){
     return str.split(seperator, limit).map(function(v){
-      return v.trim();
-    });
-  };
+      return v.trim()
+    })
+  }
 
   // _decamelize: Convert from camal case to underscore case
   function _decamelize(str){return str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}
 
   // _dasherize: Convert from camal case or space seperated to dashes
   function _dasherize(str){return _decamelize(str).replace(/[ _]/g, '-')}
-
-  // Placeholder functions for server side minification
-  oj._minifyJS = function(js, options){return js}
-  oj._minifyCSS = function(css, options){return css}
-
-  // Path Helpers
-  // ---
-  // Used to implement require client side. These methods are simplified versions of
-  // the node `path` library: github.com/joyent/node/lib/path.js
-
-  var _pathRx = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/;
-
-  function _pathSplit(fname){
-    var result = _pathRx.exec(fname)
-    return [result[1] || '', result[2] || '', result[3] || '', result[4] || ''];
-  };
-
-  function _pathNormArray(parts, allowAboveRoot){
-    var up = 0,
-      i = parts.length - 1,
-      last
-    while (i >= 0){
-      last = parts[i];
-      if (last === '.')
-        parts.splice(i, 1)
-      else if (last === '..'){
-        parts.splice(i, 1)
-        up++
-      } else if (up){
-        parts.splice(i, 1)
-        up--
-      }
-      i--
-    }
-    if (allowAboveRoot)
-      while (up--)
-        parts.unshift('..')
-    return parts
-  };
-
-  oj._pathResolve = function(){
-    var resolvedPath = '',
-      isAbsolute = false,
-      i = arguments.length - 1,
-      path
-    while (i >= -1 && !isAbsolute){
-      path = i >= 0 ? arguments[i] : process.cwd();
-      if ((typeof path !== 'string') || !path)
-        continue;
-      resolvedPath = path + '/' + resolvedPath
-      isAbsolute = path.charAt(0) === '/'
-      i--
-    }
-    resolvedPath = _pathNormArray(resolvedPath.split('/').filter(function(p){
-      return !!p;
-    }), !isAbsolute).join('/')
-    return ((isAbsolute ? '/' : '') + resolvedPath) || '.'
-  };
-
-  oj._pathNormalize = function(path){
-    var isAbsolute = path.charAt(0) === '/',
-    trailingSlash = path.substr(-1) === '/'
-    path = _pathNormArray(path.split('/').filter(function(p){
-      return !!p
-    }), !isAbsolute).join('/')
-    if (!path && !isAbsolute)
-      path = '.'
-    if (path && trailingSlash)
-      path += '/'
-    return (isAbsolute ? '/' : '') + path
-  };
-
-  oj._pathJoin = function(){
-    var paths = slice.call(arguments, 0)
-    return oj._pathNormalize(paths.filter(function(p, index){
-      return p && typeof p === 'string'
-    }).join('/'))
-  }
-
-  oj._pathDirname = function(path){
-    var result = _pathSplit(path),
-    root = result[0],
-    dir = result[1]
-    if (!root && !dir)
-      return '.'
-    if (dir)
-      dir = dir.substr(0, dir.length - 1)
-    return root + dir
-  };
 
   // oj.addMethod: add multiple methods to an object
   oj.addMethods = function(obj, mapNameToMethod){
@@ -983,15 +901,10 @@
         options.html.push(any)
 
       if (any.length > 0 && any[0] === '<'){
-        root = document.createElement('div');
+        var root = document.createElement('div')
         root.innerHTML = any;
-        var els = root.childNodes;
         if (options.dom != null)
           options.dom.appendChild(root);
-
-        // for el in els
-        // options.dom?.appendChild el
-
       } else {
         if (options.dom != null)
           options.dom.appendChild(document.createTextNode(any))
@@ -1036,48 +949,45 @@
     // Do nothing for: null, undefined, object
   };
 
+
   // _compileTag: Recursive helper for compiling ojml tags
   function _compileTag(ojml, options){
-    var att, attr, attrName, attrValue, attributes, child, children, el, events, selector, space, styles, tag, tagType, _base, _base1, _j, _k, _len1, _len2, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8;
 
     // Empty list compiles to undefined
     if (ojml.length === 0) return
 
-    // Get tag name, allowing the tag parameter to be 'table' (tag name) or table (function) or Table (object)
-    tag = ojml[0];
-    tagType = typeof tag;
-    tag = (tagType === 'function' || tagType === 'object') && (_getTagName(tag) != null) ? _getTagName(tag) : tag;
+    // The first part of ojml is the tag
+    var tag = ojml[0],
+      tagType = typeof tag,
+      u = oj.unionArguments(ojml.slice(1)),
+      attributes = u.options,
+      children = u.args,
+      styles,
+      selector
+
+    // Allow the tag parameter to be 'table' (string) or oj.table (function) or oj.Table (object)
+    if ((tagType === 'function' || tagType === 'object'))
+      tag = _d(_getTagName(tag), tag)
+
+    // Fail if no tag found
     if (!(oj.isString(tag) && tag.length > 0))
-      throw new Error('oj.compile: tag name is missing');
+      _e('compile', 'tag name is missing')
 
     // Record tag as encountered
-    options.tags[tag] = true;
+    options.tags[tag] = true
 
     // Instance oj object if tag is capitalized
     if (_isCapitalLetter(tag[0]))
       return _compileDeeper(_compileAny, new oj[tag](ojml.slice(1)), options)
-
-    // Gather attributes if present
-    attributes = null;
-    if (oj.isPlainObject(ojml[1])){
-      attributes = ojml[1];
-    }
-
-    // Gather children if present
-    children = attributes ? ojml.slice(2) : ojml.slice(1);
 
     // Compile to css if requested
     if (options.css && tag === 'css'){
 
       // Extend options.css with rules
       for (selector in attributes){
-        styles = attributes[selector];
-        if ((_ref2 = (_base = options.css)['oj']) == null)
-          _base['oj'] = {};
-
-        if ((_ref3 = (_base1 = options.css['oj'])[selector]) == null)
-          _base1[selector] = {};
-
+        styles = attributes[selector]
+        options.css['oj'] = _d(options.css['oj'], {})
+        options.css['oj'][selector] = _d(options.css['oj'][selector], {})
         _extend(options.css['oj'][selector], styles);
       }
     }
@@ -1091,94 +1001,79 @@
       if (!options.ignore[tag]){
         if (options.html)
           options.html.push("<" + tag + " " + ojml[1] + ">")
-
         // options.dom is purposely ignored
       }
       return;
     }
     if (!options.ignore[tag]){
-      events = _attributesProcessedForOJ(attributes);
+      var events = _attributesProcessedForOJ(attributes), el
 
       // Compile to dom if requested
       // Add dom element with attributes
       if (options.dom && (typeof document !== "undefined" && document !== null)){
 
         // Create element
-        el = document.createElement(tag);
+        el = document.createElement(tag)
 
         // Add self to parent
         if (oj.isDOMElement(options.dom))
           options.dom.appendChild(el)
 
         // Push ourselves on the dom stack (to handle children)
-        options.dom = el;
+        options.dom = el
 
         // Set attributes in sorted order for consistency
         if (oj.isPlainObject(attributes)){
-          _ref4 = _keys(attributes).sort();
-          for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++){
-            attrName = _ref4[_j];
-            attrValue = attributes[attrName];
-            // Boolean attributes have no value
+          var keys = _keys(attributes).sort(), ix, attrName, attrValue
+          for (ix = 0; ix < keys.length; ix++){
+            attrName = keys[ix]
+            attrValue = attributes[attrName]
 
-            if (attrValue === true){
-              att = document.createAttribute(attrName);
-              el.setAttributeNode(att);
-            } else {
-              el.setAttribute(attrName, attrValue);
-            }
+            // Boolean attributes have no value
+            if (attrValue === true)
+              el.setAttributeNode(document.createAttribute(attrName))
+            else
+              el.setAttribute(attrName, attrValue)
           }
         }
 
         // Bind events
-        _attributesBindEventsToDOM(events, el);
+        _attributesBindEventsToDOM(events, el)
       }
 
       // Compile to html if requested
       // Add tag with attributes
       if (options.html){
-        attr = (_ref5 = _attributesFromObject(attributes)) != null ? _ref5 : '';
-        space = attr === '' ? '' : ' ';
-        options.html.push("<" + tag + space + attr + ">");
+        var attr = _d(_attributesFromObject(attributes), ''),
+          space = attr === '' ? '' : ' '
+        options.html.push("<" + tag + space + attr + ">")
         // Recurse through children if this tag isn't ignored deeply
-
       }
     }
     if (options.ignore[tag] !== 'deep'){
-      for (_k = 0, _len2 = children.length; _k < _len2; _k++){
-        child = children[_k];
+      for (ix = 0; ix < children.length; ix++){
+        var child = children[ix]
         // Skip indention if there is only one child
-
-        if (!options.minify && children.length > 1){
-          if ((_ref6 = options.html) != null){
-            _ref6.push("\n\t" + options.indent);
-          }
-        }
-        _compileDeeper(_compileAny, child, options);
+        if (options.html != null && !options.minify && children.length > 1)
+          options.html.push("\n\t" + options.indent)
+        _compileDeeper(_compileAny, child, options)
       }
     }
 
     // Skip indention if there is only one child
-    if ((!options.minify) && children.length > 1){
-      if ((_ref7 = options.html) != null){
-        _ref7.push("\n" + options.indent);
-      }
-    }
+    if (options.html != null && !options.minify && children.length > 1)
+      options.html.push("\n" + options.indent)
 
     // End html tag if you have children or your tag closes
     if (!options.ignore[tag]){
 
       // Close tag if html
-      if (options.html && (children.length > 0 || oj.tag.isClosed(tag))){
-        if ((_ref8 = options.html) != null){
-          _ref8.push("</" + tag + ">");
-        }
-      }
+      if (options.html != null && (children.length > 0 || oj.tag.isClosed(tag)))
+        options.html.push("</" + tag + ">")
 
       // Pop ourselves if dom
       if (options.dom)
         options.dom = options.dom.parentNode
-
     }
   };
 
@@ -1247,7 +1142,7 @@
     _results = [];
     for (ek in events){
       ev = events[ek]
-      _a(oj.$ != null, "oj: jquery is missing when binding a '" + ek + "' event")
+      _a(oj.$ != null, "jquery is missing when binding a '" + ek + "' event")
       if (oj.isArray(ev)){
         _results.push(oj.$(el)[ek].apply(this, ev));
       } else {
@@ -1478,7 +1373,7 @@
   // ---
 
   oj.createEnum = function(name, args){
-    return _a(0, 'NYI', 'createEnum')
+    return _e('createEnum', 'NYI')
   }
 
   // oj.View
@@ -1491,7 +1386,7 @@
     constructor: function(){
       var args, options, _ref2;
 
-      _a(oj.isDOM(this.el), 'constructor failed to set this.el', this.typeName);
+      _a(oj.isDOM(this.el), this.typeName, 'constructor failed to set this.el');
 
       // Set instance on @el
       _setInstanceOnElement(this.el, this);
@@ -1770,7 +1665,7 @@
   oj.View.css = function(css){
     var cssMap, _base, _base1, _name, _name1, _ref2, _ref3;
 
-    _a(oj.isString(css) || oj.isPlainObject(css), 'object or string expected for first argument', this.typeName);
+    _a(oj.isString(css) || oj.isPlainObject(css), this.typeName, 'object or string expected for first argument');
     if (oj.isString(css)){
       if ((_ref2 = (_base = this.cssMap)[_name = "oj-" + this.typeName]) == null){
         _base[_name] = "";
@@ -1804,9 +1699,7 @@
   oj.View.cssMap = {};
   oj.View.themes = [];
 
-  // oj.CollectionView
-  // ---
-
+  // oj.CollectionView: Inheritable base type that enables two-way collection binding
   oj.CollectionView = oj.createType('CollectionView', {
     base: oj.View,
     constructor: function(options){
@@ -1819,16 +1712,15 @@
       oj.CollectionView.base.constructor.apply(this, arguments);
 
       // Once everything is constructed call make precisely once.
-      return this.make();
+      return this.make()
     },
     properties: {
       each: {
         get: function(){return this._each},
         set: function(v){
-          this._each = v;
-          if (this.isConstructed){
-            this.make();
-          }
+          this._each = v
+          if (this.isConstructed)
+            this.make()
         }
       },
       collection: {
@@ -1865,29 +1757,24 @@
 
       // Override make to create your view
       make: function(){
-        return _a(0, '`make` method not implemented by custom view', this.typeName);
+        _e(this.typeName, '`make` method not implemented by custom view')
       },
       // Override these events to minimally update on change
       collectionModelAdded: function(mod, cols){
-        return this.make();
+        return this.make()
       },
       collectionModelRemoved: function(mod, cols, opt){
-        return this.make();
+        return this.make()
       },
       collectionModelChanged: function(mod, cols, opt){},
       collectionModelDestroyed: function(cols, opt){
-        return this.make();
+        return this.make()
       },
-      collectionReset: function(cols, opt){
-        return this.make();
-      }
+      collectionReset: function(cols, opt){return this.make()}
     }
   });
 
-  // oj.ModelView
-  // ---
-  // Model view base class
-
+  // oj.ModelView: Inheritable base type that enables two-way model binding
   oj.ModelView = oj.createType('ModelView', {
     base: oj.View,
     constructor: function(options){
@@ -1921,8 +1808,8 @@
       }
     },
     methods: {
-      // Override modelChanged if you don't want a full remake
 
+      // Override modelChanged if you don't want a full remake
       modelChanged: function(){
         var _this = this;
         return this.$el.oj(function(){
@@ -1930,15 +1817,12 @@
         });
       },
       make: function(model){
-        return _a(0, '`make` method not implemented by custom view', this.typeName);
+        return _e(this.typeName, '`make` method not implemented by custom view');
       }
     }
   });
 
-  // oj.ModelKeyView
-  // ---
-  // Model key view base class
-
+  // oj.ModelViewView: Inheritable base type that enables two-way model binding to a specific key
   oj.ModelKeyView = oj.createType('ModelKeyView', {
 
     // Inherit ModelView to handle model and bindings
@@ -1953,17 +1837,18 @@
     },
     properties: {
       // Key used to access model
-
       key: null,
 
       // Value directly gets and sets to the dom
       // when it changes it must trigger viewChanged
+
+      // Property override required
       value: {
         get: function(){
-          return _a(0, 'value getter not implemented', this.typeName);
+          return _e(this.typeName, 'value getter not implemented');
         },
         set: function(v){
-          return _a(0, 'value setter not implemented', this.typeName);
+          return _e(this.typeName, 'value setter not implemented');
         }
       }
     },
@@ -1996,9 +1881,6 @@
   });
 
   // oj.TextBox
-  // ---
-  // TextBox control
-
   oj.TextBox = oj.createType('TextBox', {
     base: oj.ModelKeyView,
     constructor: function(){
@@ -2059,9 +1941,6 @@
   });
 
   // oj.CheckBox
-  // ---
-  // CheckBox control
-
   oj.CheckBox = oj.createType('CheckBox', {
     base: oj.ModelKeyView,
     constructor: function(){
@@ -2101,9 +1980,6 @@
   });
 
   // oj.Text
-  // ---
-  // Text control
-
   oj.Text = oj.createType('Text', {
     base: oj.ModelKeyView,
     constructor: function(){
@@ -2144,9 +2020,6 @@
   });
 
   // oj.TextArea
-  // ---
-  // TextArea control
-
   oj.TextArea = oj.createType('TextArea', {
     base: oj.ModelKeyView,
     constructor: function(){
@@ -2194,9 +2067,6 @@
   });
 
   // oj.ListBox
-  // ---
-  // ListBox control
-
   oj.ListBox = oj.createType('ListBox', {
     base: oj.ModelKeyView,
     constructor: function(){
@@ -2253,9 +2123,6 @@
   });
 
   // oj.Button
-  // ---
-  // Button control
-
   oj.Button = oj.createType('Button', {
     base: oj.View,
     constructor: function(){
@@ -2301,10 +2168,7 @@
     }
   });
 
-  // oj.List
-  // ---
-  // List control with model bindings and live editing
-
+  // oj.List: List control with two-way collection binding
   oj.List = oj.createType('List', {
     base: oj.CollectionView,
     constructor: function(){
@@ -2570,42 +2434,30 @@
   });
 
 
-  // oj.NumberList
-  // ---
-  // NumberList is a `List` specialized with `<ol>` and `<li>` tags
-
+  // oj.NumberList: NumberList is a `List` specialized with `<ol>` and `<li>` tags
   oj.NumberList = oj.createType('NumberList', {
     base: oj.List,
     constructor: function(){
-      var args;
-
-      args = [{
-          tagName: 'ol',
-          itemTagName: 'li'
-        }].concat(slice.call(arguments));
+      var args = [{
+        tagName: 'ol', itemTagName: 'li'
+      }].concat(slice.call(arguments))
       return oj.NumberList.base.constructor.apply(this, args);
     }
-  });
+  })
 
-  // oj.BulletList
-  // ---
-  // BulletList is a `List` specialized with `<ul>` and `<li>` tags
+  // oj.BulletList: BulletList is a `List` specialized with `<ul>` and `<li>` tags
   oj.BulletList = oj.createType('BulletList', {
 
     base: oj.List,
     constructor: function(){
-      var args;
-
-      args = [{
-          tagName: 'ul',
-          itemTagName: 'li'
-        }].concat(slice.call(arguments));
-      return oj.BulletList.base.constructor.apply(this, args);
+      var args = [{
+        tagName: 'ul', itemTagName: 'li'
+      }].concat(slice.call(arguments))
+      return oj.BulletList.base.constructor.apply(this, args)
     }
-  });
+  })
 
   // oj.Table
-  // ---
   oj.Table = oj.createType('Table', {
     base: oj.CollectionView,
     constructor: function(){
@@ -3288,7 +3140,6 @@
 
   // jQuery.ojBody plugin: replace body with ojml.
   // Global css is rebuilt when using this method.
-
   oj.$.ojBody = function(ojml){
 
     // Compile only the body and below
@@ -3311,24 +3162,17 @@
 
   // Helper method that abstracts getting oj values
   function _jqGetValue($el, args){
-    var child, el, inst, text;
+    var el = $el[0],
+    child = el.firstChild
 
-    el = $el[0];
-    child = el.firstChild;
-    if (oj.isDOMText(child)){
+    // Parse the text to turn it into bool, number, or string
+    if (oj.isDOMText(child))
+      return oj.parse(child.nodeValue)
 
-      // Parse the text to turn it into bool, number, or string
-      return text = oj.parse(child.nodeValue);
-    } else if (oj.isDOMElement(child)){
-
-      // Get elements as oj instances or elements
-      if ((inst = _getInstanceOnElement(child)) != null){
-        return inst;
-      } else {
-        return child;
-      }
-    }
-  };
+    // Get elements as oj instances or elements
+    else if (oj.isDOMElement(child))
+      return _d(_getInstanceOnElement(child), child)
+  }
 
   // jQuery.fn.ojValue: Get the first value of the selected contents
   oj.$.fn.ojValue = _jqExtend({first: true, set: null, get: _jqGetValue })
@@ -3364,6 +3208,93 @@
         get: null
       });
     })(ojName, jqName)
+  }
+
+  // Minify Helpers that hook into server-side minification
+  oj._minifyJS = pass
+  oj._minifyCSS = pass
+
+  // Path Helpers: Used to implement require client side
+  // Simplified from: github.com/joyent/node/lib/path.js
+
+  var _pathRx = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/;
+
+  function _pathSplit(fname){
+    var result = _pathRx.exec(fname)
+    return [result[1] || '', result[2] || '', result[3] || '', result[4] || ''];
+  }
+
+  function _pathNormArray(parts, allowAboveRoot){
+    var up = 0,
+      i = parts.length - 1,
+      last
+    while (i >= 0){
+      last = parts[i];
+      if (last === '.')
+        parts.splice(i, 1)
+      else if (last === '..'){
+        parts.splice(i, 1)
+        up++
+      } else if (up){
+        parts.splice(i, 1)
+        up--
+      }
+      i--
+    }
+    if (allowAboveRoot)
+      while (up--)
+        parts.unshift('..')
+    return parts
+  }
+
+  oj._pathResolve = function(){
+    var resolvedPath = '',
+      isAbsolute = false,
+      i = arguments.length - 1,
+      path
+    while (i >= -1 && !isAbsolute){
+      path = i >= 0 ? arguments[i] : process.cwd();
+      if ((typeof path !== 'string') || !path)
+        continue;
+      resolvedPath = path + '/' + resolvedPath
+      isAbsolute = path.charAt(0) === '/'
+      i--
+    }
+    resolvedPath = _pathNormArray(resolvedPath.split('/').filter(function(p){
+      return !!p;
+    }), !isAbsolute).join('/')
+    return ((isAbsolute ? '/' : '') + resolvedPath) || '.'
+  }
+
+  oj._pathNormalize = function(path){
+    var isAbsolute = path.charAt(0) === '/',
+    trailingSlash = path.substr(-1) === '/'
+    path = _pathNormArray(path.split('/').filter(function(p){
+      return !!p
+    }), !isAbsolute).join('/')
+    if (!path && !isAbsolute)
+      path = '.'
+    if (path && trailingSlash)
+      path += '/'
+    return (isAbsolute ? '/' : '') + path
+  }
+
+  oj._pathJoin = function(){
+    var paths = slice.call(arguments, 0)
+    return oj._pathNormalize(paths.filter(function(p, index){
+      return p && typeof p === 'string'
+    }).join('/'))
+  }
+
+  oj._pathDirname = function(path){
+    var result = _pathSplit(path),
+    root = result[0],
+    dir = result[1]
+    if (!root && !dir)
+      return '.'
+    if (dir)
+      dir = dir.substr(0, dir.length - 1)
+    return root + dir
   }
 
 }).call(this);
