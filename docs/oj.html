@@ -67,7 +67,7 @@
     <span class="keyword">return</span> oj.tag.apply(<span class="keyword">this</span>, [<span class="string">'oj'</span>].concat(slice.call(arguments)).concat([{__quiet__:<span class="number">1</span>}]))
   };
 
-  oj.version = <span class="string">'0.2.0'</span>
+  oj.version = <span class="string">'0.2.1'</span>
 
   oj.isClient = !(<span class="keyword">typeof</span> process !== <span class="string">"undefined"</span> &amp;&amp; process !== <span class="literal">null</span> ? process.versions != <span class="literal">null</span> ? process.versions.node : <span class="number">0</span> : <span class="number">0</span>)</pre></div></div>
             
@@ -1586,12 +1586,7 @@ options:
     acc.html = options.html ? [] : <span class="literal">null</span>
     acc.dom = options.dom &amp;&amp; (<span class="keyword">typeof</span> document !== <span class="string">"undefined"</span> &amp;&amp; document !== <span class="literal">null</span>) ? document.createElement(<span class="string">'OJ'</span>) : <span class="literal">null</span>
     acc.css = options.css || options.cssMap ? {} : <span class="literal">null</span>;
-    acc.indent = <span class="string">''</span>
-
-    <span class="keyword">if</span> (options.dom)
-      acc.types = [];
-
-    acc.tags = {}</pre></div></div>
+    acc.indent = <span class="string">''</span></pre></div></div>
             
         </li>
         
@@ -1602,11 +1597,16 @@ options:
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-85">&#182;</a>
               </div>
-              <p>Always ignore oj and css tags</p>
+              <p>Accumulate insert events per element</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    _extend(options.ignore, {oj:<span class="number">1</span>, css:<span class="number">1</span>})</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    acc.inserts = []
+
+    <span class="keyword">if</span> (options.dom)
+      acc.types = []
+
+    acc.tags = {}</pre></div></div>
             
         </li>
         
@@ -1617,11 +1617,11 @@ options:
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-86">&#182;</a>
               </div>
-              <p>Recursive compile to accumulator</p>
+              <p>Always ignore oj and css tags</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    _compileAny(ojml, acc)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    _extend(options.ignore, {oj:<span class="number">1</span>, css:<span class="number">1</span>})</pre></div></div>
             
         </li>
         
@@ -1631,6 +1631,21 @@ options:
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-87">&#182;</a>
+              </div>
+              <p>Recursive compile to accumulator</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _compileAny(ojml, acc)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-88">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-88">&#182;</a>
               </div>
               <p>Flatten CSS</p>
 
@@ -1642,11 +1657,11 @@ options:
         </li>
         
         
-        <li id="section-88">
+        <li id="section-89">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-88">&#182;</a>
+                <a class="pilcrow" href="#section-89">&#182;</a>
               </div>
               <p>Generate css if necessary</p>
 
@@ -1658,11 +1673,11 @@ options:
         </li>
         
         
-        <li id="section-89">
+        <li id="section-90">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-89">&#182;</a>
+                <a class="pilcrow" href="#section-90">&#182;</a>
               </div>
               <p>Output cssMap if necessary</p>
 
@@ -1674,11 +1689,11 @@ options:
         </li>
         
         
-        <li id="section-90">
+        <li id="section-91">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-90">&#182;</a>
+                <a class="pilcrow" href="#section-91">&#182;</a>
               </div>
               <p>Generate HTML if necessary</p>
 
@@ -1690,11 +1705,11 @@ options:
         </li>
         
         
-        <li id="section-91">
+        <li id="section-92">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-91">&#182;</a>
+                <a class="pilcrow" href="#section-92">&#182;</a>
               </div>
               <p>Generate dom if necessary</p>
 
@@ -1705,11 +1720,11 @@ options:
         </li>
         
         
-        <li id="section-92">
+        <li id="section-93">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-92">&#182;</a>
+                <a class="pilcrow" href="#section-93">&#182;</a>
               </div>
               <p>Remove the <oj> wrapping from the dom element</p>
 
@@ -1720,11 +1735,11 @@ options:
         </li>
         
         
-        <li id="section-93">
+        <li id="section-94">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-93">&#182;</a>
+                <a class="pilcrow" href="#section-94">&#182;</a>
               </div>
               <p>Cleanup inconsistencies of childNodes</p>
 
@@ -1735,11 +1750,11 @@ options:
         </li>
         
         
-        <li id="section-94">
+        <li id="section-95">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-94">&#182;</a>
+                <a class="pilcrow" href="#section-95">&#182;</a>
               </div>
               <p>Make dom a real array</p>
 
@@ -1750,11 +1765,11 @@ options:
         </li>
         
         
-        <li id="section-95">
+        <li id="section-96">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-95">&#182;</a>
+                <a class="pilcrow" href="#section-96">&#182;</a>
               </div>
               <p>Filter out anything that isn&#39;t a dom element</p>
 
@@ -1766,11 +1781,11 @@ options:
         </li>
         
         
-        <li id="section-96">
+        <li id="section-97">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-96">&#182;</a>
+                <a class="pilcrow" href="#section-97">&#182;</a>
               </div>
               <p>Ensure dom is null if empty</p>
 
@@ -1782,11 +1797,11 @@ options:
         </li>
         
         
-        <li id="section-97">
+        <li id="section-98">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-97">&#182;</a>
+                <a class="pilcrow" href="#section-98">&#182;</a>
               </div>
               <p>Single elements are not returned as a list</p>
 
@@ -1797,11 +1812,11 @@ options:
         </li>
         
         
-        <li id="section-98">
+        <li id="section-99">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-98">&#182;</a>
+                <a class="pilcrow" href="#section-99">&#182;</a>
               </div>
               <p>Reasoning: The common cases don&#39;t have multiple elements</p>
 <p><html>,<body>, etc and this is abstracted for you anyway
@@ -1817,18 +1832,19 @@ with jQuery plugins</p>
       css: css,
       cssMap: cssMap,
       types: acc.types,
-      tags: acc.tags
+      tags: acc.tags,
+      inserts: acc.inserts
     }
   };</pre></div></div>
             
         </li>
         
         
-        <li id="section-99">
+        <li id="section-100">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-99">&#182;</a>
+                <a class="pilcrow" href="#section-100">&#182;</a>
               </div>
               <p>_styleFromObject: Convert object to style string</p>
 
@@ -1843,11 +1859,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-100">
+        <li id="section-101">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-100">&#182;</a>
+                <a class="pilcrow" href="#section-101">&#182;</a>
               </div>
               <p>Trailing semi should only exist on when we aren&#39;t indenting</p>
 
@@ -1860,11 +1876,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-101">
+        <li id="section-102">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-101">&#182;</a>
+                <a class="pilcrow" href="#section-102">&#182;</a>
               </div>
               <p>Sort keys to create consistent output</p>
 
@@ -1875,11 +1891,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-102">
+        <li id="section-103">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-102">&#182;</a>
+                <a class="pilcrow" href="#section-103">&#182;</a>
               </div>
               <p>Support indention and inlining</p>
 
@@ -1895,11 +1911,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-103">
+        <li id="section-104">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-103">&#182;</a>
+                <a class="pilcrow" href="#section-104">&#182;</a>
               </div>
               <p>Add semi if it is not inline or it is not the last key</p>
 
@@ -1910,11 +1926,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-104">
+        <li id="section-105">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-104">&#182;</a>
+                <a class="pilcrow" href="#section-105">&#182;</a>
               </div>
               <p>Allow keys to be camal case</p>
 
@@ -1925,11 +1941,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-105">
+        <li id="section-106">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-105">&#182;</a>
+                <a class="pilcrow" href="#section-106">&#182;</a>
               </div>
               <p>Collect css result for this key</p>
 
@@ -1943,11 +1959,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-106">
+        <li id="section-107">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-106">&#182;</a>
+                <a class="pilcrow" href="#section-107">&#182;</a>
               </div>
               <p>_attributesFromObject: Convert object to attribute string with no special conversions</p>
 
@@ -1960,11 +1976,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-107">
+        <li id="section-108">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-107">&#182;</a>
+                <a class="pilcrow" href="#section-108">&#182;</a>
               </div>
               <p>Pass through non objects</p>
 
@@ -1977,11 +1993,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-108">
+        <li id="section-109">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-108">&#182;</a>
+                <a class="pilcrow" href="#section-109">&#182;</a>
               </div>
               <p>Serialize attributes in order for consistent output</p>
 
@@ -1996,11 +2012,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-109">
+        <li id="section-110">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-109">&#182;</a>
+                <a class="pilcrow" href="#section-110">&#182;</a>
               </div>
               <p>Boolean attributes have no value</p>
 
@@ -2012,11 +2028,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-110">
+        <li id="section-111">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-110">&#182;</a>
+                <a class="pilcrow" href="#section-111">&#182;</a>
               </div>
               <p>Other attributes have a value</p>
 
@@ -2033,11 +2049,11 @@ with jQuery plugins</p>
         </li>
         
         
-        <li id="section-111">
+        <li id="section-112">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-111">&#182;</a>
+                <a class="pilcrow" href="#section-112">&#182;</a>
               </div>
               <p>_flattenCSSMap: Take an OJ cssMap and flatten it into the form
 <code>&#39;plugin&#39; -&gt; &#39;@media query&#39; -&gt; &#39;selector&#39; -&gt;&#39;rulesMap&#39;</code></p>
@@ -2058,11 +2074,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-112">
+        <li id="section-113">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-112">&#182;</a>
+                <a class="pilcrow" href="#section-113">&#182;</a>
               </div>
               <p>Recursive helper with accumulators (it outputs flatMapAcc)</p>
 
@@ -2073,11 +2089,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-113">
+        <li id="section-114">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-113">&#182;</a>
+                <a class="pilcrow" href="#section-114">&#182;</a>
               </div>
               <p>Built in media helpers</p>
 
@@ -2098,11 +2114,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-114">
+        <li id="section-115">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-114">&#182;</a>
+                <a class="pilcrow" href="#section-115">&#182;</a>
               </div>
               <p>Base Case: Record our selector when <code>rules</code> is a value</p>
 
@@ -2113,11 +2129,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-115">
+        <li id="section-116">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-115">&#182;</a>
+                <a class="pilcrow" href="#section-116">&#182;</a>
               </div>
               <p>Join selectors and media accumulators with commas</p>
 
@@ -2129,11 +2145,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-116">
+        <li id="section-117">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-116">&#182;</a>
+                <a class="pilcrow" href="#section-117">&#182;</a>
               </div>
               <p>Prepend @media as that was removed previously when spliting into parts</p>
 
@@ -2145,11 +2161,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-117">
+        <li id="section-118">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-117">&#182;</a>
+                <a class="pilcrow" href="#section-118">&#182;</a>
               </div>
               <p>Record the rule deeply in <code>flatMapAcc</code></p>
 
@@ -2160,11 +2176,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-118">
+        <li id="section-119">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-118">&#182;</a>
+                <a class="pilcrow" href="#section-119">&#182;</a>
               </div>
               <p>Recursive Case: Recurse on <code>rules</code> when it is an object</p>
 
@@ -2175,11 +2191,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-119">
+        <li id="section-120">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-119">&#182;</a>
+                <a class="pilcrow" href="#section-120">&#182;</a>
               </div>
               <p>(r1) Media Query found: Generate the next media queries</p>
 
@@ -2195,11 +2211,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-120">
+        <li id="section-121">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-120">&#182;</a>
+                <a class="pilcrow" href="#section-121">&#182;</a>
               </div>
               <p>(r2) Selector found: Generate the next selectors</p>
 
@@ -2215,11 +2231,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-121">
+        <li id="section-122">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-121">&#182;</a>
+                <a class="pilcrow" href="#section-122">&#182;</a>
               </div>
               <p>Media queries and Selectors can be comma seperated</p>
 
@@ -2230,11 +2246,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-122">
+        <li id="section-123">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-122">&#182;</a>
+                <a class="pilcrow" href="#section-123">&#182;</a>
               </div>
               <p>Media queries have convience substitutions like &#39;phone&#39;, &#39;tablet&#39;</p>
 
@@ -2249,11 +2265,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-123">
+        <li id="section-124">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-123">&#182;</a>
+                <a class="pilcrow" href="#section-124">&#182;</a>
               </div>
               <p>Determine the next selectors or media queries</p>
 
@@ -2268,11 +2284,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-124">
+        <li id="section-125">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-124">&#182;</a>
+                <a class="pilcrow" href="#section-125">&#182;</a>
               </div>
               <p>When <code>&amp;</code> is not present just insert in front with the correct join operator</p>
 
@@ -2289,11 +2305,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-125">
+        <li id="section-126">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-125">&#182;</a>
+                <a class="pilcrow" href="#section-126">&#182;</a>
               </div>
               <p>Recurse through objects after calculating the next selectors</p>
 
@@ -2309,11 +2325,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-126">
+        <li id="section-127">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-126">&#182;</a>
+                <a class="pilcrow" href="#section-127">&#182;</a>
               </div>
               <p>_styleClassFromPlugin: Abstract plugin <style> naming</p>
 
@@ -2324,11 +2340,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-127">
+        <li id="section-128">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-127">&#182;</a>
+                <a class="pilcrow" href="#section-128">&#182;</a>
               </div>
               <p>_styleTagFromMediaObject: Abstract creating <style> tag</p>
 
@@ -2343,11 +2359,11 @@ Nested, media, and comma definitions are resolved and merged</p>
         </li>
         
         
-        <li id="section-128">
+        <li id="section-129">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-128">&#182;</a>
+                <a class="pilcrow" href="#section-129">&#182;</a>
               </div>
               <p>_cssFromMediaObject: Convert css from a flattened mediaMap rule object.
 The rule object is of the form:
@@ -2366,11 +2382,11 @@ mediaQuery =&gt; selector =&gt; rulesObject</p>
         </li>
         
         
-        <li id="section-129">
+        <li id="section-130">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-129">&#182;</a>
+                <a class="pilcrow" href="#section-130">&#182;</a>
               </div>
               <p>Deterine what output characters are needed</p>
 
@@ -2384,11 +2400,11 @@ mediaQuery =&gt; selector =&gt; rulesObject</p>
         </li>
         
         
-        <li id="section-130">
+        <li id="section-131">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-130">&#182;</a>
+                <a class="pilcrow" href="#section-131">&#182;</a>
               </div>
               <p>Build css for media =&gt; selector =&gt;  rules</p>
 
@@ -2400,11 +2416,11 @@ mediaQuery =&gt; selector =&gt; rulesObject</p>
         </li>
         
         
-        <li id="section-131">
+        <li id="section-132">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-131">&#182;</a>
+                <a class="pilcrow" href="#section-132">&#182;</a>
               </div>
               <p>Serialize media query</p>
 
@@ -2422,11 +2438,11 @@ mediaQuery =&gt; selector =&gt; rulesObject</p>
         </li>
         
         
-        <li id="section-132">
+        <li id="section-133">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-132">&#182;</a>
+                <a class="pilcrow" href="#section-133">&#182;</a>
               </div>
               <p>Serialize selector</p>
 
@@ -2438,11 +2454,11 @@ mediaQuery =&gt; selector =&gt; rulesObject</p>
         </li>
         
         
-        <li id="section-133">
+        <li id="section-134">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-133">&#182;</a>
+                <a class="pilcrow" href="#section-134">&#182;</a>
               </div>
               <p>Serialize style rules</p>
 
@@ -2459,11 +2475,11 @@ mediaQuery =&gt; selector =&gt; rulesObject</p>
         </li>
         
         
-        <li id="section-134">
+        <li id="section-135">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-134">&#182;</a>
+                <a class="pilcrow" href="#section-135">&#182;</a>
               </div>
               <p>End media query</p>
 
@@ -2484,11 +2500,11 @@ mediaQuery =&gt; selector =&gt; rulesObject</p>
         </li>
         
         
-        <li id="section-135">
+        <li id="section-136">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-135">&#182;</a>
+                <a class="pilcrow" href="#section-136">&#182;</a>
               </div>
               <p>_cssFromPluginObject: Convert flattened css selectors and rules to a string
 pluginMaps are of the form:
@@ -2508,11 +2524,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-136">
+        <li id="section-137">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-136">&#182;</a>
+                <a class="pilcrow" href="#section-137">&#182;</a>
               </div>
               <p>Deterine what output characters are needed</p>
 
@@ -2531,11 +2547,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-137">
+        <li id="section-138">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-137">&#182;</a>
+                <a class="pilcrow" href="#section-138">&#182;</a>
               </div>
               <p>Serialize CSS with potential minification</p>
 
@@ -2551,11 +2567,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-138">
+        <li id="section-139">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-138">&#182;</a>
+                <a class="pilcrow" href="#section-139">&#182;</a>
               </div>
               <p>_compileDeeper: Recursive helper for compiling that wraps indention</p>
 
@@ -2571,11 +2587,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-139">
+        <li id="section-140">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-139">&#182;</a>
+                <a class="pilcrow" href="#section-140">&#182;</a>
               </div>
               <p>_compileAny Recursive helper for compiling ojml or any type</p>
 
@@ -2586,11 +2602,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-140">
+        <li id="section-141">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-140">&#182;</a>
+                <a class="pilcrow" href="#section-141">&#182;</a>
               </div>
               <p>Array</p>
 
@@ -2602,11 +2618,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-141">
+        <li id="section-142">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-141">&#182;</a>
+                <a class="pilcrow" href="#section-142">&#182;</a>
               </div>
               <p>String</p>
 
@@ -2629,11 +2645,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-142">
+        <li id="section-143">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-142">&#182;</a>
+                <a class="pilcrow" href="#section-143">&#182;</a>
               </div>
               <p>Boolean or Number</p>
 
@@ -2649,11 +2665,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-143">
+        <li id="section-144">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-143">&#182;</a>
+                <a class="pilcrow" href="#section-144">&#182;</a>
               </div>
               <p>Function</p>
 
@@ -2664,11 +2680,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-144">
+        <li id="section-145">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-144">&#182;</a>
+                <a class="pilcrow" href="#section-145">&#182;</a>
               </div>
               <p>Wrap function call to allow full oj generation within any</p>
 
@@ -2679,11 +2695,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-145">
+        <li id="section-146">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-145">&#182;</a>
+                <a class="pilcrow" href="#section-146">&#182;</a>
               </div>
               <p>Date</p>
 
@@ -2699,11 +2715,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-146">
+        <li id="section-147">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-146">&#182;</a>
+                <a class="pilcrow" href="#section-147">&#182;</a>
               </div>
               <p>OJ Type or Instance</p>
 
@@ -2726,11 +2742,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-147">
+        <li id="section-148">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-147">&#182;</a>
+                <a class="pilcrow" href="#section-148">&#182;</a>
               </div>
               <p>Do nothing for: null, undefined, object</p>
 
@@ -2741,11 +2757,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-148">
+        <li id="section-149">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-148">&#182;</a>
+                <a class="pilcrow" href="#section-149">&#182;</a>
               </div>
               <p>_compileTag: Recursive helper for compiling ojml tags</p>
 
@@ -2756,11 +2772,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-149">
+        <li id="section-150">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-149">&#182;</a>
+                <a class="pilcrow" href="#section-150">&#182;</a>
               </div>
               <p>Empty list compiles to undefined</p>
 
@@ -2771,11 +2787,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-150">
+        <li id="section-151">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-150">&#182;</a>
+                <a class="pilcrow" href="#section-151">&#182;</a>
               </div>
               <p>The first part of ojml is the tag</p>
 
@@ -2792,11 +2808,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-151">
+        <li id="section-152">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-151">&#182;</a>
+                <a class="pilcrow" href="#section-152">&#182;</a>
               </div>
               <p>Allow the tag parameter to be &#39;table&#39; (string) or oj.table (function) or oj.Table (object)</p>
 
@@ -2808,11 +2824,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-152">
+        <li id="section-153">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-152">&#182;</a>
+                <a class="pilcrow" href="#section-153">&#182;</a>
               </div>
               <p>Fail if no tag found</p>
 
@@ -2824,11 +2840,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-153">
+        <li id="section-154">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-153">&#182;</a>
+                <a class="pilcrow" href="#section-154">&#182;</a>
               </div>
               <p>Record tag as encountered</p>
 
@@ -2839,11 +2855,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-154">
+        <li id="section-155">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-154">&#182;</a>
+                <a class="pilcrow" href="#section-155">&#182;</a>
               </div>
               <p>Instance oj object if tag is capitalized</p>
 
@@ -2855,11 +2871,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-155">
+        <li id="section-156">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-155">&#182;</a>
+                <a class="pilcrow" href="#section-156">&#182;</a>
               </div>
               <p>Compile to css if requested</p>
 
@@ -2870,11 +2886,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-156">
+        <li id="section-157">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-156">&#182;</a>
+                <a class="pilcrow" href="#section-157">&#182;</a>
               </div>
               <p>Extend options.css with rules</p>
 
@@ -2891,11 +2907,11 @@ tags:true will output the css in <code>&lt;style&gt;</code> tags</p>
         </li>
         
         
-        <li id="section-157">
+        <li id="section-158">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-157">&#182;</a>
+                <a class="pilcrow" href="#section-158">&#182;</a>
               </div>
               <p>Compile DOCTYPE as special case because it is not really an element
 It has attributes with spaces and cannot be created by dom manipulation
@@ -2912,11 +2928,11 @@ In this way it is HTML generation only.</p>
         </li>
         
         
-        <li id="section-158">
+        <li id="section-159">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-158">&#182;</a>
+                <a class="pilcrow" href="#section-159">&#182;</a>
               </div>
               <p>options.dom is purposely ignored</p>
 
@@ -2931,11 +2947,11 @@ In this way it is HTML generation only.</p>
         </li>
         
         
-        <li id="section-159">
+        <li id="section-160">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-159">&#182;</a>
+                <a class="pilcrow" href="#section-160">&#182;</a>
               </div>
               <p>Compile to dom if requested
 Add dom element with attributes</p>
@@ -2947,11 +2963,11 @@ Add dom element with attributes</p>
         </li>
         
         
-        <li id="section-160">
+        <li id="section-161">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-160">&#182;</a>
+                <a class="pilcrow" href="#section-161">&#182;</a>
               </div>
               <p>Create element</p>
 
@@ -2962,11 +2978,11 @@ Add dom element with attributes</p>
         </li>
         
         
-        <li id="section-161">
+        <li id="section-162">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-161">&#182;</a>
+                <a class="pilcrow" href="#section-162">&#182;</a>
               </div>
               <p>Add self to parent</p>
 
@@ -2978,11 +2994,11 @@ Add dom element with attributes</p>
         </li>
         
         
-        <li id="section-162">
+        <li id="section-163">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-162">&#182;</a>
+                <a class="pilcrow" href="#section-163">&#182;</a>
               </div>
               <p>Push ourselves on the dom stack (to handle children)</p>
 
@@ -2993,11 +3009,11 @@ Add dom element with attributes</p>
         </li>
         
         
-        <li id="section-163">
+        <li id="section-164">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-163">&#182;</a>
+                <a class="pilcrow" href="#section-164">&#182;</a>
               </div>
               <p>Set attributes in sorted order for consistency</p>
 
@@ -3012,11 +3028,11 @@ Add dom element with attributes</p>
         </li>
         
         
-        <li id="section-164">
+        <li id="section-165">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-164">&#182;</a>
+                <a class="pilcrow" href="#section-165">&#182;</a>
               </div>
               <p>Boolean attributes have no value</p>
 
@@ -3032,27 +3048,27 @@ Add dom element with attributes</p>
         </li>
         
         
-        <li id="section-165">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-165">&#182;</a>
-              </div>
-              <p>Bind events</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>        _attributesBindEventsToDOM(events, el)
-      }</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-166">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-166">&#182;</a>
+              </div>
+              <p>Bind events</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        _attributesBindEventsToDOM(events, el, options.inserts)
+      }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-167">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-167">&#182;</a>
               </div>
               <p>Compile to html if requested
 Add tag with attributes</p>
@@ -3067,11 +3083,11 @@ Add tag with attributes</p>
         </li>
         
         
-        <li id="section-167">
+        <li id="section-168">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-167">&#182;</a>
+                <a class="pilcrow" href="#section-168">&#182;</a>
               </div>
               <p>Recurse through children if this tag isn&#39;t ignored deeply</p>
 
@@ -3086,11 +3102,11 @@ Add tag with attributes</p>
         </li>
         
         
-        <li id="section-168">
+        <li id="section-169">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-168">&#182;</a>
+                <a class="pilcrow" href="#section-169">&#182;</a>
               </div>
               <p>Skip indention if there is only one child</p>
 
@@ -3105,11 +3121,11 @@ Add tag with attributes</p>
         </li>
         
         
-        <li id="section-169">
+        <li id="section-170">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-169">&#182;</a>
+                <a class="pilcrow" href="#section-170">&#182;</a>
               </div>
               <p>Skip indention if there is only one child</p>
 
@@ -3121,11 +3137,11 @@ Add tag with attributes</p>
         </li>
         
         
-        <li id="section-170">
+        <li id="section-171">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-170">&#182;</a>
+                <a class="pilcrow" href="#section-171">&#182;</a>
               </div>
               <p>End html tag if you have children or your tag closes</p>
 
@@ -3136,11 +3152,11 @@ Add tag with attributes</p>
         </li>
         
         
-        <li id="section-171">
+        <li id="section-172">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-171">&#182;</a>
+                <a class="pilcrow" href="#section-172">&#182;</a>
               </div>
               <p>Close tag if html</p>
 
@@ -3152,11 +3168,11 @@ Add tag with attributes</p>
         </li>
         
         
-        <li id="section-172">
+        <li id="section-173">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-172">&#182;</a>
+                <a class="pilcrow" href="#section-173">&#182;</a>
               </div>
               <p>Pop ourselves if dom</p>
 
@@ -3170,28 +3186,28 @@ Add tag with attributes</p>
         </li>
         
         
-        <li id="section-173">
+        <li id="section-174">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-173">&#182;</a>
+                <a class="pilcrow" href="#section-174">&#182;</a>
               </div>
               <p>_attributesProcessedForOJ: Process attributes to make them easier to use</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="function"><span class="keyword">function</span> <span class="title">_attributesProcessedForOJ</span><span class="params">(attr)</span>{</span>
-    <span class="keyword">var</span> jqEvents = {bind:<span class="number">1</span>, on:<span class="number">1</span>, off:<span class="number">1</span>, live:<span class="number">1</span>, blur:<span class="number">1</span>, change:<span class="number">1</span>, click:<span class="number">1</span>, dblclick:<span class="number">1</span>, focus:<span class="number">1</span>, focusin:<span class="number">1</span>, focusout:<span class="number">1</span>, hover:<span class="number">1</span>, keydown:<span class="number">1</span>, keypress:<span class="number">1</span>, keyup:<span class="number">1</span>, mousedown:<span class="number">1</span>, mouseenter:<span class="number">1</span>, mouseleave:<span class="number">1</span>, mousemove:<span class="number">1</span>, mouseout:<span class="number">1</span>, mouseup:<span class="number">1</span>, ready:<span class="number">1</span>, resize:<span class="number">1</span>, scroll:<span class="number">1</span>, select:<span class="number">1</span>},
+    <span class="keyword">var</span> jqEvents = {bind:<span class="number">1</span>, on:<span class="number">1</span>, off:<span class="number">1</span>, live:<span class="number">1</span>, blur:<span class="number">1</span>, change:<span class="number">1</span>, click:<span class="number">1</span>, dblclick:<span class="number">1</span>, focus:<span class="number">1</span>, focusin:<span class="number">1</span>, focusout:<span class="number">1</span>, hover:<span class="number">1</span>, keydown:<span class="number">1</span>, keypress:<span class="number">1</span>, keyup:<span class="number">1</span>, mousedown:<span class="number">1</span>, mouseenter:<span class="number">1</span>, mouseleave:<span class="number">1</span>, mousemove:<span class="number">1</span>, mouseout:<span class="number">1</span>, mouseup:<span class="number">1</span>, ready:<span class="number">1</span>, resize:<span class="number">1</span>, scroll:<span class="number">1</span>, select:<span class="number">1</span>, insert:<span class="number">1</span>},
     events, k, v</pre></div></div>
             
         </li>
         
         
-        <li id="section-174">
+        <li id="section-175">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-174">&#182;</a>
+                <a class="pilcrow" href="#section-175">&#182;</a>
               </div>
               <p>Allow attributes to alias c to class and use arrays instead of space seperated strings
 Convert to c and class from arrays to strings</p>
@@ -3207,11 +3223,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-175">
+        <li id="section-176">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-175">&#182;</a>
+                <a class="pilcrow" href="#section-176">&#182;</a>
               </div>
               <p>Move c to class</p>
 
@@ -3228,11 +3244,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-176">
+        <li id="section-177">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-176">&#182;</a>
+                <a class="pilcrow" href="#section-177">&#182;</a>
               </div>
               <p>Allow attributes to take style as an object</p>
 
@@ -3247,11 +3263,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-177">
+        <li id="section-178">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-177">&#182;</a>
+                <a class="pilcrow" href="#section-178">&#182;</a>
               </div>
               <p>Omit attributes with values of false, null, or undefined</p>
 
@@ -3268,11 +3284,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-178">
+        <li id="section-179">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-178">&#182;</a>
+                <a class="pilcrow" href="#section-179">&#182;</a>
               </div>
               <p>Filter out jquery events</p>
 
@@ -3284,11 +3300,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-179">
+        <li id="section-180">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-179">&#182;</a>
+                <a class="pilcrow" href="#section-180">&#182;</a>
               </div>
               <p>Filter out attributes that are jquery events</p>
 
@@ -3300,11 +3316,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-180">
+        <li id="section-181">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-180">&#182;</a>
+                <a class="pilcrow" href="#section-181">&#182;</a>
               </div>
               <p>If this attribute (k) is an event</p>
 
@@ -3320,11 +3336,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-181">
+        <li id="section-182">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-181">&#182;</a>
+                <a class="pilcrow" href="#section-182">&#182;</a>
               </div>
               <p>Returns bindable events</p>
 
@@ -3336,40 +3352,53 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-182">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-182">&#182;</a>
-              </div>
-              <p>Bind events to dom</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="function"><span class="keyword">function</span> <span class="title">_attributesBindEventsToDOM</span><span class="params">(events, el)</span>{</span>
-    <span class="keyword">var</span> ek, ev, _results;
-
-    _results = [];
-    <span class="keyword">for</span> (ek <span class="keyword">in</span> events){
-      ev = events[ek]
-      _a(oj.$ != <span class="literal">null</span>, <span class="string">"jquery is missing when binding a '"</span> + ek + <span class="string">"' event"</span>)
-      <span class="keyword">if</span> (oj.isArray(ev)){
-        _results.push(oj.$(el)[ek].apply(<span class="keyword">this</span>, ev));
-      } <span class="keyword">else</span> {
-        _results.push(oj.$(el)[ek](ev));
-      }
-    }
-    <span class="keyword">return</span> _results;
-  };</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-183">
             <div class="annotation">
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-183">&#182;</a>
+              </div>
+              <p>Bind events to dom</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="function"><span class="keyword">function</span> <span class="title">_attributesBindEventsToDOM</span><span class="params">(events, el, inserts)</span>{</span>
+    <span class="keyword">var</span> ek, ev, _results = []
+    <span class="keyword">for</span> (ek <span class="keyword">in</span> events){
+      ev = events[ek]
+      _a(oj.$ != <span class="literal">null</span>, <span class="string">"jquery is missing when binding a '"</span> + ek + <span class="string">"' event"</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-184">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-184">&#182;</a>
+              </div>
+              <p>accumulate insert events manually since DOMNodeInserted is slow and depreciated</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> (ek == <span class="string">'insert'</span> &amp;&amp; inserts)
+        inserts.push(<span class="keyword">function</span>(){ev.call(el,el)})
+      <span class="keyword">else</span> <span class="keyword">if</span> (oj.isArray(ev))
+        _results.push(oj.$(el)[ek].apply(<span class="keyword">this</span>, ev))
+      <span class="keyword">else</span>
+        _results.push(oj.$(el)[ek](ev))
+    }
+    <span class="keyword">return</span> _results
+  };</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-185">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-185">&#182;</a>
               </div>
               <p>oj.toHTML: Compile directly to HTML only</p>
 
@@ -3380,11 +3409,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-184">
+        <li id="section-186">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-184">&#182;</a>
+                <a class="pilcrow" href="#section-186">&#182;</a>
               </div>
               <p>Options is optional</p>
 
@@ -3398,11 +3427,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-185">
+        <li id="section-187">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-185">&#182;</a>
+                <a class="pilcrow" href="#section-187">&#182;</a>
               </div>
               <p>Create html only</p>
 
@@ -3415,11 +3444,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-186">
+        <li id="section-188">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-186">&#182;</a>
+                <a class="pilcrow" href="#section-188">&#182;</a>
               </div>
               <p>oj.toCSS: Compile directly to CSS only</p>
 
@@ -3430,11 +3459,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-187">
+        <li id="section-189">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-187">&#182;</a>
+                <a class="pilcrow" href="#section-189">&#182;</a>
               </div>
               <p>Options is optional</p>
 
@@ -3448,11 +3477,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-188">
+        <li id="section-190">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-188">&#182;</a>
+                <a class="pilcrow" href="#section-190">&#182;</a>
               </div>
               <p>Create css only</p>
 
@@ -3465,11 +3494,11 @@ Convert to c and class from arrays to strings</p>
         </li>
         
         
-        <li id="section-189">
+        <li id="section-191">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-189">&#182;</a>
+                <a class="pilcrow" href="#section-191">&#182;</a>
               </div>
               <p>_inherit: Inherit Child from Parent
 Based on, but sadly incompatable with, coffeescript inheritance</p>
@@ -3482,11 +3511,11 @@ Based on, but sadly incompatable with, coffeescript inheritance</p>
         </li>
         
         
-        <li id="section-190">
+        <li id="section-192">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-190">&#182;</a>
+                <a class="pilcrow" href="#section-192">&#182;</a>
               </div>
               <p>Copy class properties and methods</p>
 
@@ -3502,11 +3531,11 @@ Based on, but sadly incompatable with, coffeescript inheritance</p>
         </li>
         
         
-        <li id="section-191">
+        <li id="section-193">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-191">&#182;</a>
+                <a class="pilcrow" href="#section-193">&#182;</a>
               </div>
               <p>Provide easy access for base class methods
 Example: Parent.base.methodName(arguments...)</p>
@@ -3519,11 +3548,11 @@ Example: Parent.base.methodName(arguments...)</p>
         </li>
         
         
-        <li id="section-192">
+        <li id="section-194">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-192">&#182;</a>
+                <a class="pilcrow" href="#section-194">&#182;</a>
               </div>
               <p>_construct(Type, arg1, arg2, ...): Construct type as if using call</p>
 
@@ -3534,11 +3563,11 @@ Example: Parent.base.methodName(arguments...)</p>
         </li>
         
         
-        <li id="section-193">
+        <li id="section-195">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-193">&#182;</a>
+                <a class="pilcrow" href="#section-195">&#182;</a>
               </div>
               <p>oj.createType: Create OJ type with args object supporting:
 base, constructor, properties, and methods</p>
@@ -3559,11 +3588,11 @@ base, constructor, properties, and methods</p>
         </li>
         
         
-        <li id="section-194">
+        <li id="section-196">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-194">&#182;</a>
+                <a class="pilcrow" href="#section-196">&#182;</a>
               </div>
               <p>When auto newing you need to delay construct the properties
 or they will be constructed twice.</p>
@@ -3575,11 +3604,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-195">
+        <li id="section-197">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-195">&#182;</a>
+                <a class="pilcrow" href="#section-197">&#182;</a>
               </div>
               <p>Constructor to return</p>
 
@@ -3590,11 +3619,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-196">
+        <li id="section-198">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-196">&#182;</a>
+                <a class="pilcrow" href="#section-198">&#182;</a>
               </div>
               <p>Default the constructor to call its base</p>
 
@@ -3609,11 +3638,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-197">
+        <li id="section-199">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-197">&#182;</a>
+                <a class="pilcrow" href="#section-199">&#182;</a>
               </div>
               <p>Inherit if necessary</p>
 
@@ -3625,11 +3654,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-198">
+        <li id="section-200">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-198">&#182;</a>
+                <a class="pilcrow" href="#section-200">&#182;</a>
               </div>
               <p>Add the constructor as a method</p>
 
@@ -3640,11 +3669,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-199">
+        <li id="section-201">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-199">&#182;</a>
+                <a class="pilcrow" href="#section-201">&#182;</a>
               </div>
               <p>Mark new type and its instances with a non-enumerable type and isOJ properties</p>
 
@@ -3673,11 +3702,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-200">
+        <li id="section-202">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-200">&#182;</a>
+                <a class="pilcrow" href="#section-202">&#182;</a>
               </div>
               <p>Add properties all oj Types have</p>
 
@@ -3696,11 +3725,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-201">
+        <li id="section-203">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-201">&#182;</a>
+                <a class="pilcrow" href="#section-203">&#182;</a>
               </div>
               <p>Add methods helper to instance</p>
 
@@ -3719,11 +3748,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-202">
+        <li id="section-204">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-202">&#182;</a>
+                <a class="pilcrow" href="#section-204">&#182;</a>
               </div>
               <p>Add methods all oj Types have</p>
 
@@ -3734,11 +3763,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-203">
+        <li id="section-205">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-203">&#182;</a>
+                <a class="pilcrow" href="#section-205">&#182;</a>
               </div>
               <p>get: Get property by key or get all properties</p>
 
@@ -3749,11 +3778,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-204">
+        <li id="section-206">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-204">&#182;</a>
+                <a class="pilcrow" href="#section-206">&#182;</a>
               </div>
               <p>get specific property</p>
 
@@ -3766,11 +3795,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-205">
+        <li id="section-207">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-205">&#182;</a>
+                <a class="pilcrow" href="#section-207">&#182;</a>
               </div>
               <p>get all properties</p>
 
@@ -3789,11 +3818,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-206">
+        <li id="section-208">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-206">&#182;</a>
+                <a class="pilcrow" href="#section-208">&#182;</a>
               </div>
               <p>set: Set property by key, or set all properties with object</p>
 
@@ -3805,11 +3834,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-207">
+        <li id="section-209">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-207">&#182;</a>
+                <a class="pilcrow" href="#section-209">&#182;</a>
               </div>
               <p>Optionally take key, value instead of object</p>
 
@@ -3823,11 +3852,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-208">
+        <li id="section-210">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-208">&#182;</a>
+                <a class="pilcrow" href="#section-210">&#182;</a>
               </div>
               <p>Set all keys that are valid properties</p>
 
@@ -3844,11 +3873,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-209">
+        <li id="section-211">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-209">&#182;</a>
+                <a class="pilcrow" href="#section-211">&#182;</a>
               </div>
               <p>has: Determine if property exists</p>
 
@@ -3859,11 +3888,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-210">
+        <li id="section-212">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-210">&#182;</a>
+                <a class="pilcrow" href="#section-212">&#182;</a>
               </div>
               <p>can: Determine if method exists</p>
 
@@ -3874,11 +3903,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-211">
+        <li id="section-213">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-211">&#182;</a>
+                <a class="pilcrow" href="#section-213">&#182;</a>
               </div>
               <p>toJSON: Use properties to generate json</p>
 
@@ -3899,11 +3928,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-212">
+        <li id="section-214">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-212">&#182;</a>
+                <a class="pilcrow" href="#section-214">&#182;</a>
               </div>
               <p>Add methods</p>
 
@@ -3914,11 +3943,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-213">
+        <li id="section-215">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-213">&#182;</a>
+                <a class="pilcrow" href="#section-215">&#182;</a>
               </div>
               <p>Add the properties</p>
 
@@ -3931,11 +3960,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-214">
+        <li id="section-216">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-214">&#182;</a>
+                <a class="pilcrow" href="#section-216">&#182;</a>
               </div>
               <p>_createQuietType: Takes an OJ Type and creates the _Type that doesn&#39;t emit</p>
 
@@ -3952,11 +3981,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-215">
+        <li id="section-217">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-215">&#182;</a>
+                <a class="pilcrow" href="#section-217">&#182;</a>
               </div>
               <p>oj.createEnum</p>
 
@@ -3967,11 +3996,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-216">
+        <li id="section-218">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-216">&#182;</a>
+                <a class="pilcrow" href="#section-218">&#182;</a>
               </div>
               <p>oj.View</p>
 
@@ -3982,11 +4011,11 @@ or they will be constructed twice.</p>
         </li>
         
         
-        <li id="section-217">
+        <li id="section-219">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-217">&#182;</a>
+                <a class="pilcrow" href="#section-219">&#182;</a>
               </div>
               <p>Views are special objects map properties together. This is a union of arguments
 With the remaining arguments becoming a list</p>
@@ -3999,11 +4028,11 @@ With the remaining arguments becoming a list</p>
         </li>
         
         
-        <li id="section-218">
+        <li id="section-220">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-218">&#182;</a>
+                <a class="pilcrow" href="#section-220">&#182;</a>
               </div>
               <p>Set instance on @el</p>
 
@@ -4018,11 +4047,11 @@ With the remaining arguments becoming a list</p>
         </li>
         
         
-        <li id="section-219">
+        <li id="section-221">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-219">&#182;</a>
+                <a class="pilcrow" href="#section-221">&#182;</a>
               </div>
               <p>Emit as a tag if it isn&#39;t quiet or used new keyword</p>
 
@@ -4034,11 +4063,11 @@ With the remaining arguments becoming a list</p>
         </li>
         
         
-        <li id="section-220">
+        <li id="section-222">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-220">&#182;</a>
+                <a class="pilcrow" href="#section-222">&#182;</a>
               </div>
               <p>Remove quiet flag as it has served its purpose</p>
 
@@ -4050,11 +4079,11 @@ With the remaining arguments becoming a list</p>
         </li>
         
         
-        <li id="section-221">
+        <li id="section-223">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-221">&#182;</a>
+                <a class="pilcrow" href="#section-223">&#182;</a>
               </div>
               <p>Add class oj-typeName</p>
 
@@ -4065,11 +4094,11 @@ With the remaining arguments becoming a list</p>
         </li>
         
         
-        <li id="section-222">
+        <li id="section-224">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-222">&#182;</a>
+                <a class="pilcrow" href="#section-224">&#182;</a>
               </div>
               <p>Views automatically set all options to their properties
 arguments directly to properties</p>
@@ -4081,11 +4110,11 @@ arguments directly to properties</p>
         </li>
         
         
-        <li id="section-223">
+        <li id="section-225">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-223">&#182;</a>
+                <a class="pilcrow" href="#section-225">&#182;</a>
               </div>
               <p>Remove options that were set</p>
 
@@ -4097,11 +4126,11 @@ arguments directly to properties</p>
         </li>
         
         
-        <li id="section-224">
+        <li id="section-226">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-224">&#182;</a>
+                <a class="pilcrow" href="#section-226">&#182;</a>
               </div>
               <p>Views pass through remaining options to be attributes on the root element
 This can include jquery events and interpreted arguments</p>
@@ -4113,11 +4142,11 @@ This can include jquery events and interpreted arguments</p>
         </li>
         
         
-        <li id="section-225">
+        <li id="section-227">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-225">&#182;</a>
+                <a class="pilcrow" href="#section-227">&#182;</a>
               </div>
               <p>Record if view is fully constructed</p>
 
@@ -4130,11 +4159,11 @@ This can include jquery events and interpreted arguments</p>
         </li>
         
         
-        <li id="section-226">
+        <li id="section-228">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-226">&#182;</a>
+                <a class="pilcrow" href="#section-228">&#182;</a>
               </div>
               <p>The element backing the View</p>
 
@@ -4147,11 +4176,11 @@ This can include jquery events and interpreted arguments</p>
         </li>
         
         
-        <li id="section-227">
+        <li id="section-229">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-227">&#182;</a>
+                <a class="pilcrow" href="#section-229">&#182;</a>
               </div>
               <p>Set the element directly if this is a dom element</p>
 
@@ -4163,11 +4192,11 @@ This can include jquery events and interpreted arguments</p>
         </li>
         
         
-        <li id="section-228">
+        <li id="section-230">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-228">&#182;</a>
+                <a class="pilcrow" href="#section-230">&#182;</a>
               </div>
               <p>Clear cache of $el</p>
 
@@ -4179,11 +4208,11 @@ This can include jquery events and interpreted arguments</p>
         </li>
         
         
-        <li id="section-229">
+        <li id="section-231">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-229">&#182;</a>
+                <a class="pilcrow" href="#section-231">&#182;</a>
               </div>
               <p>Generate the dom element</p>
 
@@ -4197,11 +4226,11 @@ This can include jquery events and interpreted arguments</p>
         </li>
         
         
-        <li id="section-230">
+        <li id="section-232">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-230">&#182;</a>
+                <a class="pilcrow" href="#section-232">&#182;</a>
               </div>
               <p>Get and cache jquery-enabled element (readonly)</p>
 
@@ -4216,11 +4245,11 @@ This can include jquery events and interpreted arguments</p>
         </li>
         
         
-        <li id="section-231">
+        <li id="section-233">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-231">&#182;</a>
+                <a class="pilcrow" href="#section-233">&#182;</a>
               </div>
               <p>Get and set id attribute of view</p>
 
@@ -4234,11 +4263,11 @@ This can include jquery events and interpreted arguments</p>
         </li>
         
         
-        <li id="section-232">
+        <li id="section-234">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-232">&#182;</a>
+                <a class="pilcrow" href="#section-234">&#182;</a>
               </div>
               <p>class:
 get: -&gt; @$el.attr &#39;class&#39;
@@ -4269,11 +4298,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-233">
+        <li id="section-235">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-233">&#182;</a>
+                <a class="pilcrow" href="#section-235">&#182;</a>
               </div>
               <p>Get all classes as an array (readwrite)</p>
 
@@ -4287,11 +4316,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-234">
+        <li id="section-236">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-234">&#182;</a>
+                <a class="pilcrow" href="#section-236">&#182;</a>
               </div>
               <p>Get / set all currently set themes (readwrite)</p>
 
@@ -4329,11 +4358,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-235">
+        <li id="section-237">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-235">&#182;</a>
+                <a class="pilcrow" href="#section-237">&#182;</a>
               </div>
               <p>Determine if this view has been fully constructed (readonly)</p>
 
@@ -4344,11 +4373,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-236">
+        <li id="section-238">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-236">&#182;</a>
+                <a class="pilcrow" href="#section-238">&#182;</a>
               </div>
               <p>Determine if this view has been fully inserted (readonly)</p>
 
@@ -4361,11 +4390,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-237">
+        <li id="section-239">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-237">&#182;</a>
+                <a class="pilcrow" href="#section-239">&#182;</a>
               </div>
               <p>$: Find element from within root</p>
 
@@ -4376,11 +4405,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-238">
+        <li id="section-240">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-238">&#182;</a>
+                <a class="pilcrow" href="#section-240">&#182;</a>
               </div>
               <p>addAttribute: Add a single attribute</p>
 
@@ -4395,11 +4424,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-239">
+        <li id="section-241">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-239">&#182;</a>
+                <a class="pilcrow" href="#section-241">&#182;</a>
               </div>
               <p>addAttributes: Add attributes and apply the oj magic with jquery binding</p>
 
@@ -4413,11 +4442,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-240">
+        <li id="section-242">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-240">&#182;</a>
+                <a class="pilcrow" href="#section-242">&#182;</a>
               </div>
               <p>Add attributes as object</p>
 
@@ -4433,11 +4462,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-241">
+        <li id="section-243">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-241">&#182;</a>
+                <a class="pilcrow" href="#section-243">&#182;</a>
               </div>
               <p>Boolean attributes have no value</p>
 
@@ -4449,11 +4478,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-242">
+        <li id="section-244">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-242">&#182;</a>
+                <a class="pilcrow" href="#section-244">&#182;</a>
               </div>
               <p>Otherwise add it normally</p>
 
@@ -4466,11 +4495,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-243">
+        <li id="section-245">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-243">&#182;</a>
+                <a class="pilcrow" href="#section-245">&#182;</a>
               </div>
               <p>Bind events</p>
 
@@ -4483,11 +4512,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-244">
+        <li id="section-246">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-244">&#182;</a>
+                <a class="pilcrow" href="#section-246">&#182;</a>
               </div>
               <p>Remove a single attribute</p>
 
@@ -4498,11 +4527,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-245">
+        <li id="section-247">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-245">&#182;</a>
+                <a class="pilcrow" href="#section-247">&#182;</a>
               </div>
               <p>Remove multiple attributes</p>
 
@@ -4513,11 +4542,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-246">
+        <li id="section-248">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-246">&#182;</a>
+                <a class="pilcrow" href="#section-248">&#182;</a>
               </div>
               <p>Add a single class</p>
 
@@ -4528,11 +4557,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-247">
+        <li id="section-249">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-247">&#182;</a>
+                <a class="pilcrow" href="#section-249">&#182;</a>
               </div>
               <p>Remove a single class</p>
 
@@ -4543,11 +4572,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-248">
+        <li id="section-250">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-248">&#182;</a>
+                <a class="pilcrow" href="#section-250">&#182;</a>
               </div>
               <p>Determine if class is applied</p>
 
@@ -4558,11 +4587,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-249">
+        <li id="section-251">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-249">&#182;</a>
+                <a class="pilcrow" href="#section-251">&#182;</a>
               </div>
               <p>Add a single theme</p>
 
@@ -4573,11 +4602,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-250">
+        <li id="section-252">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-250">&#182;</a>
+                <a class="pilcrow" href="#section-252">&#182;</a>
               </div>
               <p>Remove a single theme</p>
 
@@ -4588,11 +4617,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-251">
+        <li id="section-253">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-251">&#182;</a>
+                <a class="pilcrow" href="#section-253">&#182;</a>
               </div>
               <p>Determine if theme is applied</p>
 
@@ -4603,11 +4632,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-252">
+        <li id="section-254">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-252">&#182;</a>
+                <a class="pilcrow" href="#section-254">&#182;</a>
               </div>
               <p>Clear all themes</p>
 
@@ -4618,11 +4647,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-253">
+        <li id="section-255">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-253">&#182;</a>
+                <a class="pilcrow" href="#section-255">&#182;</a>
               </div>
               <p>emit: Emit instance as a tag function would do</p>
 
@@ -4633,11 +4662,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-254">
+        <li id="section-256">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-254">&#182;</a>
+                <a class="pilcrow" href="#section-256">&#182;</a>
               </div>
               <p>Convert View to html</p>
 
@@ -4650,11 +4679,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-255">
+        <li id="section-257">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-255">&#182;</a>
+                <a class="pilcrow" href="#section-257">&#182;</a>
               </div>
               <p>Convert View to dom (for compiling)</p>
 
@@ -4665,11 +4694,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-256">
+        <li id="section-258">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-256">&#182;</a>
+                <a class="pilcrow" href="#section-258">&#182;</a>
               </div>
               <p>Convert</p>
 
@@ -4685,11 +4714,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-257">
+        <li id="section-259">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-257">&#182;</a>
+                <a class="pilcrow" href="#section-259">&#182;</a>
               </div>
               <p>Convert</p>
 
@@ -4700,11 +4729,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-258">
+        <li id="section-260">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-258">&#182;</a>
+                <a class="pilcrow" href="#section-260">&#182;</a>
               </div>
               <p>Convert View to string (for debugging)</p>
 
@@ -4715,11 +4744,11 @@ Get all currently set attributes (readonly)</p>
         </li>
         
         
-        <li id="section-259">
+        <li id="section-261">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-259">&#182;</a>
+                <a class="pilcrow" href="#section-261">&#182;</a>
               </div>
               <p>detach: -&gt; throw &#39;detach nyi&#39;
 The implementation is to set el manipulate it, and remember how to set it back</p>
@@ -4736,11 +4765,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-260">
+        <li id="section-262">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-260">&#182;</a>
+                <a class="pilcrow" href="#section-262">&#182;</a>
               </div>
               <p>oj.View.cssMap: remember css for this View</p>
 
@@ -4751,11 +4780,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-261">
+        <li id="section-263">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-261">&#182;</a>
+                <a class="pilcrow" href="#section-263">&#182;</a>
               </div>
               <p>oj.View.css: set view&#39;s css with css object mapping, or raw css string</p>
 
@@ -4783,11 +4812,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-262">
+        <li id="section-264">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-262">&#182;</a>
+                <a class="pilcrow" href="#section-264">&#182;</a>
               </div>
               <p>oj.View.themes: Remember themes for this View</p>
 
@@ -4798,11 +4827,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-263">
+        <li id="section-265">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-263">&#182;</a>
+                <a class="pilcrow" href="#section-265">&#182;</a>
               </div>
               <p>oj.View.theme: create a View specific theme with css object mapping</p>
 
@@ -4815,11 +4844,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-264">
+        <li id="section-266">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-264">&#182;</a>
+                <a class="pilcrow" href="#section-266">&#182;</a>
               </div>
               <p>Calculate styleName</p>
 
@@ -4831,11 +4860,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-265">
+        <li id="section-267">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-265">&#182;</a>
+                <a class="pilcrow" href="#section-267">&#182;</a>
               </div>
               <p>Wrap css in plugin name</p>
 
@@ -4846,11 +4875,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-266">
+        <li id="section-268">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-266">&#182;</a>
+                <a class="pilcrow" href="#section-268">&#182;</a>
               </div>
               <p>Extend into this views cssMap</p>
 
@@ -4862,11 +4891,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-267">
+        <li id="section-269">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-267">&#182;</a>
+                <a class="pilcrow" href="#section-269">&#182;</a>
               </div>
               <p>Remember the theme item</p>
 
@@ -4879,11 +4908,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-268">
+        <li id="section-270">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-268">&#182;</a>
+                <a class="pilcrow" href="#section-270">&#182;</a>
               </div>
               <p>oj.CollectionView: Inheritable base type that enables two-way collection binding</p>
 
@@ -4903,11 +4932,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-269">
+        <li id="section-271">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-269">&#182;</a>
+                <a class="pilcrow" href="#section-271">&#182;</a>
               </div>
               <p>Once everything is constructed call make precisely once.</p>
 
@@ -4935,11 +4964,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-270">
+        <li id="section-272">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-270">&#182;</a>
+                <a class="pilcrow" href="#section-272">&#182;</a>
               </div>
               <p>Unbind events if collection</p>
 
@@ -4953,11 +4982,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-271">
+        <li id="section-273">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-271">&#182;</a>
+                <a class="pilcrow" href="#section-273">&#182;</a>
               </div>
               <p>Bind events if collection</p>
 
@@ -4980,11 +5009,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-272">
+        <li id="section-274">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-272">&#182;</a>
+                <a class="pilcrow" href="#section-274">&#182;</a>
               </div>
               <p>Override make to create your view</p>
 
@@ -4995,11 +5024,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-273">
+        <li id="section-275">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-273">&#182;</a>
+                <a class="pilcrow" href="#section-275">&#182;</a>
               </div>
               <p>Override these events to minimally update on change</p>
 
@@ -5016,11 +5045,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-274">
+        <li id="section-276">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-274">&#182;</a>
+                <a class="pilcrow" href="#section-276">&#182;</a>
               </div>
               <p>oj.ModelView: Inheritable base type that enables two-way model binding</p>
 
@@ -5047,11 +5076,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-275">
+        <li id="section-277">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-275">&#182;</a>
+                <a class="pilcrow" href="#section-277">&#182;</a>
               </div>
               <p>Unbind events on the old model</p>
 
@@ -5065,11 +5094,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-276">
+        <li id="section-278">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-276">&#182;</a>
+                <a class="pilcrow" href="#section-278">&#182;</a>
               </div>
               <p>Bind events on the new model</p>
 
@@ -5081,11 +5110,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-277">
+        <li id="section-279">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-277">&#182;</a>
+                <a class="pilcrow" href="#section-279">&#182;</a>
               </div>
               <p>Trigger change manually when settings new model</p>
 
@@ -5100,11 +5129,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-278">
+        <li id="section-280">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-278">&#182;</a>
+                <a class="pilcrow" href="#section-280">&#182;</a>
               </div>
               <p>Override modelChanged if you don&#39;t want a full remake</p>
 
@@ -5125,11 +5154,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-279">
+        <li id="section-281">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-279">&#182;</a>
+                <a class="pilcrow" href="#section-281">&#182;</a>
               </div>
               <p>oj.ModelViewView: Inheritable base type that enables two-way model binding to a specific key</p>
 
@@ -5140,11 +5169,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-280">
+        <li id="section-282">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-280">&#182;</a>
+                <a class="pilcrow" href="#section-282">&#182;</a>
               </div>
               <p>Inherit ModelView to handle model and bindings</p>
 
@@ -5159,11 +5188,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-281">
+        <li id="section-283">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-281">&#182;</a>
+                <a class="pilcrow" href="#section-283">&#182;</a>
               </div>
               <p>Call super to bind model and value</p>
 
@@ -5176,11 +5205,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-282">
+        <li id="section-284">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-282">&#182;</a>
+                <a class="pilcrow" href="#section-284">&#182;</a>
               </div>
               <p>Key used to access model</p>
 
@@ -5191,11 +5220,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-283">
+        <li id="section-285">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-283">&#182;</a>
+                <a class="pilcrow" href="#section-285">&#182;</a>
               </div>
               <p>Override this property and call this.viewChanged when appropriate</p>
 
@@ -5212,11 +5241,11 @@ inserted is called the instance is inserted in the dom (override)</p>
         </li>
         
         
-        <li id="section-284">
+        <li id="section-286">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-284">&#182;</a>
+                <a class="pilcrow" href="#section-286">&#182;</a>
               </div>
               <p>modelChanged: called by model binding code to
 automatically set this.value when the model changes</p>
@@ -5229,11 +5258,11 @@ automatically set this.value when the model changes</p>
         </li>
         
         
-        <li id="section-285">
+        <li id="section-287">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-285">&#182;</a>
+                <a class="pilcrow" href="#section-287">&#182;</a>
               </div>
               <p>Update the view if necessary</p>
 
@@ -5247,11 +5276,11 @@ automatically set this.value when the model changes</p>
         </li>
         
         
-        <li id="section-286">
+        <li id="section-288">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-286">&#182;</a>
+                <a class="pilcrow" href="#section-288">&#182;</a>
               </div>
               <p>viewChanged: Will set the model whenever this.value is set</p>
 
@@ -5263,11 +5292,11 @@ automatically set this.value when the model changes</p>
         </li>
         
         
-        <li id="section-287">
+        <li id="section-289">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-287">&#182;</a>
+                <a class="pilcrow" href="#section-289">&#182;</a>
               </div>
               <p>Briefly delay view changes because they often change before
 the controls visually update</p>
@@ -5280,11 +5309,11 @@ the controls visually update</p>
         </li>
         
         
-        <li id="section-288">
+        <li id="section-290">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-288">&#182;</a>
+                <a class="pilcrow" href="#section-290">&#182;</a>
               </div>
               <p>Ensure view changes aren&#39;t triggered twice</p>
 
@@ -5302,11 +5331,11 @@ the controls visually update</p>
         </li>
         
         
-        <li id="section-289">
+        <li id="section-291">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-289">&#182;</a>
+                <a class="pilcrow" href="#section-291">&#182;</a>
               </div>
               <p>oj.TextBox</p>
 
@@ -5326,11 +5355,11 @@ the controls visually update</p>
         </li>
         
         
-        <li id="section-290">
+        <li id="section-292">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-290">&#182;</a>
+                <a class="pilcrow" href="#section-292">&#182;</a>
               </div>
               <p>When live changes are set indicate change on every keypress
 Delay change events slighty as value is visually updated after key presses</p>
@@ -5352,11 +5381,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-291">
+        <li id="section-293">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-291">&#182;</a>
+                <a class="pilcrow" href="#section-293">&#182;</a>
               </div>
               <p>Value can be set by argument</p>
 
@@ -5368,11 +5397,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-292">
+        <li id="section-294">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-292">&#182;</a>
+                <a class="pilcrow" href="#section-294">&#182;</a>
               </div>
               <p>Set live if it exists</p>
 
@@ -5397,11 +5426,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-293">
+        <li id="section-295">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-293">&#182;</a>
+                <a class="pilcrow" href="#section-295">&#182;</a>
               </div>
               <p>Live update model as text changes</p>
 
@@ -5414,11 +5443,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-294">
+        <li id="section-296">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-294">&#182;</a>
+                <a class="pilcrow" href="#section-296">&#182;</a>
               </div>
               <p>oj.CheckBox</p>
 
@@ -5441,11 +5470,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-295">
+        <li id="section-297">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-295">&#182;</a>
+                <a class="pilcrow" href="#section-297">&#182;</a>
               </div>
               <p>Value can be set by argument</p>
 
@@ -5473,11 +5502,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-296">
+        <li id="section-298">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-296">&#182;</a>
+                <a class="pilcrow" href="#section-298">&#182;</a>
               </div>
               <p>oj.Text</p>
 
@@ -5494,11 +5523,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-297">
+        <li id="section-299">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-297">&#182;</a>
+                <a class="pilcrow" href="#section-299">&#182;</a>
               </div>
               <p>Get tag name if provided</p>
 
@@ -5509,11 +5538,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-298">
+        <li id="section-300">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-298">&#182;</a>
+                <a class="pilcrow" href="#section-300">&#182;</a>
               </div>
               <p>Create element with tagName</p>
 
@@ -5526,11 +5555,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-299">
+        <li id="section-301">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-299">&#182;</a>
+                <a class="pilcrow" href="#section-301">&#182;</a>
               </div>
               <p>Value can be set by argument</p>
 
@@ -5547,11 +5576,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-300">
+        <li id="section-302">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-300">&#182;</a>
+                <a class="pilcrow" href="#section-302">&#182;</a>
               </div>
               <p>value: text value of this object (readwrite)</p>
 
@@ -5565,11 +5594,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-301">
+        <li id="section-303">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-301">&#182;</a>
+                <a class="pilcrow" href="#section-303">&#182;</a>
               </div>
               <p>tagName: name of root tag (writeonce)</p>
 
@@ -5582,11 +5611,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-302">
+        <li id="section-304">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-302">&#182;</a>
+                <a class="pilcrow" href="#section-304">&#182;</a>
               </div>
               <p>oj.TextArea</p>
 
@@ -5606,11 +5635,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-303">
+        <li id="section-305">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-303">&#182;</a>
+                <a class="pilcrow" href="#section-305">&#182;</a>
               </div>
               <p>When live changes are set indicate change on every keypress
 Delay change events slighty as value is visually updated after key presses</p>
@@ -5634,11 +5663,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-304">
+        <li id="section-306">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-304">&#182;</a>
+                <a class="pilcrow" href="#section-306">&#182;</a>
               </div>
               <p>Value can be set by argument</p>
 
@@ -5656,11 +5685,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-305">
+        <li id="section-307">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-305">&#182;</a>
+                <a class="pilcrow" href="#section-307">&#182;</a>
               </div>
               <p>Live update model as text changes</p>
 
@@ -5673,11 +5702,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-306">
+        <li id="section-308">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-306">&#182;</a>
+                <a class="pilcrow" href="#section-308">&#182;</a>
               </div>
               <p>oj.ListBox</p>
 
@@ -5700,11 +5729,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-307">
+        <li id="section-309">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-307">&#182;</a>
+                <a class="pilcrow" href="#section-309">&#182;</a>
               </div>
               <p>@options is a list of elements</p>
 
@@ -5715,11 +5744,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-308">
+        <li id="section-310">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-308">&#182;</a>
+                <a class="pilcrow" href="#section-310">&#182;</a>
               </div>
               <p>Value can be set by argument</p>
 
@@ -5764,11 +5793,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-309">
+        <li id="section-311">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-309">&#182;</a>
+                <a class="pilcrow" href="#section-311">&#182;</a>
               </div>
               <p>oj.Button</p>
 
@@ -5785,11 +5814,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-310">
+        <li id="section-312">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-310">&#182;</a>
+                <a class="pilcrow" href="#section-312">&#182;</a>
               </div>
               <p>Label is first argument</p>
 
@@ -5802,11 +5831,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-311">
+        <li id="section-313">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-311">&#182;</a>
+                <a class="pilcrow" href="#section-313">&#182;</a>
               </div>
               <p>Label is specified as option</p>
 
@@ -5818,11 +5847,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-312">
+        <li id="section-314">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-312">&#182;</a>
+                <a class="pilcrow" href="#section-314">&#182;</a>
               </div>
               <p>Create element</p>
 
@@ -5852,11 +5881,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-313">
+        <li id="section-315">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-313">&#182;</a>
+                <a class="pilcrow" href="#section-315">&#182;</a>
               </div>
               <p>oj.List: List control with two-way collection binding</p>
 
@@ -5874,11 +5903,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-314">
+        <li id="section-316">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-314">&#182;</a>
+                <a class="pilcrow" href="#section-316">&#182;</a>
               </div>
               <p>tagName is write-once</p>
 
@@ -5890,11 +5919,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-315">
+        <li id="section-317">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-315">&#182;</a>
+                <a class="pilcrow" href="#section-317">&#182;</a>
               </div>
               <p>Create the root element</p>
 
@@ -5905,11 +5934,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-316">
+        <li id="section-318">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-316">&#182;</a>
+                <a class="pilcrow" href="#section-318">&#182;</a>
               </div>
               <p>Use el if it was passed in</p>
 
@@ -5921,11 +5950,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-317">
+        <li id="section-319">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-317">&#182;</a>
+                <a class="pilcrow" href="#section-319">&#182;</a>
               </div>
               <p>Default @each function to pass through values</p>
 
@@ -5943,11 +5972,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-318">
+        <li id="section-320">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-318">&#182;</a>
+                <a class="pilcrow" href="#section-320">&#182;</a>
               </div>
               <p>Args have been handled so don&#39;t pass them on</p>
 
@@ -5958,11 +5987,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-319">
+        <li id="section-321">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-319">&#182;</a>
+                <a class="pilcrow" href="#section-321">&#182;</a>
               </div>
               <p>Set @items to options or args if they exist</p>
 
@@ -5977,11 +6006,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-320">
+        <li id="section-322">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-320">&#182;</a>
+                <a class="pilcrow" href="#section-322">&#182;</a>
               </div>
               <p>items: get or set all items at once (readwrite)</p>
 
@@ -5993,11 +6022,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-321">
+        <li id="section-323">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-321">&#182;</a>
+                <a class="pilcrow" href="#section-323">&#182;</a>
               </div>
               <p>Found in cache</p>
 
@@ -6009,11 +6038,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-322">
+        <li id="section-324">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-322">&#182;</a>
+                <a class="pilcrow" href="#section-324">&#182;</a>
               </div>
               <p>Calc from ojValues</p>
 
@@ -6031,11 +6060,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-323">
+        <li id="section-325">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-323">&#182;</a>
+                <a class="pilcrow" href="#section-325">&#182;</a>
               </div>
               <p>tagName: name of root tag (writeonce)</p>
 
@@ -6046,11 +6075,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-324">
+        <li id="section-326">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-324">&#182;</a>
+                <a class="pilcrow" href="#section-326">&#182;</a>
               </div>
               <p>itemTagName: name of item tags (readwrite)</p>
 
@@ -6064,11 +6093,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-325">
+        <li id="section-327">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-325">&#182;</a>
+                <a class="pilcrow" href="#section-327">&#182;</a>
               </div>
               <p>$items: list of <code>&lt;li&gt;</code> elements (readonly)</p>
 
@@ -6080,11 +6109,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-326">
+        <li id="section-328">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-326">&#182;</a>
+                <a class="pilcrow" href="#section-328">&#182;</a>
               </div>
               <p>Get from cache or cache the recalculated list</p>
 
@@ -6100,11 +6129,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-327">
+        <li id="section-329">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-327">&#182;</a>
+                <a class="pilcrow" href="#section-329">&#182;</a>
               </div>
               <p>item: get or set item value at item ix</p>
 
@@ -6121,11 +6150,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-328">
+        <li id="section-330">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-328">&#182;</a>
+                <a class="pilcrow" href="#section-330">&#182;</a>
               </div>
               <p>$item: <code>&lt;li&gt;</code> element for a given item ix. The tag name may change.</p>
 
@@ -6136,11 +6165,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-329">
+        <li id="section-331">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-329">&#182;</a>
+                <a class="pilcrow" href="#section-331">&#182;</a>
               </div>
               <p>make: Remake view from model data using each</p>
 
@@ -6151,11 +6180,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-330">
+        <li id="section-332">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-330">&#182;</a>
+                <a class="pilcrow" href="#section-332">&#182;</a>
               </div>
               <p>Do nothing until fully constructed</p>
 
@@ -6167,11 +6196,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-331">
+        <li id="section-333">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-331">&#182;</a>
+                <a class="pilcrow" href="#section-333">&#182;</a>
               </div>
               <p>Some properties call make before construction completes</p>
 
@@ -6182,11 +6211,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-332">
+        <li id="section-334">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-332">&#182;</a>
+                <a class="pilcrow" href="#section-334">&#182;</a>
               </div>
               <p>Convert models to views using each</p>
 
@@ -6197,11 +6226,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-333">
+        <li id="section-335">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-333">&#182;</a>
+                <a class="pilcrow" href="#section-335">&#182;</a>
               </div>
               <p>Get list of models from collection or array</p>
 
@@ -6212,11 +6241,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-334">
+        <li id="section-336">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-334">&#182;</a>
+                <a class="pilcrow" href="#section-336">&#182;</a>
               </div>
               <p>Add view item for every model</p>
 
@@ -6227,11 +6256,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-335">
+        <li id="section-337">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-335">&#182;</a>
+                <a class="pilcrow" href="#section-337">&#182;</a>
               </div>
               <p>Items are already views so just use them</p>
 
@@ -6244,11 +6273,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-336">
+        <li id="section-338">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-336">&#182;</a>
+                <a class="pilcrow" href="#section-338">&#182;</a>
               </div>
               <p>Render the views</p>
 
@@ -6259,11 +6288,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-337">
+        <li id="section-339">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-337">&#182;</a>
+                <a class="pilcrow" href="#section-339">&#182;</a>
               </div>
               <p>Indicate to CollectionView the items changed</p>
 
@@ -6275,11 +6304,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-338">
+        <li id="section-340">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-338">&#182;</a>
+                <a class="pilcrow" href="#section-340">&#182;</a>
               </div>
               <p>collectionModelAdded: Model add occurred, add the item</p>
 
@@ -6290,11 +6319,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-339">
+        <li id="section-341">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-339">&#182;</a>
+                <a class="pilcrow" href="#section-341">&#182;</a>
               </div>
               <p>collectionModelRemoved: Model remove occured, delete the item</p>
 
@@ -6305,11 +6334,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-340">
+        <li id="section-342">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-340">&#182;</a>
+                <a class="pilcrow" href="#section-342">&#182;</a>
               </div>
               <p>collectionModelRemoved: Model reset occured, full rebuild</p>
 
@@ -6320,11 +6349,11 @@ Delay change events slighty as value is visually updated after key presses</p>
         </li>
         
         
-        <li id="section-341">
+        <li id="section-343">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-341">&#182;</a>
+                <a class="pilcrow" href="#section-343">&#182;</a>
               </div>
               <p>Helper Methods
 _itemFromModel: Helper to map model to item</p>
@@ -6339,11 +6368,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-342">
+        <li id="section-344">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-342">&#182;</a>
+                <a class="pilcrow" href="#section-344">&#182;</a>
               </div>
               <p>_itemElFromItem: Helper to create itemTagName wrapped item</p>
 
@@ -6356,11 +6385,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-343">
+        <li id="section-345">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-343">&#182;</a>
+                <a class="pilcrow" href="#section-345">&#182;</a>
               </div>
               <p>_bound: Bound index to allow negatives, throw when out of range</p>
 
@@ -6376,11 +6405,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-344">
+        <li id="section-346">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-344">&#182;</a>
+                <a class="pilcrow" href="#section-346">&#182;</a>
               </div>
               <p>itemsChanged: Model changed occured, clear relevant cached values</p>
 
@@ -6391,11 +6420,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-345">
+        <li id="section-347">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-345">&#182;</a>
+                <a class="pilcrow" href="#section-347">&#182;</a>
               </div>
               <p>Manipulation Methods</p>
 
@@ -6406,11 +6435,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-346">
+        <li id="section-348">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-346">&#182;</a>
+                <a class="pilcrow" href="#section-348">&#182;</a>
               </div>
               <p>ix defaults to -1 and is optional</p>
 
@@ -6427,11 +6456,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-347">
+        <li id="section-349">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-347">&#182;</a>
+                <a class="pilcrow" href="#section-349">&#182;</a>
               </div>
               <p>Empty</p>
 
@@ -6443,11 +6472,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-348">
+        <li id="section-350">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-348">&#182;</a>
+                <a class="pilcrow" href="#section-350">&#182;</a>
               </div>
               <p>Last</p>
 
@@ -6459,11 +6488,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-349">
+        <li id="section-351">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-349">&#182;</a>
+                <a class="pilcrow" href="#section-351">&#182;</a>
               </div>
               <p>Not last</p>
 
@@ -6522,11 +6551,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-350">
+        <li id="section-352">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-350">&#182;</a>
+                <a class="pilcrow" href="#section-352">&#182;</a>
               </div>
               <p>oj.NumberList: NumberList is a <code>List</code> specialized with <code>&lt;ol&gt;</code> and <code>&lt;li&gt;</code> tags</p>
 
@@ -6543,11 +6572,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-351">
+        <li id="section-353">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-351">&#182;</a>
+                <a class="pilcrow" href="#section-353">&#182;</a>
               </div>
               <p>oj.BulletList: BulletList is a <code>List</code> specialized with <code>&lt;ul&gt;</code> and <code>&lt;li&gt;</code> tags</p>
 
@@ -6564,11 +6593,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-352">
+        <li id="section-354">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-352">&#182;</a>
+                <a class="pilcrow" href="#section-354">&#182;</a>
               </div>
               <p>oj.Table</p>
 
@@ -6586,11 +6615,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-353">
+        <li id="section-355">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-353">&#182;</a>
+                <a class="pilcrow" href="#section-355">&#182;</a>
               </div>
               <p>Generate root</p>
 
@@ -6601,11 +6630,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-354">
+        <li id="section-356">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-354">&#182;</a>
+                <a class="pilcrow" href="#section-356">&#182;</a>
               </div>
               <p>Use el if it was passed in</p>
 
@@ -6617,11 +6646,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-355">
+        <li id="section-357">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-355">&#182;</a>
+                <a class="pilcrow" href="#section-357">&#182;</a>
               </div>
               <p>Default @each function to pass through values</p>
 
@@ -6637,11 +6666,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-356">
+        <li id="section-358">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-356">&#182;</a>
+                <a class="pilcrow" href="#section-358">&#182;</a>
               </div>
               <p>Args have been handled so don&#39;t pass them on</p>
 
@@ -6652,11 +6681,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-357">
+        <li id="section-359">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-357">&#182;</a>
+                <a class="pilcrow" href="#section-359">&#182;</a>
               </div>
               <p>Validate args as arrays</p>
 
@@ -6668,11 +6697,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-358">
+        <li id="section-360">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-358">&#182;</a>
+                <a class="pilcrow" href="#section-360">&#182;</a>
               </div>
               <p>Set @rows to options or args if they exist</p>
 
@@ -6687,11 +6716,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-359">
+        <li id="section-361">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-359">&#182;</a>
+                <a class="pilcrow" href="#section-361">&#182;</a>
               </div>
               <p>rowCount: The number of rows (readonly)</p>
 
@@ -6702,11 +6731,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-360">
+        <li id="section-362">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-360">&#182;</a>
+                <a class="pilcrow" href="#section-362">&#182;</a>
               </div>
               <p>columnCount: The number of columns (readonly)</p>
 
@@ -6717,11 +6746,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-361">
+        <li id="section-363">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-361">&#182;</a>
+                <a class="pilcrow" href="#section-363">&#182;</a>
               </div>
               <p>The number of columns is number of <code>&lt;tr&gt;</code> in rows, header, or footer</p>
 
@@ -6740,11 +6769,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-362">
+        <li id="section-364">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-362">&#182;</a>
+                <a class="pilcrow" href="#section-364">&#182;</a>
               </div>
               <p>rows: Row values as a list of lists as interpreted by ojValue plugin (readwrite)</p>
 
@@ -6756,11 +6785,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-363">
+        <li id="section-365">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-363">&#182;</a>
+                <a class="pilcrow" href="#section-365">&#182;</a>
               </div>
               <p>Get cached result</p>
 
@@ -6772,11 +6801,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-364">
+        <li id="section-366">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-364">&#182;</a>
+                <a class="pilcrow" href="#section-366">&#182;</a>
               </div>
               <p>Calculate rows by mapping from td to ojValue</p>
 
@@ -6801,11 +6830,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-365">
+        <li id="section-367">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-365">&#182;</a>
+                <a class="pilcrow" href="#section-367">&#182;</a>
               </div>
               <p>header: Array of header values as interpreted by ojValue plugin (readwrite)</p>
 
@@ -6828,11 +6857,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-366">
+        <li id="section-368">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-366">&#182;</a>
+                <a class="pilcrow" href="#section-368">&#182;</a>
               </div>
               <p>footer: Array of footer values as interpreted by ojValue plugin (readwrite)</p>
 
@@ -6867,11 +6896,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-367">
+        <li id="section-369">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-367">&#182;</a>
+                <a class="pilcrow" href="#section-369">&#182;</a>
               </div>
               <p>caption: The table caption (readwrite)</p>
 
@@ -6885,11 +6914,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-368">
+        <li id="section-370">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-368">&#182;</a>
+                <a class="pilcrow" href="#section-370">&#182;</a>
               </div>
               <p>Element accessors</p>
 
@@ -6909,11 +6938,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-369">
+        <li id="section-371">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-369">&#182;</a>
+                <a class="pilcrow" href="#section-371">&#182;</a>
               </div>
               <p>Cache or calculate</p>
 
@@ -6925,11 +6954,11 @@ _itemFromModel: Helper to map model to item</p>
         </li>
         
         
-        <li id="section-370">
+        <li id="section-372">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-370">&#182;</a>
+                <a class="pilcrow" href="#section-372">&#182;</a>
               </div>
               <p>Table tags must have an order: <code>&lt;caption&gt;</code> <code>&lt;colgroup&gt;</code> <code>&lt;thead&gt;</code> <code>&lt;tfoot&gt;</code> <code>&lt;tbody&gt;</code>
 These accessors create table tags and preserve this order very carefully
@@ -6951,11 +6980,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-371">
+        <li id="section-373">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-371">&#182;</a>
+                <a class="pilcrow" href="#section-373">&#182;</a>
               </div>
               <p>$captionMake: get or create <code>&lt;caption&gt;</code> prepended to <code>&lt;table&gt;</code></p>
 
@@ -6973,11 +7002,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-372">
+        <li id="section-374">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-372">&#182;</a>
+                <a class="pilcrow" href="#section-374">&#182;</a>
               </div>
               <p>$tfootMake: get or create <code>&lt;tfoot&gt;</code> before <code>&lt;tbody&gt;</code> or appended to <code>&lt;table&gt;</code></p>
 
@@ -7000,11 +7029,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-373">
+        <li id="section-375">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-373">&#182;</a>
+                <a class="pilcrow" href="#section-375">&#182;</a>
               </div>
               <p>$theadMake: get or create <code>&lt;thead&gt;</code> after <code>&lt;colgroup&gt;</code> or after <code>&lt;caption&gt;</code>, or prepended to <code>&lt;table&gt;</code></p>
 
@@ -7028,11 +7057,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-374">
+        <li id="section-376">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-374">&#182;</a>
+                <a class="pilcrow" href="#section-376">&#182;</a>
               </div>
               <p>$tbodyMake: get or create <code>&lt;tbody&gt;</code> appened to <code>&lt;table&gt;</code></p>
 
@@ -7050,11 +7079,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-375">
+        <li id="section-377">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-375">&#182;</a>
+                <a class="pilcrow" href="#section-377">&#182;</a>
               </div>
               <p>$theadTRMake: get or create <code>&lt;tr&gt;</code> inside of <code>&lt;thead&gt;</code></p>
 
@@ -7072,11 +7101,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-376">
+        <li id="section-378">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-376">&#182;</a>
+                <a class="pilcrow" href="#section-378">&#182;</a>
               </div>
               <p>$tfootTRMake: get or create <code>&lt;tr&gt;</code> inside of <code>&lt;tfoot&gt;</code></p>
 
@@ -7097,11 +7126,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-377">
+        <li id="section-379">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-377">&#182;</a>
+                <a class="pilcrow" href="#section-379">&#182;</a>
               </div>
               <p>make: Remake everything (override)</p>
 
@@ -7114,11 +7143,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-378">
+        <li id="section-380">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-378">&#182;</a>
+                <a class="pilcrow" href="#section-380">&#182;</a>
               </div>
               <p>Some properties call make before construction completes</p>
 
@@ -7129,11 +7158,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-379">
+        <li id="section-381">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-379">&#182;</a>
+                <a class="pilcrow" href="#section-381">&#182;</a>
               </div>
               <p>Convert models to views if model/each exists</p>
 
@@ -7146,11 +7175,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-380">
+        <li id="section-382">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-380">&#182;</a>
+                <a class="pilcrow" href="#section-382">&#182;</a>
               </div>
               <p>Convert rows to views</p>
 
@@ -7167,11 +7196,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-381">
+        <li id="section-383">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-381">&#182;</a>
+                <a class="pilcrow" href="#section-383">&#182;</a>
               </div>
               <p>Render rows into tbody</p>
 
@@ -7202,11 +7231,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-382">
+        <li id="section-384">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-382">&#182;</a>
+                <a class="pilcrow" href="#section-384">&#182;</a>
               </div>
               <p>$tr: Get <code>&lt;tr&gt;</code> jquery element at row rx</p>
 
@@ -7220,11 +7249,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-383">
+        <li id="section-385">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-383">&#182;</a>
+                <a class="pilcrow" href="#section-385">&#182;</a>
               </div>
               <p>$tdsRow: Get list of <code>&lt;td&gt;</code>s in row rx</p>
 
@@ -7238,11 +7267,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-384">
+        <li id="section-386">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-384">&#182;</a>
+                <a class="pilcrow" href="#section-386">&#182;</a>
               </div>
               <p>$td: Get <code>&lt;td&gt;</code> row rx, column cx</p>
 
@@ -7257,11 +7286,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-385">
+        <li id="section-387">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-385">&#182;</a>
+                <a class="pilcrow" href="#section-387">&#182;</a>
               </div>
               <p>row: Get values at a given row</p>
 
@@ -7276,11 +7305,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-386">
+        <li id="section-388">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-386">&#182;</a>
+                <a class="pilcrow" href="#section-388">&#182;</a>
               </div>
               <p>Set tds</p>
 
@@ -7298,11 +7327,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-387">
+        <li id="section-389">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-387">&#182;</a>
+                <a class="pilcrow" href="#section-389">&#182;</a>
               </div>
               <p>cell: Get or set value at row rx, column cx</p>
 
@@ -7318,11 +7347,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-388">
+        <li id="section-390">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-388">&#182;</a>
+                <a class="pilcrow" href="#section-390">&#182;</a>
               </div>
               <p>addRow: Add row to index rx</p>
 
@@ -7349,11 +7378,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-389">
+        <li id="section-391">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-389">&#182;</a>
+                <a class="pilcrow" href="#section-391">&#182;</a>
               </div>
               <p>_addRowTR: Helper to add row directly with <code>&lt;tr&gt;</code></p>
 
@@ -7364,11 +7393,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-390">
+        <li id="section-392">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-390">&#182;</a>
+                <a class="pilcrow" href="#section-392">&#182;</a>
               </div>
               <p>Empty</p>
 
@@ -7380,11 +7409,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-391">
+        <li id="section-393">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-391">&#182;</a>
+                <a class="pilcrow" href="#section-393">&#182;</a>
               </div>
               <p>Last</p>
 
@@ -7396,11 +7425,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-392">
+        <li id="section-394">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-392">&#182;</a>
+                <a class="pilcrow" href="#section-394">&#182;</a>
               </div>
               <p>Not last</p>
 
@@ -7415,11 +7444,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-393">
+        <li id="section-395">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-393">&#182;</a>
+                <a class="pilcrow" href="#section-395">&#182;</a>
               </div>
               <p>removeRow: Remove row at index rx (defaults to end)</p>
 
@@ -7438,11 +7467,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-394">
+        <li id="section-396">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-394">&#182;</a>
+                <a class="pilcrow" href="#section-396">&#182;</a>
               </div>
               <p>moveRow: Move row at index rx (defaults to end)</p>
 
@@ -7462,11 +7491,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-395">
+        <li id="section-397">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-395">&#182;</a>
+                <a class="pilcrow" href="#section-397">&#182;</a>
               </div>
               <p>swapRow: Swap row rx1 and rx2</p>
 
@@ -7517,11 +7546,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-396">
+        <li id="section-398">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-396">&#182;</a>
+                <a class="pilcrow" href="#section-398">&#182;</a>
               </div>
               <p>When body changes clear relevant cached values</p>
 
@@ -7532,11 +7561,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-397">
+        <li id="section-399">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-397">&#182;</a>
+                <a class="pilcrow" href="#section-399">&#182;</a>
               </div>
               <p>When header changes clear relevant cached values</p>
 
@@ -7547,11 +7576,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-398">
+        <li id="section-400">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-398">&#182;</a>
+                <a class="pilcrow" href="#section-400">&#182;</a>
               </div>
               <p>When footer changes clear relevant cached values</p>
 
@@ -7562,11 +7591,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-399">
+        <li id="section-401">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-399">&#182;</a>
+                <a class="pilcrow" href="#section-401">&#182;</a>
               </div>
               <p>_rowFromModel: Helper to map model to row</p>
 
@@ -7582,11 +7611,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-400">
+        <li id="section-402">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-400">&#182;</a>
+                <a class="pilcrow" href="#section-402">&#182;</a>
               </div>
               <p>_bound: Bound index to allow negatives, throw when out of range</p>
 
@@ -7605,11 +7634,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-401">
+        <li id="section-403">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-401">&#182;</a>
+                <a class="pilcrow" href="#section-403">&#182;</a>
               </div>
               <p>Create Quiet _Types</p>
 
@@ -7620,11 +7649,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-402">
+        <li id="section-404">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-402">&#182;</a>
+                <a class="pilcrow" href="#section-404">&#182;</a>
               </div>
               <p>Type with captital first letter that doesn&#39;t end in &quot;View&quot;</p>
 
@@ -7638,11 +7667,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-403">
+        <li id="section-405">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-403">&#182;</a>
+                <a class="pilcrow" href="#section-405">&#182;</a>
               </div>
               <p>oj.sandbox: The sandbox is a readonly version of oj exposed to the user when templating server-side</p>
 
@@ -7658,11 +7687,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-404">
+        <li id="section-406">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-404">&#182;</a>
+                <a class="pilcrow" href="#section-406">&#182;</a>
               </div>
               <p>oj.use(plugin, settings): import a plugin of OJ with optional settings</p>
 
@@ -7676,11 +7705,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-405">
+        <li id="section-407">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-405">&#182;</a>
+                <a class="pilcrow" href="#section-407">&#182;</a>
               </div>
               <p>Call plugin to gather extension map</p>
 
@@ -7693,11 +7722,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-406">
+        <li id="section-408">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-406">&#182;</a>
+                <a class="pilcrow" href="#section-408">&#182;</a>
               </div>
               <p>Add _Type quiet types</p>
 
@@ -7712,11 +7741,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-407">
+        <li id="section-409">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-407">&#182;</a>
+                <a class="pilcrow" href="#section-409">&#182;</a>
               </div>
               <p>Extend all properties</p>
 
@@ -7728,11 +7757,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-408">
+        <li id="section-410">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-408">&#182;</a>
+                <a class="pilcrow" href="#section-410">&#182;</a>
               </div>
               <p>Add to oj</p>
 
@@ -7743,11 +7772,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-409">
+        <li id="section-411">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-409">&#182;</a>
+                <a class="pilcrow" href="#section-411">&#182;</a>
               </div>
               <p>Add plugin to sandbox</p>
 
@@ -7760,11 +7789,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-410">
+        <li id="section-412">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-410">&#182;</a>
+                <a class="pilcrow" href="#section-412">&#182;</a>
               </div>
               <p>_jqExtend(fn): Create a jquery plugin with the following options:
   option.get is called to retrieve value per element
@@ -7792,11 +7821,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-411">
+        <li id="section-413">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-411">&#182;</a>
+                <a class="pilcrow" href="#section-413">&#182;</a>
               </div>
               <p>Map over jquery selection if no arguments</p>
 
@@ -7816,11 +7845,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-412">
+        <li id="section-414">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-412">&#182;</a>
+                <a class="pilcrow" href="#section-414">&#182;</a>
               </div>
               <p>By default return this for chaining</p>
 
@@ -7834,11 +7863,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-413">
+        <li id="section-415">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-413">&#182;</a>
+                <a class="pilcrow" href="#section-415">&#182;</a>
               </div>
               <p>Short circuit if anything is returned</p>
 
@@ -7852,9 +7881,14 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
     };
   };
 
-  <span class="function"><span class="keyword">function</span> <span class="title">_triggerInserted</span><span class="params">(types)</span>{</span>
-    <span class="keyword">for</span> (<span class="keyword">var</span> ix = <span class="number">0</span>;ix &lt;  types.length; ix++)
+  <span class="function"><span class="keyword">function</span> <span class="title">_triggerInserted</span><span class="params">(types, inserts)</span>{</span>
+    <span class="keyword">var</span> ix = <span class="number">0</span>
+    <span class="keyword">for</span> (; ix &lt;  types.length; ix++)
       types[ix].inserted()
+    <span class="keyword">if</span>(inserts) {
+      <span class="keyword">for</span> (ix = <span class="number">0</span>; ix &lt; inserts.length; ix++)
+        inserts[ix]()
+    }
   }
 
   <span class="function"><span class="keyword">function</span> <span class="title">_insertStyles</span><span class="params">(pluginMap, options)</span>{</span>
@@ -7865,11 +7899,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-414">
+        <li id="section-416">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-414">&#182;</a>
+                <a class="pilcrow" href="#section-416">&#182;</a>
               </div>
               <p>Skip global css if options.global is true</p>
 
@@ -7881,11 +7915,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-415">
+        <li id="section-417">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-415">&#182;</a>
+                <a class="pilcrow" href="#section-417">&#182;</a>
               </div>
               <p>Create <style> tag for the plugin</p>
 
@@ -7899,11 +7933,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-416">
+        <li id="section-418">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-416">&#182;</a>
+                <a class="pilcrow" href="#section-418">&#182;</a>
               </div>
               <p>oj jquery plugin: Insert like innertHTML or get first instance</p>
 
@@ -7914,11 +7948,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-417">
+        <li id="section-419">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-417">&#182;</a>
+                <a class="pilcrow" href="#section-419">&#182;</a>
               </div>
               <p>Get returns the first instance</p>
 
@@ -7929,11 +7963,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-418">
+        <li id="section-420">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-418">&#182;</a>
+                <a class="pilcrow" href="#section-420">&#182;</a>
               </div>
               <p>Set compiles and inserts in innerHTML</p>
 
@@ -7944,11 +7978,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-419">
+        <li id="section-421">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-419">&#182;</a>
+                <a class="pilcrow" href="#section-421">&#182;</a>
               </div>
               <p>No arguments return the first instance</p>
 
@@ -7960,11 +7994,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-420">
+        <li id="section-422">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-420">&#182;</a>
+                <a class="pilcrow" href="#section-422">&#182;</a>
               </div>
               <p>Compile ojml</p>
 
@@ -7977,11 +8011,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-421">
+        <li id="section-423">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-421">&#182;</a>
+                <a class="pilcrow" href="#section-423">&#182;</a>
               </div>
               <p>Reset content and append to dom</p>
 
@@ -7992,11 +8026,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-422">
+        <li id="section-424">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-422">&#182;</a>
+                <a class="pilcrow" href="#section-424">&#182;</a>
               </div>
               <p>Ensure r.dom is an array</p>
 
@@ -8008,11 +8042,11 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-423">
+        <li id="section-425">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-423">&#182;</a>
+                <a class="pilcrow" href="#section-425">&#182;</a>
               </div>
               <p>Append resulting dom elements</p>
 
@@ -8024,28 +8058,28 @@ $colgroupMake: get or create <code>&lt;colgroup&gt;</code> after <code>&lt;capti
         </li>
         
         
-        <li id="section-424">
+        <li id="section-426">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-424">&#182;</a>
+                <a class="pilcrow" href="#section-426">&#182;</a>
               </div>
               <p>Trigger inserted events</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>      _triggerInserted(r.types)
+            <div class="content"><div class='highlight'><pre>      _triggerInserted(r.types, r.inserts)
     }
   });</pre></div></div>
             
         </li>
         
         
-        <li id="section-425">
+        <li id="section-427">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-425">&#182;</a>
+                <a class="pilcrow" href="#section-427">&#182;</a>
               </div>
               <p>jQuery.ojBody plugin: replace body with ojml.
 Global css is rebuilt when using this method.</p>
@@ -8057,11 +8091,11 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-426">
+        <li id="section-428">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-426">&#182;</a>
+                <a class="pilcrow" href="#section-428">&#182;</a>
               </div>
               <p>Compile only the body and below</p>
 
@@ -8078,11 +8112,11 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-427">
+        <li id="section-429">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-427">&#182;</a>
+                <a class="pilcrow" href="#section-429">&#182;</a>
               </div>
               <p>Clear body and insert dom elements</p>
 
@@ -8093,17 +8127,17 @@ Global css is rebuilt when using this method.</p>
 
     _insertStyles(r.cssMap, {global:<span class="number">1</span>})
 
-    _triggerInserted(r.types)
+    _triggerInserted(r.types, r.inserts)
   };</pre></div></div>
             
         </li>
         
         
-        <li id="section-428">
+        <li id="section-430">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-428">&#182;</a>
+                <a class="pilcrow" href="#section-430">&#182;</a>
               </div>
               <p>Helper method that abstracts getting oj values</p>
 
@@ -8116,11 +8150,11 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-429">
+        <li id="section-431">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-429">&#182;</a>
+                <a class="pilcrow" href="#section-431">&#182;</a>
               </div>
               <p>Parse the text to turn it into bool, number, or string</p>
 
@@ -8132,11 +8166,11 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-430">
+        <li id="section-432">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-430">&#182;</a>
+                <a class="pilcrow" href="#section-432">&#182;</a>
               </div>
               <p>Get elements as oj instances or elements</p>
 
@@ -8149,11 +8183,11 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-431">
+        <li id="section-433">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-431">&#182;</a>
+                <a class="pilcrow" href="#section-433">&#182;</a>
               </div>
               <p>jQuery.fn.ojValue: Get the first value of the selected contents</p>
 
@@ -8164,11 +8198,11 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-432">
+        <li id="section-434">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-432">&#182;</a>
+                <a class="pilcrow" href="#section-434">&#182;</a>
               </div>
               <p>jQuery.fn.ojValues: Get values as an array of the selected element&#39;s contents</p>
 
@@ -8179,11 +8213,11 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-433">
+        <li id="section-435">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-433">&#182;</a>
+                <a class="pilcrow" href="#section-435">&#182;</a>
               </div>
               <p>jQuery.fn.ojAfter, ojBefore, etc: oj insertion plugins to jquery</p>
 
@@ -8207,11 +8241,11 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-434">
+        <li id="section-436">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-434">&#182;</a>
+                <a class="pilcrow" href="#section-436">&#182;</a>
               </div>
               <p>Compile ojml for each one to separate references</p>
 
@@ -8224,18 +8258,18 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-435">
+        <li id="section-437">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-435">&#182;</a>
+                <a class="pilcrow" href="#section-437">&#182;</a>
               </div>
               <p>Append to the dom</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>          $el[jqName](r.dom);
-          _triggerInserted(r.types);
+          _triggerInserted(r.types, r.inserts);
         },
         get: <span class="literal">null</span>
       });
@@ -8245,11 +8279,11 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-436">
+        <li id="section-438">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-436">&#182;</a>
+                <a class="pilcrow" href="#section-438">&#182;</a>
               </div>
               <p>Minify Helpers that hook into server-side minification</p>
 
@@ -8261,11 +8295,11 @@ Global css is rebuilt when using this method.</p>
         </li>
         
         
-        <li id="section-437">
+        <li id="section-439">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-437">&#182;</a>
+                <a class="pilcrow" href="#section-439">&#182;</a>
               </div>
               <p>Path Helpers: Used to implement require client side
 Simplified from: github.com/joyent/node/lib/path.js</p>

@@ -356,20 +356,20 @@ data = [
         """
 
         md """
-          The full list of attributes that bind events are:
+          The supported list of jQuery events are:
 
-          * keydown / keyup
-          * mouseenter / mouseleave
-          * mousedown / mouseup
-          * click
-          * dblclick
-          * change
-          * focus
-          * focusout
-          * hover
-          * scroll
-          * submit
-          * resize (window tags only)
+          * [keydown](http://api.jquery.com/keydown/) / [keyup](http://api.jquery.com/keyup/)
+          * [mouseenter](http://api.jquery.com/mouseenter/) / [mouseleave](http://api.jquery.com/mouseleave/)
+          * [mousedown](http://api.jquery.com/mousedown/) / [mouseup](http://api.jquery.com/mouseup/)
+          * [click](http://api.jquery.com/click/)
+          * [dblclick](http://api.jquery.com/dblclick/)
+          * [change](http://api.jquery.com/change/)
+          * [focus](http://api.jquery.com/focus/)
+          * [focusout](http://api.jquery.com/focusout/)
+          * [hover](http://api.jquery.com/hover/)
+          * [scroll](http://api.jquery.com/scroll/)
+          * [submit](http://api.jquery.com/submit/)
+          * [resize](http://api.jquery.com/resize/) (window tags only)
 
           Here is an example of `keydown` / `keyup`:
         """
@@ -400,6 +400,49 @@ data = [
                 'KEYDOWN code ' + e.keyCode)
 
           div c:'status'
+        """
+        md """
+          In addition OJ supports an `insert` event. It is specified the same way as the jQuery events above and triggers when a tag element is inserted in the page.
+
+          This example shows an element triggering a fade-in animation when `insert` is detected:
+        """
+        TryEditor js: """
+          Button('Click to Insert!', {
+            click:function(){
+
+            // Append content to body
+            $('body').ojAppend(function(){
+              div('Fades in when inserted!', {
+
+                // Trigger when inserted
+                insert:function(el){
+                  $(el).fadeIn(1000)
+                },
+
+                // Start hidden
+                style:{display:'none'}
+              })
+            })
+          }})
+        """, cs: """
+          Button 'Click to Insert!',
+            click: ->
+
+              # Append content to body
+              $('body').ojAppend ->
+                div 'Fades in when inserted!',
+
+                  # Trigger when inserted
+                  insert: (el) ->
+                    $(el).fadeIn(1000)
+
+                  # Start hidden
+                  style:
+                    display:'none'
+        """
+
+        md """
+          Just to be clear `insert` doesn't use the deprecated [DOMNodeInserted](https://forums.mozilla.org/addons/viewtopic.php?f=7&t=3180) or any of the [clever](http://www.backalleycoder.com/2012/04/25/i-want-a-damnodeinserted/) [hacks](http://davidwalsh.name/detect-node-insertion) that have emerged using CSS animation. Instead, OJ has full control over DOM element insertion so it can call events at the right time without special magic.
         """
     ,
       h: 'Using Objects', id: 'using-objects', d: ->

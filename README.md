@@ -24,6 +24,11 @@ github: github.com/ojjs/oj
 Change Log:
 --------------------------------------------------------------------------------
 
+### 0.2.1
+
+* Adding `insert` event to tag functions that is triggered when the element is inserted
+  This very fast and does not use DOMNodeInserted.
+
 ### 0.2.0
 
 * Rewrote oj.js into JavaScript (from CoffeeScript)

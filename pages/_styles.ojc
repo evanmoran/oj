@@ -109,72 +109,30 @@ module.exports = ->
     'a.type':
       color: typeLinkColor
       fontFamily: familyMonospace
-      # Anchor url should show this item with spacing
-      '&:before':
-        content:"' '"
-        display:'block'
-        height:'70px'
-        margin:'-70px 0 0'
 
     'a.function':
       color: functionLinkColor
       fontFamily: familyMonospace
-      # Anchor url should show this item with spacing
-      '&:before':
-        content:"' '"
-        display:'block'
-        height:'70px'
-        margin:'-70px 0 0'
 
     'a.method':
       color: methodLinkColor
       fontFamily: familyMonospace
-      # Anchor url should show this item with spacing
-      '&:before':
-        content:"' '"
-        display:'block'
-        height:'70px'
-        margin:'-70px 0 0'
 
     'a.event':
       color: eventLinkColor
       fontFamily: familyMonospace
-      # Anchor url should show this item with spacing
-      '&:before':
-        content:"' '"
-        display:'block'
-        height:'70px'
-        margin:'-70px 0 0'
 
     'a.property':
       color: propertyLinkColor
       fontFamily: familyMonospace
-      # Anchor url should show this item with spacing
-      '&:before':
-        content:"' '"
-        display:'block'
-        height:'70px'
-        margin:'-70px 0 0'
 
     'a.option':
       color: optionLinkColor
       fontFamily: familyMonospace
-      # Anchor url should show this item with spacing
-      '&:before':
-        content:"' '"
-        display:'block'
-        height:'70px'
-        margin:'-70px 0 0'
 
     'a.argument':
       color: argumentLinkColor
       fontFamily: familyMonospace
-      # Anchor url should show this item with spacing
-      '&:before':
-        content:"' '"
-        display:'block'
-        height:'70px'
-        margin:'-70px 0 0'
 
     'a:hover':
       textDecoration:'underline'
