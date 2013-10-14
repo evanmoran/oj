@@ -30,7 +30,7 @@ Export Server Side OJ
 
   Include the client library in this module
 
-    oj = require './oj'
+    oj = require '../src/oj'
 
   Indicate it is server side
 
@@ -57,7 +57,6 @@ Export Server Side OJ
       cyan: '\u001b[36m'
       gray: '\u001b[37m'
 
-
 Register require.extension for .oj and .ojc file types
 -------------------------------------------------------------------------------
 
@@ -81,6 +80,11 @@ Register require.extension for .oj and .ojc file types
   Compile .oj files as javascript
 
       require.extensions['.oj'] = (module, filepath) ->
+        # Ensure absolute paths are found correctly for oj file types
+        if filepath[0] == '/' && filepath != module.filename
+          filepath = module.filename
+
+        # Read the file
         code = stripBOM fs.readFileSync filepath, 'utf8'
         try
           compileJS module, code, filepath
@@ -91,6 +95,10 @@ Register require.extension for .oj and .ojc file types
   Compile .ojc files as coffee-script
 
       require.extensions['.ojc'] = (module, filepath) ->
+        # Ensure absolute paths are found correctly for oj file types
+        if filepath[0] == '/' && filepath != module.filename
+          filepath = module.filename
+
         code = stripBOM fs.readFileSync filepath, 'utf8'
 
         # Compile in coffee-script
@@ -119,6 +127,7 @@ Watch list of files or directories
       options = _.extend {}, options,
         args: filesOrDirectories
         watch: true
+        write: true
       oj.command options
 
 oj.build
@@ -129,6 +138,7 @@ Build list of files or directories
       options = _.extend {}, options,
         args: filesOrDirectories
         watch: false
+        write: true
       oj.command options
 
 oj.command
@@ -155,6 +165,9 @@ Define command
       verbosity = options.verbose || 1
       options.watch ?= false
 
+      # Build to a file
+      options.write ?= true
+
       # Verify args exist
       throw new Error('oj: no args found') unless (_.isArray options.args) and options.args.length > 0
 
@@ -175,7 +188,6 @@ Compile any file or directory path
         return compileDir fullPath, options, cb
       includeDir = path.dirname fullPath
       compileFile fullPath, includeDir, options, cb
-      return
 
 compileDir
 ------------------------------------------------------------------------------
@@ -267,6 +279,8 @@ compileFile
 
       # Clear underscore as modules might need it
       _clearRequireCacheRecord 'underscore'
+
+      options.exclude ?= []
 
       throw new Error('oj: file not found') unless isFile filePath
 
@@ -410,14 +424,20 @@ compileFile
       hookOriginalCache = null
 
       # Write file
-      fs.writeFile fileOut, html, (err) ->
+      if options.write
+        fs.writeFile fileOut, html, (err) ->
+          if err
+            error "file writing error #{filePath}: #{err}"
+            return
 
-        if err
-          error "file writing error #{filePath}: #{err}"
+          verbose 1, "compiled #{fileOut}#{timeStamp}", 'cyan'
+          cb(null, html)
           return
-
+      else
         verbose 1, "compiled #{fileOut}#{timeStamp}", 'cyan'
-        return
+        cb(null, html)
+
+      return
 
     # Keep track of which files are watched
     watchCache = {}
@@ -552,6 +572,13 @@ This method does not recurse as it is called from methods that do (compileDir)
       verbose 1, "oj exited successfully.", 'cyan'
       process.exit()
 
+renderPath
+------------------------------------------------------------------------------
+Render a file as a view. Used by express plugin
+
+    renderPath = (path, options, cb) ->
+      compilePath(path, {write:false, minify:false}, cb)
+
 Helpers
 ===============================================================================
 
@@ -650,6 +677,9 @@ File helpers
     # Abstract if recursion happened and filters to only files / directories that don't start with _ and end in an oj filetype (.oj, .ojc, .ojlc)
 
     lsOJ = (paths, options, cb) ->
+
+      options ?= {}
+
       # Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
       options = _.extend {}, recurse: options.recurse, filterFile: ((f) -> isOJPage f), filterDir:((d) -> isOJDir d)
 
@@ -960,7 +990,7 @@ Requiring
       # To ourselves oj is local but to them oj is native.
       # Removing this cache record ensures only the native copy
       # is saved to the client.
-      delete cache.files[require.resolve '../generated/oj.js']
+      delete cache.files[require.resolve '../src/oj.js']
 
       return cache
 
@@ -1010,7 +1040,7 @@ Requiring
 
     # ojModuleCode: Get code for oj
     _ojModuleCode = (isMinify) ->
-      code = readFileSync path.join __dirname, "../generated/oj.js"
+      code = readFileSync path.join __dirname, "../src/oj.js"
       oj._minifyJS code, filename:'oj', minify:isMinify
 
     # nativeModuleCode: Get code for native module
@@ -1166,7 +1196,4 @@ Code generation
 Express
 ==============================================================================
 
-    # app.engine
-    # app.use('view engine', 'ojc')
-    oj.express = ->
-      throw new Error "oj express support has not yet been implemented"
+    oj.__express = renderPath

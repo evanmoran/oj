@@ -21,10 +21,6 @@ command.coffee
         .option('-v, --verbose <level>', 'Turn on verbose level 0-3 (default: 1)', 1)
         .option('-e, --exclude <modules>', 'List of modules to exclude (jquery,oj,...)', splitAndTrim, [])
         # .option('--include [modules]', 'List of modules to include (underscore,backbone,...)', splitAndTrim, [])
-        # .option('--only-html', 'Only output html (default: false)', false)
-        # .option('--only-css', 'Only output css (default: false)', false)
-        # .option('--only-modules', 'Only output js from included modules (default: false)', false)
-        # .option('--only-pages', 'Only output html/css/js for page, omit included module js', false)
         .parse(process.argv)
 
   No arguments shows usage
