@@ -83,12 +83,11 @@ data = [
             ->
               span "#{lib}"
             ->
-              a "#{lib}.js (#{oj.version})", c:'button orange', href:"download/#{lib}/#{oj.version}/#{lib}.js"
-            ->
               a "#{lib}.min.js (#{oj.version})", c:'button orange', href:"download/#{lib}/#{oj.version}/#{lib}.min.js"
             ->
+              a "#{lib}.js (#{oj.version})", c:'button orange', href:"download/#{lib}/#{oj.version}/#{lib}.js"
+            ->
               a "docs", c:'document', href:"docs.html"
-
           ]
 
         Table c:'download-table', rows:tableRows
@@ -117,9 +116,9 @@ data = [
             ->
               span "#{plugin}"
             ->
-              a "oj.#{plugin}.js", c:'button yellow', href:"download/oj.#{plugin}/latest/oj.#{plugin}.js"
-            ->
               a "oj.#{plugin}.min.js", c:'button yellow', href:"download/oj.#{plugin}/latest/oj.#{plugin}.min.js"
+            ->
+              a "oj.#{plugin}.js", c:'button yellow', href:"download/oj.#{plugin}/latest/oj.#{plugin}.js"
             ->
               a "docs", c:'document', href:"plugins.html##{plugin}"
           ]
