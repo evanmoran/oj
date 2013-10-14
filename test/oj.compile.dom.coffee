@@ -30,6 +30,8 @@ compileDOM = (ojml, tag, html, options) ->
   else
     expect(r.dom).to.not.exist
 
+  r
+
 compileDOMText = (ojml, text, options) ->
   options = _.defaults {}, options,
     html:false
@@ -248,3 +250,17 @@ describe 'oj.compile.dom', ->
 
     expected = '<html><head></head><body><div>test</div></body></html>'
     compileDOM ojml, null, expected, ignore: {}
+
+  it 'insert event', ->
+    insertDetected = false
+    ojml = oj.html ->
+      oj.head ->
+        oj.script type: 'text/javascript', src: 'script.js'
+      oj.body ->
+        oj.div 'a1', insert:->
+          insertDetected = true
+    expected = '<body><div>a1</div></body>'
+    compileDOM ojml, 'body', expected, ignore: {html:1, doctype:1, head:1, link:1, script:1}
+    expect(insertDetected).to.equal false
+    $('body').oj(ojml)
+    expect(insertDetected).to.equal true

@@ -19,7 +19,7 @@
     return oj.tag.apply(this, ['oj'].concat(slice.call(arguments)).concat([{__quiet__:1}]))
   };
 
-  oj.version = '0.2.0'
+  oj.version = '0.2.1'
 
   oj.isClient = !(typeof process !== "undefined" && process !== null ? process.versions != null ? process.versions.node : 0 : 0)
 
@@ -560,8 +560,11 @@
     acc.css = options.css || options.cssMap ? {} : null;
     acc.indent = ''
 
+    // Accumulate insert events per element
+    acc.inserts = []
+
     if (options.dom)
-      acc.types = [];
+      acc.types = []
 
     acc.tags = {}
 
@@ -619,7 +622,8 @@
       css: css,
       cssMap: cssMap,
       types: acc.types,
-      tags: acc.tags
+      tags: acc.tags,
+      inserts: acc.inserts
     }
   };
 
@@ -1038,7 +1042,7 @@
         }
 
         // Bind events
-        _attributesBindEventsToDOM(events, el)
+        _attributesBindEventsToDOM(events, el, options.inserts)
       }
 
       // Compile to html if requested
@@ -1079,7 +1083,7 @@
 
   // _attributesProcessedForOJ: Process attributes to make them easier to use
   function _attributesProcessedForOJ(attr){
-    var jqEvents = {bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1},
+    var jqEvents = {bind:1, on:1, off:1, live:1, blur:1, change:1, click:1, dblclick:1, focus:1, focusin:1, focusout:1, hover:1, keydown:1, keypress:1, keyup:1, mousedown:1, mouseenter:1, mouseleave:1, mousemove:1, mouseout:1, mouseup:1, ready:1, resize:1, scroll:1, select:1, insert:1},
     events, k, v
 
     // Allow attributes to alias c to class and use arrays instead of space seperated strings
@@ -1136,20 +1140,20 @@
   };
 
   // Bind events to dom
-  function _attributesBindEventsToDOM(events, el){
-    var ek, ev, _results;
-
-    _results = [];
+  function _attributesBindEventsToDOM(events, el, inserts){
+    var ek, ev, _results = []
     for (ek in events){
       ev = events[ek]
       _a(oj.$ != null, "jquery is missing when binding a '" + ek + "' event")
-      if (oj.isArray(ev)){
-        _results.push(oj.$(el)[ek].apply(this, ev));
-      } else {
-        _results.push(oj.$(el)[ek](ev));
-      }
+      // accumulate insert events manually since DOMNodeInserted is slow and depreciated
+      if (ek == 'insert' && inserts)
+        inserts.push(function(){ev.call(el,el)})
+      else if (oj.isArray(ev))
+        _results.push(oj.$(el)[ek].apply(this, ev))
+      else
+        _results.push(oj.$(el)[ek](ev))
     }
-    return _results;
+    return _results
   };
 
   // oj.toHTML: Compile directly to HTML only
@@ -2844,9 +2848,14 @@
     };
   };
 
-  function _triggerInserted(types){
-    for (var ix = 0;ix <  types.length; ix++)
+  function _triggerInserted(types, inserts){
+    var ix = 0
+    for (; ix <  types.length; ix++)
       types[ix].inserted()
+    if(inserts) {
+      for (ix = 0; ix < inserts.length; ix++)
+        inserts[ix]()
+    }
   }
 
   function _insertStyles(pluginMap, options){
@@ -2893,7 +2902,7 @@
         $el.append(r.dom[ix])
 
       // Trigger inserted events
-      _triggerInserted(r.types)
+      _triggerInserted(r.types, r.inserts)
     }
   });
 
@@ -2916,7 +2925,7 @@
 
     _insertStyles(r.cssMap, {global:1})
 
-    _triggerInserted(r.types)
+    _triggerInserted(r.types, r.inserts)
   };
 
   // Helper method that abstracts getting oj values
@@ -2962,7 +2971,7 @@
 
           // Append to the dom
           $el[jqName](r.dom);
-          _triggerInserted(r.types);
+          _triggerInserted(r.types, r.inserts);
         },
         get: null
       });
