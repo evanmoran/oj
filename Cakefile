@@ -250,7 +250,7 @@ task "watch", "Watch all build targets", ->
   invoke 'build:js:watch'
 
 task "build:docs", "Build documentation", ->
-  launch 'docco', [SRC_DIR + '/oj.litcoffee', '--output', DOCS_DIR]
+  launch 'docco', [SRC_DIR + '/oj.js', '--output', DOCS_DIR]
   launch 'docco', [SRC_DIR + '/server.litcoffee', '--output', DOCS_DIR]
   launch 'docco', [SRC_DIR + '/command.litcoffee', '--output', DOCS_DIR]
 

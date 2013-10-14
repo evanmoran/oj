@@ -11,17 +11,6 @@ oj = require '../src/oj.js'
 
 describe 'oj', ->
   dir = process.cwd()
-  ojCoffeeFile = path.join dir, 'src/oj.litcoffee'
-  ojJSFile = path.join dir, 'src/oj.js'
-
-  it 'should be up-to-date with the .coffee file (run \'cake build\')', (done) ->
-    async.parallel
-      coffee: ((cb) -> fileModifiedTime ojCoffeeFile, cb),
-      js: ((cb)-> fileModifiedTime ojJSFile, cb)
-      , (err, times) ->
-        throw err if err
-        assert times.coffee.getTime() <= times.js.getTime(), 'coffee script file is out of date'
-        done()
 
   it 'should have the same version as package.json', (done) ->
     assert oj.version, 'oj.version does not exist'

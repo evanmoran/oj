@@ -1,6 +1,6 @@
 {
   "name": "oj",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "main": "generated/server",
   "description": "A unified templating language for the people. Thirsty people.",
   "homepage": "http://ojjs.org",
@@ -22,7 +22,6 @@
     "mkdirp": "0.3.3",
     "jsdom": "~0.6.0",
     "jquery": "latest",
-    "jquery2": "latest",
     "coffee-script": "latest"
   },
   "scripts": {
