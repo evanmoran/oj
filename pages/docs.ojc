@@ -6,10 +6,6 @@ plugins = require './plugins'
 _template = require './_template'
 {renderTOC, renderContent, renderProperties:properties, renderAttributes:attributes, renderMethods:methods, renderEvents:events, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
 
-md = markdown
-
-# _snippet = require './_snippet'
-
 module.exports = ->
 
   _template
@@ -86,7 +82,7 @@ data = [
 
           1. Style attributes can be defined with an object instead of a string
 
-          1. Style attribute object keys can be written in `camalCase` and will translated to `dashed-case` for you
+          1. Style attribute object keys can be written in `camelCase` and will translated to `dashed-case` for you
 
           1. `class` may be abbreviated as `c`. This is the only abbreviation in OJ, but the class keyword makes it helpful.
 
@@ -110,7 +106,7 @@ data = [
         md """
           Since tags are a core part of OJ an `oj.<tagName>` function has been created for every tag in HTML. This includes `<div>`, `<input>`, `<button>`, etc.
 
-          These functions support all the fanciness of [oj.tag](#tag) including event binding, and style objects/camalCase.
+          These functions support all the fanciness of [oj.tag](#tag) including event binding, and style objects/camelCase.
         """
         h3 "Example: Using some tag functions"
         TryEditor js:"""
@@ -172,7 +168,7 @@ data = [
       h:'oj.css', id:'css', d: ->
 
         md """
-          The function that defines all css within OJ. This function ties data like a tag function but during the compile step converts the data to CSS. Supports nested selectors, camalCase rules, nested `@media` queries.
+          The function that defines all css within OJ. This function ties data like a tag function but during the compile step converts the data to CSS. Supports nested selectors, camelCase rules, nested `@media` queries.
 
           This method can be called multiple times in any context a tag function could be called. Rules will be unioned together. If exactly the same rule is made the last called will be used.
         """
@@ -797,7 +793,7 @@ data = [
 
             When `view` is specified the item is set to the oj view
             When `view` is omitted the item value is returned
-            How this value is returned is handled by [ojValue](jquery-ojValue)
+            How this value is returned is handled by [ojValue](docs.html#jquery-ojValue)
             a included jQuery plugin.
 
                 list.item(2)              // get item
@@ -992,7 +988,7 @@ data = [
 
             When `ojArray` is omitted the row values are returned.
 
-            How this value is returned is handled by [ojValue](jquery-ojValue) jQuery plugin.
+            How this value is returned is handled by [ojValue](docs.html#jquery-ojValue) jQuery plugin.
 
           """
         ,
@@ -1005,7 +1001,7 @@ data = [
 
             When `oj` is omitted the cell value is returned.
 
-            How this value is returned is handled by [ojValue](jquery-ojValue) jQuery plugin.
+            How this value is returned is handled by [ojValue](docs.html#jquery-ojValue) jQuery plugin.
           """
         ,
           h:'clear()', id:'Table-clear', d:"""
