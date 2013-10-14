@@ -33,22 +33,22 @@
 
   // Export as a module in node
   if (typeof require != _udf)
-    module.exports = oj;
+    module.exports = oj
   // Export globally if not in node
   else
-    root['oj'] = oj;
+    root['oj'] = oj
 
   // Reference ourselves for template files to see
-  oj.oj = oj;
+  oj.oj = oj
 
   // oj.load: load the page specified generating necessary html, css, and client side events
   oj.load = function(page){
     // Defer dom manipulation until the page is ready
     return oj.$(function(){
-      oj.$.ojBody(require(page));
+      oj.$.ojBody(require(page))
 
       // Trigger events bound through onload
-      return oj.onload();
+      return oj.onload()
     });
   };
 

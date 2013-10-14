@@ -11,7 +11,7 @@ fileModifiedTime = (filepath, cb) ->
     return cb(err, data) if err
     cb(err, data.mtime)
 
-oj = require '../generated/oj.js'
+oj = require '../src/oj.js'
 
 div = oj.div
 span = oj.span

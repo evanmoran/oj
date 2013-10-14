@@ -1,7 +1,7 @@
 path = require 'path'
 fs = require 'fs'
 
-oj = require '../generated/oj.js'
+oj = require '../src/oj.js'
 Backbone = require 'backbone'
 _ = oj.__
 
@@ -98,10 +98,10 @@ describe 'oj._', ->
     assert.isFalse (oj.isPlainObject 1), '1 case'
     assert.isFalse (oj.isPlainObject "string"), 'string case'
 
-  it 'isEvent', ->
+  it 'isEvented', ->
     class UserModel extends Backbone.Model
     user = new UserModel name:'Evan'
-    expect(oj.isEvent(user)).to.equal true
+    expect(oj.isEvented(user)).to.equal true
 
   it 'isOJML'
 

@@ -6,7 +6,7 @@ path = require 'path'
 fs = require 'fs'
 async = require 'async'
 
-oj = require '../generated/oj.js'
+oj = require '../src/oj.js'
 
 bodyWrap = (str = '') -> "<body>#{str}</body>"
 headEmpty = '<head></head>'

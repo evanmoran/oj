@@ -4,7 +4,7 @@
 path = require 'path'
 fs = require 'fs'
 Backbone = require 'backbone'
-oj = require '../generated/oj.js'
+oj = require '../src/oj.js'
 
 a1 = 'a1'
 a2 = 'a2'

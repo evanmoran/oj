@@ -3,7 +3,7 @@
 
 path = require 'path'
 fs = require 'fs'
-oj = require '../generated/oj.js'
+oj = require '../src/oj.js'
 
 describe 'oj.jQueryPlugins', ->
 
