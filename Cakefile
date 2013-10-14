@@ -28,6 +28,7 @@ VERSIONS_DIR = path.join CAKE_DIR, 'versions'
 DOCS_DIR = path.join CAKE_DIR, 'docs'
 SRC_DIR = path.join CAKE_DIR, 'src'
 GIT_DIR = path.join CAKE_DIR, '..'
+CDN_LIBS_DIR = path.join ROOT_DIR, 'cdnjs', 'ajax', 'libs'
 
 # Version Data
 # ------------------------------------------------------------------------------
@@ -35,63 +36,71 @@ GIT_DIR = path.join CAKE_DIR, '..'
 LIBS =
   'oj':
     packageDir:path.join ROOT_DIR, 'oj'
-    inputFile:path.join GENERATED_DIR, 'oj.js'
+    inputFile:path.join SRC_DIR, 'oj.js'
     removeFirstLine: true
     copyrightName: 'Evan Moran'
     docsUrl:'ojjs.org'
     outputDirs: [
       VERSIONS_DIR
       path.join WWW_DOWNLOAD_DIR, 'oj'
+      path.join CDN_LIBS_DIR, 'oj'
     ]
   'oj.AceEditor':
     packageDir:path.join ROOT_DIR, 'oj.AceEditor'
     docsUrl:'ojjs.org/plugins#AceEditor'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.AceEditor'
+      path.join CDN_LIBS_DIR, 'oj.AceEditor'
     ]
   'oj.GitHubButton':
     packageDir:path.join ROOT_DIR, 'oj.GitHubButton'
     docsUrl:'ojjs.org/plugins#GitHubButton'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.GitHubButton'
+      path.join CDN_LIBS_DIR, 'oj.GitHubButton'
     ]
   'oj.TwitterButton':
     packageDir:path.join ROOT_DIR, 'oj.TwitterButton'
     docsUrl:'ojjs.org/plugins#TwitterButton'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.TwitterButton'
+      path.join CDN_LIBS_DIR, 'oj.TwitterButton'
     ]
   'oj.VimeoVideo':
     packageDir:path.join ROOT_DIR, 'oj.VimeoVideo'
     docsUrl:'ojjs.org/plugins#VimeoVideo'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.VimeoVideo'
+      path.join CDN_LIBS_DIR, 'oj.VimeoVideo'
     ]
   'oj.YouTubeVideo':
     packageDir:path.join ROOT_DIR, 'oj.YouTubeVideo'
     docsUrl:'ojjs.org/plugins#YouTubeVideo'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.YouTubeVideo'
+      path.join CDN_LIBS_DIR, 'oj.YouTubeVideo'
     ]
   'oj.JSFiddle':
     packageDir:path.join ROOT_DIR, 'oj.JSFiddle'
     docsUrl:'ojjs.org/plugins#JSFiddle'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.JSFiddle'
+      path.join CDN_LIBS_DIR, 'oj.JSFiddle'
     ]
   'oj.markdown':
     packageDir:path.join ROOT_DIR, 'oj.markdown'
     docsUrl:'ojjs.org/plugins#markdown'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.markdown'
+      path.join CDN_LIBS_DIR, 'oj.markdown'
     ]
   'oj.mustache':
     packageDir:path.join ROOT_DIR, 'oj.mustache'
     docsUrl:'ojjs.org/plugins#mustache'
     outputDirs: [
       path.join WWW_DOWNLOAD_DIR, 'oj.mustache'
+      path.join CDN_LIBS_DIR, 'oj.mustache'
     ]
-
 
 # Tasks
 # ------------------------------------------------------------------------------
@@ -110,17 +119,17 @@ task "build", "Build everything", ->
   invoke "version:libs"
 
 task "build:js", "Compile coffee script files", ->
-  launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'src/oj.litcoffee']
+  # launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'src/oj.litcoffee']
   launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'src/server.litcoffee']
   launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'src/command.litcoffee']
 
 task "build:js:watch", "Watch coffee script files", ->
-  launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'src/oj.litcoffee']
+  # launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'src/oj.litcoffee']
   launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'src/server.litcoffee']
   launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'src/command.litcoffee']
 
   # For convenience update the site scripts/oj.js to force try editor to latest version of oj
-  launch 'coffee', ['--compile', '--watch', '-o', WWW_SCRIPTS_DIR, 'src/oj.litcoffee']
+  # launch 'coffee', ['--compile', '--watch', '-o', WWW_SCRIPTS_DIR, 'src/oj.litcoffee']
 
 # Version, minify, prepend license comment, and output to multiple directories
 versionAndMinifyLib = (libName, libData) ->
@@ -174,6 +183,11 @@ versionAndMinifyLib = (libName, libData) ->
 
   # Save to output directories
   for outputDir in libData.outputDirs
+
+    mkdirSync path.join outputDir
+    mkdirSync path.join outputDir, 'latest'
+    mkdirSync path.join outputDir, libData.version
+
     # Save latest/<name>.js
     outputPath = path.join outputDir, 'latest', libData.fileName
     info 'Saving ' + outputPath
@@ -193,6 +207,23 @@ versionAndMinifyLib = (libName, libData) ->
     outputPath = path.join outputDir, libData.version, libData.minifiedFileName
     info 'Saving ' + outputPath
     saveSync outputPath, libData.minifiedCode
+
+    # Save outputPath/package.json
+    info 'Copying package.json to ' + outputDir
+    # launch 'cp', [path.join(ROOT_DIR, libName, 'package.json'), outputDir]
+
+    # Remove main and replace with minfiied file for filename
+    packageJson = JSON.parse loadSync path.join(ROOT_DIR, libName, 'package.json')
+    packageJson['name'] = libName
+    packageJson.filename = libName + '.min.js'
+    delete packageJson['main']
+    delete packageJson['scripts']
+    delete packageJson['dependencies']
+    delete packageJson['devDependencies']
+    delete packageJson['bin']
+
+    saveSync (path.join outputDir, 'package.json'), ((JSON.stringify packageJson, null, 4) + '\n')
+
 
 task "version:libs", "All release text, minifiy and copy oj and plugins", ->
 
