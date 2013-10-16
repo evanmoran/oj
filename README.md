@@ -15,11 +15,15 @@ Object-oriented web templating for the people. *Thirsty people.*
 Contact Info
 --------------------------------------------------------------------------------
 
-Are you just getting started with OJ, or have questions or feedback? Reach out to our IRC channel or email address. Or log issues on GitHub:
+Reach out on irc or email. Log issues on GitHub!
 
 irc: freenode.net #oj
-email: evan|at|ojjs.org
-github: github.com/ojjs/oj
+
+email: evan(at)ojjs.org
+
+twitter: @evanmoran
+
+repo: github.com/ojjs/oj
 
 Change Log:
 --------------------------------------------------------------------------------
