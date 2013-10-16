@@ -2,8 +2,7 @@
 server.coffee
 ==============================================================================
 Static website creator for oj and the npm module
-
-Supports everything in oj plus building and watching of files
+Express templating engine and middleware
 
   Include common modules
 
@@ -157,6 +156,10 @@ oj.command options:
   * output: directory/path
   * modules: list of strings to include manually
   * verbose: level
+  * onlyHtml: Only output html
+  * onlyCss: Only output css
+  * onlyPages: Only output page rendering (no modules)
+  * onlyModules: Only output modules (no page rendering)
 
 Define command
 
@@ -167,6 +170,14 @@ Define command
 
       # Build to a file
       options.write ?= true
+
+      # Resolve output dir
+      options.output = path.resolve process.cwd(), (options.output ? www)
+
+      # Verify output directory isn't the root directory
+      if options.output == process.cwd()
+        error('oj: output directory cannot be current directory')
+        return
 
       # Verify args exist
       throw new Error('oj: no args found') unless (_.isArray options.args) and options.args.length > 0
@@ -195,7 +206,6 @@ compileDir
     compileDir = (dirPath, options = {}, cb = ->) ->
       # Handle recursion and gather files to watch and compile
       lsWatch dirPath, options, (err, files, dirs) ->
-
         # Watch all directories if option is set
         if options.watch
           for d in dirs
@@ -274,6 +284,8 @@ compileFile
 ------------------------------------------------------------------------------
 
     compileFile = (filePath, includeDir, options = {}, cb = ->) ->
+      options = _.clone options
+
       # Time this method
       startTime = process.hrtime()
 
@@ -291,28 +303,19 @@ compileFile
       includedModules = includedModules.concat ['oj', 'jquery']
 
       rootDir = options.root or path.dirname filePath
+      fileDir = path.dirname filePath
+      if _startsWith filePath, options.modulesDir
+        options.onlyModules = true
+      else if _startsWith filePath, options.stylesDir
+        options.onlyCss = true
+      else if _startsWith filePath, options.pagesDir
+        options.onlyPages = true
 
       throw new Error('oj: root is not a directory') unless isDirectory rootDir
 
       # Watch file if option is set
       if options.watch
         watchFile filePath, includeDir, options
-
-      # Figure out some paths
-      #    /input/dir/file.oj
-
-      #    /input/dir
-      fileDir = path.dirname filePath
-
-      #    /output
-      outputDir = options.output || process.cwd()
-
-      #    /dir
-      subDir = path.relative includeDir, fileDir
-
-      #    /output/dir/file.html
-      fileBaseName = basenameForExtensions filePath, ['.oj', '.ojc', 'ojlc']
-      fileOut = path.join outputDir, subDir, fileBaseName + '.html'
 
       verbose 2, "compiling #{filePath}"
 
@@ -367,11 +370,26 @@ compileFile
       # Watch needs records of file dependencies
       _rememberModuleDependencies modules
 
+  Do not compile css fully unless outputing directly to css
+
+      cssOption = if options.onlyCss then true else false
+
+  Do not compile css if only outputing html or modules
+
+      cssMapOption = if options.onlyHtml or options.onlyModules then false else true
+
+  Do not compile html if only outputing css or modules
+
+      htmlOption = if (options.onlyCss or options.onlyModules) then false else true
+
+  Create compile options
+
+      compileOptions = minify:isMinify, html:htmlOption, cssMap:cssMapOption, css:cssOption, dom:false
+
       # Catch the messages thrown by compiling ojml
       try
         # Compile
-        results = oj.compile minify:isMinify, html:1, css:0, cssMap:1, dom:0, ojml
-        html = results.html
+        results = oj.compile compileOptions, ojml
       catch eCompile
         error "runtime error in #{filePath}: #{eCompile.message}"
         return
@@ -380,10 +398,78 @@ compileFile
       verbose 3, "caching #{filePath} (#{_length modules} files)"
       cache = _buildRequireCache modules, cache, isMinify
 
-      # Serialize cache
+  Calculate file locations for outputing
+
+      # (assuming filePath is /input/dir/file.oj)
+      # fileBaseName = file
+      fileBaseName = basenameForExtensions filePath, ['.oj', '.ojc', 'ojlc']
+      # outputDir = /output
+      outputDir = options.output || process.cwd()
+      # fileDir = /input/dir
+      fileDir = path.dirname filePath
+      # subDir = /dir
+      subDir = path.relative includeDir, fileDir
+      # extOut = .html, .css or .js
+      extOut = if options.onlyCss then '.css' else if options.onlyModules then '.js' else '.html'
+      # fileOut = /output/dir/file.html
+      fileOut = path.join outputDir, subDir, fileBaseName + extOut
+
+  Extend info to calculate output file locations and other meta data
+
+      options.info = _.extend {},
+        includeDir: includeDir
+        # Profiling data
+        startTime: startTime
+        # Results of compile
+        results: results
+        # Module cache
+        cache: cache
+        filePath: filePath
+        fileDir: fileDir
+        fileBaseName: fileBaseName
+        outputDir: outputDir
+        subDir: subDir
+        extOut: extOut
+        fileOut: fileOut
+        isMinify: isMinify
+
+      _outputFile options, cb
+
+      return
+
+    # _outputFile:
+    # Generic output file function that takes cached state and options and does the right thing
+    # including options for:
+    #   options.write:false output to callback instead of file
+    #   options.onlyHtml, onlyCss, onlyPages, onlyModules
+    # ------------------------------------------------------------------------------
+    _outputFile = (options, cb) ->
+      if options.onlyHtml
+        _outputHtml options, cb
+      else if options.onlyCss
+        _outputCss options, cb
+      else if options.onlyPages
+        _outputPages options, cb
+      else if options.onlyModules
+        _outputModules options, cb
+      else
+        _outputUnifiedHtml options, cb
+
+    # outputUnifed
+    # ------------------------------------------------------------------------------
+
+    _outputUnifiedHtml = (options, cb) ->
+
+      info = options.info
+      results = info.results
+      filePath = info.filePath
+      fileOut = info.fileOut
+      html = results.html
+      cssMap = results.cssMap
+      cache = info.cache
       cacheLength = _length(cache.files) + _length(cache.modules) + _length(cache.native)
       verbose 3, "serializing #{filePath} (#{cacheLength} files)"
-      scriptHtml = _requireCacheToString cache, filePath, isMinify
+      scriptHtml = _requireCacheToHtml cache, filePath, options.minify ? false
 
       if !results.tags.html
         error "validation error #{filePath}: <html> tag is missing"
@@ -409,35 +495,68 @@ compileFile
         styleHTML += oj._styleTagFromMediaObject plugin, mediaMap, options
       html = _insertAt html, styleIndex, styleHTML
 
+      _outputDataToFileOrCallback html, options, cb
+
+    # _outputCss
+    # ------------------------------------------------------------------------------
+
+    _outputCss = (options, cb) ->
+      _outputDataToFileOrCallback options.info.results.css, options, cb
+
+    # _outputHtml
+    # ------------------------------------------------------------------------------
+    _outputHtml = (options, cb) ->
+      _outputDataToFileOrCallback options.info.results.html, options, cb
+
+    # _outputModules
+    # ------------------------------------------------------------------------------
+    _outputModules = (options, cb) ->
+      info = options.info
+      js = _requireCacheToJS info.cache, info.filePath, info.isMinify, options
+      _outputDataToFileOrCallback js, options, cb
+
+    # _outputPages
+    # ------------------------------------------------------------------------------
+    _outputPages = (options, cb) ->
+
+
+    # _outputDataToFileOrCallback
+    # ------------------------------------------------------------------------------
+    # Output data to the fileOut location taking into account options.write flag
+    # If options.write is set the file is outputed otherwise it is sent only to the cb
+    _outputDataToFileOrCallback = (data, options, cb) ->
+
+      info = options.info
+      fileOut = info.fileOut
+
+      filePath = info.filePath
+      fileOut = info.fileOut
+
       # Create directory
       dirOut = path.dirname fileOut
       if mkdirp.sync dirOut
         verbose 3, "mkdir #{dirOut}"
 
-      # Record
-      deltaTime = process.hrtime(startTime)
-      timeStamp = " (#{deltaTime[0] + Math.round(10000*deltaTime[1]/1000000000)/10000} sec)"
-
-      # Clear caches
-      cache = null
-      hookCache = null
-      hookOriginalCache = null
+      timeStamp = _timeStampFromStartTime info.startTime
 
       # Write file
       if options.write
-        fs.writeFile fileOut, html, (err) ->
+
+        fs.writeFile fileOut, data, (err) ->
           if err
             error "file writing error #{filePath}: #{err}"
             return
 
           verbose 1, "compiled #{fileOut}#{timeStamp}", 'cyan'
-          cb(null, html)
+          cb(null, data)
           return
       else
         verbose 1, "compiled #{fileOut}#{timeStamp}", 'cyan'
-        cb(null, html)
+        cb(null, data)
 
-      return
+    _timeStampFromStartTime = (startTime) ->
+      deltaTime = process.hrtime(startTime)
+      timeStamp = " (#{deltaTime[0] + Math.round(10000*deltaTime[1]/1000000000)/10000} sec)"
 
     # Keep track of which files are watched
     watchCache = {}
@@ -601,7 +720,7 @@ Output helpers
 
     error = (message) ->
       red = oj.codes?.red ? ''
-      reset = oj.codes?.red ? ''
+      reset = oj.codes?.reset ? ''
       console.error "#{red}#{message}#{reset}"
       return
 
@@ -626,7 +745,7 @@ File helpers
       (isOJFile filePath) and base[0] != '_'and base.slice(0,2) != 'oj' and not isHiddenFile filePath
 
     # isOJDir: Determine if path is an oj directory.
-    isOJDir = (dirPath) ->
+    isOJDir = (dirPath, outputDir) ->
       base = path.basename dirPath
       base[0] != '_'and base[0] != '.' and base != 'node_modules'
 
@@ -677,14 +796,13 @@ File helpers
     # Abstract if recursion happened and filters to only files / directories that don't start with _ and end in an oj filetype (.oj, .ojc, .ojlc)
 
     lsOJ = (paths, options, cb) ->
-
       options ?= {}
 
       # Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
       options = _.extend {}, recurse: options.recurse, filterFile: ((f) -> isOJPage f), filterDir:((d) -> isOJDir d)
 
-      ls paths, options, (err, results) ->
-        cb err, results.files, results.directories
+      ls paths, options, (err, files, dirs) ->
+        cb err, files, dirs
       return
 
     # lsWatch
@@ -693,10 +811,14 @@ File helpers
     # hidden, underscore or oj prefixes.
 
     lsWatch = (paths, options, cb) ->
+
       # Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
-      options = _.extend {}, recurse: options.recurse, filterFile: (f) -> isWatchFile f
-      ls paths, options, (err, results) ->
-        cb err, results.files, results.directories
+      lsOptions = _.extend {}, recurse: options.recurse, filterFile: ((basename, path) -> isWatchFile basename), filterDir:(basename, path) ->
+        # Doesn't start with output directory and fits isOJDir criteria
+        !_startsWith(path, options.output) && isOJDir basename
+
+      ls paths, lsOptions, (err, files, dirs) ->
+        cb err, files, dirs
       return
 
 ls: List directories and files from paths asynchronously
@@ -721,9 +843,9 @@ ls: List directories and files from paths asynchronously
       pending = paths.length
       breakIfDone = ->
         if pending == 0
-          options.results.files = _.uniq (_.filter options.results.files, options.filterFile)
-          options.results.directories = _.uniq options.results.directories
-          cb null, options.results
+          files = _.uniq (_.filter options.results.files, options.filterFile)
+          dirs = _.uniq options.results.directories
+          cb null, files, dirs
         return
 
       for p in paths
@@ -732,15 +854,15 @@ ls: List directories and files from paths asynchronously
           fs.stat p, (err, stat) ->
             # File found
             if not stat?.isDirectory()
+
               # Store it
               options.results.files.push p
               breakIfDone --pending
 
             # Directory found
             else
-
               # Process director if it passes filter
-              if options.filterDir path.basename p
+              if options.filterDir (path.basename p), p
 
                 # Store it
                 options.results.directories.push p
@@ -761,7 +883,6 @@ ls: List directories and files from paths asynchronously
                   for p_ in paths_
                     do(p_) ->
                       fs.stat p_, (errStat, stat_) ->
-
                         # Handle error
                         return cb errStat if errStat
 
@@ -1054,9 +1175,18 @@ Templating
 Code generation
 ------------------------------------------------------------------------------
 
-    # ###_requireCacheToString
+    # ###_requireCacheToHtml
+    _requireCacheToHtml = (cache, filePath, isMinify, options) ->
+      return """
+        <script>
+          #{_requireCacheToJS cache, filePath, isMinify, options}
+        </script>
+      """
+
+    # ###_requireCacheToJS
     # Output html from cache and file
-    _requireCacheToString = (cache, filePath, isMinify) ->
+    # options: onlyHtml, onlyCss, onlyModules, onlyPages
+    _requireCacheToJS = (cache, filePath, isMinify, options) ->
       # Example:
       #   filePath: /User/name/project/www/file.oj
       #   commonDir: /User/name/project
@@ -1168,29 +1298,31 @@ Code generation
       """, minify:isMinify
 
       return """
-    <script>
-
     // Generated with oj v#{oj.version}
-    (function(){ var F = {}, M = {}, R = {}, P, G, RR;
+    ;(function(){
+    // Define modules M, files F, require R
+    var M = {}, F = {}, R = {}, P, G, RR;
 
     #{_modules}
     #{_files}
     #{_native}
-    P = {cwd: function(){return '/';}};
-    G = {process: P,Buffer: {}};
+    // Define node env with require creator RR, process P, and global G
+    P = {cwd: function(){return '/'}}
+    G = {process: P,Buffer: {}}
     RR = function(f){
-      return function(m){return run(find(m, f));};
+      var o = function(m){return run(find(m, f))}
+      o.P = P; o.G = G; o.F = F; o.M = M, o.RR = RR
+      return o
       #{_run}
       #{_find}
     };
-    require = RR('#{path.join clientDir, clientFile}');
 
-    oj = require('oj');
-    oj.load('#{clientFile}');
+    // Create require and oj
+    require = RR('#{path.join clientDir, clientFile}')
+    oj = require('oj')
+    oj.load('#{clientFile}')
 
     }).call(this);
-
-    </script>
     """
 
 Express
