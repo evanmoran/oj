@@ -1,0 +1,30 @@
+{
+  "name": "oj",
+  "version": "0.2.1",
+  "main": "versions/latest/oj.js",
+  "homepage": "http://ojjs.org",
+  "authors": [
+    "Evan Moran <evan@evanmoran.com>"
+  ],
+  "description": "Unified templating for the people. Thirsty people.",
+  "keywords": [
+    "oj",
+    "templating",
+    "unified",
+    "object",
+    "oriented"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "docs",
+    "bin",
+    "modules",
+    "pages",
+    "www"
+  ]
+}
