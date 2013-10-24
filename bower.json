@@ -19,12 +19,12 @@
     "**/.*",
     "node_modules",
     "bower_components",
-    "test",
-    "tests",
-    "docs",
-    "bin",
-    "modules",
-    "pages",
-    "www"
+    "./test",
+    "./tests",
+    "./docs",
+    "./bin",
+    "./modules",
+    "./pages",
+    "./www"
   ]
 }
