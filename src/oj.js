@@ -2,10 +2,24 @@
 // ===================================================================
 // Unified templating for the people. Thirsty people.
 
-;(function(){
+;(function(root, factory){
 
-  var root = this,
-    ArrP = Array.prototype,
+  // CommonJS export for Node
+  if (typeof module === 'object' && module.exports) {
+    try {$ = require('jquery')} catch (e){}
+    module.exports = factory(root, $)
+
+  // AMD export for RequireJS
+  } else if (typeof define === 'function' && define.amd)
+    define(['jquery'], factory)
+
+  // Global export for client side
+  else
+    root.oj = factory(root, (root.jQuery || root.Zepto || root.ender || root.$))
+
+}(this, function(root, $){
+
+  var ArrP = Array.prototype,
     FunP = Function.prototype,
     ObjP = Object.prototype,
     slice = ArrP.slice,
@@ -19,24 +33,13 @@
     return oj.tag.apply(this, ['oj'].concat(slice.call(arguments)).concat([{__quiet__:1}]))
   };
 
-  oj.version = '0.2.1'
+  oj.version = '0.2.2'
 
   oj.isClient = !(typeof process !== "undefined" && process !== null ? process.versions != null ? process.versions.node : 0 : 0)
 
   // Detect jQuery globally or in required module
   if (typeof $ != _udf)
     oj.$ = $
-  else if (typeof require != _udf)
-    try {
-      oj.$ = require('jquery')
-    } catch (e){}
-
-  // Export as a module in node
-  if (typeof require != _udf)
-    module.exports = oj
-  // Export globally if not in node
-  else
-    root['oj'] = oj
 
   // Reference ourselves for template files to see
   oj.oj = oj
@@ -342,6 +345,7 @@
   // oj.copyProperty: Copy source.propName to dest.propName
   oj.copyProperty = function(dest, source, propName){
     var info = Object.getOwnPropertyDescriptor(source, propName)
+    info = _d(info, {value: [], enumerable: false, writable: true, configurable: true })
     if (info.value != null)
       info.value = _clone(info.value)
     return Object.defineProperty(dest, propName, info)
@@ -1173,7 +1177,7 @@
   // oj.toCSS: Compile directly to CSS only
   oj.toCSS = function(options, ojml){
     // Options is optional
-    if (!oj.isPlain(options)){
+    if (!oj.isPlainObject(options)){
       ojml = options
       options = {}
     }
@@ -3065,4 +3069,5 @@
     return root + dir
   }
 
-}).call(this);
+  return oj
+}));
