@@ -10,8 +10,11 @@
     module.exports = factory(root, $)
 
   // AMD export for RequireJS
-  } else if (typeof define === 'function' && define.amd)
-    define(['jquery'], factory)
+  } else if (typeof define === 'function' && define.amd) {
+    define(['jquery'], function($){
+      factory(root, $)
+    })
+  }
 
   // Global export for client side
   else
