@@ -34,7 +34,7 @@
   // oj function: highest level of capture for tag functions
   function oj(){
     return oj.tag.apply(this, ['oj'].concat(slice.call(arguments)).concat([{__quiet__:1}]))
-  };
+  }
 
   oj.version = '0.2.2'
 
@@ -55,8 +55,8 @@
 
       // Trigger events bound through onload
       return oj.onload()
-    });
-  };
+    })
+  }
 
   // oj.onload: Enlist in onload action or run them.
   var _onLoadQueue = {queue: [], loaded: false}
@@ -111,8 +111,8 @@
       o = false
     else if (!isNaN(n = parseFloat(str)))
       o = n
-    return o;
-  };
+    return o
+  }
 
   // unionArguments: Union arguments into options and args
   oj.unionArguments = function(argList){
@@ -135,13 +135,13 @@
       delete options[key]
     }
     return value
-  };
+  }
 
   // Utility Helpers
   var _keys = Object.keys,
     _extend = oj.$.extend
 
-  function _isCapitalLetter(c){return !!(c.match(/[A-Z]/));};
+  function _isCapitalLetter(c){return !!(c.match(/[A-Z]/))}
 
   function _has(obj, key){return ObjP.hasOwnProperty.call(obj, key)}
 
@@ -174,7 +174,7 @@
       if (_has(o, k))
         return false
     return true
-  };
+  }
 
   function _clone(o){
     if (!(oj.isArray(o) || oj.isPlainObject(o)))
@@ -212,7 +212,7 @@
         o = o[k]
     }
     return obj
-  };
+  }
 
   // uniqueSort:
   function uniqueSort(arr, isSorted){
@@ -230,7 +230,7 @@
       out.push(item)
     }
     return out
-  };
+  }
 
   // _d(args...): initialization helper that returns first arg that isn't null
   function _d(){
@@ -275,7 +275,7 @@
   // oj.addMethod: add multiple methods to an object
   oj.addMethods = function(obj, mapNameToMethod){
     for (var methodName in mapNameToMethod)
-      oj.addMethod(obj, methodName, mapNameToMethod[methodName]);
+      oj.addMethod(obj, methodName, mapNameToMethod[methodName])
   }
 
   // oj.addMethod: Add method to object with name and fn
@@ -293,9 +293,9 @@
 
   // oj.removeMethod: Remove a method with name from an object
   oj.removeMethod = function(obj, name){
-    _v('removeMethod', 2, name, 'string');
+    _v('removeMethod', 2, name, 'string')
     delete obj[name]
-  };
+  }
 
   // oj.addProperties: add multiple properties to an object
   // Properties can be specified by get/set methods or by a value
@@ -303,19 +303,19 @@
   oj.addProperties = function(obj, mapNameToInfo){
 
     // Iterate over properties
-    var propInfo, propName;
+    var propInfo, propName
 
     for (propName in mapNameToInfo){
-      propInfo = mapNameToInfo[propName];
+      propInfo = mapNameToInfo[propName]
 
       // Wrap the value if propInfo is not already a prop definition
       if (((propInfo != null ? propInfo.get : void 0) == null) &&
           ((propInfo != null ? propInfo.value : void 0) == null))
         propInfo = {value: propInfo, writable: true}
 
-      oj.addProperty(obj, propName, propInfo);
+      oj.addProperty(obj, propName, propInfo)
     }
-  };
+  }
 
   // oj.addProperty: Add property to object with name and info
   oj.addProperty = function(obj, name, info){
@@ -331,7 +331,7 @@
 
     // Add the property
     Object.defineProperty(obj, name, info)
-  };
+  }
 
   // oj.removeProperty: remove property from object with name
   oj.removeProperty = function(obj, name){
@@ -343,7 +343,7 @@
   oj.isProperty = function(obj, name){
     _v('isProperty', 2, name, 'string')
     return Object.getOwnPropertyDescriptor(obj, name).get != null
-  };
+  }
 
   // oj.copyProperty: Copy source.propName to dest.propName
   oj.copyProperty = function(dest, source, propName){
@@ -356,7 +356,7 @@
 
   // _argsStack: Abstraction to wrap global arguments stack.
   // This makes me sad but it is necessary for div -> syntax
-  var _argsStack = [];
+  var _argsStack = []
 
   // Access the top of the stack
   oj._argsTop = function(){
@@ -399,11 +399,11 @@
       ojml = [name]
 
     if (isQuiet)
-      delete attributes.__quiet__;
+      delete attributes.__quiet__
 
     // Add attributes to ojml if they exist
     if (!_isEmpty(attributes))
-      ojml.push(attributes);
+      ojml.push(attributes)
 
     // Store current tag context
     oj._argsPush(ojml)
@@ -510,7 +510,7 @@
   oj.doctype = function(typeOrValue){
     typeOrValue = _d(typeOrValue,'5')
     return oj['!DOCTYPE'](_d(_doctypes[typeOrValue], typeOrValue))
-  };
+  }
 
   // oj.extendInto (context): Extend all OJ methods into a context.
   // Defaults to root, which is either `global` or `window`
@@ -519,7 +519,7 @@
   oj.useGlobally = oj.extendInto = function(context){
     context = _d(context,root)
 
-    var o = {}, k, qn, v;
+    var o = {}, k, qn, v
 
     // For all keys and values in oj
     for (k in oj){
@@ -536,7 +536,7 @@
       }
     }
     _extend(context, o)
-  };
+  }
 
   // oj.compile(options, ojml)
   // ---
@@ -564,7 +564,7 @@
 
     acc.html = options.html ? [] : null
     acc.dom = options.dom && (typeof document !== "undefined" && document !== null) ? document.createElement('OJ') : null
-    acc.css = options.css || options.cssMap ? {} : null;
+    acc.css = options.css || options.cssMap ? {} : null
     acc.indent = ''
 
     // Accumulate insert events per element
@@ -601,7 +601,7 @@
     if (options.dom){
 
       // Remove the <oj> wrapping from the dom element
-      dom = acc.dom.childNodes;
+      dom = acc.dom.childNodes
 
       // Cleanup inconsistencies of childNodes
       if (dom.length != null){
@@ -632,7 +632,7 @@
       tags: acc.tags,
       inserts: acc.inserts
     }
-  };
+  }
 
   // _styleFromObject: Convert object to style string
   function _styleFromObject(obj, options){
@@ -642,7 +642,7 @@
     }, options)
 
     // Trailing semi should only exist on when we aren't indenting
-    options.semi = !options.inline;
+    options.semi = !options.inline
 
     var out = "",
 
@@ -667,7 +667,7 @@
       out += "" + indent + k + ":" + obj[kFancy] + semi + newline
     }
     return out
-  };
+  }
 
   // _attributesFromObject: Convert object to attribute string with no special conversions
   function _attributesFromObject(obj){
@@ -695,8 +695,8 @@
 
       space = ' '
     }
-    return out;
-  };
+    return out
+  }
 
   // _flattenCSSMap: Take an OJ cssMap and flatten it into the form
   // `'plugin' -> '@media query' -> 'selector' ->'rulesMap'`
@@ -710,7 +710,7 @@
       _flattenCSSMap_(cssMap_, flatMap, [''], [''], plugin)
     }
     return flatMap
-  };
+  }
 
   // Recursive helper with accumulators (it outputs flatMapAcc)
   function _flattenCSSMap_(cssMap, flatMapAcc, selectorsAcc, mediasAcc, plugin){
@@ -723,7 +723,7 @@
       'monitor': '',
       'tablet': 'only screen and (min-width: 768px) and (max-width: 959px)',
       'phone': 'only screen and (max-width: 767px)'
-    };
+    }
 
     for (selector in cssMap){
       rules = cssMap[selector]
@@ -767,7 +767,7 @@
         if (isMedia){
           parts = parts.map(function(v){
             return _d(medias[v], v)
-          });
+          })
         }
 
         // Determine the next selectors or media queries
@@ -780,19 +780,19 @@
             // When `&` is not present just insert in front with the correct join operator
             cur = inner
             if ((inner.indexOf('&')) === -1 && outer !== '')
-              cur = (isMedia ? '& and ' : '& ') + cur;
+              cur = (isMedia ? '& and ' : '& ') + cur
 
-            next.push(cur.replace(/&/g, outer));
+            next.push(cur.replace(/&/g, outer))
           }
         }
 
         // Recurse through objects after calculating the next selectors
         _flattenCSSMap_(
           rules, flatMapAcc, selectorsNext, mediasNext, plugin
-        );
+        )
       }
     }
-  };
+  }
 
   // _styleClassFromPlugin: Abstract plugin <style> naming
   function _styleClassFromPlugin(plugin){return "" + plugin + "-style"}
@@ -801,7 +801,7 @@
   oj._styleTagFromMediaObject = function(plugin, mediaMap, options){
     var newline = (options != null ? options.minify : void 0) ? '' : '\n',
       css = _cssFromMediaObject(mediaMap, options)
-    return "<style class=\"" + (_styleClassFromPlugin(plugin)) + "\">" + newline + css + "</style>";
+    return "<style class=\"" + (_styleClassFromPlugin(plugin)) + "\">" + newline + css + "</style>"
   }
 
   // _cssFromMediaObject: Convert css from a flattened mediaMap rule object.
@@ -823,12 +823,12 @@
 
     // Build css for media => selector =>  rules
     for (media in mediaMap){
-      selectorMap = mediaMap[media];
+      selectorMap = mediaMap[media]
 
       // Serialize media query
       if (media){
-        media = media.replace(/,/g, "," + space);
-        css += "" + media + space + "{" + newline;
+        media = media.replace(/,/g, "," + space)
+        css += "" + media + space + "{" + newline
       }
 
       for (selector in selectorMap){
@@ -844,7 +844,7 @@
         rules = _styleFromObject(styles, {
           inline: inline,
           indent: indentRule
-        });
+        })
         css += rules + indent + '}' + newline
       }
 
@@ -859,7 +859,7 @@
       throw new Error("css minification error: " + e.message + "\nCould not minify:\n" + css)
     }
     return css
-  };
+  }
 
   // _cssFromPluginObject: Convert flattened css selectors and rules to a string
   // pluginMaps are of the form:
@@ -890,7 +890,7 @@
         css += "" + newline + "</style>" + newline
     }
     return css
-  };
+  }
 
   // _compileDeeper: Recursive helper for compiling that wraps indention
   function _compileDeeper(method, ojml, options){
@@ -898,7 +898,7 @@
     options.indent += '\t'
     method(ojml, options)
     options.indent = i
-  };
+  }
 
   // _compileAny Recursive helper for compiling ojml or any type
   function _compileAny(any, options){
@@ -913,9 +913,9 @@
 
       if (any.length > 0 && any[0] === '<'){
         var root = document.createElement('div')
-        root.innerHTML = any;
+        root.innerHTML = any
         if (options.dom != null)
-          options.dom.appendChild(root);
+          options.dom.appendChild(root)
       } else {
         if (options.dom != null)
           options.dom.appendChild(document.createTextNode(any))
@@ -927,21 +927,21 @@
         options.html.push("" + any)
 
       if (options.dom != null)
-        options.dom.appendChild(document.createTextNode("" + any));
+        options.dom.appendChild(document.createTextNode("" + any))
 
     // Function
     } else if (oj.isFunction(any)){
 
       // Wrap function call to allow full oj generation within any
-      _compileAny(oj(any), options);
+      _compileAny(oj(any), options)
 
     // Date
     } else if (oj.isDate(any)){
       if (options.html != null)
-        options.html.push("" + (any.toLocaleString()));
+        options.html.push("" + (any.toLocaleString()))
 
       if (options.dom != null)
-        options.dom.appendChild(document.createTextNode("" + (any.toLocaleString())));
+        options.dom.appendChild(document.createTextNode("" + (any.toLocaleString())))
 
     // OJ Type or Instance
     } else if (oj.isOJ(any)){
@@ -955,10 +955,10 @@
         options.dom.appendChild(any.toDOM(options))
 
       if (options.css != null)
-        _extend(options.css, any.toCSSMap(options));
+        _extend(options.css, any.toCSSMap(options))
     }
     // Do nothing for: null, undefined, object
-  };
+  }
 
 
   // _compileTag: Recursive helper for compiling ojml tags
@@ -999,7 +999,7 @@
         styles = attributes[selector]
         options.css['oj'] = _d(options.css['oj'], {})
         options.css['oj'][selector] = _d(options.css['oj'][selector], {})
-        _extend(options.css['oj'][selector], styles);
+        _extend(options.css['oj'][selector], styles)
       }
     }
 
@@ -1008,13 +1008,13 @@
     // In this way it is HTML generation only.
 
     if (tag === '!DOCTYPE'){
-      _v('compile', 1, ojml[1], 'string');
+      _v('compile', 1, ojml[1], 'string')
       if (!options.ignore[tag]){
         if (options.html)
           options.html.push("<" + tag + " " + ojml[1] + ">")
         // options.dom is purposely ignored
       }
-      return;
+      return
     }
     if (!options.ignore[tag]){
       var events = _attributesProcessedForOJ(attributes), el
@@ -1086,7 +1086,7 @@
       if (options.dom)
         options.dom = options.dom.parentNode
     }
-  };
+  }
 
   // _attributesProcessedForOJ: Process attributes to make them easier to use
   function _attributesProcessedForOJ(attr){
@@ -1114,7 +1114,7 @@
     if (oj.isPlainObject(attr != null ? attr.style : void 0)){
       attr.style = _styleFromObject(attr.style, {
         inline: true
-      });
+      })
     }
 
     // Omit attributes with values of false, null, or undefined
@@ -1144,7 +1144,7 @@
 
     // Returns bindable events
     return events
-  };
+  }
 
   // Bind events to dom
   function _attributesBindEventsToDOM(events, el, inserts){
@@ -1161,7 +1161,7 @@
         _results.push(oj.$(el)[ek](ev))
     }
     return _results
-  };
+  }
 
   // oj.toHTML: Compile directly to HTML only
   oj.toHTML = function(options, ojml){
@@ -1175,7 +1175,7 @@
     // Create html only
     _extend(options, {dom: 0, js: 0, html: 1, css: 0})
     return (oj.compile(options, ojml)).html
-  };
+  }
 
   // oj.toCSS: Compile directly to CSS only
   oj.toCSS = function(options, ojml){
@@ -1187,7 +1187,7 @@
     // Create css only
     _extend(options, {dom: 0, js: 0, html: 0, css: 1})
     return (oj.compile(options, ojml)).css
-  };
+  }
 
   // _inherit: Inherit Child from Parent
   // Based on, but sadly incompatable with, coffeescript inheritance
@@ -1198,17 +1198,17 @@
     for (prop in Parent)
       oj.copyProperty(Child, Parent, prop)
 
-    Ctor = function(){};
-    Ctor.prototype = Parent.prototype;
+    Ctor = function(){}
+    Ctor.prototype = Parent.prototype
     Child.prototype = new Ctor()
 
     // Provide easy access for base class methods
     // Example: Parent.base.methodName(arguments...)
     Child.base = Child.__super__ = Parent.prototype
-  };
+  }
 
   // _construct(Type, arg1, arg2, ...): Construct type as if using call
-  function _construct(Type){return new (FunP.bind.apply(Type, arguments))};
+  function _construct(Type){return new (FunP.bind.apply(Type, arguments))}
 
   // oj.createType: Create OJ type with args object supporting:
   // base, constructor, properties, and methods
@@ -1218,8 +1218,8 @@
     args.methods = _d(args.methods, {})
     args.properties = _d(args.properties, {})
 
-    _v('createType', 1, name, 'string');
-    _v('createType', 2, args, 'object');
+    _v('createType', 1, name, 'string')
+    _v('createType', 2, args, 'object')
 
     var methodKeys, propKeys, typeProps,
 
@@ -1300,8 +1300,8 @@
         } else {
           var out = {}, ix, p
           for (ix = 0; ix < this.properties.length; ix++){
-            p = this.properties[ix];
-            out[p] = this[p];
+            p = this.properties[ix]
+            out[p] = this[p]
           }
           return out
         }
@@ -1309,19 +1309,19 @@
 
       // set: Set property by key, or set all properties with object
       set: function(k, v){
-        var key, obj = k, value;
+        var key, obj = k, value
 
         // Optionally take key, value instead of object
         if (!oj.isPlainObject(k)){
-          obj = {};
-          obj[k] = v;
+          obj = {}
+          obj[k] = v
         }
 
         // Set all keys that are valid properties
         for (key in obj){
-          value = obj[key];
+          value = obj[key]
           if (this.has(key)){
-            this[key] = value;
+            this[key] = value
           }
         }
       },
@@ -1343,22 +1343,22 @@
         }
         return json
       }
-    });
+    })
 
     // Add methods
-    oj.addMethods(Out.prototype, args.methods);
+    oj.addMethods(Out.prototype, args.methods)
 
     // Add the properties
-    oj.addProperties(Out.prototype, args.properties);
-    return Out;
-  };
+    oj.addProperties(Out.prototype, args.properties)
+    return Out
+  }
 
   // _createQuietType: Takes an OJ Type and creates the _Type that doesn't emit
   _createQuietType = function(typeName){
     return oj[_getQuietTagName(typeName)] = function(){
       return _construct.apply(null, [oj[typeName]].concat(slice.call(arguments), [{
         __quiet__: 1
-      }]));
+      }]))
     }
   }
 
@@ -1396,7 +1396,7 @@
       this.set(options)
 
       // Remove options that were set
-      options = _clone(options);
+      options = _clone(options)
       this.properties.forEach(function(v){return delete options[v]})
 
       // Views pass through remaining options to be attributes on the root element
@@ -1571,7 +1571,7 @@
 
       // Convert View to html
       toHTML: function(options){
-        return this.el.outerHTML + ((options != null ? options.minify : void 0) ? '' : '\n');
+        return this.el.outerHTML + ((options != null ? options.minify : void 0) ? '' : '\n')
       },
 
       // Convert View to dom (for compiling)
@@ -1582,7 +1582,7 @@
         return _cssFromPluginObject(_flattenCSSMap(this.cssMap), _extend({}, {
           minify: options.minify,
           tags: 0
-        }));
+        }))
       },
 
       // Convert
@@ -1600,7 +1600,7 @@
 
       inserted: function(){return this._isInserted = true}
     }
-  });
+  })
 
 
   // oj.View.cssMap: remember css for this View
@@ -1608,31 +1608,31 @@
 
   // oj.View.css: set view's css with css object mapping, or raw css string
   oj.View.css = function(css){
-    _a(oj.isString(css) || oj.isPlainObject(css), this.typeName, 'object or string expected for first argument');
+    _a(oj.isString(css) || oj.isPlainObject(css), this.typeName, 'object or string expected for first argument')
 
-    var cssMap, _base, _base1, _name, _name1, _ref2, _ref3;
+    var cssMap, _base, _base1, _name, _name1, _ref2, _ref3
 
     if (oj.isString(css)){
       if ((_ref2 = (_base = this.cssMap)[_name = "oj-" + this.typeName]) == null){
-        _base[_name] = "";
+        _base[_name] = ""
       }
-      this.cssMap["oj-" + this.typeName] += css;
+      this.cssMap["oj-" + this.typeName] += css
     } else {
       if ((_ref3 = (_base1 = this.cssMap)[_name1 = "oj-" + this.typeName]) == null){
-        _base1[_name1] = {};
+        _base1[_name1] = {}
       }
-      cssMap = _setObject({}, ".oj-" + this.typeName, css);
-      _extend(this.cssMap["oj-" + this.typeName], cssMap);
+      cssMap = _setObject({}, ".oj-" + this.typeName, css)
+      _extend(this.cssMap["oj-" + this.typeName], cssMap)
     }
-  };
+  }
 
   // oj.View.themes: Remember themes for this View
   oj.View.themes = []
 
   // oj.View.theme: create a View specific theme with css object mapping
   oj.View.theme = function(name, css){
-    _v(this.typeName, 1, name, 'string');
-    _v(this.typeName, 2, css, 'object');
+    _v(this.typeName, 1, name, 'string')
+    _v(this.typeName, 2, css, 'object')
 
     // Calculate styleName
     var dashName = _dasherize(name),
@@ -1648,7 +1648,7 @@
     // Remember the theme item
     this.themes.push(dashName)
     this.themes = uniqueSort(this.themes)
-  };
+  }
 
   // oj.CollectionView: Inheritable base type that enables two-way collection binding
   oj.CollectionView = oj.createType('CollectionView', {
@@ -1660,7 +1660,7 @@
       if ((options != null ? options.models : void 0) != null)
         this.models = oj.argumentShift(options, 'models')
 
-      oj.CollectionView.base.constructor.apply(this, arguments);
+      oj.CollectionView.base.constructor.apply(this, arguments)
 
       // Once everything is constructed call make precisely once.
       return this.make()
@@ -1712,7 +1712,7 @@
       collectionModelDestroyed: function(cols, opt){return this.make()},
       collectionReset: function(cols, opt){return this.make()}
     }
-  });
+  })
 
   // oj.ModelView: Inheritable base type that enables two-way model binding
   oj.ModelView = oj.createType('ModelView', {
@@ -1734,13 +1734,13 @@
         set: function(v){
           // Unbind events on the old model
           if (oj.isEvented(this._model))
-            this._model.off('change', null, this);
+            this._model.off('change', null, this)
 
           this._model = v
 
           // Bind events on the new model
           if (oj.isEvented(this._model))
-            this._model.on('change', this.modelChanged, this);
+            this._model.on('change', this.modelChanged, this)
 
           // Trigger change manually when settings new model
           this.modelChanged()
@@ -1751,16 +1751,16 @@
 
       // Override modelChanged if you don't want a full remake
       modelChanged: function(){
-        var _t = this;
+        var _t = this
         return this.$el.oj(function(){
           return _t.make(_t.mode)
-        });
+        })
       },
       make: function(model){
-        return _e(this.typeName, '`make` method not implemented by custom view');
+        return _e(this.typeName, '`make` method not implemented by custom view')
       }
     }
-  });
+  })
 
   // oj.ModelViewView: Inheritable base type that enables two-way model binding to a specific key
   oj.ModelKeyView = oj.createType('ModelKeyView', {
@@ -1773,7 +1773,7 @@
         this.key = oj.argumentShift(options, 'key')
 
       // Call super to bind model and value
-      return oj.ModelKeyView.base.constructor.apply(this, arguments);
+      return oj.ModelKeyView.base.constructor.apply(this, arguments)
     },
     properties: {
       // Key used to access model
@@ -1814,7 +1814,7 @@
         }), 10)
       }
     }
-  });
+  })
 
   // oj.TextBox
   oj.TextBox = oj.createType('TextBox', {
@@ -1865,7 +1865,7 @@
       // Live update model as text changes
       live: true
     }
-  });
+  })
 
   // oj.CheckBox
   oj.CheckBox = oj.createType('CheckBox', {
@@ -1886,7 +1886,7 @@
       if (args.length > 0)
         this.value = args[0]
 
-      return oj.CheckBox.base.constructor.call(this, options);
+      return oj.CheckBox.base.constructor.call(this, options)
     },
     properties: {
       value: {
@@ -1900,7 +1900,7 @@
         }
       }
     }
-  });
+  })
 
   // oj.Text
   oj.Text = oj.createType('Text', {
@@ -1917,13 +1917,13 @@
       // Create element with tagName
       this.el = oj(function(){
         return oj[_t.tagName]()
-      });
+      })
 
       // Value can be set by argument
       if (args.length > 0)
         this.value = args[0]
 
-      return oj.Text.base.constructor.call(this, options);
+      return oj.Text.base.constructor.call(this, options)
     },
 
     properties: {
@@ -1936,7 +1936,7 @@
       // tagName: name of root tag (writeonce)
       tagName: {get: function(){return _d(this._tagName, 'div')}}
     }
-  });
+  })
 
   // oj.TextArea
   oj.TextArea = oj.createType('TextArea', {
@@ -1962,8 +1962,8 @@
           change: function(){
             _t.viewChanged()
           }
-        });
-      });
+        })
+      })
 
       // Value can be set by argument
       this.value = oj.argumentShift(options, 'value') || args.join('\n')
@@ -1978,7 +1978,7 @@
       // Live update model as text changes
       live: true
     }
-  });
+  })
 
   // oj.ListBox
   oj.ListBox = oj.createType('ListBox', {
@@ -1996,44 +1996,44 @@
       })
 
       // @options is a list of elements
-      this.options = oj.argumentShift(options, 'options');
+      this.options = oj.argumentShift(options, 'options')
 
       // Value can be set by argument
       if (args.length > 0)
         this.value = args[0]
 
-      return oj.ListBox.base.constructor.apply(this, [options]);
+      return oj.ListBox.base.constructor.apply(this, [options])
     },
     properties: {
       value: {
         get: function(){
-          return this.$el.val();
+          return this.$el.val()
         },
         set: function(v){
-          this.$el.val(v);
+          this.$el.val(v)
         }
       },
       options: {
         get: function(){
-          return this._options;
+          return this._options
         },
         set: function(v){
           if (!oj.isArray(v)){
-            throw new Error("oj." + this.typeName + ".options array is missing");
+            throw new Error("oj." + this.typeName + ".options array is missing")
           }
-          this._options = v;
+          this._options = v
           this.$el.oj(function(){
-            var op, _j, _len1;
+            var op, _j, _len1
 
             for (_j = 0, _len1 = v.length; _j < _len1; _j++){
-              op = v[_j];
-              oj.option(op);
+              op = v[_j]
+              oj.option(op)
             }
-          });
+          })
         }
       }
     }
-  });
+  })
 
   // oj.Button
   oj.Button = oj.createType('Button', {
@@ -2056,8 +2056,8 @@
       // Create element
       this.el = oj(function(){return oj.button(title)})
 
-      oj.Button.base.constructor.apply(this, [options]);
-      return this.title = title;
+      oj.Button.base.constructor.apply(this, [options])
+      return this.title = title
     },
     properties: {
       title: {
@@ -2073,7 +2073,7 @@
           return this.$el.click()
       }
     }
-  });
+  })
 
   // oj.List: List control with two-way collection binding
   oj.List = oj.createType('List', {
@@ -2090,7 +2090,7 @@
       this.itemTagName = oj.argumentShift(options, 'itemTagName')
 
       // Create the root element
-      this.el = oj(function(){return oj[_t.tagName]()});
+      this.el = oj(function(){return oj[_t.tagName]()})
 
       // Use el if it was passed in
       if (options.el != null)
@@ -2107,11 +2107,11 @@
       }
 
       // Args have been handled so don't pass them on
-      oj.List.base.constructor.apply(this, [options]);
+      oj.List.base.constructor.apply(this, [options])
 
       // Set @items to options or args if they exist
-      items = args.length > 0 ? args : null;
-      return this.items = options.items != null ? oj.argumentShift(options, 'items') : items;
+      items = args.length > 0 ? args : null
+      return this.items = options.items != null ? oj.argumentShift(options, 'items') : items
     },
 
     properties: {
@@ -2138,7 +2138,7 @@
       // itemTagName: name of item tags (readwrite)
       itemTagName: {
         get: function(){return _d(this._itemTagName, 'div')},
-        set: function(v){this._itemTagName = v; this.make();}
+        set: function(v){this._itemTagName = v; this.make()}
       },
 
       // $items: list of `<li>` elements (readonly)
@@ -2176,7 +2176,7 @@
         if ((this.models != null) && (this.each != null)){
 
           // Get list of models from collection or array
-          models = oj.isEvented(this.models) ? this.models.models : this.models;
+          models = oj.isEvented(this.models) ? this.models.models : this.models
 
           // Add view item for every model
           views = models.map(function(model){return _t._itemFromModel(model)})
@@ -2205,13 +2205,13 @@
       // Helper Methods
       // _itemFromModel: Helper to map model to item
       _itemFromModel: function(model){
-        var _t = this;
-        return oj(function(){return _t.each(model)});
+        var _t = this
+        return oj(function(){return _t.each(model)})
       },
 
       // _itemElFromItem: Helper to create itemTagName wrapped item
       _itemElFromItem: function(item){
-        return oj[this.itemTagName](item);
+        return oj[this.itemTagName](item)
       },
 
       // _bound: Bound index to allow negatives, throw when out of range
@@ -2275,8 +2275,8 @@
       swap: function(ix1, ix2){
         if (ix1 === ix2)
           return
-        ix1 = this._bound(ix1, this.count, ".swap: firstIndex");
-        ix2 = this._bound(ix2, this.count, ".swap: secondIndex");
+        ix1 = this._bound(ix1, this.count, ".swap: firstIndex")
+        ix2 = this._bound(ix2, this.count, ".swap: secondIndex")
         if (Math.abs(ix1 - ix2) === 1)
           this.move(ix1, ix2)
         else {
@@ -2293,7 +2293,7 @@
       pop: function(){return this.remove(-1)},
       clear: function(){this.$items.remove(); this.itemsChanged()}
     }
-  });
+  })
 
 
   // oj.NumberList: NumberList is a `List` specialized with `<ol>` and `<li>` tags
@@ -2335,12 +2335,12 @@
       if (options.each == null){
         options.each = function(model, cell){
           var values = (oj.isString(model)) || (oj.isNumber(model)) || (oj.isBoolean(model)) ? [model] : (oj.isEvented(model)) && typeof model.attributes === 'object' ? _values(model.attributes) : _values(model)
-          return values.map(function(v){cell(v)});
-        };
+          return values.map(function(v){cell(v)})
+        }
       }
 
       // Args have been handled so don't pass them on
-      oj.Table.base.constructor.apply(this, [options]);
+      oj.Table.base.constructor.apply(this, [options])
 
       // Validate args as arrays
       for(ix = 0; ix < args.length; ix++)
@@ -2381,7 +2381,7 @@
           this._rows = []
           for (; rx < this.rowCount; rx++){
             r = this.$tdsRow(rx).toArray().map(function(el){return $(el).ojValue()})
-            this._rows.push(r);
+            this._rows.push(r)
           }
           return this._rows
         },
@@ -2404,34 +2404,34 @@
 
           return this.$theadTRMake.oj(function(){
             return list.map(function(ojml){oj.th(ojml)})
-          });
+          })
         }
       },
 
       // footer: Array of footer values as interpreted by ojValue plugin (readwrite)
       footer: {
         get: function(){
-          return this.$tfootTR.find('> td').ojValues();
+          return this.$tfootTR.find('> td').ojValues()
         },
         set: function(list){
-          var _t = this;
+          var _t = this
 
           if (!oj.isArray(list)){
-            throw new Error('oj.Table.footer: array expected for first argument');
+            throw new Error('oj.Table.footer: array expected for first argument')
           }
           if (!((list != null) && list.length > 0)){
-            return this.clearFooter();
+            return this.clearFooter()
           }
           return this.$tfootTRMake.oj(function(){
-            var ojml, _j, _len1, _results;
+            var ojml, _j, _len1, _results
 
-            _results = [];
+            _results = []
             for (_j = 0, _len1 = list.length; _j < _len1; _j++){
-              ojml = list[_j];
-              _results.push(oj.td(ojml));
+              ojml = list[_j]
+              _results.push(oj.td(ojml))
             }
-            return _results;
-          });
+            return _results
+          })
         }
       },
 
@@ -2503,7 +2503,7 @@
             return this.$thead
           t = '<thead></thead>'
           if (this.$colgroup.length > 0)
-            this.$colgroup.insertAfter(t);
+            this.$colgroup.insertAfter(t)
           else if (this.$caption.length > 0)
             this.$caption.insertAfter(t)
           else
@@ -2518,7 +2518,7 @@
           if (this.$tbody.length > 0)
             return this.$tbody
           this.$table.append('<tbody></tbody>')
-          return this.$tbody;
+          return this.$tbody
         }
       },
 
@@ -2648,8 +2648,8 @@
             listOJML.forEach(function(cell){
               oj.td(cell)
             })
-          });
-        });
+          })
+        })
       },
 
       // _addRowTR: Helper to add row directly with `<tr>`
@@ -2673,7 +2673,7 @@
       removeRow: function(rx){
         if (rx == null)
           rx = -1
-        rx = this._bound(rx, this.rowCount, ".removeRow: index");
+        rx = this._bound(rx, this.rowCount, ".removeRow: index")
         var out = this.row(rx)
         this.$tr(rx).remove()
         this.bodyChanged()
@@ -2689,24 +2689,24 @@
         rxTo = this._bound(rxTo, this.rowCount, ".moveRow: toIndex")
         var insert = rxTo > rxFrom ? 'insertAfter' : 'insertBefore'
         this.$tr(rxFrom)[insert](this.$tr(rxTo))
-        this.bodyChanged();
+        this.bodyChanged()
       },
 
       // swapRow: Swap row rx1 and rx2
       swapRow: function(rx1, rx2){
         if (rx1 === rx2)
           return
-        rx1 = this._bound(rx1, this.rowCount, ".swap: firstIndex");
-        rx2 = this._bound(rx2, this.rowCount, ".swap: secondIndex");
+        rx1 = this._bound(rx1, this.rowCount, ".swap: firstIndex")
+        rx2 = this._bound(rx2, this.rowCount, ".swap: secondIndex")
         if (Math.abs(rx1 - rx2) === 1)
           this.moveRow(rx1, rx2)
         else {
           var rxMin = Math.min(rx1, rx2),
             rxMax = Math.max(rx1, rx2)
-          this.moveRow(rxMax, rxMin);
-          this.moveRow(rxMin + 1, rxMax);
+          this.moveRow(rxMax, rxMin)
+          this.moveRow(rxMin + 1, rxMax)
         }
-        this.bodyChanged();
+        this.bodyChanged()
       },
       unshiftRow: function(v){this.addRow(0, v)},
       shiftRow: function(){return this.removeRow(0)},
@@ -2714,25 +2714,25 @@
       popRow: function(){return this.removeRow(-1)},
       clearColgroup: function(){this.$colgroup.remove()},
       clearBody: function(){
-        this.$tbody.remove();
-        this.bodyChanged();
+        this.$tbody.remove()
+        this.bodyChanged()
       },
       clearHeader: function(){
-        this.$thead.remove();
-        this.headerChanged();
+        this.$thead.remove()
+        this.headerChanged()
       },
       clearFooter: function(){
-        this.$tfoot.remove();
-        this.footerChanged();
+        this.$tfoot.remove()
+        this.footerChanged()
       },
       clearCaption: function(){
         this.$capation.remove();
       },
       clear: function(){
-        this.clearBody();
-        this.clearHeader();
-        this.clearFooter();
-        return this.$caption.remove();
+        this.clearBody()
+        this.clearHeader()
+        this.clearFooter()
+        return this.$caption.remove()
       },
 
       // When body changes clear relevant cached values
@@ -2746,36 +2746,36 @@
 
       // _rowFromModel: Helper to map model to row
       _rowFromModel: function(model){
-        var _t = this;
+        var _t = this
         return oj(function(){
-          return _t.each(model, oj.td);
-        });
+          return _t.each(model, oj.td)
+        })
       },
 
       // _bound: Bound index to allow negatives, throw when out of range
       _bound: function(ix, count, message){
         var ixNew = ix < 0 ? ix + count : ix
         if (!(0 <= ixNew && ixNew < count)){
-          throw new Error("oj." + this.typeName + message + " is out of bounds (" + ix + " in [0," + (count - 1) + "])");
+          throw new Error("oj." + this.typeName + message + " is out of bounds (" + ix + " in [0," + (count - 1) + "])")
         }
-        return ixNew;
+        return ixNew
       }
     }
-  });
+  })
 
   // Create Quiet _Types
   for (var typeName in oj){
     // Type with captital first letter that doesn't end in "View"
     if (_isCapitalLetter(typeName[0]) && typeName.slice(typeName.length - 4) !== 'View'){
-      oj[_getQuietTagName(typeName)] = _createQuietType(typeName);
+      oj[_getQuietTagName(typeName)] = _createQuietType(typeName)
     }
   }
 
   // oj.sandbox: The sandbox is a readonly version of oj exposed to the user when templating server-side
-  oj.sandbox = {};
+  oj.sandbox = {}
   _keys(oj).forEach(function(key){
     if ((key.length > 0 && key[0] !== '_') || (key.length > 0 && key[0] === '_' && (oj[key.slice(1)] != null))){
-      oj.addProperty(oj.sandbox, key, {value: oj[key], writable: false});
+      oj.addProperty(oj.sandbox, key, {value: oj[key], writable: false})
     }
   })
 
@@ -2794,7 +2794,7 @@
     for (name in pluginResult){
       value = pluginResult[name]
       if (oj.isOJType(value))
-        pluginMap[_getQuietTagName(name)] = _createQuietType(value.typeName);
+        pluginMap[_getQuietTagName(name)] = _createQuietType(value.typeName)
     }
 
     // Extend all properties
@@ -2807,7 +2807,7 @@
       // Add plugin to sandbox
       oj.addProperty(oj.sandbox, name, {value: value, writable: false})
     }
-  };
+  }
 
   // _jqExtend(fn): Create a jquery plugin with the following options:
   //   option.get is called to retrieve value per element
@@ -2833,7 +2833,7 @@
       if ((oj.isFunction(options.get)) && args.length === 0){
         out = []
         for (ix = 0; ix < $els.length; ix++){
-          el = $els[ix];
+          el = $els[ix]
           out.push(options.get(oj.$(el)))
           if (options.first)
             return out[0]
@@ -2842,7 +2842,7 @@
       } else if (oj.isFunction(options.set)){
 
         // By default return this for chaining
-        out = $els;
+        out = $els
         for (ix = 0; ix < $els.length; ix++){
           el = $els[ix]
           r = options.set(oj.$(el), args)
@@ -2852,8 +2852,8 @@
         }
         return $els
       }
-    };
-  };
+    }
+  }
 
   function _triggerInserted(types, inserts){
     var ix = 0
@@ -2878,12 +2878,12 @@
       if (oj.$('.' + _styleClassFromPlugin(plugin)).length === 0)
         oj.$('head').append(oj._styleTagFromMediaObject(plugin, mediaMap))
     }
-  };
+  }
 
   // oj jquery plugin: Insert like innertHTML or get first instance
   oj.$.fn.oj = _jqExtend({
     // Get returns the first instance
-    get: function($el){return $el[0].oj;},
+    get: function($el){return $el[0].oj},
 
     // Set compiles and inserts in innerHTML
     set: function($el, args){
@@ -2911,7 +2911,7 @@
       // Trigger inserted events
       _triggerInserted(r.types, r.inserts)
     }
-  });
+  })
 
   // jQuery.ojBody plugin: replace body with ojml.
   // Global css is rebuilt when using this method.
@@ -2923,7 +2923,7 @@
     try {
       var r = oj.compile({dom: 1, html: 0, css: 0, cssMap: 1, ignore: bodyOnly }, ojml)
     } catch (e){
-      throw new Error("oj.compile: " + e.message);
+      throw new Error("oj.compile: " + e.message)
     }
 
     // Clear body and insert dom elements
@@ -2933,7 +2933,7 @@
     _insertStyles(r.cssMap, {global:1})
 
     _triggerInserted(r.types, r.inserts)
-  };
+  }
 
   // Helper method that abstracts getting oj values
   function _jqGetValue($el, args){
@@ -2974,14 +2974,14 @@
           // Compile ojml for each one to separate references
           var opts = {dom:1,html:0,css:0,cssMap:1},
             r = oj.compile.apply(oj, [opts].concat(slice.call(args)))
-          _insertStyles(r.cssMap, {global: 0});
+          _insertStyles(r.cssMap, {global: 0})
 
           // Append to the dom
-          $el[jqName](r.dom);
-          _triggerInserted(r.types, r.inserts);
+          $el[jqName](r.dom)
+          _triggerInserted(r.types, r.inserts)
         },
         get: null
-      });
+      })
     })(ojName, jqName)
   }
 
@@ -2992,11 +2992,11 @@
   // Path Helpers: Used to implement require client side
   // Simplified from: github.com/joyent/node/lib/path.js
 
-  var _pathRx = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/;
+  var _pathRx = /^(\/?)([\s\S]+\/(?!$)|\/)?((?:\.{1,2}$|[\s\S]+?)?(\.[^.\/]*)?)$/
 
   function _pathSplit(fname){
     var result = _pathRx.exec(fname)
-    return [result[1] || '', result[2] || '', result[3] || '', result[4] || ''];
+    return [result[1] || '', result[2] || '', result[3] || '', result[4] || '']
   }
 
   function _pathNormArray(parts, allowAboveRoot){
@@ -3004,7 +3004,7 @@
       i = parts.length - 1,
       last
     while (i >= 0){
-      last = parts[i];
+      last = parts[i]
       if (last === '.')
         parts.splice(i, 1)
       else if (last === '..'){
@@ -3028,15 +3028,15 @@
       i = arguments.length - 1,
       path
     while (i >= -1 && !isAbsolute){
-      path = i >= 0 ? arguments[i] : process.cwd();
+      path = i >= 0 ? arguments[i] : process.cwd()
       if ((typeof path !== 'string') || !path)
-        continue;
+        continue
       resolvedPath = path + '/' + resolvedPath
       isAbsolute = path.charAt(0) === '/'
       i--
     }
     resolvedPath = _pathNormArray(resolvedPath.split('/').filter(function(p){
-      return !!p;
+      return !!p
     }), !isAbsolute).join('/')
     return ((isAbsolute ? '/' : '') + resolvedPath) || '.'
   }
