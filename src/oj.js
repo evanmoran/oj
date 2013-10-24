@@ -12,7 +12,7 @@
   // AMD export for RequireJS
   } else if (typeof define === 'function' && define.amd) {
     define(['jquery'], function($){
-      factory(root, $)
+      return factory(root, $)
     })
   }
 
