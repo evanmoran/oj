@@ -2726,7 +2726,7 @@
         this.footerChanged();
       },
       clearCaption: function(){
-        this.$capation.remove();
+        this.$caption.remove();
       },
       clear: function(){
         this.clearBody();
