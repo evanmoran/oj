@@ -1,7 +1,7 @@
 {
   "name": "oj",
-  "version": "0.2.1",
-  "main": "versions/latest/oj.js",
+  "version": "0.2.2",
+  "main": "oj.js",
   "homepage": "http://ojjs.org",
   "authors": [
     "Evan Moran <evan@evanmoran.com>"
@@ -16,15 +16,24 @@
   ],
   "license": "MIT",
   "ignore": [
-    "**/.*",
-    "node_modules",
+    ".DS_Store",
+    ".git",
+    ".gitignore",
+    ".gitmodules",
+    ".plan.md",
+    "Cakefile",
+    "bin",
     "bower_components",
-    "./test",
-    "./tests",
-    "./docs",
-    "./bin",
-    "./modules",
-    "./pages",
-    "./www"
+    "command.litcoffee",
+    "docs",
+    "generated",
+    "modules",
+    "node_modules",
+    "package.json",
+    "pages",
+    "server.litcoffee",
+    "test",
+    "versions",
+    "www"
   ]
 }

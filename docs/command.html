@@ -79,8 +79,7 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
     .usage(<span class="string">'[options] &lt;file&gt; &lt;dir&gt; ...'</span>)
     .option(<span class="string">'-m, --minify'</span>, <span class="string">'Turn on minification (default: false)'</span>, <span class="literal">false</span>)
     .option(<span class="string">'-w, --watch'</span>, <span class="string">'Turn on watch mode (default: off)'</span>, <span class="literal">false</span>)
-    .option(<span class="string">'-r, --recurse'</span>, <span class="string">'Recurse into directories (default: off)'</span>, <span class="literal">false</span>)
-    .option(<span class="string">'-o, --output &lt;dir&gt;'</span>, <span class="string">'Directory to output all files to (default: .)'</span>, process.cwd())
+    .option(<span class="string">'-o, --output &lt;dir&gt;'</span>, <span class="string">'Directory to output all files to (default: ./www)'</span>, path.join process.cwd(), <span class="string">'www'</span>)
     .option(<span class="string">'-v, --verbose &lt;level&gt;'</span>, <span class="string">'Turn on verbose level 0-3 (default: 1)'</span>, <span class="number">1</span>)
     .option(<span class="string">'-e, --exclude &lt;modules&gt;'</span>, <span class="string">'List of modules to exclude (jquery,oj,...)'</span>, splitAndTrim, [])</pre></div></div>
             
@@ -97,8 +96,16 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    .option(<span class="string">'--only-html'</span>, <span class="string">'Only output html (default: false)'</span>, <span class="literal">false</span>)
-    .option(<span class="string">'--only-css'</span>, <span class="string">'Only output css (default: false)'</span>, <span class="literal">false</span>)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>    .option(<span class="string">'--all'</span>, <span class="string">'Include all content: --html --css --js --modules (default: on)'</span>, <span class="literal">true</span>)
+    .option(<span class="string">'--html'</span>, <span class="string">'Include html in the output (default: off)'</span>, <span class="literal">false</span>)
+    .option(<span class="string">'--css'</span>, <span class="string">'Include css in the output (default: off)'</span>, <span class="literal">false</span>)
+    .option(<span class="string">'--js'</span>, <span class="string">'Include page js in the output (default: off)'</span>, <span class="literal">false</span>)
+    .option(<span class="string">'--modules'</span>, <span class="string">'Include modules js in output(default: off)'</span>, <span class="literal">false</span>)
+    .option(<span class="string">'--no-modules'</span>, <span class="string">'Include all but modules js: --html --css --js (default: off)'</span>, <span class="literal">false</span>)
+
+    .option(<span class="string">'--modules-dir &lt;dir&gt;'</span>, <span class="string">'Compile files in this dir with --modules (default: ./modules)'</span>, path.join process.cwd(), <span class="string">'modules'</span>)
+    .option(<span class="string">'--css-dir &lt;dir&gt;'</span>, <span class="string">'Compile files in this dir with --css (default: unset)'</span>, <span class="literal">null</span>)
+    .parse(process.argv)</pre></div></div>
             
         </li>
         
@@ -109,12 +116,16 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>.option(&#39;--only-modules&#39;, &#39;Only output js from included modules (default: false)&#39;, false)
-.option(&#39;--only-pages&#39;, &#39;Only output html/css/js for page, omit included module js&#39;, false)</p>
+              <p>  No arguments shows usage</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    .parse(process.argv)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> <span class="keyword">not</span> _.isArray(commander.args) <span class="keyword">or</span> commander.args.length == <span class="number">0</span>
+    usage()
+
+  options = _.pick commander, <span class="string">'args'</span>, <span class="string">'minify'</span>, <span class="string">'output'</span>, <span class="string">'modules'</span>, <span class="string">'verbose'</span>, <span class="string">'watch'</span>, <span class="string">'exclude'</span>, <span class="string">'html'</span>, <span class="string">'css'</span>, <span class="string">'js'</span>, <span class="string">'modules'</span>, <span class="string">'noModules'</span>, <span class="string">'modulesDir'</span>, <span class="string">'cssDir'</span>
+
+  options.recurse = !commander.noRecurse</pre></div></div>
             
         </li>
         
@@ -124,24 +135,6 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
-              </div>
-              <p>  No arguments shows usage</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> <span class="keyword">not</span> _.isArray(commander.args) <span class="keyword">or</span> commander.args.length == <span class="number">0</span>
-    usage()
-
-  options = _.pick commander, <span class="string">'args'</span>, <span class="string">'minify'</span>, <span class="string">'output'</span>, <span class="string">'recurse'</span>, <span class="string">'modules'</span>, <span class="string">'verbose'</span>, <span class="string">'watch'</span>, <span class="string">'exclude'</span>, <span class="string">'onlyHtml'</span>, <span class="string">'onlyCss'</span>, <span class="string">'onlyPages'</span>, <span class="string">'onlyModules'</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-8">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>  Execute command through oj module api</p>
 
@@ -153,11 +146,11 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
         </li>
         
         
-        <li id="section-9">
+        <li id="section-8">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-8">&#182;</a>
               </div>
               <p>  Helper method to show usage</p>
 
@@ -170,11 +163,11 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
         </li>
         
         
-        <li id="section-10">
+        <li id="section-9">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-9">&#182;</a>
               </div>
               <p>  Helper method to split lists on comma</p>
 

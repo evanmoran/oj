@@ -28,6 +28,13 @@ repo: github.com/ojjs/oj
 Change Log:
 --------------------------------------------------------------------------------
 
+### 0.2.2
+
+* Added AMD support for RequireJS
+* Added Bower support
+* Fixing oj.toCSS to correctly accept minify option
+* Fixing oj.copyProperty to handle null definitions
+
 ### 0.2.1
 
 * Adding `insert` event to tag functions that is triggered when the element is inserted

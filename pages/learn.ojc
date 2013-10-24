@@ -412,7 +412,7 @@ data = [
 
             // Append content to body
             $('body').ojAppend(function(){
-              div('Fades in when inserted!', {
+              p('Fades in when inserted!', {
 
                 // Trigger when inserted
                 insert:function(el){
@@ -430,7 +430,7 @@ data = [
 
               # Append content to body
               $('body').ojAppend ->
-                div 'Fades in when inserted!',
+                p 'Fades in when inserted!',
 
                   # Trigger when inserted
                   insert: (el) ->

@@ -4,7 +4,7 @@
 path = require 'path'
 fs = require 'fs'
 Backbone = require 'backbone'
-oj = require '../src/oj.js'
+oj = require '../oj.js'
 
 contains = (control, args...) ->
   html = oj.toHTML control

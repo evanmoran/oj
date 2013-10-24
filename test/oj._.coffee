@@ -1,7 +1,7 @@
 path = require 'path'
 fs = require 'fs'
 
-oj = require '../src/oj.js'
+oj = require '../oj.js'
 Backbone = require 'backbone'
 _ = oj.__
 

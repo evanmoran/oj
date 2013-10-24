@@ -6,7 +6,7 @@ path = require 'path'
 fs = require 'fs'
 async = require 'async'
 
-oj = require '../src/oj.js'
+oj = require '../oj.js'
 
 cssTest = (ojml, css, options) ->
   options = _.defaults {}, options,
@@ -51,6 +51,26 @@ describe 'oj.compile.css', ->
   it 'exists', ->
     expect(oj.compile).to.exist
     oj.compile.should.be.a 'function'
+
+  it 'oj.toCSS', ->
+    ojml = oj.css
+      body:
+        color: 'red'
+      '.selector':
+        border: '1px solid black'
+    result = oj.toCSS(ojml)
+    expected = "body {\n\tcolor:red;\n}\n.selector {\n\tborder:1px solid black;\n}\n"
+    expect(result).to.equal expected
+
+  it 'oj.toCSS (minified)', ->
+    ojml = oj.css
+      body:
+        color: 'red'
+      '.selector':
+        border: '1px solid black'
+    result = oj.toCSS({minify:true}, ojml)
+    expected = 'body{color:red}.selector{border:1px solid black}'
+    expect(result).to.equal expected
 
   it 'span without css', ->
     ojml = oj.span 'test'

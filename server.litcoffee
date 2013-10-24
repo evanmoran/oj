@@ -29,7 +29,7 @@ Export Server Side OJ
 
   Include the client library in this module
 
-    oj = require '../src/oj'
+    oj = require '../oj'
 
   Indicate it is server side
 
@@ -166,13 +166,18 @@ Define command
     oj.command = (options = {}) ->
 
       verbosity = options.verbose || 1
-      options.watch ?= false
+      options.watch ?= false    # Watch for changes and recompile
+      options.write ?= true     # Output to a file
+      options.recurse ?= true   # Recurse in sub directories
+      options.include ?= []     # Include modules
+      options.exclude ?= []     # Exclude modules
 
-      # Build to a file
-      options.write ?= true
+      # Resolve directory args to full path and append / to ensure path prefixes refer to directories
+      options.output = (path.resolve process.cwd(), (options.output ? www)) + '/'
+      options.modulesDir = (path.resolve process.cwd(), (options.modulesDir ? './modules')) + '/'
 
-      # Resolve output dir
-      options.output = path.resolve process.cwd(), (options.output ? www)
+      # cssDir is optional
+      options.cssDir ?= (path.resolve process.cwd(), (options.cssDir ? './styles')) + '/'
 
       # Verify output directory isn't the root directory
       if options.output == process.cwd()
@@ -299,17 +304,24 @@ compileFile
       # Default some values
       isMinify = options.minify ? false
 
-      includedModules = options.modules or []
+      includedModules = options.include or []
       includedModules = includedModules.concat ['oj', 'jquery']
 
       rootDir = options.root or path.dirname filePath
       fileDir = path.dirname filePath
+
+      # Directory specifications win over options every time
       if _startsWith filePath, options.modulesDir
-        options.onlyModules = true
-      else if _startsWith filePath, options.stylesDir
-        options.onlyCss = true
-      else if _startsWith filePath, options.pagesDir
-        options.onlyPages = true
+        options.modules = true
+        options.css = false
+        options.html = false
+        options.js = false
+        options.onlyCss = false
+      else if _startsWith filePath, options.cssDir
+        options.modules = false
+        options.css = true
+        options.html = false
+        options.js = false
 
       throw new Error('oj: root is not a directory') unless isDirectory rootDir
 
@@ -469,7 +481,7 @@ compileFile
       cache = info.cache
       cacheLength = _length(cache.files) + _length(cache.modules) + _length(cache.native)
       verbose 3, "serializing #{filePath} (#{cacheLength} files)"
-      scriptHtml = _requireCacheToHtml cache, filePath, options.minify ? false
+      scriptHtml = _requireCacheToHtml cache, filePath, options.minify ? false, options
 
       if !results.tags.html
         error "validation error #{filePath}: <html> tag is missing"
@@ -930,7 +942,7 @@ String helpers
 
     # startsWith
     _startsWith = (strInput, strStart) ->
-      throw 'startsWith: argument error' unless (_.isString strInput) and (_.isString strStart)
+      throw new Error('startsWith: argument error') unless (_.isString strInput) and (_.isString strStart)
       strInput.length >= strStart.length and strInput.lastIndexOf(strStart, 0) == 0
 
     _escapeSingleQuotes = (str) ->
@@ -1111,7 +1123,7 @@ Requiring
       # To ourselves oj is local but to them oj is native.
       # Removing this cache record ensures only the native copy
       # is saved to the client.
-      delete cache.files[require.resolve '../src/oj.js']
+      delete cache.files[require.resolve '../oj.js']
 
       return cache
 
@@ -1161,7 +1173,7 @@ Requiring
 
     # ojModuleCode: Get code for oj
     _ojModuleCode = (isMinify) ->
-      code = readFileSync path.join __dirname, "../src/oj.js"
+      code = readFileSync path.join __dirname, "../oj.js"
       oj._minifyJS code, filename:'oj', minify:isMinify
 
     # nativeModuleCode: Get code for native module
@@ -1179,7 +1191,7 @@ Code generation
     _requireCacheToHtml = (cache, filePath, isMinify, options) ->
       return """
         <script>
-          #{_requireCacheToJS cache, filePath, isMinify, options}
+        #{_requireCacheToJS cache, filePath, isMinify, options}
         </script>
       """
 
@@ -1187,6 +1199,8 @@ Code generation
     # Output html from cache and file
     # options: onlyHtml, onlyCss, onlyModules, onlyPages
     _requireCacheToJS = (cache, filePath, isMinify, options) ->
+      newline = if isMinify then '' else '\n'
+
       # Example:
       #   filePath: /User/name/project/www/file.oj
       #   commonDir: /User/name/project
@@ -1213,7 +1227,7 @@ Code generation
       _nativeModuleToString = (moduleName, code) ->
         # Use relative path to hide server directory info
         moduleName = _escapeSingleQuotes moduleName
-        """F['#{moduleName}'] = (function(module,exports){(function(process,global,__dirname,__filename){#{code}})(P,G,'/','#{moduleName}');});\n"""
+        """F['#{moduleName}'] = (function(module,exports){(function(process,global,__dirname,__filename){#{newline}#{code}})(P,G,'/','#{moduleName}');});\n"""
 
       # Maps filePath -> code
       _fileToString = (filePath, code) ->
@@ -1221,7 +1235,7 @@ Code generation
         filePath = relativePathWithEscaping filePath, commonDir
         fileDir = path.dirname filePath
         fileName = path.basename filePath
-        """F['#{filePath}'] = (function(module,exports){(function(require,process,global,__dirname,__filename){#{code}})(RR('#{filePath}'),P,G,'#{fileDir}','#{fileName}');});\n"""
+        """F['#{filePath}'] = (function(module,exports){(function(require,process,global,__dirname,__filename){#{newline}#{code}})(RR('#{filePath}'),P,G,'#{fileDir}','#{fileName}');});#{newline}\n"""
 
       # Client side code to include modules
       _modules = ""
@@ -1297,33 +1311,45 @@ Code generation
         }
       """, minify:isMinify
 
-      return """
-    // Generated with oj v#{oj.version}
-    ;(function(){
-    // Define modules M, files F, require R
-    var M = {}, F = {}, R = {}, P, G, RR;
+      # Begin function
+      js = """
+        // Generated with oj v#{oj.version}
+        ;(function(){
+      """
 
-    #{_modules}
-    #{_files}
-    #{_native}
-    // Define node env with require creator RR, process P, and global G
-    P = {cwd: function(){return '/'}}
-    G = {process: P,Buffer: {}}
-    RR = function(f){
-      var o = function(m){return run(find(m, f))}
-      o.P = P; o.G = G; o.F = F; o.M = M, o.RR = RR
-      return o
-      #{_run}
-      #{_find}
-    };
+      # Add modules if we want to include them
+      if !options.onlyCss and !options.onlyHtml and !options.onlyPages
+        js += """
+          var M = {}, F = {}, R = {}, P, G, RR;
 
-    // Create require and oj
-    require = RR('#{path.join clientDir, clientFile}')
-    oj = require('oj')
-    oj.load('#{clientFile}')
+          // Define modules M
+          #{_modules}
+          // Define files F
+          #{_files}
+          #{_native}
+          // Define node environment: process P, global G and require factory RR
+          P = {cwd: function(){return '/'}}
+          G = {process: P,Buffer: {}}
+          RR = function(f){
+            var o = function(m){return run(find(m, f))}
+            o.P = P; o.G = G; o.F = F; o.M = M, o.RR = RR
+            return o
+            #{_run}
+            #{_find}
+          };\n\n
+        """
 
-    }).call(this);
-    """
+      if true
+        js += """
+          // Define require and oj
+          require = RR('#{path.join clientDir, clientFile}')
+          oj = require('oj')
+          oj.load('#{clientFile}')
+        """
+      # End function
+      js += """
+        }).call(this);
+      """
 
 Express
 ==============================================================================

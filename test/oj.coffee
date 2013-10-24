@@ -7,7 +7,7 @@ fileModifiedTime = (filepath, cb) ->
     return cb(err, data) if err
     cb(err, data.mtime)
 
-oj = require '../src/oj.js'
+oj = require '../oj.js'
 
 describe 'oj', ->
   dir = process.cwd()

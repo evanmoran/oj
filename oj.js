@@ -1,4 +1,10 @@
-// oj
+//
+// oj.js v0.2.2
+// ojjs.org
+//
+// Copyright 2013, Evan Moran
+// Released under the MIT License
+//
 // ===================================================================
 // Unified templating for the people. Thirsty people.
 

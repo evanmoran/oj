@@ -3,7 +3,7 @@
 
 path = require 'path'
 fs = require 'fs'
-oj = require '../src/oj.js'
+oj = require '../oj.js'
 
 describe 'oj.CheckBox', ->
   it 'exists', ->

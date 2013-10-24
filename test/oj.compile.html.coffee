@@ -6,7 +6,7 @@ path = require 'path'
 fs = require 'fs'
 async = require 'async'
 
-oj = require '../src/oj.js'
+oj = require '../oj.js'
 
 bodyWrap = (str = '') -> "<body>#{str}</body>"
 headEmpty = '<head></head>'
@@ -49,6 +49,18 @@ describe 'oj.compile.html', ->
   it 'exists', ->
     expect(oj.compile).to.exist
     oj.compile.should.be.a 'function'
+
+  it 'oj.toHTML (not minified)'
+
+  it 'oj.toHTML (minified)', ->
+    ojml = oj.html ->
+      oj.head ->
+        oj.script type: 'text/javascript', src: 'script.js'
+      oj.body ->
+        oj.div 'a1'
+    result = oj.toHTML({minify:true}, ojml)
+    expected = '<html><head><script src="script.js" type="text/javascript"></script></head><body><div>a1</div></body></html>'
+    expect(result).to.equal expected
 
   it 'div', ->
     ojml = oj.div 'test'

@@ -26,7 +26,7 @@ PAGES_DIR = path.join CAKE_DIR, 'pages'
 GENERATED_DIR = path.join CAKE_DIR, 'generated'
 VERSIONS_DIR = path.join CAKE_DIR, 'versions'
 DOCS_DIR = path.join CAKE_DIR, 'docs'
-SRC_DIR = path.join CAKE_DIR, 'src'
+SRC_DIR = path.join CAKE_DIR, './'
 GIT_DIR = path.join CAKE_DIR, '..'
 CDN_LIBS_DIR = path.join ROOT_DIR, 'cdnjs', 'ajax', 'libs'
 
@@ -37,7 +37,7 @@ LIBS =
   'oj':
     packageDir:path.join ROOT_DIR, 'oj'
     inputFile:path.join SRC_DIR, 'oj.js'
-    removeFirstLine: true
+    noReleaseText: true
     copyrightName: 'Evan Moran'
     docsUrl:'ojjs.org'
     outputDirs: [
@@ -119,17 +119,15 @@ task "build", "Build everything", ->
   invoke "version:libs"
 
 task "build:js", "Compile coffee script files", ->
-  # launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'src/oj.litcoffee']
-  launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'src/server.litcoffee']
-  launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'src/command.litcoffee']
+  launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'server.litcoffee']
+  launch 'coffee', ['--compile', '-o', GENERATED_DIR, 'command.litcoffee']
 
 task "build:js:watch", "Watch coffee script files", ->
-  # launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'src/oj.litcoffee']
-  launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'src/server.litcoffee']
-  launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'src/command.litcoffee']
+  launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'server.litcoffee']
+  launch 'coffee', ['--compile', '--watch', '-o', GENERATED_DIR, 'command.litcoffee']
 
   # For convenience update the site scripts/oj.js to force try editor to latest version of oj
-  # launch 'coffee', ['--compile', '--watch', '-o', WWW_SCRIPTS_DIR, 'src/oj.litcoffee']
+  # launch 'coffee', ['--compile', '--watch', '-o', WWW_SCRIPTS_DIR, 'oj.litcoffee']
 
 # Version, minify, prepend license comment, and output to multiple directories
 versionAndMinifyLib = (libName, libData) ->
@@ -160,7 +158,7 @@ versionAndMinifyLib = (libName, libData) ->
   libData.minifiedCode = uglify libData.code
 
   # Add release and minified release comments
-  releaseText = """
+  releaseText = if libData.noReleaseText then "" else """
     //
     // #{libData.fileName} v#{libData.version}
     // #{libData.docsUrl}
@@ -229,6 +227,9 @@ task "version:libs", "All release text, minifiy and copy oj and plugins", ->
 
   for libName, libData of LIBS
     versionAndMinifyLib libName, libData
+
+  # Then copy oj.min.js to root for bower
+  launch 'cp', [(path.join VERSIONS_DIR, 'latest', 'oj.min.js'), CAKE_DIR]
 
 task "copy:examples", "Copy example projects to www", ->
   info 'Copying examples'
