@@ -38,7 +38,7 @@
 
   oj.version = '0.2.2'
 
-  oj.isClient = !(typeof process !== "undefined" && process !== null ? process.versions != null ? process.versions.node : 0 : 0)
+  oj.isClient = !(typeof process !== _udf && process !== null ? process.versions != null ? process.versions.node : 0 : 0)
 
   // Detect jQuery globally or in required module
   if (typeof $ != _udf)
@@ -1021,7 +1021,7 @@
 
       // Compile to dom if requested
       // Add dom element with attributes
-      if (options.dom && (typeof document !== "undefined" && document !== null)){
+      if (options.dom && (typeof document !== _udf && document !== null)){
 
         // Create element
         el = document.createElement(tag)
