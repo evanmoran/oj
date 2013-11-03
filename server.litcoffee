@@ -13,6 +13,7 @@ Express templating engine and middleware
 
     _ = require 'underscore'
     coffee = require 'coffee-script'
+    url = require 'url'
     mkdirp = require 'mkdirp'
     csso = require 'csso'
     uglifyjs = require 'uglify-js'
@@ -90,6 +91,15 @@ Register require.extension for .oj and .ojc file types
         catch eJS
           eJS.message = wrapJSMessage eJS.message, filepath
           throw eJS
+
+  Compile .js files with absolute paths
+
+      _extensionJS = require.extensions['.js']
+      require.extensions['.js'] = (module, filePath) ->
+        # Ensure absolute paths are found correctly for oj file types
+        if filePath[0] == '/' && filePath != module.filename
+          filePath = module.filename
+        _extensionJS module, filePath
 
   Compile .ojc files as coffee-script
 
@@ -185,7 +195,9 @@ Define command
   Resolve directory args to full path and append / to ensure path prefixes refer to directories
 
       options.output = (path.resolve process.cwd(), (options.output ? www)) + '/'
-      options.modulesDir = (path.resolve process.cwd(), (options.modulesDir ? './modules')) + '/'
+
+      if options.modulesDir
+        options.modulesDir = (path.resolve process.cwd(), (options.modulesDir ? './modules')) + '/'
 
   cssDir is optional
 
@@ -227,9 +239,6 @@ compileDir
     compileDir = (dirPath, options = {}, cb = ->) ->
       # Handle recursion and gather files to watch and compile
       lsWatch dirPath, options, (err, files, dirs) ->
-        console.log "lsWATCH CB CALLED"
-        console.log "files: ", files
-        console.log "dirs: ", dirs
         # Watch all directories if option is set
         if options.watch
           for d in dirs
@@ -308,6 +317,7 @@ compileFile
 ------------------------------------------------------------------------------
 
     compileFile = (filePath, includeDir, options = {}, cb = ->) ->
+
       options = _.clone options
 
       # Time this method
@@ -330,13 +340,12 @@ compileFile
       fileDir = path.dirname filePath
 
       # Directory specifications win over options every time
-      if _startsWith filePath, options.modulesDir
+      if options.modulesDir and _startsWith filePath, options.modulesDir
         options.modules = true
         options.css = false
         options.html = false
         options.js = false
       else if options.cssDir and _startsWith filePath, options.cssDir
-        console.log "css dir found"
         options.modules = false
         options.css = true
         options.html = false
@@ -367,9 +376,10 @@ compileFile
       _saveRequireCache()
 
       # Remove excluded
-      for ex in options.exclude
-        verbose 3, "excluding #{ex}"
-      includedModules = _.difference includedModules, options.exclude
+      if _.isArray options.exclude
+        for ex in options.exclude
+          verbose 3, "excluding #{ex}"
+        includedModules = _.difference includedModules, options.exclude
 
       # Catch messages thrown by requiring
       try
@@ -733,7 +743,18 @@ renderPath
 Render a file as a view. Used by express plugin
 
     renderPath = (path, options, cb) ->
-      compilePath(path, {write:false, minify:false}, cb)
+
+      _.defaults options,
+        minify:options.minify
+        write:false
+        watch:false
+        recurse:true
+        modules:false
+        html: true
+        css: true
+        js: true
+
+      compilePath path, options, cb
 
 Helpers
 ===============================================================================
@@ -896,13 +917,11 @@ ls: List directories and files from paths asynchronously
 
       fs.stat fullPath, (err, stat) ->
         return cb err if err
-        # File calculated
-        --acc.pending
 
         # File found
         if stat.isFile() and options.filterFile(fullPath)
           acc.files.push fullPath
-          return breakIfDone()
+          return breakIfDone --acc.pending
 
         # Directory found
         else if stat.isDirectory() and options.filterDir(fullPath)
@@ -912,7 +931,7 @@ ls: List directories and files from paths asynchronously
             return cb errReadDir if errReadDir
 
             if !paths or paths.length == 0
-              return breakIfDone()
+              return breakIfDone --acc.pending
 
             # Directory has contents
             acc.pending += paths.length
@@ -926,8 +945,10 @@ ls: List directories and files from paths asynchronously
               for fullPath_ in paths
                 ls fullPath_, options_, cb, acc
 
+            return breakIfDone --acc.pending
+
         else
-          return breakIfDone()
+          return breakIfDone --acc.pending
 
       return
 
@@ -1101,7 +1122,6 @@ Requiring
 
     _buildRequireCache = (modules, cache, isMinify) ->
       for fileLocation, data of modules
-        console.log "fileLocation: ", fileLocation
 
         # Read code if it is missing
         if not data.code?
@@ -1122,7 +1142,6 @@ Requiring
             modulesDir: prefix, moduleName:  moduleName, moduleMain: moduleMain, moduleParentPath: module.id
 
         # Save to cache.modules
-        console.log "pathComponents: ", pathComponents
         if pathComponents
           if not cache.modules[pathComponents.modulesDir]
             cache.modules[pathComponents.modulesDir] = {}
@@ -1148,15 +1167,10 @@ Requiring
       cache.moduleFiles = {}
       cache.pageFiles = {}
       for filePath, code of cache.files
-        console.log "filePath: ", filePath
         if filePath.indexOf("/node_modules/") != -1
           cache.moduleFiles[filePath] = code
         else
           cache.pageFiles[filePath] = code
-      console.log "\n\n"
-      console.log "_.keys cache.moduleFiles: ", _.keys cache.moduleFiles
-      console.log "_.keys cache.pageFiles: ", _.keys cache.pageFiles
-      console.log "cache.modules: ", cache.modules
       return cache
 
     # ###_buildFileCache: build file cache
@@ -1395,7 +1409,120 @@ Code generation
         }).call(this);
       """
 
-Express
-==============================================================================
+Express View Engine
+------------------------------------------------------------------------------
 
     oj.__express = renderPath
+
+Express Middleware
+------------------------------------------------------------------------------
+required options:
+  publicDir: Public directory statically hosted by node
+  modulesDirSrc: Directory to build module files from
+  modulesDirDest: Directory to build module files to (should be public)
+
+    oj.middleware = (options) ->
+
+  Determine the url path relative the public directory
+
+      urlModulesDir = '/' + path.relative(options.publicDir, options.modulesDirDest)
+
+  Output connect/express middleware
+
+      (req,res,next) ->
+
+  Short circuit if this isn't a GET or HEAD request
+
+        if 'GET' != req.method && 'HEAD' != req.method
+          return next()
+
+  Get the path out of the url and figure out where to output the file
+
+        urlPath = url.parse(req.url).pathname
+
+  The path starts with  module dir and ends with .js
+
+        if /\.js$/.test(urlPath) and _startsWith(urlPath, urlModulesDir)
+
+          fileRelativePath = path.relative urlModulesDir, urlPath
+          outputFilePath = path.join options.modulesDirDest, fileRelativePath
+          outputFileDir = path.dirname outputFilePath
+
+          baseFileName = path.basename urlPath, '.js'
+
+          findFile options.modulesDirSrc, baseFileName, ['.oj', '.ojc'], (err, inputFilePath) ->
+
+  Found the file so lets get to compiling
+
+            if inputFilePath
+
+  Compile only if the input file is newer then the output file or the force option is set
+
+              if options.force
+                _middlewareCompileModule()
+
+              else
+                fileIsOutdated outputFilePath, inputFilePath, (err, idOutdated) ->
+                  if idOutdated
+                    _middlewareCompileModule()
+                  else
+                    next()
+                  return
+
+  Compile using internal compilePath function that will generate the output to a directory
+
+              _middlewareCompileModule = ->
+                try
+                  compilePath inputFilePath,
+                    output: outputFileDir
+                    force: options.force ? false
+                    minify: options.minify ? true
+                    html:0, css:0, js:0, write:1, modules:1, ->
+                      console.log "file is compiled: server.litcoffee:1490"
+                      # File is compiled so let static middleware handle it
+                      next()
+                catch e
+                  next()
+
+            else
+              next()
+
+  The path doesn't match so just pass it on
+
+        else
+          next()
+
+    # Returns true if dest is older then source
+    fileIsOutdated = (fileDest, fileSource, cb) ->
+      fs.stat fileSource, (errSource, statSource) ->
+        return cb(errSource, null) if errSource
+        fs.stat fileDest, (errDest, statDest) ->
+          if !errDest || errDest.code == 'ENOENT'
+            cb(null, !!errDest || statSource.mtime.getTime() > statDest.mtime.getTime())
+          else
+            cb(errDest, null)
+      return
+
+    # Find file with given extensions in directory
+    findFile = (dir, baseFileName, extensions, cb) ->
+        if !dir or !baseFileName or !extensions or !cb
+          return cb('findFile: invalid input')
+
+        # Fail if can't find file
+        ext = extensions.shift()
+        fileName = baseFileName + ext
+        do (dir, fileName) ->
+          fs.stat path.join(dir, fileName), (err, statInfo) ->
+            if statInfo and statInfo.isFile()
+              return cb null, path.join(dir, fileName)
+            else if extensions.length > 0
+              return findFile dir, baseFileName, extensions, cb
+            else
+              return cb null, null
+
+
+
+
+
+
+
