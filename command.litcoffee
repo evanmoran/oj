@@ -21,12 +21,13 @@ command.coffee
         .option('-e, --exclude <modules>', 'List of modules to exclude (jquery,oj,...)', splitAndTrim, [])
         # .option('--include [modules]', 'List of modules to include (underscore,backbone,...)', splitAndTrim, [])
 
-        .option('--html', 'Include html in the output', false)
-        .option('--css', 'Include css in the output', false)
-        .option('--js', 'Include page js in the output', false)
-        .option('--modules', 'Include modules js in output', false)
+        .option('--html', 'Include html in the output (default: included)')
+        .option('--css', 'Include css in the output (default: included)')
+        .option('--js', 'Include page js in the output (default: included)')
+        .option('--modules', 'Include modules in output (default: included)')
+        .option('--no-modules', 'Exclude modules in output (default: included)')
 
-        .option('--modules-dir <dir>', 'Compile files in this dir with --modules (default: ./modules)', path.join process.cwd(), 'modules')
+        .option('--modules-dir <dir>', 'Compile files in this dir with --modules (default: ./modules)', null)
         .option('--css-dir <dir>', 'Compile files in this dir with --css (default: unset)', null)
 
   Custom help
@@ -55,8 +56,8 @@ command.coffee
 
                 oj file.oj --css
 
-            Compile modules to .js files in ./modules directory. Omit modules everywhere else.
-            (Remember to <script> link your module.js files!)
+            Compile files in ./modules to a stand alone module js file. Omit modules everywhere else.
+            (Important: Remember to <script> link your module.js files!)
 
                 oj . --no-modules --module-dir ./modules
 
@@ -65,6 +66,13 @@ command.coffee
   Parse args and run command
 
       commander.parse(process.argv)
+
+  Hand parse boolean arguments because Commander sucks at them
+
+      commander.html = (process.argv.indexOf '--no-html') == -1
+      commander.css = (process.argv.indexOf '--no-css') == -1
+      commander.js = (process.argv.indexOf '--no-js') == -1
+      commander.modules = (process.argv.indexOf '--no-modules') == -1
 
   No arguments shows usage
 

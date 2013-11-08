@@ -28,10 +28,15 @@ repo: github.com/ojjs/oj
 Change Log:
 --------------------------------------------------------------------------------
 
+### 0.3.0
+* Express is supported with separate module compiling middleware
+* Yeoman is supported. Install with `npm install -g generator oj` and then `yo oj`
+* CLI supports --modules, --js, --css and --html to allow unified or separate compiling in any combination
+
 ### 0.2.2
 
-* Added AMD support for RequireJS
-* Added Bower support
+* Added AMD support (for RequireJS)
+* Added Bower support (a client side package manager)
 * Fixing oj.toCSS to correctly accept minify option
 * Fixing oj.copyProperty to handle null definitions
 

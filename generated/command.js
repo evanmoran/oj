@@ -11,12 +11,19 @@
   module.exports = function() {
     var options;
 
-    commander.version(oj.version).usage('[options] <file> <dir> ...').option('-m, --minify', 'Turn on minification (default: false)', false).option('-w, --watch', 'Turn on watch mode (default: off)', false).option('-o, --output <dir>', 'Directory to output all files to (default: ./www)', path.join(process.cwd(), 'www')).option('-v, --verbose <level>', 'Turn on verbose level 0-3 (default: 1)', 1).option('-e, --exclude <modules>', 'List of modules to exclude (jquery,oj,...)', splitAndTrim, []).option('--all', 'Include all content: --html --css --js --modules (default: on)', true).option('--html', 'Include html in the output (default: off)', false).option('--css', 'Include css in the output (default: off)', false).option('--js', 'Include page js in the output (default: off)', false).option('--modules', 'Include modules js in output(default: off)', false).option('--no-modules', 'Include all but modules js: --html --css --js (default: off)', false).option('--modules-dir <dir>', 'Compile files in this dir with --modules (default: ./modules)', path.join(process.cwd(), 'modules')).option('--css-dir <dir>', 'Compile files in this dir with --css (default: unset)', null).parse(process.argv);
+    commander.version(oj.version).usage('[options] <file> <dir> ...').option('-m, --minify', 'Turn on minification (default: off)', false).option('-w, --watch', 'Turn on watch mode (default: off)', false).option('-o, --output <dir>', 'Directory to output all files to (default: ./www)', path.join(process.cwd(), 'www')).option('-v, --verbose <level>', 'Turn on verbose level 0-3 (default: 1)', 1).option('-e, --exclude <modules>', 'List of modules to exclude (jquery,oj,...)', splitAndTrim, []).option('--html', 'Include html in the output (default: included)').option('--css', 'Include css in the output (default: included)').option('--js', 'Include page js in the output (default: included)').option('--modules', 'Include modules in output (default: included)').option('--no-modules', 'Exclude modules in output (default: included)').option('--modules-dir <dir>', 'Compile files in this dir with --modules (default: ./modules)', null).option('--css-dir <dir>', 'Compile files in this dir with --css (default: unset)', null);
+    commander.on('--help', function() {
+      return console.log("Examples:\n\n  Compile a single file and watch for changes\n\n      oj file_name.oj --watch\n\n  Compile current directory with minification\n\n      oj . --minify\n\n  Compile the included modules to a seperate .js file (no html, css, js)\n\n      oj file.oj --modules\n\n  Compile to just html (no js, css or included modules)\n\n      oj file.oj --html\n\n  Compile to just .css file (no js, html or included modules)\n\n      oj file.oj --css\n\n  Compile files in ./modules to a stand alone module js file. Omit modules everywhere else.\n  (Important: Remember to <script> link your module.js files!)\n\n      oj . --no-modules --module-dir ./modules\n".replace(/^(.*)/gm, "  $1"));
+    });
+    commander.parse(process.argv);
+    commander.html = (process.argv.indexOf('--no-html')) === -1;
+    commander.css = (process.argv.indexOf('--no-css')) === -1;
+    commander.js = (process.argv.indexOf('--no-js')) === -1;
+    commander.modules = (process.argv.indexOf('--no-modules')) === -1;
     if (!_.isArray(commander.args) || commander.args.length === 0) {
       usage();
     }
-    options = _.pick(commander, 'args', 'minify', 'output', 'modules', 'verbose', 'watch', 'exclude', 'html', 'css', 'js', 'modules', 'noModules', 'modulesDir', 'cssDir');
-    options.recurse = !commander.noRecurse;
+    options = _.pick(commander, 'args', 'minify', 'output', 'verbose', 'watch', 'exclude', 'html', 'css', 'js', 'modules', 'modulesDir', 'cssDir');
     oj.command(options);
   };
 

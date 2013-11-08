@@ -77,7 +77,7 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
             
             <div class="content"><div class='highlight'><pre>  commander.version(oj.version)
     .usage(<span class="string">'[options] &lt;file&gt; &lt;dir&gt; ...'</span>)
-    .option(<span class="string">'-m, --minify'</span>, <span class="string">'Turn on minification (default: false)'</span>, <span class="literal">false</span>)
+    .option(<span class="string">'-m, --minify'</span>, <span class="string">'Turn on minification (default: off)'</span>, <span class="literal">false</span>)
     .option(<span class="string">'-w, --watch'</span>, <span class="string">'Turn on watch mode (default: off)'</span>, <span class="literal">false</span>)
     .option(<span class="string">'-o, --output &lt;dir&gt;'</span>, <span class="string">'Directory to output all files to (default: ./www)'</span>, path.join process.cwd(), <span class="string">'www'</span>)
     .option(<span class="string">'-v, --verbose &lt;level&gt;'</span>, <span class="string">'Turn on verbose level 0-3 (default: 1)'</span>, <span class="number">1</span>)
@@ -96,16 +96,14 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    .option(<span class="string">'--all'</span>, <span class="string">'Include all content: --html --css --js --modules (default: on)'</span>, <span class="literal">true</span>)
-    .option(<span class="string">'--html'</span>, <span class="string">'Include html in the output (default: off)'</span>, <span class="literal">false</span>)
-    .option(<span class="string">'--css'</span>, <span class="string">'Include css in the output (default: off)'</span>, <span class="literal">false</span>)
-    .option(<span class="string">'--js'</span>, <span class="string">'Include page js in the output (default: off)'</span>, <span class="literal">false</span>)
-    .option(<span class="string">'--modules'</span>, <span class="string">'Include modules js in output(default: off)'</span>, <span class="literal">false</span>)
-    .option(<span class="string">'--no-modules'</span>, <span class="string">'Include all but modules js: --html --css --js (default: off)'</span>, <span class="literal">false</span>)
+            <div class="content"><div class='highlight'><pre>    .option(<span class="string">'--html'</span>, <span class="string">'Include html in the output (default: included)'</span>)
+    .option(<span class="string">'--css'</span>, <span class="string">'Include css in the output (default: included)'</span>)
+    .option(<span class="string">'--js'</span>, <span class="string">'Include page js in the output (default: included)'</span>)
+    .option(<span class="string">'--modules'</span>, <span class="string">'Include modules in output (default: included)'</span>)
+    .option(<span class="string">'--no-modules'</span>, <span class="string">'Exclude modules in output (default: included)'</span>)
 
-    .option(<span class="string">'--modules-dir &lt;dir&gt;'</span>, <span class="string">'Compile files in this dir with --modules (default: ./modules)'</span>, path.join process.cwd(), <span class="string">'modules'</span>)
-    .option(<span class="string">'--css-dir &lt;dir&gt;'</span>, <span class="string">'Compile files in this dir with --css (default: unset)'</span>, <span class="literal">null</span>)
-    .parse(process.argv)</pre></div></div>
+    .option(<span class="string">'--modules-dir &lt;dir&gt;'</span>, <span class="string">'Compile files in this dir with --modules (default: ./modules)'</span>, <span class="literal">null</span>)
+    .option(<span class="string">'--css-dir &lt;dir&gt;'</span>, <span class="string">'Compile files in this dir with --css (default: unset)'</span>, <span class="literal">null</span>)</pre></div></div>
             
         </li>
         
@@ -116,16 +114,40 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p>  No arguments shows usage</p>
+              <p>  Custom help</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> <span class="keyword">not</span> _.isArray(commander.args) <span class="keyword">or</span> commander.args.length == <span class="number">0</span>
-    usage()
+            <div class="content"><div class='highlight'><pre>  commander.<span class="literal">on</span> <span class="string">'--help'</span>, -&gt;
+    console.log <span class="string">"""
+      Examples:
 
-  options = _.pick commander, <span class="string">'args'</span>, <span class="string">'minify'</span>, <span class="string">'output'</span>, <span class="string">'modules'</span>, <span class="string">'verbose'</span>, <span class="string">'watch'</span>, <span class="string">'exclude'</span>, <span class="string">'html'</span>, <span class="string">'css'</span>, <span class="string">'js'</span>, <span class="string">'modules'</span>, <span class="string">'noModules'</span>, <span class="string">'modulesDir'</span>, <span class="string">'cssDir'</span>
+        Compile a single file and watch for changes
 
-  options.recurse = !commander.noRecurse</pre></div></div>
+            oj file_name.oj --watch
+
+        Compile current directory with minification
+
+            oj . --minify
+
+        Compile the included modules to a seperate .js file (no html, css, js)
+
+            oj file.oj --modules
+
+        Compile to just html (no js, css or included modules)
+
+            oj file.oj --html
+
+        Compile to just .css file (no js, html or included modules)
+
+            oj file.oj --css
+
+        Compile files in ./modules to a stand alone module js file. Omit modules everywhere else.
+        (Important: Remember to &lt;script&gt; link your module.js files!)
+
+            oj . --no-modules --module-dir ./modules
+
+    """</span>.replace(<span class="regexp">/^(.*)/gm</span>, <span class="string">"  $1"</span>) <span class="comment"># indent 2 spaces</span></pre></div></div>
             
         </li>
         
@@ -135,6 +157,57 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>  Parse args and run command</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  commander.parse(process.argv)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>  Hand parse boolean arguments because Commander sucks at them</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  commander.html = (process.argv.indexOf <span class="string">'--no-html'</span>) == -<span class="number">1</span>
+  commander.css = (process.argv.indexOf <span class="string">'--no-css'</span>) == -<span class="number">1</span>
+  commander.js = (process.argv.indexOf <span class="string">'--no-js'</span>) == -<span class="number">1</span>
+  commander.modules = (process.argv.indexOf <span class="string">'--no-modules'</span>) == -<span class="number">1</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>  No arguments shows usage</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>  <span class="keyword">if</span> <span class="keyword">not</span> _.isArray(commander.args) <span class="keyword">or</span> commander.args.length == <span class="number">0</span>
+    usage()
+
+  options = _.pick commander, <span class="string">'args'</span>, <span class="string">'minify'</span>, <span class="string">'output'</span>, <span class="string">'verbose'</span>, <span class="string">'watch'</span>, <span class="string">'exclude'</span>, <span class="string">'html'</span>, <span class="string">'css'</span>, <span class="string">'js'</span>, <span class="string">'modules'</span>, <span class="string">'modulesDir'</span>, <span class="string">'cssDir'</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
               </div>
               <p>  Execute command through oj module api</p>
 
@@ -146,11 +219,11 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
         </li>
         
         
-        <li id="section-8">
+        <li id="section-11">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
+                <a class="pilcrow" href="#section-11">&#182;</a>
               </div>
               <p>  Helper method to show usage</p>
 
@@ -163,11 +236,11 @@ module.<span class="function"><span class="title">exports</span></span> = -&gt;<
         </li>
         
         
-        <li id="section-9">
+        <li id="section-12">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-12">&#182;</a>
               </div>
               <p>  Helper method to split lists on comma</p>
 

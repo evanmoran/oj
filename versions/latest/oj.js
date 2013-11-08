@@ -1,5 +1,5 @@
 //
-// oj.js v0.2.2
+// oj.js v0.3.0
 // ojjs.org
 //
 // Copyright 2013, Evan Moran
@@ -16,11 +16,10 @@
     module.exports = factory(root, $)
 
   // AMD export for RequireJS
-  } else if (typeof define === 'function' && define.amd) {
-    define(['jquery'], function($){
-      return factory(root, $)
-    })
   }
+
+  else if (typeof define === 'function' && define.amd)
+    define(['jquery'], function($){return factory(root, $) })
 
   // Global export for client side
   else
@@ -42,7 +41,7 @@
     return oj.tag.apply(this, ['oj'].concat(slice.call(arguments)).concat([{__quiet__:1}]))
   }
 
-  oj.version = '0.2.2'
+  oj.version = '0.3.0'
 
   oj.isClient = !(typeof process !== _udf && process !== null ? process.versions != null ? process.versions.node : 0 : 0)
 
@@ -54,10 +53,12 @@
   oj.oj = oj
 
   // oj.load: load the page specified generating necessary html, css, and client side events
-  oj.load = function(page){
+  oj.load = function(page, data){
     // Defer dom manipulation until the page is ready
     return oj.$(function(){
-      oj.$.ojBody(require(page))
+      // Load through require and passing through template data
+      var ojml = function(){require(page).call(data, data)}
+      oj.$.ojBody(ojml)
 
       // Trigger events bound through onload
       return oj.onload()
@@ -572,6 +573,7 @@
     acc.dom = options.dom && (typeof document !== "undefined" && document !== null) ? document.createElement('OJ') : null
     acc.css = options.css || options.cssMap ? {} : null
     acc.indent = ''
+    acc.data = options.data
 
     // Accumulate insert events per element
     acc.inserts = []
@@ -939,7 +941,8 @@
     } else if (oj.isFunction(any)){
 
       // Wrap function call to allow full oj generation within any
-      _compileAny(oj(any), options)
+      var data = options.data || {};
+      _compileAny(oj(function(){any.call(data, data)}), options);
 
     // Date
     } else if (oj.isDate(any)){

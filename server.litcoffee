@@ -80,10 +80,6 @@ Register require.extension for .oj and .ojc file types
   Compile .oj files as javascript
 
       require.extensions['.oj'] = (module, filepath) ->
-        # Ensure absolute paths are found correctly for oj file types
-        if filepath[0] == '/' && filepath != module.filename
-          filepath = module.filename
-
         # Read the file
         code = stripBOM fs.readFileSync filepath, 'utf8'
         try
@@ -92,21 +88,9 @@ Register require.extension for .oj and .ojc file types
           eJS.message = wrapJSMessage eJS.message, filepath
           throw eJS
 
-  Compile .js files with absolute paths
-
-      _extensionJS = require.extensions['.js']
-      require.extensions['.js'] = (module, filePath) ->
-        # Ensure absolute paths are found correctly for oj file types
-        if filePath[0] == '/' && filePath != module.filename
-          filePath = module.filename
-        _extensionJS module, filePath
-
   Compile .ojc files as coffee-script
 
       require.extensions['.ojc'] = (module, filepath) ->
-        # Ensure absolute paths are found correctly for oj file types
-        if filepath[0] == '/' && filepath != module.filename
-          filepath = module.filename
 
         code = stripBOM fs.readFileSync filepath, 'utf8'
 
@@ -184,11 +168,6 @@ Define command
 
   Default to all when no output options are specified
 
-      options.html ?= false
-      options.css ?= false
-      options.js ?= false
-      options.modules ?= false
-
       if options.all or (!options.html and !options.css and !options.js and !options.modules)
         options.modules = options.js = options.css = options.html = true
 
@@ -196,19 +175,18 @@ Define command
 
       options.output = (path.resolve process.cwd(), (options.output ? www)) + '/'
 
-      if options.modulesDir
-        options.modulesDir = (path.resolve process.cwd(), (options.modulesDir ? './modules')) + '/'
-
-  cssDir is optional
-
-      if options.cssDir
-        options.cssDir = (path.resolve process.cwd(), options.cssDir) + '/'
-
   Verify output directory isn't the root directory
 
       if options.output == process.cwd()
         error('oj: output directory cannot be current directory')
         return
+
+  Resolve modulesDir and cssDir to the working directory if they were specified
+
+      if options.modulesDir
+        options.modulesDir = (path.resolve process.cwd(), options.modulesDir) + '/'
+      if options.cssDir
+        options.cssDir = (path.resolve process.cwd(), options.cssDir) + '/'
 
   Verify args exist
 
@@ -237,6 +215,13 @@ compileDir
 ------------------------------------------------------------------------------
 
     compileDir = (dirPath, options = {}, cb = ->) ->
+
+  Configure default modulesDir to be relative to directory being compiled if unspecified
+
+      options = _.clone options
+      if !options.modulesDir
+        options.modulesDir = (path.resolve dirPath, (options.modulesDir ? './modules')) + '/'
+
       # Handle recursion and gather files to watch and compile
       lsWatch dirPath, options, (err, files, dirs) ->
         # Watch all directories if option is set
@@ -302,7 +287,7 @@ This is not a public API so it seemed to horrible.
             modulePath = path.join dir, moduleName
             linkPath = resolveLink modulePath
             if linkPath?
-              out[linkPath] = modulePath
+              out[linkPath + '/'] = modulePath + '/'
         catch e
       out
 
@@ -421,7 +406,14 @@ compileFile
 
   Create compile options
 
-      compileOptions = minify:isMinify, html:htmlOption, cssMap:cssOption, css:cssOption, dom:false
+      compileOptions =
+        minify: isMinify
+        html: htmlOption
+        cssMap: cssOption
+        css: cssOption
+        dom: false
+        data: options.data
+
       # Catch the messages thrown by compiling ojml
       try
         # Compile
@@ -494,6 +486,7 @@ compileFile
     #   options.write:false output to callback instead of file
     # ------------------------------------------------------------------------------
     _outputFile = (options, cb) ->
+
       # Output html only as a .html
       if options.html and not (options.css or options.js or options.modules)
         _outputHtml options, cb
@@ -511,7 +504,6 @@ compileFile
     # ------------------------------------------------------------------------------
 
     _outputCombinedHtml = (options, cb) ->
-
       info = options.info
       results = info.results
       filePath = info.filePath
@@ -737,24 +729,6 @@ This method does not recurse as it is called from methods that do (compileDir)
       unwatchAll()
       verbose 1, "oj exited successfully.", 'cyan'
       process.exit()
-
-renderPath
-------------------------------------------------------------------------------
-Render a file as a view. Used by express plugin
-
-    renderPath = (path, options, cb) ->
-
-      _.defaults options,
-        minify:options.minify
-        write:false
-        watch:false
-        recurse:true
-        modules:false
-        html: true
-        css: true
-        js: true
-
-      compilePath path, options, cb
 
 Helpers
 ===============================================================================
@@ -1038,7 +1012,6 @@ Requiring
           if 0 == filename.indexOf linkPath
             rest = filename.slice linkPath.length
             filename = modulePath + rest
-            # break
 
         # Override compile to intercept file
         if !module.loaded
@@ -1250,16 +1223,16 @@ Code generation
       #   filePath: /User/name/project/www/file.oj
       #   commonDir: /User/name/project
       #   clientDir: /www
-      #   clientfile: /file
+      #   clientFile: /file
 
       # Calculate common path root between all cached files
       commonDir = commonPath _.keys cache.files
 
       # Determine directory for client using common path
-      clientDir = _escapeSingleQuotes '/' + path.relative commonDir, path.dirname filePath
+      clientDir = '/' + path.relative commonDir, path.dirname filePath
 
       # Determine file for client given the above directory
-      clientFile = _escapeSingleQuotes '/' + basenameForExtensions filePath, ['.ojc', '.oj', '.coffee', '.js']
+      clientFile = path.join(clientDir, basenameForExtensions(filePath, ['.ojc', '.oj', '.coffee', '.js']))
 
       # Maps from moduleDir -> moduleName -> moduleMain such that
       # the file path is: moduleDir/moduleName/moduleMain
@@ -1308,6 +1281,12 @@ Code generation
         _nativeFiles += _nativeModuleToString moduleName, code
         verbose 4, "serialized native file '#{moduleName}'"
 
+      # Load can be called with data or without
+      _data = ''
+      if not _.isEmpty options.data
+        _data = ',' + JSON.stringify(options.data)
+      _load = "oj.load('#{_escapeSingleQuotes clientFile}'#{_data});"
+
       # Browser side node has these abbreviations:
       #     G = Global
       #     P = Process
@@ -1333,18 +1312,19 @@ Code generation
       # Client side function to find module
       _find = oj._minifyJS """
       function find(m,f){
-          var r, dir, dm, ext, ex, i;
-
+          var r, dir, dm, ext, ex, i, loc;
           if (F[m] && !m.match(/\\//))
             return m;
 
           if (!!m.match(/\\//)) {
-            r = oj._pathResolve(f, oj._pathJoin(oj._pathDirname(f), m));
-            ext = ['.ojc','.oj','.coffee','.js','.json'];
+              r = oj._pathResolve(f, oj._pathJoin(oj._pathDirname(f), m));
+              ext = ['', '.oj', '.ojc', '.js', '.coffee', '.json'];
             for(i = 0; i < ext.length; i++){
               ex = ext[i];
-              if(F[r+ex])
-                return r+ex;
+              if((loc = r + ex) && F[loc])
+                return loc;
+              else if ((loc = oj._pathJoin(r, 'index' + ex)) && F[loc])
+                return loc;
             }
           } else {
             if (typeof oj !== 'undefined') {
@@ -1402,7 +1382,7 @@ Code generation
         js += """
           \n// Page files
           #{_pageFiles}
-          oj.load('#{clientFile}');\n
+          #{_load}\n
         """
       # End function
       js += """
@@ -1412,7 +1392,20 @@ Code generation
 Express View Engine
 ------------------------------------------------------------------------------
 
-    oj.__express = renderPath
+    oj.__express = (path, options, cb) ->
+      data = _.omit (_.clone options), 'settings', 'cache'
+      _.defaults options,
+        minify:options.minify
+        write:false
+        watch:false
+        recurse:true
+        modules:false
+        html: true
+        css: true
+        js: true
+        data: data
+      compilePath path, options, cb
+      return
 
 Express Middleware
 ------------------------------------------------------------------------------
@@ -1478,7 +1471,6 @@ required options:
                     force: options.force ? false
                     minify: options.minify ? true
                     html:0, css:0, js:0, write:1, modules:1, ->
-                      console.log "file is compiled: server.litcoffee:1490"
                       # File is compiled so let static middleware handle it
                       next()
                 catch e

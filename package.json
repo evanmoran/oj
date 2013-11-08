@@ -1,6 +1,6 @@
 {
   "name": "oj",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "main": "generated/server",
   "description": "A unified templating language for the people. Thirsty people.",
   "homepage": "http://ojjs.org",
@@ -15,7 +15,7 @@
   ],
   "author": "Evan Moran <evan@evanmoran.com>",
   "dependencies": {
-    "commander": "1.0.x",
+    "commander": "latest",
     "underscore": "latest",
     "uglify-js": "1.3.3",
     "csso": "1.3.x",
