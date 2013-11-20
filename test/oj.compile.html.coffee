@@ -77,14 +77,6 @@ describe 'oj.compile.html', ->
     compileTest null, ''
     compileTest undefined, ''
 
-  it 'function returning value', ->
-    compileTest (-> true), 'true'
-    compileTest (-> false), 'false'
-    compileTest (-> 42), '42'
-    compileTest (-> 'test'), 'test'
-    compileTest (-> undefined), ''
-    compileTest (-> null), ''
-
   it 'span', ->
     ojml = oj.span 'test'
     compileTest ojml, '<span>test</span>'

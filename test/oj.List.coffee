@@ -439,6 +439,170 @@ describe 'oj.List', ->
     expect(control.items).to.deep.equal ['one', 2, undefined]
 
 
+  it 'construct with collection of backbone models (modelView each)', ->
+
+    NameModelView = oj.createType 'NameModelView',
+      base: oj.ModelView
+      constructor: (model) ->
+        @model = model
+        @el = oj =>
+          oj.li ->
+            namify model
+
+        NameModelView.base.constructor.apply(this, []);
+      properties:
+        isListItem: true
+        model:
+          get: ->
+            @_model
+          set:(v) ->
+            @_model = v
+            return
+
+    namify = (model) ->
+      model.get 'name'
+
+    class UserModel extends Backbone.Model
+    class UserCollection extends Backbone.Collection
+      model: UserModel
+      comparator: namify
+
+    user1 = new UserModel name:'Alfred', strength: 11
+    user2 = new UserModel name:'Batman', strength: 22
+    user3 = new UserModel name:'Catwoman', strength: 33
+    user4 = new UserModel name:'Gordan', strength: 44
+    users = new UserCollection [user3, user1]
+
+    control = oj.List models:users, each:NameModelView
+
+    expect(control.count).to.equal 2
+    expect(control.typeName).to.equal 'List'
+
+    contains control,
+      "<li class=\"oj-NameModelView\">#{namify user1}</li>"
+      "<li class=\"oj-NameModelView\">#{namify user3}</li>"
+
+    # Verify items are all views with models that match our models
+    expect(control.items.map((view) ->view.model)).to.deep.equal [
+      user1
+      user3
+    ]
+
+    # Add element
+    users.add [user2]
+
+    contains control,
+      "<li class=\"oj-NameModelView\">#{namify user1}</li>"
+      "<li class=\"oj-NameModelView\">#{namify user2}</li>"
+      "<li class=\"oj-NameModelView\">#{namify user3}</li>"
+
+    expect(control.items.map((view) ->view.model)).to.deep.equal [
+      user1
+      user2
+      user3
+    ]
+
+    # Remove element
+    users.remove user1
+
+    contains control,
+      "<li class=\"oj-NameModelView\">#{namify user2}</li>"
+      "<li class=\"oj-NameModelView\">#{namify user3}</li>"
+
+    # Reset elements
+    users.reset user4
+
+    contains control,
+      "<li class=\"oj-NameModelView\">#{namify user4}</li>"
+
+    expect(control.items.map((view) ->view.model)).to.deep.equal [
+      user4
+    ]
+
+  it 'construct with views that replace li elements', ->
+
+    namify = (model) ->
+      model.get 'name'
+
+    NameModelView = oj.createType 'NameModelView',
+      base: oj.View
+      constructor: (model) ->
+        @model = model
+        @el = oj =>
+          oj.li ->
+            namify model
+
+        return NameModelView.base.constructor.apply(this, []);
+
+      properties:
+        isListItem: true
+        model:
+          get: ->
+            @_model
+          set:(v) ->
+            @_model = v
+            return
+
+    class UserModel extends Backbone.Model
+
+    user1 = new UserModel name:'Alfred', strength: 11
+    user2 = new UserModel name:'Batman', strength: 22
+    user3 = new UserModel name:'Catwoman', strength: 33
+    user4 = new UserModel name:'Gordan', strength: 44
+
+    control = oj.List new NameModelView(user1), new NameModelView(user2)
+
+    expect(control.count).to.equal 2
+    expect(control.typeName).to.equal 'List'
+
+    contains control,
+      "<li class=\"oj-NameModelView\">#{namify user1}</li>"
+      "<li class=\"oj-NameModelView\">#{namify user2}</li>"
+
+    expect(control.items.map((view) -> view.model)).to.deep.equal [
+      user1
+      user2
+    ]
+
+    # Add element
+    control.add new NameModelView(user3)
+
+    contains control,
+      "<li class=\"oj-NameModelView\">#{namify user1}</li>"
+      "<li class=\"oj-NameModelView\">#{namify user2}</li>"
+      "<li class=\"oj-NameModelView\">#{namify user3}</li>"
+    expect(control.items.map((view) -> view.model)).to.deep.equal [
+      user1
+      user2
+      user3
+    ]
+
+    # Remove last element
+    control.remove 1
+
+    contains control,
+      "<li class=\"oj-NameModelView\">#{namify user1}</li>"
+      "<li class=\"oj-NameModelView\">#{namify user3}</li>"
+    expect(control.items.map((view) -> view.model)).to.deep.equal [
+      user1
+      user3
+    ]
+
+    # Change item
+    control.item 1, new NameModelView(user4)
+
+    contains control,
+      "<li class=\"oj-NameModelView\">#{namify user1}</li>"
+      "<li class=\"oj-NameModelView\">#{namify user4}</li>"
+    expect(control.items.map((view) -> view.model)).to.deep.equal [
+      user1
+      user4
+    ]
+
+    # Get item
+    c = control.item(1)
+    expect(c.model).to.deep.equal user4
+
   it 'NumberList from element', ->
     $('body').html """
       <ol>

@@ -88,14 +88,6 @@ describe 'oj.compile.dom', ->
     r = oj.compile dom:true,html:false, ->
     expect(r.dom).to.equal null
 
-  it 'function returning value', ->
-    compileDOMText (-> true), 'true'
-    compileDOMText (-> false), 'false'
-    compileDOMText (-> 42), '42'
-    compileDOMText (-> 'test'), 'test'
-    compileDOMText (-> undefined), undefined
-    compileDOMText (-> null), null
-
   it 'span', ->
     ojml = oj.span 'test'
     compileDOM ojml, 'span', '<span>test</span>'
