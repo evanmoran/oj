@@ -1,0 +1,55 @@
+# express.ojc
+
+modules = require './modules'
+_ = modules._
+
+_template = require './_template'
+
+{renderTOC, renderContent, renderProperties:properties, renderAttributes:attributes, renderMethods:methods, renderEvents:events, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
+
+module.exports = ->
+
+  _template
+
+    title: 'OJ Express - Unified Templating'
+
+    styles: [
+      'reset.css'
+      'gg.css'
+    ]
+
+    scripts: [
+      'jquery.js'
+      'jquery.event.drag.js'
+      'jquery.ba-resize.min.js'
+      'underscore.js'
+      'backbone.js'
+      'coffee-script.js'
+      'ace/ace.js'
+    ]
+
+    content: ->
+      renderContent data
+
+    toc: ->
+      renderTOC data
+
+    body: ->
+    head: ->
+
+data = [
+  h: 'Starting Out', id: 'starting-out', d: ->
+  items: [
+
+    h: 'Introduction', id: 'intro', d: """
+    """
+  ,
+    h: 'License', id: 'license', d: """
+      Copyright (c) 2013 Evan Moran <br>
+      OJ may be freely distributed under the [MIT license](license.html)
+    """
+  ]
+]
+
+
+
