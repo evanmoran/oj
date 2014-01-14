@@ -22,6 +22,8 @@ module.exports = _template = (parts) ->
         for s in parts.scripts
           script src: "scripts/#{s}", type:'text/javascript'
 
+      # include shared module library
+      script src:"modules/index.js", type:'text/javascript'
       parts.head?()
 
       # Google analytics

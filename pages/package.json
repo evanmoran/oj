@@ -5,13 +5,6 @@
   "main": "./",
   "author": "Evan Moran <evan@evanmoran.com>",
   "dependencies": {
-    "oj-markdown":"latest",
-    "oj-mustache":"latest",
-    "oj-ace-editor":"latest",
-    "oj-vimeo-video":"latest",
-    "oj-youtube-video":"latest",
-    "oj-bootstrap":"latest",
-    "oj-twitter-button":"latest",
     "underscore": "latest"
   }
 }

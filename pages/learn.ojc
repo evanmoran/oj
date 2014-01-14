@@ -1,5 +1,7 @@
 
-_plugins = require './_plugins'
+modules = require './modules'
+_ = modules._
+
 siteCSS = require './_styles'
 _template = require './_template'
 

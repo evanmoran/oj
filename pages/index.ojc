@@ -1,6 +1,7 @@
 # index.ojc
 
-_plugins = require './_plugins'
+modules = require './modules/index'
+_ = modules._
 
 _template = require './_template'
 _content = require './_content'

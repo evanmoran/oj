@@ -1,6 +1,6 @@
-_ = require 'underscore'
 
-_plugins = require './_plugins'
+modules = require './modules'
+_ = modules._
 
 _styles = require './_styles'
 _snippet = require './_snippet'
