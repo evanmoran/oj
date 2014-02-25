@@ -1,5 +1,5 @@
 //
-// oj.js v0.3.2
+// oj.js v0.3.1
 // ojjs.org
 //
 // Copyright 2013, Evan Moran
@@ -42,7 +42,7 @@
   }
 
   // Version
-  oj.version = '0.3.2'
+  oj.version = '0.3.1'
 
   // Configuration settings
   oj.settings = {

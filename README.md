@@ -28,6 +28,9 @@ repo: github.com/ojjs/oj
 Change Log:
 --------------------------------------------------------------------------------
 
+### 0.3.2
+* Improved minification
+
 ### 0.3.1
 * oj.List.each can accept a ModelView. By default the ModelView will be a child of the `<li>` element. Optionally the instace have a isListItem=true property, that when set will cause the ModelView to take the place of the `<li>` instead.
 * OJ Core types like List, Table, CheckBox, now can be replaced by plugins. This is useful on certain "big framework" plugins -- more info coming soon!

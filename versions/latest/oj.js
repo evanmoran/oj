@@ -1,5 +1,5 @@
 //
-// oj.js v0.3.0
+// oj.js v0.3.2
 // ojjs.org
 //
 // Copyright 2013, Evan Moran
@@ -41,7 +41,13 @@
     return oj.tag.apply(this, ['oj'].concat(slice.call(arguments)).concat([{__quiet__:1}]))
   }
 
-  oj.version = '0.3.0'
+  // Version
+  oj.version = '0.3.2'
+
+  // Configuration settings
+  oj.settings = {
+    defaultThemes: null
+  }
 
   oj.isClient = !(typeof process !== _udf && process !== null ? process.versions != null ? process.versions.node : 0 : 0)
 
@@ -1217,7 +1223,9 @@
   }
 
   // _construct(Type, arg1, arg2, ...): Construct type as if using call
-  function _construct(Type){return new (FunP.bind.apply(Type, arguments))}
+  function _construct(Type){
+    return new (FunP.bind.apply(Type, arguments))
+  }
 
   // oj.createType: Create OJ type with args object supporting:
   // base, constructor, properties, and methods
@@ -1374,8 +1382,8 @@
   // oj.createEnum
   oj.createEnum = function(name, args){_e('createEnum', 'NYI')}
 
-  // oj.View
-  oj.View = oj.createType('View', {
+  // View
+  var View = oj.createType('View', {
 
     // Views are special objects map properties together. This is a union of arguments
     // With the remaining arguments becoming a list
@@ -1399,6 +1407,10 @@
 
       // Add class oj-typeName
       this.$el.addClass("oj-" + this.typeName)
+
+      // Set default themes if setting is set
+      if(oj.settings.defaultThemes)
+        this.themes = oj.settings.defaultThemes
 
       // Views automatically set all options to their properties
       // arguments directly to properties
@@ -1611,12 +1623,11 @@
     }
   })
 
+  // View.cssMap: remember css for this View
+  View.cssMap = {}
 
-  // oj.View.cssMap: remember css for this View
-  oj.View.cssMap = {}
-
-  // oj.View.css: set view's css with css object mapping, or raw css string
-  oj.View.css = function(css){
+  // View.css: set view's css with css object mapping, or raw css string
+  View.css = function(css){
     _a(oj.isString(css) || oj.isPlainObject(css), this.typeName, 'object or string expected for first argument')
 
     var cssMap, _base, _base1, _name, _name1, _ref2, _ref3
@@ -1635,11 +1646,11 @@
     }
   }
 
-  // oj.View.themes: Remember themes for this View
-  oj.View.themes = []
+  // View.themes: Remember themes for this View
+  View.themes = []
 
-  // oj.View.theme: create a View specific theme with css object mapping
-  oj.View.theme = function(name, css){
+  // View.theme: create a View specific theme with css object mapping
+  View.theme = function(name, css){
     _v(this.typeName, 1, name, 'string')
     _v(this.typeName, 2, css, 'object')
 
@@ -1659,9 +1670,9 @@
     this.themes = uniqueSort(this.themes)
   }
 
-  // oj.CollectionView: Inheritable base type that enables two-way collection binding
-  oj.CollectionView = oj.createType('CollectionView', {
-    base: oj.View,
+  // CollectionView: Inheritable base type that enables two-way collection binding
+  var CollectionView = oj.createType('CollectionView', {
+    base: View,
     constructor: function(options){
       if ((options != null ? options.each : void 0) != null)
         this.each = oj.argumentShift(options, 'each')
@@ -1669,7 +1680,7 @@
       if ((options != null ? options.models : void 0) != null)
         this.models = oj.argumentShift(options, 'models')
 
-      oj.CollectionView.base.constructor.apply(this, arguments)
+      CollectionView.base.constructor.apply(this, arguments)
 
       // Once everything is constructed call make precisely once.
       return this.make()
@@ -1723,9 +1734,9 @@
     }
   })
 
-  // oj.ModelView: Inheritable base type that enables two-way model binding
-  oj.ModelView = oj.createType('ModelView', {
-    base: oj.View,
+  // ModelView: Inheritable base type that enables two-way model binding
+  var ModelView = oj.createType('ModelView', {
+    base: View,
     constructor: function(options){
       if ((options != null ? options.value : void 0) != null)
         this.value = oj.argumentShift(options, 'value')
@@ -1733,7 +1744,7 @@
       if ((options != null ? options.model : void 0) != null)
         this.model = oj.argumentShift(options, 'model')
 
-      return oj.ModelView.base.constructor.apply(this, arguments)
+      return ModelView.base.constructor.apply(this, arguments)
     },
     properties: {
       model: {
@@ -1771,18 +1782,18 @@
     }
   })
 
-  // oj.ModelViewView: Inheritable base type that enables two-way model binding to a specific key
-  oj.ModelKeyView = oj.createType('ModelKeyView', {
+  // ModelViewView: Inheritable base type that enables two-way model binding to a specific key
+  var ModelKeyView = oj.createType('ModelKeyView', {
 
     // Inherit ModelView to handle model and bindings
-    base: oj.ModelView,
+    base: ModelView,
     constructor: function(options){
 
       if ((options != null ? options.key : void 0) != null)
         this.key = oj.argumentShift(options, 'key')
 
       // Call super to bind model and value
-      return oj.ModelKeyView.base.constructor.apply(this, arguments)
+      return ModelKeyView.base.constructor.apply(this, arguments)
     },
     properties: {
       // Key used to access model
@@ -1825,9 +1836,9 @@
     }
   })
 
-  // oj.TextBox
-  oj.TextBox = oj.createType('TextBox', {
-    base: oj.ModelKeyView,
+  // TextBox
+  var TextBox = oj.createType('TextBox', {
+    base: ModelKeyView,
     constructor: function(){
       var _t = this,
         u = oj.unionArguments(arguments),
@@ -1858,7 +1869,7 @@
       if ((options != null ? options.live : void 0) != null)
         this.live = oj.argumentShift(options, 'live')
 
-      return oj.TextBox.base.constructor.apply(this, [options])
+      return TextBox.base.constructor.apply(this, [options])
     },
     properties: {
       value: {
@@ -1876,9 +1887,9 @@
     }
   })
 
-  // oj.CheckBox
-  oj.CheckBox = oj.createType('CheckBox', {
-    base: oj.ModelKeyView,
+  // CheckBox
+  var CheckBox = oj.createType('CheckBox', {
+    base: ModelKeyView,
     constructor: function(){
       var _t = this,
         u = oj.unionArguments(arguments),
@@ -1895,7 +1906,7 @@
       if (args.length > 0)
         this.value = args[0]
 
-      return oj.CheckBox.base.constructor.call(this, options)
+      return CheckBox.base.constructor.call(this, options)
     },
     properties: {
       value: {
@@ -1911,9 +1922,9 @@
     }
   })
 
-  // oj.Text
-  oj.Text = oj.createType('Text', {
-    base: oj.ModelKeyView,
+  // Text
+  var Text = oj.createType('Text', {
+    base: ModelKeyView,
     constructor: function(){
       var _t = this,
         u = oj.unionArguments(arguments),
@@ -1932,7 +1943,7 @@
       if (args.length > 0)
         this.value = args[0]
 
-      return oj.Text.base.constructor.call(this, options)
+      return Text.base.constructor.call(this, options)
     },
 
     properties: {
@@ -1947,9 +1958,9 @@
     }
   })
 
-  // oj.TextArea
-  oj.TextArea = oj.createType('TextArea', {
-    base: oj.ModelKeyView,
+  // TextArea
+  var TextArea = oj.createType('TextArea', {
+    base: ModelKeyView,
     constructor: function(){
       var _t = this,
         u = oj.unionArguments(arguments),
@@ -1976,7 +1987,7 @@
 
       // Value can be set by argument
       this.value = oj.argumentShift(options, 'value') || args.join('\n')
-      return oj.TextArea.base.constructor.call(this, options)
+      return TextArea.base.constructor.call(this, options)
     },
     properties: {
       value: {
@@ -1989,9 +2000,9 @@
     }
   })
 
-  // oj.ListBox
-  oj.ListBox = oj.createType('ListBox', {
-    base: oj.ModelKeyView,
+  // ListBox
+  var ListBox = oj.createType('ListBox', {
+    base: ModelKeyView,
     constructor: function(){
       var _t = this,
         u = oj.unionArguments(arguments),
@@ -2011,7 +2022,7 @@
       if (args.length > 0)
         this.value = args[0]
 
-      return oj.ListBox.base.constructor.apply(this, [options])
+      return ListBox.base.constructor.apply(this, [options])
     },
     properties: {
       value: {
@@ -2044,9 +2055,9 @@
     }
   })
 
-  // oj.Button
-  oj.Button = oj.createType('Button', {
-    base: oj.View,
+  // Button
+  var Button = oj.createType('Button', {
+    base: View,
     constructor: function(){
       var _t = this,
       u = oj.unionArguments(arguments),
@@ -2063,10 +2074,10 @@
         title = oj.argumentShift(options, 'title')
 
       // Create element
-      this.el = oj(function(){return oj.button(title)})
+      this.el = oj(function(){oj.button(title)})
 
-      oj.Button.base.constructor.apply(this, [options])
-      return this.title = title
+      Button.base.constructor.apply(this, [options])
+      this.title = title
     },
     properties: {
       title: {
@@ -2084,9 +2095,38 @@
     }
   })
 
-  // oj.List: List control with two-way collection binding
-  oj.List = oj.createType('List', {
-    base: oj.CollectionView,
+  // Image
+  var Image = oj.createType('Image', {
+    base: View,
+    constructor: function(){
+      this.el = oj(function(){oj.img()})
+      Image.base.constructor.apply(this, arguments)
+    },
+    properties: {
+      height: {
+        get: function(){return this._height},
+        set: function(v){this._height = v; this.$el.attr('height', v)}
+      },
+      width: {
+        get: function(){return this._width},
+        set: function(v){this._width = v; this.$el.attr('width', v)}
+      },
+      alt: {
+        get: function(){return this._alt},
+        set: function(v){this._alt = v; this.$el.attr('alt', v)}
+      },
+      src: {
+        get: function(){return this._src},
+        set: function(v){this._src = v; this.$el.attr('src', v)}
+      }
+    },
+    methods: {
+    }
+  })
+
+  // List: List control with two-way collection binding
+  var List = oj.createType('List', {
+    base: CollectionView,
     constructor: function(){
       var _t = this,
         u = oj.unionArguments(arguments),
@@ -2116,7 +2156,7 @@
       }
 
       // Args have been handled so don't pass them on
-      oj.List.base.constructor.apply(this, [options])
+      List.base.constructor.apply(this, [options])
 
       // Set @items to options or args if they exist
       items = args.length > 0 ? args : null
@@ -2130,9 +2170,9 @@
           // Found in cache
           if (this._items != null)
             return this._items
-
-          // Calc from ojValues
-          return this.$items.ojValues()
+          // Retrieve the types directly
+          else
+            return this.$items.ojValues()
         },
         set: function(v){
           this._items = v
@@ -2154,7 +2194,7 @@
       $items: {
         get: function(){
           // Get from cache or cache the recalculated list
-          return this._$items != null ? this._$items : this._$items = this.$("> " + this.itemTagName)
+          return this._$items != null ? this._$items : this._$items = this.$el.children()
         }
       }
     },
@@ -2163,8 +2203,13 @@
       // item: get or set item value at item ix
       item: function(ix, ojml){
         ix = this._bound(ix, this.count, ".item: index")
-        if (ojml != null)
-          this.$item(ix).oj(ojml)
+        if (ojml != null) {
+          if(typeof ojml == 'object' && ojml.isListItem)
+            this.$item(ix).ojReplaceWith(ojml)
+          else
+            this.$item(ix).oj(ojml)
+          this.itemsChanged()
+        }
         else
           return this.$item(ix).ojValue()
       },
@@ -2175,18 +2220,15 @@
       // make: Remake view from model data using each
       make: function(){
         // Do nothing until fully constructed
-        if (!this.isConstructed)
-          return
+        if (!this.isConstructed) return
 
         // Some properties call make before construction completes
         var _t = this, ix, model, models, views, out
 
         // Convert models to views using each
-        if ((this.models != null) && (this.each != null)){
-
+        if (this.models != null && this.each != null){
           // Get list of models from collection or array
           models = oj.isEvented(this.models) ? this.models.models : this.models
-
           // Add view item for every model
           views = models.map(function(model){return _t._itemFromModel(model)})
 
@@ -2215,12 +2257,18 @@
       // _itemFromModel: Helper to map model to item
       _itemFromModel: function(model){
         var _t = this
+        if(oj.isOJType(_t.each))
+          return new _t.each(model)
         return oj(function(){return _t.each(model)})
       },
 
       // _itemElFromItem: Helper to create itemTagName wrapped item
       _itemElFromItem: function(item){
-        return oj[this.itemTagName](item)
+        // Wrap with itemTagName unless the item is itself a listItem
+        if (item && typeof item.isListItem == 'boolean')
+          item.emit()
+        else
+          return oj[this.itemTagName](item)
       },
 
       // _bound: Bound index to allow negatives, throw when out of range
@@ -2243,19 +2291,21 @@
         }
 
         ix = this._bound(ix, this.count + 1, ".add: index")
-        var tag = this.itemTagName
+
+        var _t = this,
+          tag = this.itemTagName
 
         // Empty
         if (this.count === 0)
-          this.$el.oj(function(){return oj[tag](ojml)})
+          this.$el.oj(function(){_t._itemElFromItem(ojml)})
 
         // Last
         else if (ix === this.count)
-          this.$item(ix - 1).ojAfter(function(){return oj[tag](ojml)})
+          this.$item(ix - 1).ojAfter(function(){return _t._itemElFromItem(ojml)})
 
         // Not last
         else
-          this.$item(ix).ojBefore(function(){return oj[tag](ojml)})
+          this.$item(ix).ojBefore(function(){return _t._itemElFromItem(ojml)})
 
         this.itemsChanged()
       },
@@ -2306,26 +2356,26 @@
 
 
   // oj.NumberList: NumberList is a `List` specialized with `<ol>` and `<li>` tags
-  oj.NumberList = oj.createType('NumberList', {
-    base: oj.List,
+  var NumberList = oj.createType('NumberList', {
+    base: List,
     constructor: function(){
       var args = [{tagName:'ol', itemTagName:'li'}].concat(slice.call(arguments))
-      return oj.NumberList.base.constructor.apply(this, args)
+      return NumberList.base.constructor.apply(this, args)
     }
   })
 
   // oj.BulletList: BulletList is a `List` specialized with `<ul>` and `<li>` tags
-  oj.BulletList = oj.createType('BulletList', {
-    base: oj.List,
+  var BulletList = oj.createType('BulletList', {
+    base: List,
     constructor: function(){
       var args = [{tagName:'ul', itemTagName:'li'}].concat(slice.call(arguments))
-      return oj.BulletList.base.constructor.apply(this, args)
+      return BulletList.base.constructor.apply(this, args)
     }
   })
 
   // oj.Table
-  oj.Table = oj.createType('Table', {
-    base: oj.CollectionView,
+  var Table = oj.createType('Table', {
+    base: CollectionView,
     constructor: function(){
       var _t = this,
         u = oj.unionArguments(arguments),
@@ -2349,7 +2399,7 @@
       }
 
       // Args have been handled so don't pass them on
-      oj.Table.base.constructor.apply(this, [options])
+      Table.base.constructor.apply(this, [options])
 
       // Validate args as arrays
       for(ix = 0; ix < args.length; ix++)
@@ -2772,6 +2822,24 @@
     }
   })
 
+  // Extend Types into oj
+  _extend(oj, {
+    View:View,
+    ModelView:ModelView,
+    ModelKeyView:ModelKeyView,
+    CollectionView:CollectionView,
+    Button:Button,
+    CheckBox:CheckBox,
+    Text:Text,
+    TextBox:TextBox,
+    TextArea:TextArea,
+    ListBox:ListBox,
+    List:List,
+    NumberList:NumberList,
+    BulletList:BulletList,
+    Table:Table
+  })
+
   // Create Quiet _Types
   for (var typeName in oj){
     // Type with captital first letter that doesn't end in "View"
@@ -2949,11 +3017,15 @@
     var el = $el[0],
       child = el.firstChild
 
+    // Return the instance if the element has an oj instance
+    if (oj.isOJInstance(_getInstanceOnElement(el)))
+      return _getInstanceOnElement(el)
+
     // Parse the text to turn it into bool, number, or string
-    if (oj.isDOMText(child))
+    else if (oj.isDOMText(child))
       return oj.parse(child.nodeValue)
 
-    // Get elements as oj instances or elements
+    // Return the first child otherwise as an oj instance or child element
     else if (oj.isDOMElement(child))
       return _d(_getInstanceOnElement(child), child)
   }
