@@ -41,7 +41,13 @@
     return oj.tag.apply(this, ['oj'].concat(slice.call(arguments)).concat([{__quiet__:1}]))
   }
 
+  // Version
   oj.version = '0.3.1'
+
+  // Configuration settings
+  oj.settings = {
+    defaultThemes: null
+  }
 
   oj.isClient = !(typeof process !== _udf && process !== null ? process.versions != null ? process.versions.node : 0 : 0)
 
@@ -1402,6 +1408,10 @@
       // Add class oj-typeName
       this.$el.addClass("oj-" + this.typeName)
 
+      // Set default themes if setting is set
+      if(oj.settings.defaultThemes)
+        this.themes = oj.settings.defaultThemes
+
       // Views automatically set all options to their properties
       // arguments directly to properties
       this.set(options)
@@ -1612,7 +1622,6 @@
       inserted: function(){return this._isInserted = true}
     }
   })
-
 
   // View.cssMap: remember css for this View
   View.cssMap = {}
@@ -2065,10 +2074,10 @@
         title = oj.argumentShift(options, 'title')
 
       // Create element
-      this.el = oj(function(){return oj.button(title)})
+      this.el = oj(function(){oj.button(title)})
 
       Button.base.constructor.apply(this, [options])
-      return this.title = title
+      this.title = title
     },
     properties: {
       title: {
@@ -2083,6 +2092,35 @@
         else
           return this.$el.click()
       }
+    }
+  })
+
+  // Image
+  var Image = oj.createType('Image', {
+    base: View,
+    constructor: function(){
+      this.el = oj(function(){oj.img()})
+      Image.base.constructor.apply(this, arguments)
+    },
+    properties: {
+      height: {
+        get: function(){return this._height},
+        set: function(v){this._height = v; this.$el.attr('height', v)}
+      },
+      width: {
+        get: function(){return this._width},
+        set: function(v){this._width = v; this.$el.attr('width', v)}
+      },
+      alt: {
+        get: function(){return this._alt},
+        set: function(v){this._alt = v; this.$el.attr('alt', v)}
+      },
+      src: {
+        get: function(){return this._src},
+        set: function(v){this._src = v; this.$el.attr('src', v)}
+      }
+    },
+    methods: {
     }
   })
 
@@ -2788,6 +2826,7 @@
   _extend(oj, {
     View:View,
     ModelView:ModelView,
+    ModelKeyView:ModelKeyView,
     CollectionView:CollectionView,
     Button:Button,
     CheckBox:CheckBox,

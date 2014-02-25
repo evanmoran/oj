@@ -28,6 +28,10 @@ repo: github.com/ojjs/oj
 Change Log:
 --------------------------------------------------------------------------------
 
+### 0.3.1
+* oj.List.each can accept a ModelView. By default the ModelView will be a child of the `<li>` element. Optionally the instace have a isListItem=true property, that when set will cause the ModelView to take the place of the `<li>` instead.
+* OJ Core types like List, Table, CheckBox, now can be replaced by plugins. This is useful on certain "big framework" plugins -- more info coming soon!
+
 ### 0.3.0
 * Express is supported with separate module compiling middleware
 * Yeoman is supported. Install with `npm install -g generator oj` and then `yo oj`
