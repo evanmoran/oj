@@ -1,8 +1,8 @@
 //
-// oj.js v0.3.2
+// oj.js v0.3.3
 // ojjs.org
 //
-// Copyright 2013, Evan Moran
+// Copyright 2013-2014, Evan Moran
 // Released under the MIT License
 //
 // ===================================================================
@@ -26,7 +26,6 @@
     root.oj = factory(root, (root.jQuery || root.Zepto || root.ender || root.$))
 
 }(this, function(root, $){
-
   var ArrP = Array.prototype,
     FunP = Function.prototype,
     ObjP = Object.prototype,
@@ -42,7 +41,7 @@
   }
 
   // Version
-  oj.version = '0.3.2'
+  oj.version = '0.3.3'
 
   // Configuration settings
   oj.settings = {
@@ -1163,13 +1162,13 @@
 
   // Bind events to dom
   function _attributesBindEventsToDOM(events, el, inserts){
-    var ek, ev, _results = []
+    var ek, ev, _results = [], _defer = function(ev, el){return function(){ev.call(el,el)}}
     for (ek in events){
       ev = events[ek]
       _a(oj.$ != null, "jquery is missing when binding a '" + ek + "' event")
       // accumulate insert events manually since DOMNodeInserted is slow and depreciated
       if (ek == 'insert' && inserts)
-        inserts.push(function(){ev.call(el,el)})
+        inserts.push(_defer(ev,el))
       else if (oj.isArray(ev))
         _results.push(oj.$(el)[ek].apply(this, ev))
       else

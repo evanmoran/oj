@@ -28,6 +28,10 @@ repo: github.com/ojjs/oj
 Change Log:
 --------------------------------------------------------------------------------
 
+### 0.3.3
+* Fixes npm modules to specific versions. (latest considered harmful)
+* Fixes insert event being incorrectly called when multiple events are bound
+
 ### 0.3.2
 * Improved minification
 

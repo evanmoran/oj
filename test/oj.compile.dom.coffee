@@ -256,3 +256,17 @@ describe 'oj.compile.dom', ->
     expect(insertDetected).to.equal false
     $('body').oj(ojml)
     expect(insertDetected).to.equal true
+
+  it 'insert event with other events', ->
+    eventDetected = "no event detected"
+    ojml = oj.html ->
+      oj.head ->
+        oj.script type: 'text/javascript', src: 'script.js'
+      oj.body ->
+        oj.div 'a1', insert: (-> eventDetected = "insert detected"), mouseup: (-> eventDetected = "mouseover detected")
+
+    expected = '<body><div>a1</div></body>'
+    compileDOM ojml, 'body', expected, ignore: {html:1, doctype:1, head:1, link:1, script:1}
+    expect(eventDetected).to.equal "no event detected"
+    $('body').oj(ojml)
+    expect(eventDetected).to.equal "insert detected"

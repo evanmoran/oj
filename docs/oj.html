@@ -27,7 +27,7 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-1">&#182;</a>
               </div>
-              <p>oj.js v0.3.2
+              <p>oj.js v0.3.3
 ojjs.org</p>
 <p>Copyright 2013, Evan Moran
 Released under the MIT License</p>
@@ -102,7 +102,6 @@ Released under the MIT License</p>
     root.oj = factory(root, (root.jQuery || root.Zepto || root.ender || root.$))
 
 }(<span class="keyword">this</span>, <span class="keyword">function</span>(root, $){
-
   <span class="keyword">var</span> ArrP = Array.prototype,
     FunP = Function.prototype,
     ObjP = Object.prototype,
@@ -142,7 +141,7 @@ Released under the MIT License</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>  oj.version = <span class="string">'0.3.2'</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre>  oj.version = <span class="string">'0.3.3'</span></pre></div></div>
             
         </li>
         
@@ -3437,7 +3436,7 @@ Convert to c and class from arrays to strings</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>  <span class="function"><span class="keyword">function</span> <span class="title">_attributesBindEventsToDOM</span><span class="params">(events, el, inserts)</span>{</span>
-    <span class="keyword">var</span> ek, ev, _results = []
+    <span class="keyword">var</span> ek, ev, _results = [], _defer = <span class="keyword">function</span>(ev, el){<span class="keyword">return</span> <span class="keyword">function</span>(){ev.call(el,el)}}
     <span class="keyword">for</span> (ek <span class="keyword">in</span> events){
       ev = events[ek]
       _a(oj.$ != <span class="literal">null</span>, <span class="string">"jquery is missing when binding a '"</span> + ek + <span class="string">"' event"</span>)</pre></div></div>
@@ -3456,7 +3455,7 @@ Convert to c and class from arrays to strings</p>
             </div>
             
             <div class="content"><div class='highlight'><pre>      <span class="keyword">if</span> (ek == <span class="string">'insert'</span> &amp;&amp; inserts)
-        inserts.push(<span class="keyword">function</span>(){ev.call(el,el)})
+        inserts.push(_defer(ev,el))
       <span class="keyword">else</span> <span class="keyword">if</span> (oj.isArray(ev))
         _results.push(oj.$(el)[ek].apply(<span class="keyword">this</span>, ev))
       <span class="keyword">else</span>

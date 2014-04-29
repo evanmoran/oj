@@ -163,7 +163,7 @@ versionAndMinifyLib = (libName, libData) ->
     // #{libData.fileName} v#{libData.version}
     // #{libData.docsUrl}
     //
-    // Copyright 2013, #{libData.copyrightName}
+    // Copyright 2013-2014, #{libData.copyrightName}
     // Released under the MIT License
     //\n
   """
