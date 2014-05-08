@@ -236,16 +236,16 @@ task "copy:examples", "Copy example projects to www", ->
   launch 'rsync', ['-a', path.join(ROOT_DIR,'oj-examples/'), path.join(WWW_DIR, 'examples/')]
 
 task "ddd", "Build debug www", ->
-  launch 'oj', ['--recurse', '--verbose', '2', '--exclude', 'jquery', '--output', WWW_DIR, '--no-modules', PAGES_DIR]
+  launch 'oj', ['--recurse', '--verbose', '2', '--exclude', 'jquery', '--output', WWW_DIR, PAGES_DIR]
 
 task "ddd:watch", "Watch debug www", ->
-  launch 'oj', ['--recurse', '--watch', '--verbose', '2', '--exclude', 'jquery', '--output', WWW_DIR, '--no-modules', PAGES_DIR]
+  launch 'oj', ['--recurse', '--watch', '--verbose', '2', '--exclude', 'jquery', '--output', WWW_DIR, PAGES_DIR]
 
 task "www", "Build www", ->
-  launch 'oj', ['--recurse', '--minify', '--verbose', '2', '--exclude', 'jquery', '--output', WWW_DIR, '--no-modules', PAGES_DIR]
+  launch 'oj', ['--recurse', '--minify', '--verbose', '2', '--exclude', 'jquery', '--output', WWW_DIR, PAGES_DIR]
 
 task "www:watch", "Watch build www", ->
-  launch 'oj', ['--recurse', '--minify', '--watch', '--verbose', '2', '--exclude', 'jquery', '--output', WWW_DIR, '--no-modules', PAGES_DIR]
+  launch 'oj', ['--recurse', '--minify', '--watch', '--verbose', '2', '--exclude', 'jquery', '--output', WWW_DIR, PAGES_DIR]
 
 task "watch", "Watch all build targets", ->
   invoke 'build:js:watch'
