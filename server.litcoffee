@@ -160,33 +160,18 @@ Define command
     oj.command = (options = {}) ->
 
       verbosity = options.verbose || 1
-      options.watch ?= false    # Watch for changes and recompile
-      options.write ?= true     # Output to a file
-      options.recurse ?= true   # Recurse in sub directories
-      options.include ?= []     # Include modules
-      options.exclude ?= []     # Exclude modules
-
-  Default to all when no output options are specified
-
-      if options.all or (!options.html and !options.css and !options.js and !options.modules)
-        options.modules = options.js = options.css = options.html = true
+      options.test ?= false
+      options.write ?= not options.test     # Output to a file if not in test mode
+      options.watch ?= false                # Watch for changes and recompile
+      options.all ?= false                  # All defaults to off
+      options.recurse ?= true               # Recurse in sub directories
+      options.include ?= []                 # Include modules
+      options.exclude ?= []                 # Exclude modules
+      options.output ?= './public'
 
   Resolve directory args to full path and append / to ensure path prefixes refer to directories
 
-      options.output = (path.resolve process.cwd(), (options.output ? www)) + '/'
-
-  Verify output directory isn't the root directory
-
-      if options.output == process.cwd()
-        error('oj: output directory cannot be current directory')
-        return
-
-  Resolve modulesDir and cssDir to the working directory if they were specified
-
-      if options.modulesDir
-        options.modulesDir = (path.resolve process.cwd(), options.modulesDir) + '/'
-      if options.cssDir
-        options.cssDir = (path.resolve process.cwd(), options.cssDir) + '/'
+      options.output = (path.resolve process.cwd(), options.output) + '/'
 
   Verify args exist
 
@@ -197,9 +182,52 @@ Define command
       options.args = fullPaths options.args, process.cwd()
 
       for fullPath in options.args
-        compilePath fullPath, options
+        compilePath fullPath, _optionsForPath(fullPath, options),
+          (err, results) ->
+
+  In test mode, log everything to the console instead of writing out files
+
+            if options.test
+              console.log results
 
       return
+
+_optionsForPath
+------------------------------------------------------------------------------
+Some options like modulePath are dependent on what you are compiling
+For example if you compile `./website`, should look in `./website/modules` to find
+module bundle files, where as options like options.output are dependent
+on the current path.
+
+    _optionsForPath = (fullPath, options) ->
+
+      options = _.clone options
+
+  Determine if user specified include options
+
+      userSpecifiedInclude = options.modules? or options.html? or options.css? or options.js?
+
+  Resolve modulesDir and cssDir to the working directory if they were specified
+
+      if options.modulesDir
+        options.modulesDir = (path.resolve fullPath, options.modulesDir) + '/'
+
+      if options.cssDir
+        options.cssDir = (path.resolve fullPath, options.cssDir) + '/'
+
+  Include everything except modules if nothing specific has been included
+  and if moduleDir exists (This case is the most common so detecting it helps usability)
+
+      if not userSpecifiedInclude and fs.existsSync(options.modulesDir)
+        options.modules = false
+        options.js = options.css = options.html = true
+
+  Include everything if `--all` option is set or nothing is specified
+
+      else if options.all or not userSpecifiedInclude
+        options.modules = options.js = options.css = options.html = true
+
+      options
 
 compilePath
 ------------------------------------------------------------------------------
@@ -222,23 +250,29 @@ compileDir
       if !options.modulesDir
         options.modulesDir = (path.resolve dirPath, (options.modulesDir ? './modules')) + '/'
 
-      # Handle recursion and gather files to watch and compile
+  Handle recursion and gather files to watch and compile
+
       lsWatch dirPath, options, (err, files, dirs) ->
-        # Watch all directories if option is set
+
+  Watch all directories if option is set
+
         if options.watch
           for d in dirs
             watchDir d, dirPath, options
 
-        # Call cb when it has been called length times
+  Call cb when it has been called length times
+
         _cb = _.after files.length, cb
 
         for f in files
 
-          # Compile and watch all pages
+  Compile and watch all pages
+
           if isOJPage f
             compileFile f, dirPath, options, _cb
 
-          # Watch files that aren't pages
+  Watch files that aren't pages
+
           else if options.watch
             watchFile f, dirPath, options
             _cb()
@@ -248,7 +282,7 @@ compileDir
 nodeModulePaths: Determine node_module paths from a given path
 ------------------------------------------------------------------------------
 Implementation is from node.js' Module._nodeModulePaths
-This is not a public API so it seemed to horrible.
+This is not a public API so it seemed too horible to assume existance of
 
     nodeModulePaths = (from) ->
       from = path.resolve from
@@ -266,7 +300,8 @@ This is not a public API so it seemed to horrible.
         paths.push(dir)
       paths
 
-    # Recursively get final link path
+  Recursively get final link path
+
     resolveLink = (linkPath, out) ->
       try
         newPath = fs.readlinkSync linkPath
@@ -324,12 +359,14 @@ compileFile
       rootDir = options.root or path.dirname filePath
       fileDir = path.dirname filePath
 
-      # Directory specifications win over options every time
+  Directory specifications win over options every time
+
       if options.modulesDir and _startsWith filePath, options.modulesDir
         options.modules = true
         options.css = false
         options.html = false
         options.js = false
+
       else if options.cssDir and _startsWith filePath, options.cssDir
         options.modules = false
         options.css = true
@@ -840,20 +877,19 @@ File helpers
         cb err, files, dirs
       return
 
-    # lsWatch
-    # Look for all files I should consider watching.
-    # This includes: .js, .coffee, .oj, .ojc, with no limitations on
-    # hidden, underscore or oj prefixes.
+lsWatch
+Look for all files I should consider watching.
+This includes: .js, .coffee, .oj, .ojc, with no limitations on
+hidden, underscore or oj prefixes.
 
     lsWatch = (paths, options, cb) ->
 
-      # Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
+  Choose visible files with extension `.oj` and don't start with `oj` (plugins) or `_` (partials & templates)
+
       lsOptions = _.extend {},
         recurse: options.recurse,
         filterFile: isWatchFile
-        filterDir:(nameWithPath) ->
-          # Doesn't start with output directory and fits isOJDir criteria
-          !(_startsWith nameWithPath, options.output) and isOJDir nameWithPath
+        filterDir: isOJDir
 
       ls paths, lsOptions, (err, files, dirs) ->
         cb err, files, dirs
@@ -1220,9 +1256,9 @@ Code generation
       newline = if isMinify then '' else '\n'
 
       # Example:
-      #   filePath: /User/name/project/www/file.oj
+      #   filePath: /User/name/project/public/file.oj
       #   commonDir: /User/name/project
-      #   clientDir: /www
+      #   clientDir: /public
       #   clientFile: /file
 
       # Calculate common path root between all cached files
@@ -1395,11 +1431,11 @@ Express View Engine
     oj.__express = (path, options, cb) ->
       data = _.omit (_.clone options), 'settings', 'cache'
       _.defaults options,
-        minify:options.minify
-        write:false
-        watch:false
-        recurse:true
-        modules:false
+        minify: options.minify
+        write: false
+        watch: false
+        recurse: true
+        modules: false
         html: true
         css: true
         js: true

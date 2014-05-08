@@ -1,8 +1,8 @@
 //
-// oj.js v0.3.3
+// oj.js v0.3.4
 // ojjs.org
 //
-// Copyright 2013, Evan Moran
+// Copyright 2013-2014, Evan Moran
 // Released under the MIT License
 //
 // ===================================================================
@@ -41,7 +41,7 @@
   }
 
   // Version
-  oj.version = '0.3.3'
+  oj.version = '0.3.4'
 
   // Configuration settings
   oj.settings = {

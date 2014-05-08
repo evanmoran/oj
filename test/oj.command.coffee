@@ -29,12 +29,9 @@ launch = (cmd, args=[], options, callback = ->) ->
   app.stderr.on 'end', -> callbackAfter()
   app.on 'exit', (status) -> callbackAfter()
 
-launchOJ = (args, options, callback) ->
-  launch 'oj', args, options, callback
-
 describe 'oj.command', ->
 
-  # it 'exists', (done) ->
+  it 'exists'#, (done) ->
 
   #   # console.log "here"
   #   child = exec "oj", (error, stdout, stderr) ->

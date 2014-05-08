@@ -28,6 +28,11 @@ repo: github.com/ojjs/oj
 Change Log:
 --------------------------------------------------------------------------------
 
+### 0.3.4
+* CLI automatically detect --modules-dir `/modules` directory and apply `--no-modules` option to other directories
+* CLI can defaults --output to `public` for simplified usage (this mirrors Express middleware defaults as well)
+* Removing grunt support from OJ's yeoman scaffolding support, because it's unecessary with these CLI improvements
+
 ### 0.3.3
 * Fixes npm modules to specific versions. (latest considered harmful)
 * Fixes insert event being incorrectly called when multiple events are bound

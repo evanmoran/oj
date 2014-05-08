@@ -9,12 +9,13 @@ module.exports = function(){
         click: function(){
           window.divClick = 'div click';
       }});
-      var cb = CheckBox({value:false, change: function(e){
+      var cb = CheckBox({value:true, change: function(e){
         window.checkboxClick = 'checkbox click';
         // window.checkboxValue = thiss.oj.value;
+      }, insert:function(){
+        window.checkboxInserted = "checkboxInserted"
       }});
 
-      cb.value = true;
       css({
         div:{
           color: 'red'
