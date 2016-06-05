@@ -1,6 +1,8 @@
 # plugins.ojc
 
-_plugins = require './_plugins'
+modules = require './modules'
+_ = modules._
+
 _template = require './_template'
 
 {renderTOC, renderContent, renderProperties:properties, renderMethods:methods, renderEvents:events, renderInherits:inherits, renderOptions:options, renderArguments:arguments_,renderName:name} = require './_content'
