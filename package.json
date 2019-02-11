@@ -1,10 +1,15 @@
 {
   "name": "oj",
-  "version": "0.3.4",
-  "main": "generated/server",
+  "version": "0.9.1",
+  "author": "Evan Moran <evan@evanmoran.com>",
+  "license": "MIT",
   "description": "A unified templating language for the people. Thirsty people.",
   "homepage": "http://ojjs.org",
-  "bin": "./bin/oj",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/evanmoran/oj.git"
+  },
+  "main": "oj.js",
   "keywords": [
     "templating",
     "html",
@@ -13,29 +18,21 @@
     "jquery",
     "backbone"
   ],
-  "author": "Evan Moran <evan@evanmoran.com>",
-  "dependencies": {
-    "commander": "latest",
-    "underscore": "latest",
-    "uglify-js": "1.3.3",
-    "csso": "1.3.x",
-    "mkdirp": "0.3.3",
-    "jsdom": "~0.6.0",
-    "jquery": "1.8.3",
-    "coffee-script": "latest"
-  },
+  "dependencies": {},
   "scripts": {
-    "test": "cake test"
+    "test": "mocha --reporter spec test/*.coffee",
+    "testwatch": "mocha --watch --reporter spec test/*.coffee",
+    "testwatchbail": "mocha --bail --watch --reporter spec test/*.coffee"
   },
   "devDependencies": {
-    "mocha": "~1.1.0",
-    "chai": "~1.0.3",
-    "async": "~0.1.22",
-    "jquery": "1.8.3",
-    "backbone": "latest"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/ojjs/oj.git"
+    "mocha": "latest",
+    "chai": "latest",
+    "async": "latest",
+    "jsdom": "latest",
+    "uglify-js": "latest",
+    "underscore": "latest",
+    "jquery": "latest",
+    "backbone": "latest",
+    "coffeescript": "latest"
   }
 }

@@ -1,13 +1,19 @@
 #──────────────────────────────────────────────────────
 # Globals for mocha testing
 #──────────────────────────────────────────────────────
+console.log("Loading mocha settings from `test/global.coffee`")
 
 # Include common testing modules
 _ = global._ = require 'underscore'
-jsdom = global.jsdom = (require 'jsdom').jsdom
-document = global.document = jsdom "<html><head></head><body></body></html>"
-window = global.window = document.createWindow()
-$ = global.$ = global.jQuery = (require 'jquery').create(window)
+
+jsdom = global.jsdom = require 'jsdom'
+{JSDOM} = jsdom
+
+global.JSDOM = JSDOM;
+dom = global.dom = new JSDOM "<!DOCTYPE html><html><head></head><body></body></html>";
+window = global.window = dom.window
+document = global.document = window.document
+$ = global.$ = global.jQuery = require('jquery')(window);
 
 # Include chai
 global.chai = chai = require "chai"

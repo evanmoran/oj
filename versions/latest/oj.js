@@ -1,31 +1,42 @@
 //
-// oj.js v0.3.4
+// oj.js v0.9.1
 // ojjs.org
 //
-// Copyright 2013-2014, Evan Moran
+// Copyright 2013-2019, Evan Moran
 // Released under the MIT License
 //
 // ===================================================================
 // Unified templating for the people. Thirsty people.
 
 ;(function(root, factory){
-
+  var initDom = "<!DOCTYPE html><html><head></head><body></body></html>";
   // CommonJS export for Node
   if (typeof module === 'object' && module.exports) {
-    try {$ = require('jquery')} catch (e){}
-    module.exports = factory(root, $)
+    try {$ = root.$ || require('jquery')} catch (e){}
+    var thedoc = root.document;
+    try {
+      if (!thedoc) {
+        jsdom = require('jsdom');
+        dom = new jsdom.JSDOM(initDom);
+        thedoc = dom.window.document;
+      }
+    } catch (e){}
+    module.exports = factory(root, $, thedoc)
 
-  // AMD export for RequireJS
   }
 
-  else if (typeof define === 'function' && define.amd)
-    define(['jquery'], function($){return factory(root, $) })
+  // else if (typeof define === 'function' && define.amd)
+  //   // AMD export for RequireJS
+  //   define(['jquery'], ['jsdom'], function($, jsdom){
+  //      return factory(root, $, new jsdom.JSDOM(initDom).window.document)
+  //   })
 
   // Global export for client side
   else
-    root.oj = factory(root, (root.jQuery || root.Zepto || root.ender || root.$))
+    root.oj = factory(root, (root.$ || root.jQuery || root.Zepto || root.ender), root.document)
 
-}(this, function(root, $){
+}(this, function(root, $, doc){
+
   var ArrP = Array.prototype,
     FunP = Function.prototype,
     ObjP = Object.prototype,
@@ -41,7 +52,7 @@
   }
 
   // Version
-  oj.version = '0.3.4'
+  oj.version = '0.9.1'
 
   // Configuration settings
   oj.settings = {
@@ -575,7 +586,9 @@
     acc = _clone(options)
 
     acc.html = options.html ? [] : null
-    acc.dom = options.dom && (typeof document !== "undefined" && document !== null) ? document.createElement('OJ') : null
+
+    acc.dom = options.dom && (typeof doc !== "undefined" && doc !== null) ? doc.createElement('OJ') : null
+
     acc.css = options.css || options.cssMap ? {} : null
     acc.indent = ''
     acc.data = options.data
@@ -925,13 +938,13 @@
         options.html.push(any)
 
       if (any.length > 0 && any[0] === '<'){
-        var root = document.createElement('div')
+        var root = doc.createElement('div')
         root.innerHTML = any
         if (options.dom != null)
           options.dom.appendChild(root)
       } else {
         if (options.dom != null)
-          options.dom.appendChild(document.createTextNode(any))
+          options.dom.appendChild(doc.createTextNode(any))
       }
 
     // Boolean or Number
@@ -940,7 +953,7 @@
         options.html.push("" + any)
 
       if (options.dom != null)
-        options.dom.appendChild(document.createTextNode("" + any))
+        options.dom.appendChild(doc.createTextNode("" + any))
 
     // Function
     } else if (oj.isFunction(any)){
@@ -955,7 +968,7 @@
         options.html.push("" + (any.toLocaleString()))
 
       if (options.dom != null)
-        options.dom.appendChild(document.createTextNode("" + (any.toLocaleString())))
+        options.dom.appendChild(doc.createTextNode("" + (any.toLocaleString())))
 
     // OJ Type or Instance
     } else if (oj.isOJ(any)){
@@ -1035,10 +1048,10 @@
 
       // Compile to dom if requested
       // Add dom element with attributes
-      if (options.dom && (typeof document !== _udf && document !== null)){
+      if (options.dom && (typeof doc !== _udf && doc !== null)){
 
         // Create element
-        el = document.createElement(tag)
+        el = doc.createElement(tag)
 
         // Add self to parent
         if (oj.isDOMElement(options.dom))
@@ -1056,7 +1069,7 @@
 
             // Boolean attributes have no value
             if (attrValue === true)
-              el.setAttributeNode(document.createAttribute(attrName))
+              el.setAttributeNode(doc.createAttribute(attrName))
             else
               el.setAttribute(attrName, attrValue)
           }
@@ -1547,7 +1560,7 @@
               this.addClass(v)
             else if (v === true)
               // Boolean attributes have no value
-              this.el.setAttributeNode(document.createAttribute(k))
+              this.el.setAttributeNode(doc.createAttribute(k))
             else
               // Otherwise add it normally
               this.$el.attr(k, v)
@@ -2700,7 +2713,6 @@
         }
         rx = this._bound(rx, this.rowCount + 1, ".addRow: rx")
         _a(oj.isArray(listOJML), 'addRow', 'expected array for row content')
-
         this._addRowTR(rx, function(){
           oj.tr(function(){
             listOJML.forEach(function(cell){
@@ -2714,7 +2726,7 @@
       _addRowTR: function(rx, tr){
         // Empty
         if (this.rowCount === 0)
-          this.$el.oj(tr)
+          this.$tbodyMake.oj(tr)
 
         // Last
         else if (rx === this.rowCount)
@@ -2903,7 +2915,7 @@
     return function(){
       var el, out, r, ix,
         args = _toArray(arguments),
-        $els = jQuery(this)
+        $els = $(this)
 
       // Map over jquery selection if no arguments
       if ((oj.isFunction(options.get)) && args.length === 0){

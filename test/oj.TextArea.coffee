@@ -21,6 +21,8 @@ describe 'oj.TextArea', ->
     control = oj.TextArea value:"test"
     expect(control.typeName).to.equal 'TextArea'
     expect(control.value).to.equal "test"
+    control.value = "test2"
+    expect(control.value).to.equal "test2"
 
   it 'construct with id', ->
     id = 'my-id'
@@ -36,8 +38,11 @@ describe 'oj.TextArea', ->
 
   it 'compile html', ->
     control = oj.TextArea(value:'test')
+    expect(control.value).to.equal "test"
+
     results = oj.compile html:true, dom:true, control
-    expect(results.html).to.contain '<textarea'
+    expect(results.html).to.contain '<textarea '
     expect(results.html).to.contain 'class="oj-TextArea"'
     expect(results.html).to.not.contain 'id'
-    expect(results.html).to.contain 'test</textarea>'
+    expect(results.html).to.not.contain 'value'
+    expect(results.html).to.contain '</textarea>'

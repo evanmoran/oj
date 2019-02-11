@@ -38,7 +38,6 @@ describe 'oj.CheckBox', ->
   #   control.class = [cls2,cls3]
   #   expect(control.classes).to.deep.equal cls
 
-
   it 'construct with name', ->
     name = 'my-name'
     control = oj.CheckBox name:name
@@ -70,4 +69,4 @@ describe 'oj.CheckBox', ->
       oj.div c:'test2', ->
         control.emit()
 
-    expect(htmlDiv2).to.equal """<div class="test2"><input type="checkbox" checked="checked" class="#{control.attributes.class}" /></div>"""
+    expect(htmlDiv2).to.equal """<div class="test2"><input type="checkbox" checked="checked" class="#{control.attributes.class}"></div>"""

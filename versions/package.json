@@ -1,8 +1,14 @@
 {
     "name": "oj",
-    "version": "0.3.4",
+    "version": "0.9.1",
+    "author": "Evan Moran <evan@evanmoran.com>",
+    "license": "MIT",
     "description": "A unified templating language for the people. Thirsty people.",
     "homepage": "http://ojjs.org",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/evanmoran/oj.git"
+    },
     "keywords": [
         "templating",
         "html",
@@ -11,10 +17,5 @@
         "jquery",
         "backbone"
     ],
-    "author": "Evan Moran <evan@evanmoran.com>",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/ojjs/oj.git"
-    },
     "filename": "oj.min.js"
 }

@@ -39,4 +39,4 @@ describe 'oj.TextBox', ->
     results = oj.compile html:true, dom:true, control
     expect(results.html).to.contain '<input'
     expect(results.html).to.not.contain 'id'
-    expect(results.html).to.contain 'value="test"'
+    expect(results.html).to.not.contain 'test'

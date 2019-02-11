@@ -13,6 +13,11 @@ crypto = require 'crypto'
 http = require 'http'
 https = require 'https'
 uglify = require 'uglify-js'
+minifyJS = (code) ->
+  result = uglify.minify(code, warnings:true);
+  console.log("Minify errors", result.error) if result.error
+  console.log("Minify warnings: ", result.warnings) if result.warnings
+  result.code
 
 # Paths
 # ------------------------------------------------------------------------------
@@ -45,62 +50,62 @@ LIBS =
       path.join WWW_DOWNLOAD_DIR, 'oj'
       path.join CDN_LIBS_DIR, 'oj'
     ]
-  'oj.AceEditor':
-    packageDir:path.join ROOT_DIR, 'oj.AceEditor'
-    docsUrl:'ojjs.org/plugins#AceEditor'
-    outputDirs: [
-      path.join WWW_DOWNLOAD_DIR, 'oj.AceEditor'
-      path.join CDN_LIBS_DIR, 'oj.AceEditor'
-    ]
-  'oj.GitHubButton':
-    packageDir:path.join ROOT_DIR, 'oj.GitHubButton'
-    docsUrl:'ojjs.org/plugins#GitHubButton'
-    outputDirs: [
-      path.join WWW_DOWNLOAD_DIR, 'oj.GitHubButton'
-      path.join CDN_LIBS_DIR, 'oj.GitHubButton'
-    ]
-  'oj.TwitterButton':
-    packageDir:path.join ROOT_DIR, 'oj.TwitterButton'
-    docsUrl:'ojjs.org/plugins#TwitterButton'
-    outputDirs: [
-      path.join WWW_DOWNLOAD_DIR, 'oj.TwitterButton'
-      path.join CDN_LIBS_DIR, 'oj.TwitterButton'
-    ]
-  'oj.VimeoVideo':
-    packageDir:path.join ROOT_DIR, 'oj.VimeoVideo'
-    docsUrl:'ojjs.org/plugins#VimeoVideo'
-    outputDirs: [
-      path.join WWW_DOWNLOAD_DIR, 'oj.VimeoVideo'
-      path.join CDN_LIBS_DIR, 'oj.VimeoVideo'
-    ]
-  'oj.YouTubeVideo':
-    packageDir:path.join ROOT_DIR, 'oj.YouTubeVideo'
-    docsUrl:'ojjs.org/plugins#YouTubeVideo'
-    outputDirs: [
-      path.join WWW_DOWNLOAD_DIR, 'oj.YouTubeVideo'
-      path.join CDN_LIBS_DIR, 'oj.YouTubeVideo'
-    ]
-  'oj.JSFiddle':
-    packageDir:path.join ROOT_DIR, 'oj.JSFiddle'
-    docsUrl:'ojjs.org/plugins#JSFiddle'
-    outputDirs: [
-      path.join WWW_DOWNLOAD_DIR, 'oj.JSFiddle'
-      path.join CDN_LIBS_DIR, 'oj.JSFiddle'
-    ]
-  'oj.markdown':
-    packageDir:path.join ROOT_DIR, 'oj.markdown'
-    docsUrl:'ojjs.org/plugins#markdown'
-    outputDirs: [
-      path.join WWW_DOWNLOAD_DIR, 'oj.markdown'
-      path.join CDN_LIBS_DIR, 'oj.markdown'
-    ]
-  'oj.mustache':
-    packageDir:path.join ROOT_DIR, 'oj.mustache'
-    docsUrl:'ojjs.org/plugins#mustache'
-    outputDirs: [
-      path.join WWW_DOWNLOAD_DIR, 'oj.mustache'
-      path.join CDN_LIBS_DIR, 'oj.mustache'
-    ]
+  # 'oj.AceEditor':
+  #   packageDir:path.join ROOT_DIR, 'oj.AceEditor'
+  #   docsUrl:'ojjs.org/plugins#AceEditor'
+  #   outputDirs: [
+  #     path.join WWW_DOWNLOAD_DIR, 'oj.AceEditor'
+  #     path.join CDN_LIBS_DIR, 'oj.AceEditor'
+  #   ]
+  # 'oj.GitHubButton':
+  #   packageDir:path.join ROOT_DIR, 'oj.GitHubButton'
+  #   docsUrl:'ojjs.org/plugins#GitHubButton'
+  #   outputDirs: [
+  #     path.join WWW_DOWNLOAD_DIR, 'oj.GitHubButton'
+  #     path.join CDN_LIBS_DIR, 'oj.GitHubButton'
+  #   ]
+  # 'oj.TwitterButton':
+  #   packageDir:path.join ROOT_DIR, 'oj.TwitterButton'
+  #   docsUrl:'ojjs.org/plugins#TwitterButton'
+  #   outputDirs: [
+  #     path.join WWW_DOWNLOAD_DIR, 'oj.TwitterButton'
+  #     path.join CDN_LIBS_DIR, 'oj.TwitterButton'
+  #   ]
+  # 'oj.VimeoVideo':
+  #   packageDir:path.join ROOT_DIR, 'oj.VimeoVideo'
+  #   docsUrl:'ojjs.org/plugins#VimeoVideo'
+  #   outputDirs: [
+  #     path.join WWW_DOWNLOAD_DIR, 'oj.VimeoVideo'
+  #     path.join CDN_LIBS_DIR, 'oj.VimeoVideo'
+  #   ]
+  # 'oj.YouTubeVideo':
+  #   packageDir:path.join ROOT_DIR, 'oj.YouTubeVideo'
+  #   docsUrl:'ojjs.org/plugins#YouTubeVideo'
+  #   outputDirs: [
+  #     path.join WWW_DOWNLOAD_DIR, 'oj.YouTubeVideo'
+  #     path.join CDN_LIBS_DIR, 'oj.YouTubeVideo'
+  #   ]
+  # 'oj.JSFiddle':
+  #   packageDir:path.join ROOT_DIR, 'oj.JSFiddle'
+  #   docsUrl:'ojjs.org/plugins#JSFiddle'
+  #   outputDirs: [
+  #     path.join WWW_DOWNLOAD_DIR, 'oj.JSFiddle'
+  #     path.join CDN_LIBS_DIR, 'oj.JSFiddle'
+  #   ]
+  # 'oj.markdown':
+  #   packageDir:path.join ROOT_DIR, 'oj.markdown'
+  #   docsUrl:'ojjs.org/plugins#markdown'
+  #   outputDirs: [
+  #     path.join WWW_DOWNLOAD_DIR, 'oj.markdown'
+  #     path.join CDN_LIBS_DIR, 'oj.markdown'
+  #   ]
+  # 'oj.mustache':
+  #   packageDir:path.join ROOT_DIR, 'oj.mustache'
+  #   docsUrl:'ojjs.org/plugins#mustache'
+  #   outputDirs: [
+  #     path.join WWW_DOWNLOAD_DIR, 'oj.mustache'
+  #     path.join CDN_LIBS_DIR, 'oj.mustache'
+  #   ]
 
 # Tasks
 # ------------------------------------------------------------------------------
@@ -155,7 +160,7 @@ versionAndMinifyLib = (libName, libData) ->
     libData.code = removeFirstLine libData.code
 
   # Minify code
-  libData.minifiedCode = uglify libData.code
+  libData.minifiedCode = minifyJS libData.code
 
   # Add release and minified release comments
   releaseText = if libData.noReleaseText then "" else """
@@ -163,12 +168,12 @@ versionAndMinifyLib = (libName, libData) ->
     // #{libData.fileName} v#{libData.version}
     // #{libData.docsUrl}
     //
-    // Copyright 2013-2014, #{libData.copyrightName}
+    // Copyright 2013-2019, #{libData.copyrightName}
     // Released under the MIT License
     //\n
   """
   minfiedReleaseText = """
-    // #{libData.minifiedFileName} v#{libData.version} | Copyright 2013 #{libData.copyrightName} | #{libData.licenseUrl}\n
+    // #{libData.minifiedFileName} v#{libData.version} | Copyright 2013-2019 #{libData.copyrightName} | #{libData.licenseUrl}\n
   """
 
   libData.code = releaseText + libData.code
@@ -299,7 +304,7 @@ task 'download', 'download node modules', ->
       download url, (err, data) ->
         console.log "downloaded: #{url} (#{data.length} characters)"
 
-        minifiedData = uglify data
+        minifiedData = minifyJS data
         console.log "minified: #{url} (#{minifiedData.length} characters)"
 
         console.log "saving: #{filepath} (#{minifiedData.length} characters)"

@@ -1,5 +1,6 @@
 --reporter spec
---require coffee-script
---compilers coffee:coffee-script
+--require coffeescript
+--require jsdom
+--require coffeescript/register
 --require test/global
 --colors

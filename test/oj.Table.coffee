@@ -154,14 +154,17 @@ describe 'oj.Table', ->
     expect(control.rows).to.deep.equal [aRow, bRow, cRow]
 
     r = control.removeRow(1)
+    expect(control.rowCount).to.equal 2
     expect(r).to.deep.equal bRow
     expect(control.rows).to.deep.equal [aRow,cRow]
 
     r = control.removeRow(1)
+    expect(control.rowCount).to.equal 1
     expect(r).to.deep.equal cRow
     expect(control.rows).to.deep.equal [aRow]
 
     r = control.removeRow(0)
+    expect(control.rowCount).to.equal 0
     expect(r).to.deep.equal aRow
     expect(control.rows).to.deep.equal []
 
@@ -170,6 +173,7 @@ describe 'oj.Table', ->
 
     # add empty
     control.addRow(0,bRow)
+    expect(control.rowCount).to.equal 1
     expect(control.rows).to.deep.equal [bRow]
 
     # add last
